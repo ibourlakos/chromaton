@@ -28,7 +28,7 @@
 		{
 			"name": "A",
 			"colors": [
-				"WOOYYORW",
+				"YORYYORW",
 				"RRORRRRR",
 				"RRRRORRO",
 				"WRRRORRY",
@@ -36,8 +36,8 @@
 				"YYYRRYWW"
 			],
 			"smudges": [
+				0,
 				1,
-				2,
 				3,
 				4,
 				5,

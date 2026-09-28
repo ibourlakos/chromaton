@@ -26,11 +26,11 @@ godot_console --headless --path . --script res://tools/level_solver.gd
 | Black Cat | 24 | 1 | 2 | 4 | 76 | 4 | `Mix(Shift(Shift(A)), Mix(A, Shift(A)))` | 6 | 4 |
 | The Third Color | 48 | 2 | 6 | 2 | 51 | 2 | `Invert(Mix(A, B))` | 3 | 2 |
 | Wash Out | 48 | 2 | 15 | 2 | 51 | 2 | `Filter(A, Invert(B))` | 3 | 2 |
-| The Flower | 192 | 3 | 104 | 4 | 292 | 4 | `Filter(Mix(A, B), Mix(C, Filter(A, B)))` | 6 | 4 |
+| The Flower | 192 | 3 | 106 | 4 | 292 | 4 | `Filter(Mix(A, B), Mix(C, Filter(A, B)))` | 6 | 4 |
 | Missing From Either | 48 | 2 | 11 | 3 | 51 | 3 | `Mix(Invert(A), Invert(B))` | 5 | 3 |
-| Keep What They Share | 48 | 2 | 20 | 4 | 52 | 4 | `Invert(Mix(Invert(A), Invert(B)))` | 6 | 4 |
-| Mix Without Mix | 48 | 2 | 14 | 4 | 52 | 4 | `Invert(Filter(Invert(A), Invert(B)))` | 6 | 4 |
-| Either, Not Both | 48 | 2 | 21 | 4 | 76 | 4 | `Filter(Mix(A, B), Invert(Filter(A, B)))` | 6 | 4 |
+| Keep What They Share | 48 | 2 | 21 | 4 | 52 | 4 | `Invert(Mix(Invert(A), Invert(B)))` | 6 | 4 |
+| Mix Without Mix | 48 | 2 | 15 | 4 | 52 | 4 | `Invert(Filter(Invert(A), Invert(B)))` | 6 | 4 |
+| Either, Not Both | 48 | 2 | 20 | 4 | 76 | 4 | `Filter(Mix(A, B), Invert(Filter(A, B)))` | 6 | 4 |
 
 ---
 

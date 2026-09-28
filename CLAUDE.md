@@ -28,7 +28,7 @@ Run everything through `.\make <task>` (`make.cmd` → `tools/make.ps1`; works f
 - Tests: `.\make test` runs every `tests/test_*.gd` in its own process; `.\make test sim paint` runs only those suites (`sim`, `paint`, `levels`, `inventions`, `workbench`). A suite also fails if it prints a GDScript error, and each runs with `--quit-after 2` so a runtime error can't hang it.
 - Color-algebra checker (rewrites docs/algebra-report.md; rerun after changing pieces or recipes): `.\make algebra`
 - Level solver (rewrites docs/level-report.md; proves each level's three-star count; rerun after changing levels or pieces): `.\make solve`
-- Derive pattern cards from target pictures (rewrites the `cards` of levels with a `card_rule`): `.\make cards`
+- Derive pattern cards from target pictures (rewrites the `cards` of levels with a `card_rule`, choosing the first row so cheap wrong machines fail in it; takes about half a minute): `.\make cards`
 - Compile check with line numbers (when Godot only says a dependency failed): `.\make check`
 - After adding fonts or other assets, import once: `.\make import`
 - Self-check screenshots (windowed, not headless; saves a PNG and quits): `.\make shot <level_id> <png path> [--ticks=N] [--phase=0.5] [--finish] [--wrong] [--empty]`. `<level_id>` can also be `levels` or `book`. Uses the reference solutions and a throwaway save.
