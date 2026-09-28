@@ -493,10 +493,10 @@ static func sticker(ci: CanvasItem, c: Vector2, s: float, name: String, age: flo
 
 ## A punched pattern card showing its next colors.
 static func card(ci: CanvasItem, c: Vector2, name: String, upcoming: Array, age: float) -> void:
-	var r := Rect2(c + Vector2(-78, -26), Vector2(156, 52))
+	var r := Rect2(c + Vector2(-72, -26), Vector2(144, 52))
 	fill(ci, round_rect(Rect2(r.position + Vector2(3, 4), r.size), 8), P.SHADOW)
 	shape(ci, round_rect(r, 8), P.TAG, P.INK, 2)
-	for i in 9:
+	for i in 8:
 		disc(ci, Vector2(r.position.x + 14 + i * 16, r.end.y - 7), 2, P.HOOP)
 	# name tab
 	var tab := Vector2(r.position.x + 13, r.position.y + 13)
@@ -506,14 +506,10 @@ static func card(ci: CanvasItem, c: Vector2, name: String, upcoming: Array, age:
 	# right as the card releases
 	var slide := -clampf(1.0 - age, 0, 1) * 18 if age < 1 else 0.0
 	for i in mini(upcoming.size(), 6):
-		var p := Vector2(r.end.x - 20 - i * 19 + slide, r.position.y + 21)
+		var p := Vector2(r.end.x - 20 - i * 18 + slide, r.position.y + 21)
 		swatch(ci, p, 7.5 if i > 0 else 8.5, upcoming[i])
 	if upcoming.is_empty():
 		stroke(ci, arc(Vector2(c.x + 10, r.position.y + 21), 6, 0, TAU, 16), P.WARP, 2)
-	# the card's spout, towards the bench
-	var spout := PackedVector2Array([Vector2(r.end.x - 2, c.y), Vector2(c.x + 86, c.y)])
-	polyline_round(ci, spout, P.INK, 12)
-	polyline_round(ci, spout, P.WOOD_DK, 7)
 
 
 ## The loom: cloth with warp threads, wooden frame, woven stitches, shuttle.

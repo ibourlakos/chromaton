@@ -90,13 +90,13 @@
 				"id": "f",
 				"kind": "invention",
 				"invention": "filter",
-				"x": 2,
+				"x": 4,
 				"y": 1
 			},
 			{
 				"id": "mix",
 				"kind": "mix",
-				"x": 6,
+				"x": 8,
 				"y": 3
 			}
 		],

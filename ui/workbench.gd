@@ -27,16 +27,16 @@ signal progress_changed
 
 const DESIGN := Vector2(1280, 800)
 const TOP_H := 64.0
-# Paint flows left to right: cards down the left edge, the bench in the
-# middle, the loom on the right, and the parts tray as a shelf along the bottom.
+# Paint flows left to right: cards sit on the left of the bench (each covers
+# the first two cells of its row), the loom stands on the right, and the parts
+# tray is a shelf along the bottom.
 const TRAY := Rect2(12, 662, 1256, 128)
 const TRASH := Rect2(1150, 670, 110, 112)
 const BENCH := Rect2(12, 74, 956, 578)
-const GRID_ORIGIN := Vector2(200, 84)
+const GRID_ORIGIN := Vector2(24, 84)
 const CELL := Vector2(84, 80)
-const COLS := 9
+const COLS := 11
 const ROWS := 7
-const CARD_X := 96.0
 const CARD_ROWS := {1: [3], 2: [1, 5], 3: [0, 3, 6]}
 const SIDE := Rect2(980, 74, 288, 578)  # design card, loom and status
 const PORT_DX := 34.0
@@ -195,6 +195,15 @@ func cell_at(pos: Vector2) -> Vector2i:
 	return c
 
 
+## A cell holds a placed piece or part of a pattern card.
+func cell_taken(cell: Vector2i) -> bool:
+	return machine.piece_at(cell.x, cell.y) >= 0 or _card_cell(cell)
+
+
+func _card_cell(cell: Vector2i) -> bool:
+	return level.cards.size() > 0 and cell.x <= 1 and cell.y in CARD_ROWS.get(level.cards.size(), [])
+
+
 func node_center(id: int) -> Vector2:
 	var n: Dictionary = machine.nodes[id]
 	if drag == "move" and drag_node == id:
@@ -202,7 +211,7 @@ func node_center(id: int) -> Vector2:
 	match n["kind"]:
 		Pieces.CARD:
 			var rows: Array = CARD_ROWS.get(level.cards.size(), [3])
-			return Vector2(CARD_X, GRID_ORIGIN.y + (rows[int(n["card"])] + 0.5) * CELL.y)
+			return Vector2(GRID_ORIGIN.x + CELL.x, GRID_ORIGIN.y + (rows[int(n["card"])] + 0.5) * CELL.y)
 		Pieces.LOOM:
 			return loom_port
 	return cell_center(n["x"], n["y"])
@@ -235,7 +244,7 @@ func in_port(id: int, p: int) -> Vector2:
 func out_port(id: int, p: int) -> Vector2:
 	var n: Dictionary = machine.nodes[id]
 	if n["kind"] == Pieces.CARD:
-		return node_center(id) + Vector2(86, 0)
+		return node_center(id) + Vector2(CELL.x / 2 + PORT_DX, 0)
 	var count := Pieces.ports(n, inventions).y
 	return node_center(id) + _offsets(count, PORT_DX)[p]
 
@@ -510,7 +519,7 @@ func _release(pos: Vector2) -> void:
 
 func _place_new(pos: Vector2) -> void:
 	var cell := cell_at(pos)
-	if cell.x < 0 or machine.piece_at(cell.x, cell.y) >= 0:
+	if cell.x < 0 or cell_taken(cell):
 		return
 	_push_undo()
 	var id: int
@@ -536,7 +545,7 @@ func _finish_move(pos: Vector2) -> void:
 	var n: Dictionary = machine.nodes[id]
 	if cell.x < 0 or (cell.x == n["x"] and cell.y == n["y"]):
 		return
-	if machine.piece_at(cell.x, cell.y) >= 0:
+	if cell_taken(cell):
 		return
 	_push_undo()
 	machine.move_node(id, cell.x, cell.y)
@@ -659,8 +668,7 @@ func _draw_bench() -> void:
 	if drag == "new" or (drag == "move" and drag_moved):
 		var cell := cell_at(drag_pos - (grab if drag == "move" else Vector2.ZERO))
 		if cell.x >= 0:
-			var occupied: int = machine.piece_at(cell.x, cell.y)
-			var ok: bool = occupied < 0 or occupied == drag_node and drag == "move"
+			var ok: bool = not cell_taken(cell) or (drag == "move" and machine.piece_at(cell.x, cell.y) == drag_node)
 			var r := Rect2(GRID_ORIGIN + Vector2(cell) * CELL, CELL).grow(-4)
 			K.fill(self, K.round_rect(r, 10), Color(P.HOOP, 0.22) if ok else Color(P.INK, 0.08))
 	# Cards

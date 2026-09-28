@@ -25,31 +25,31 @@
 			{
 				"id": "pot",
 				"kind": "red_pot",
-				"x": 0,
+				"x": 2,
 				"y": 3
 			},
 			{
 				"id": "s",
 				"kind": "split",
-				"x": 2,
+				"x": 4,
 				"y": 3
 			},
 			{
 				"id": "h1",
 				"kind": "shift",
-				"x": 4,
+				"x": 6,
 				"y": 4
 			},
 			{
 				"id": "h2",
 				"kind": "shift",
-				"x": 6,
+				"x": 8,
 				"y": 4
 			},
 			{
 				"id": "m",
 				"kind": "mix",
-				"x": 8,
+				"x": 10,
 				"y": 3
 			}
 		],

@@ -2,14 +2,106 @@
 	"id": "black",
 	"name": "All the Paint",
 	"goal": "Weave a black cloth.",
-	"pieces": ["red_pot", "shift", "mix", "split"],
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"split"
+	],
 	"inventions": [],
-	"stars": {"budget": 6, "best": 5},
-	"target": ["KKKK", "KKKK", "KKKK"],
+	"stars": {
+		"budget": 6,
+		"best": 5
+	},
+	"target": [
+		"KKKK",
+		"KKKK",
+		"KKKK"
+	],
 	"card_rule": "",
 	"cards": [],
 	"reference": {
-		"pieces": [{"id": "pot", "kind": "red_pot", "x": 0, "y": 3}, {"id": "s1", "kind": "split", "x": 1, "y": 3}, {"id": "h1", "kind": "shift", "x": 3, "y": 4}, {"id": "s2", "kind": "split", "x": 4, "y": 4}, {"id": "m1", "kind": "mix", "x": 6, "y": 3}, {"id": "h2", "kind": "shift", "x": 6, "y": 5}, {"id": "m2", "kind": "mix", "x": 8, "y": 4}],
-		"tubes": [["pot", "s1"], ["s1.0", "m1.0"], ["s1.1", "h1"], ["h1", "s2"], ["s2.0", "m1.1"], ["s2.1", "h2"], ["m1", "m2.0"], ["h2", "m2.1"], ["m2", "loom"]]
+		"pieces": [
+			{
+				"id": "pot",
+				"kind": "red_pot",
+				"x": 2,
+				"y": 3
+			},
+			{
+				"id": "s1",
+				"kind": "split",
+				"x": 3,
+				"y": 3
+			},
+			{
+				"id": "h1",
+				"kind": "shift",
+				"x": 5,
+				"y": 4
+			},
+			{
+				"id": "s2",
+				"kind": "split",
+				"x": 6,
+				"y": 4
+			},
+			{
+				"id": "m1",
+				"kind": "mix",
+				"x": 8,
+				"y": 3
+			},
+			{
+				"id": "h2",
+				"kind": "shift",
+				"x": 8,
+				"y": 5
+			},
+			{
+				"id": "m2",
+				"kind": "mix",
+				"x": 10,
+				"y": 4
+			}
+		],
+		"tubes": [
+			[
+				"pot",
+				"s1"
+			],
+			[
+				"s1.0",
+				"m1.0"
+			],
+			[
+				"s1.1",
+				"h1"
+			],
+			[
+				"h1",
+				"s2"
+			],
+			[
+				"s2.0",
+				"m1.1"
+			],
+			[
+				"s2.1",
+				"h2"
+			],
+			[
+				"m1",
+				"m2.0"
+			],
+			[
+				"h2",
+				"m2.1"
+			],
+			[
+				"m2",
+				"loom"
+			]
+		]
 	}
 }
