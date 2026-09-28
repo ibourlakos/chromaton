@@ -1,17 +1,10 @@
 [
-	"one_pot",
-	"yellow",
-	"blue",
-	"orange",
-	"purple",
-	"black",
-	"green",
-	"white",
-	"pattern_card",
-	"orange_sun",
-	"black_cat",
-	"third_color",
-	"keep_what_they_share",
-	"wash_out",
-	"the_flower"
+	{
+		"name": "The Paint Box",
+		"levels": ["one_pot", "yellow", "blue", "orange", "purple", "black", "green", "white"]
+	},
+	{
+		"name": "Pattern Cards",
+		"levels": ["pattern_card", "orange_sun", "black_cat", "third_color", "keep_what_they_share", "wash_out", "the_flower"]
+	}
 ]

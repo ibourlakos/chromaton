@@ -21,6 +21,7 @@ const INDEX_PATH := "res://levels/index.json"
 
 var id := ""
 var number := 0  # position in the campaign, from 1 (0 when loaded on its own)
+var chapter := 0  # index into Level.chapters()
 var name := ""
 var goal := ""
 var cols := 0
@@ -38,18 +39,35 @@ var raw := {}
 var error := ""
 
 
-static func load_all() -> Array:
-	var ids = _read_json(INDEX_PATH)
-	var out := []
-	if not ids is Array:
+## The campaign's chapters from levels/index.json, in order:
+## [{"name": String, "levels": [level ids]}].
+static func chapters() -> Array:
+	var index = _read_json(INDEX_PATH)
+	if not index is Array:
 		push_error("cannot read " + INDEX_PATH)
-		return out
-	for level_id in ids:
-		var level = load_file("res://levels/%s.json" % level_id)
-		if level.error != "":
-			push_error(level.error)
-		level.number = out.size() + 1
-		out.append(level)
+		return []
+	return index
+
+
+## Every level id in campaign order.
+static func index_ids() -> Array:
+	var out := []
+	for chapter in chapters():
+		out.append_array(chapter["levels"])
+	return out
+
+
+static func load_all() -> Array:
+	var out := []
+	var index := chapters()
+	for c in index.size():
+		for level_id in index[c]["levels"]:
+			var level = load_file("res://levels/%s.json" % level_id)
+			if level.error != "":
+				push_error(level.error)
+			level.number = out.size() + 1
+			level.chapter = c
+			out.append(level)
 	return out
 
 

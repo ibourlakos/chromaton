@@ -25,9 +25,10 @@ func stars(level_id: String) -> int:
 	return int(levels.get(level_id, {}).get("stars", 0))
 
 
-## Level i is open once the level before it is solved.
+## A level is open once either of the two levels before it is solved, so one
+## hard level never walls off the rest of the campaign.
 func is_unlocked(level_ids: Array, index: int) -> bool:
-	return unlock_all or index == 0 or is_solved(level_ids[index - 1])
+	return unlock_all or index == 0 or is_solved(level_ids[index - 1]) or (index >= 2 and is_solved(level_ids[index - 2]))
 
 
 ## Records a solve. Returns which metrics improved: {"pieces": bool, "ticks": bool, "stars": bool}.

@@ -29,7 +29,7 @@ const NAMES := ["A", "B", "C"]
 
 
 func _init() -> void:
-	var ids = JSON.parse_string(FileAccess.get_file_as_string(Level.INDEX_PATH))
+	var ids := Level.index_ids()
 	var failures := 0
 	for level_id in ids:
 		var path := "res://levels/%s.json" % level_id
