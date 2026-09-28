@@ -13,10 +13,12 @@ const Invention = preload("res://core/invention.gd")
 const S = Simulator.Status
 
 var failures := 0
+var checks := 0
 var by_id := {}
 
 
 func check(ok: bool, what: String) -> void:
+	checks += 1
 	if not ok:
 		failures += 1
 		printerr("FAIL: " + what)
@@ -32,7 +34,7 @@ func _init() -> void:
 	test_nested(inventions)
 	test_edges()
 	if failures == 0:
-		print("test_inventions: all checks passed")
+		print("test_inventions: all %d checks passed" % checks)
 	quit(1 if failures > 0 else 0)
 
 

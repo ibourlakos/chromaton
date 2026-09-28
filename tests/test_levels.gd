@@ -13,9 +13,11 @@ const Progress = preload("res://core/progress.gd")
 const S = Simulator.Status
 
 var failures := 0
+var checks := 0
 
 
 func check(ok: bool, what: String) -> void:
+	checks += 1
 	if not ok:
 		failures += 1
 		printerr("FAIL: " + what)
@@ -30,7 +32,7 @@ func _init() -> void:
 	test_stars(levels)
 	test_progress(levels)
 	if failures == 0:
-		print("test_levels: all checks passed")
+		print("test_levels: all %d checks passed" % checks)
 	quit(1 if failures > 0 else 0)
 
 
