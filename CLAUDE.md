@@ -22,16 +22,16 @@ A puzzle game about inventing machines out of **color logic**: 8 pigment colors,
 
 ## Commands
 
-Godot 4.7.2 is installed via winget. `godot_console` may not be on PATH (winget can't create aliases without admin); the executables are in `%LOCALAPPDATA%\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_*\`: `Godot_v4.7.2-stable_win64_console.exe` (tests, tools, screenshots) and `Godot_v4.7.2-stable_win64.exe` (play without a console window).
+Run everything through `.\make <task>` (`make.cmd` → `tools/make.ps1`; works from PowerShell or cmd, no install, no script-policy change). It finds Godot by the `GODOT` environment variable, then `godot` on PATH, then the winget folder (`%LOCALAPPDATA%\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_*\`; winget can't create the `godot` alias without admin). `.\make help` lists the tasks; `.\make godot` shows which Godot it uses. From Git Bash, call `./make.cmd <task>`.
 
-- Play: `godot --path .` (add `-- --unlock-all` to open every level, `-- --level=<id>` to jump into one).
-- All tests: `godot_console --headless --path . --script res://tests/test_all.gd` (runs every `tests/test_*.gd` in its own process). One suite: `--script res://tests/test_sim.gd` (also `test_paint`, `test_levels`, `test_inventions`, `test_workbench`).
-- Color-algebra checker (rewrites docs/algebra-report.md; rerun after changing pieces or recipes): `godot_console --headless --path . --script res://tools/algebra_check.gd`
-- Level solver (rewrites docs/level-report.md; proves each level's three-star count; rerun after changing levels or pieces): `--script res://tools/level_solver.gd`
-- Derive pattern cards from target pictures (rewrites the `cards` of levels with a `card_rule`): `--script res://tools/make_cards.gd`
-- Compile check with line numbers (when Godot only says a dependency failed): `--script res://tools/check_scripts.gd`
-- After adding fonts or other assets, import once: `godot_console --headless --path . --import`
-- Self-check screenshots (windowed, not headless; saves a PNG and quits): `godot_console --path . -- --screenshot=<level_id>:<png path> [--ticks=N] [--phase=0.5] [--finish] [--wrong] [--empty]`. `<level_id>` can also be `levels` or `book`. Uses the reference solutions and a throwaway save.
+- Play: `.\make play` (game args pass through), `.\make level <id>` to jump into one, `.\make unlock` to open every level.
+- Tests: `.\make test` runs every `tests/test_*.gd` in its own process; `.\make test sim paint` runs only those suites (`sim`, `paint`, `levels`, `inventions`, `workbench`). A suite also fails if it prints a GDScript error, and each runs with `--quit-after 2` so a runtime error can't hang it.
+- Color-algebra checker (rewrites docs/algebra-report.md; rerun after changing pieces or recipes): `.\make algebra`
+- Level solver (rewrites docs/level-report.md; proves each level's three-star count; rerun after changing levels or pieces): `.\make solve`
+- Derive pattern cards from target pictures (rewrites the `cards` of levels with a `card_rule`): `.\make cards`
+- Compile check with line numbers (when Godot only says a dependency failed): `.\make check`
+- After adding fonts or other assets, import once: `.\make import`
+- Self-check screenshots (windowed, not headless; saves a PNG and quits): `.\make shot <level_id> <png path> [--ticks=N] [--phase=0.5] [--finish] [--wrong] [--empty]`. `<level_id>` can also be `levels` or `book`. Uses the reference solutions and a throwaway save.
 
 ## Layout
 
@@ -39,7 +39,7 @@ Godot 4.7.2 is installed via winget. `godot_console` may not be on PATH (winget 
 - `ui/`: everything on screen, built in code. `main.gd` (screens and command-line options), `workbench.gd` (the bench, gestures, run controls, loom), `draw_kit.gd` (Critter Workshop drawing), `palette.gd` (colors, fonts), `toy_button.gd`, `level_select.gd`, `pattern_book.gd`, `success_panel.gd`. `main.tscn` is the only scene.
 - `levels/`: `index.json` (campaign order; a level's number is its place there) and one JSON per level, named by its stable id: target picture, pattern cards, pieces offered (the tray is exactly this list plus listed, owned inventions), star thresholds, reference solution. Format documented at the top of `core/level.gd`.
 - `tests/`: headless test scripts (extend SceneTree, exit code 1 on failure).
-- `tools/`: design tools, not shipped with the game.
+- `tools/`: design tools, not shipped with the game, and `make.ps1` (the tasks behind `make.cmd`).
 - `docs/`: generated reports.
 - `fonts/`: Fredoka and Nunito (SIL OFL, licenses alongside).
 - `mockups/`: HTML mockups (the art-style reference; the game's layout supersedes theirs).
@@ -50,4 +50,4 @@ Godot 4.7.2 is installed via winget. `godot_console` may not be on PATH (winget 
 - Simulation core as pure GDScript classes (no scene nodes), deterministic, unit-tested headless. Scripts load each other with `preload` constants, not `class_name`, so `--script` runs work without an editor import.
 - UI built in code; one design canvas of 1280×800 scaled to the window.
 - Dataflow with one-drop tubes (DESIGN.md §9): a piece fires when all its inputs hold a drop and each output is empty or is being emptied the same tick (chain reaction); every piece decides from the start-of-tick state.
-- When changing levels, rerun `tools/make_cards.gd` (if cards derive from a rule) and `tools/level_solver.gd`, then the tests: every level's reference solution must solve it at exactly its three-star count.
+- When changing levels, rerun `.\make cards` (if cards derive from a rule) and `.\make solve`, then `.\make test`: every level's reference solution must solve it at exactly its three-star count.
