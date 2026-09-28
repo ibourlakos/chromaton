@@ -63,10 +63,16 @@ static func round_rect(r: Rect2, rad: float, n := 5) -> PackedVector2Array:
 		[r.end - Vector2(rad, rad), 0.0],
 		[Vector2(r.position.x + rad, r.end.y - rad), 0.5 * PI],
 	]
+	# When the radius is half a side, neighbouring corner arcs meet in one
+	# point: skip repeats, or the polygon can fail to triangulate.
 	for corner in corners:
 		for i in n + 1:
 			var a: float = corner[1] + 0.5 * PI * i / n
-			pts.append(corner[0] + Vector2(cos(a), sin(a)) * rad)
+			var p: Vector2 = corner[0] + Vector2(cos(a), sin(a)) * rad
+			if pts.is_empty() or not p.is_equal_approx(pts[pts.size() - 1]):
+				pts.append(p)
+	if pts.size() > 1 and pts[0].is_equal_approx(pts[pts.size() - 1]):
+		pts.remove_at(pts.size() - 1)
 	return pts
 
 

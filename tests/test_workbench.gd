@@ -9,6 +9,7 @@ const Level = preload("res://core/level.gd")
 const Progress = preload("res://core/progress.gd")
 const Pieces = preload("res://core/pieces.gd")
 const Workbench = preload("res://ui/workbench.gd")
+const K = preload("res://ui/draw_kit.gd")
 
 var failures := 0
 var checks := 0
@@ -34,6 +35,7 @@ func _initialize() -> void:
 		play_level(levels[i], progress, i)
 	test_tray_lists_only_the_level(by_id["green"], progress)
 	test_not_general(by_id["keep_what_they_share"])
+	test_round_rect()
 	if failures == 0:
 		print("test_workbench: all %d checks passed" % checks)
 	quit(1 if failures > 0 else 0)
@@ -283,3 +285,17 @@ func test_not_general(level7) -> void:
 	check(wb.outcome == "not_general", "a machine that only fits the cards is not accepted (%s)" % wb.outcome)
 	check(not progress.is_solved(level.id) and progress.inventions.is_empty(), "nothing is recorded")
 	wb.queue_free()
+
+
+## A rounded rectangle whose radius is half its width (the hint hand's finger)
+## has no repeated points and triangulates wherever it is drawn.
+func test_round_rect() -> void:
+	var ok := true
+	for k in 60:
+		var pts := K.round_rect(Rect2(Vector2(100.13 + k * 0.37, 80.71 + k * 0.29), Vector2(10, 28)), 5)
+		for i in pts.size():
+			if pts[i].is_equal_approx(pts[(i + 1) % pts.size()]):
+				ok = false
+		if Geometry2D.triangulate_polygon(pts).is_empty():
+			ok = false
+	check(ok, "narrow rounded rectangles have no repeated points and triangulate")
