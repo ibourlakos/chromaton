@@ -181,8 +181,8 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 | 1 | One Pot of Red | Place a piece, lay a tube (wordless hand hint) | pot | 1 | 1 |
 | 2 | Yellow | Shift | pot, Shift | 3 | 2 |
 | 3 | Blue | Pieces chain: Shift twice | pot, Shift | 4 | 3 |
-| 4 | Orange | Mix; Split (two pots is ★★, splitting one pot's paint is ★★★) | pot, Shift, Mix, Split | 4 | 3 |
-| 5 | Purple | Mix again, with a longer chain | pot, Shift, Mix, Split | 5 | 4 |
+| 4 | Orange | Mix: two pots, one of them shifted | pot, Shift, Mix | 5 | 4 |
+| 5 | Purple | Split: two pots is ★★, splitting one pot's paint is ★★★ | pot, Shift, Mix, Split | 5 | 4 |
 | 6 | All the Paint | Black = every primary; two Mixes | pot, Shift, Mix, Split | 6 | 5 |
 | 7 | Green | Invert. Mixing yellow and blue is ★★; Invert(red) is ★★★ | + Invert | 4 | 2 |
 | 8 | Nothing at All | White: make black, then flip it | all | 6 | 4 |

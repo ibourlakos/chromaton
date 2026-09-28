@@ -5,13 +5,12 @@
 	"pieces": [
 		"red_pot",
 		"shift",
-		"mix",
-		"split"
+		"mix"
 	],
 	"inventions": [],
 	"stars": {
-		"budget": 4,
-		"best": 3
+		"budget": 5,
+		"best": 4
 	},
 	"target": [
 		"OOOO",
@@ -23,21 +22,21 @@
 	"reference": {
 		"pieces": [
 			{
-				"id": "pot",
+				"id": "p1",
 				"kind": "red_pot",
 				"x": 2,
-				"y": 3
+				"y": 2
 			},
 			{
-				"id": "s",
-				"kind": "split",
-				"x": 4,
-				"y": 3
+				"id": "p2",
+				"kind": "red_pot",
+				"x": 2,
+				"y": 4
 			},
 			{
 				"id": "h",
 				"kind": "shift",
-				"x": 6,
+				"x": 5,
 				"y": 4
 			},
 			{
@@ -49,15 +48,11 @@
 		],
 		"tubes": [
 			[
-				"pot",
-				"s"
-			],
-			[
-				"s.0",
+				"p1",
 				"m.0"
 			],
 			[
-				"s.1",
+				"p2",
 				"h"
 			],
 			[

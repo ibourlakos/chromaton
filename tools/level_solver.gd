@@ -48,7 +48,7 @@ func _init() -> void:
 	lines.append("godot_console --headless --path . --script res://tools/level_solver.gd")
 	lines.append("```")
 	lines.append("")
-	lines.append("**Cheapest** is the fewest pieces any machine needs to weave the level (splits free, the Filter invention at its reference price of %d). It is found by trying every machine the level's pieces can build, cheapest first. Three stars need the cheapest count; two stars need the budget." % int(inventions.get("filter", {}).get("cost", 0)))
+	lines.append("**Cheapest** is the fewest pieces any machine needs to weave the level (splits free where the level offers them, otherwise each result feeds one piece; the Filter invention at its reference price of %d). It is found by trying every machine the level's pieces can build, cheapest first. Three stars need the cheapest count; two stars need the budget." % int(inventions.get("filter", {}).get("cost", 0)))
 	lines.append("")
 	lines.append("| Level | Stitches | Cards | Card combos | Reference | Ticks | Cheapest | Cheapest machine | ★★ budget | ★★★ best |")
 	lines.append("|---|---|---|---|---|---|---|---|---|---|")
@@ -147,7 +147,7 @@ func solve(level, inventions: Dictionary, max_cost: int) -> Dictionary:
 	for limit in max_cost + 1:
 		visited = {}
 		found = ""
-		if _dfs(signals, 0, limit):
+		if (_dfs(signals, 0, limit) if "split" in level.pieces else _dfs_tree(signals, 0, limit)):
 			return {"cost": limit, "program": found, "combos": combos.size(), "states": nodes_seen}
 	return {"cost": -1, "program": "", "combos": combos.size(), "states": nodes_seen}
 
@@ -182,6 +182,35 @@ func _dfs(signals: Array, used: int, limit: int) -> bool:
 	return false
 
 
+## The same search for levels without Split: every result feeds at most one
+## piece, so a gate uses up its inputs (a second pot is a new piece).
+func _dfs_tree(signals: Array, used: int, limit: int) -> bool:
+	nodes_seen += 1
+	for s in signals:
+		if s["key"] == target_key:
+			found = s["desc"]
+			return true
+	if used >= limit:
+		return false
+	var keys := []
+	for s in signals:
+		keys.append(s["key"])
+	keys.sort()
+	var state := "|".join(keys)
+	if visited.get(state, 1 << 30) <= used:
+		return false
+	visited[state] = used
+	for gate in _gates(signals, limit - used):
+		var next := []
+		for k in signals.size():
+			if not k in gate["ins"]:
+				next.append(signals[k])
+		next.append(gate)
+		if _dfs_tree(next, used + gate["cost"], limit):
+			return true
+	return false
+
+
 ## Every piece that can be added to the current signals within the budget.
 func _gates(signals: Array, budget: int) -> Array:
 	var out := []
@@ -191,16 +220,17 @@ func _gates(signals: Array, budget: int) -> Array:
 			continue
 		match o["op"]:
 			"red_pot":
-				out.append({"v": red_vec, "key": str(red_vec), "desc": "Red", "cost": o["cost"]})
+				out.append({"v": red_vec, "key": str(red_vec), "desc": "Red", "cost": o["cost"], "ins": []})
 			"invert", "shift":
-				for s in signals:
+				for k in n:
+					var s: Dictionary = signals[k]
 					var v := _unary(o["op"], s["v"])
-					out.append({"v": v, "key": str(v), "desc": "%s(%s)" % [o["op"].capitalize(), s["desc"]], "cost": o["cost"]})
+					out.append({"v": v, "key": str(v), "desc": "%s(%s)" % [o["op"].capitalize(), s["desc"]], "cost": o["cost"], "ins": [k]})
 			"mix", "filter":
 				for i in n:
 					for j in range(i + 1, n):
 						var v := _binary(o["op"], signals[i]["v"], signals[j]["v"])
-						out.append({"v": v, "key": str(v), "desc": "%s(%s, %s)" % [o["op"].capitalize(), signals[i]["desc"], signals[j]["desc"]], "cost": o["cost"]})
+						out.append({"v": v, "key": str(v), "desc": "%s(%s, %s)" % [o["op"].capitalize(), signals[i]["desc"], signals[j]["desc"]], "cost": o["cost"], "ins": [i, j]})
 	return out
 
 
