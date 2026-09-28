@@ -1,0 +1,109 @@
+{
+	"id": "07_keep_what_they_share",
+	"name": "Keep What They Share",
+	"goal": "Weave only the paint both cards share. Your machine becomes a new piece.",
+	"pieces": [
+		"red_pot",
+		"mix",
+		"shift",
+		"split",
+		"invert"
+	],
+	"inventions": [],
+	"invention": {
+		"id": "filter",
+		"name": "Filter",
+		"check": "filter"
+	},
+	"stars": {
+		"budget": 6,
+		"best": 4
+	},
+	"target": [
+		"BBBRRBBB",
+		"BBRRRRBB",
+		"BRRRRRRB",
+		"BOOYOOOB",
+		"BOOOOKOB",
+		"GGGGGGGG"
+	],
+	"card_rule": "filter",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"BKBPOBBP",
+				"GKPOORBB",
+				"GRRORKKK",
+				"PKOGKKKG",
+				"PKOKKKKK",
+				"KKKGGKGK"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"KBPRPKGB",
+				"PBOPPKKK",
+				"PPKPPRRB",
+				"BOKYOOOP",
+				"GOKOOKOB",
+				"GGGKKGKG"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "ia",
+				"kind": "invert",
+				"x": 4,
+				"y": 1
+			},
+			{
+				"id": "ib",
+				"kind": "invert",
+				"x": 8,
+				"y": 1
+			},
+			{
+				"id": "mix",
+				"kind": "mix",
+				"x": 6,
+				"y": 2
+			},
+			{
+				"id": "out",
+				"kind": "invert",
+				"x": 6,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"ia"
+			],
+			[
+				"card1",
+				"ib"
+			],
+			[
+				"ia",
+				"mix.0"
+			],
+			[
+				"ib",
+				"mix.1"
+			],
+			[
+				"mix",
+				"out"
+			],
+			[
+				"out",
+				"loom"
+			]
+		]
+	}
+}

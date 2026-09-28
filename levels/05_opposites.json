@@ -1,0 +1,55 @@
+{
+	"id": "05_opposites",
+	"name": "Opposites",
+	"goal": "Every paint has an opposite. Weave the card's opposites.",
+	"pieces": [
+		"red_pot",
+		"mix",
+		"shift",
+		"split",
+		"invert"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 2,
+		"best": 1
+	},
+	"target": [
+		"BWWBYY",
+		"BBBBYY",
+		"GRGGGG",
+		"GGGGRG"
+	],
+	"card_rule": "invert",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"OKKOPP",
+				"OOOOPP",
+				"RGRRRR",
+				"RRRRGR"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "inv",
+				"kind": "invert",
+				"x": 6,
+				"y": 2
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"inv"
+			],
+			[
+				"inv",
+				"loom"
+			]
+		]
+	}
+}

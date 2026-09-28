@@ -1,0 +1,126 @@
+{
+	"id": "09_the_flower",
+	"name": "The Flower",
+	"goal": "Keep what the first two cards share, then mix in the third.",
+	"pieces": [
+		"red_pot",
+		"mix",
+		"shift",
+		"split",
+		"invert"
+	],
+	"inventions": [
+		"filter"
+	],
+	"stars": {
+		"budget": 7,
+		"best": 5
+	},
+	"target": [
+		"WWWWWWWWWWWWWWWW",
+		"WWWWWWRRWWWWWYYW",
+		"WPWPWRYYRWWWYYYY",
+		"WWKWWRYYRWWWYYYY",
+		"WPWPWWRRWWWWWYYW",
+		"WWWWWWWGWWWWWWWW",
+		"WWWWWGWGWWWWWWWW",
+		"WWWWWWGGWWWWWWWW",
+		"WWWWWWWGWWWWWWWW",
+		"WWWWWOOOOOWWWWWW",
+		"WWWWWWOOOWWWWWWW",
+		"GGGGGGGGGGGGGGGG"
+	],
+	"card_rule": "filter_mix",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"WWWWWWYGWWGRPWRR",
+				"WYRRWBWOBWOWPYRO",
+				"WPWOYPKYPBYBYOKG",
+				"POOYBOGYRBRWYGKY",
+				"GKWKBBRBOBKBYYKW",
+				"PWBRWWYKPGWKWGYB",
+				"RWBWWKKKBYYYYWPW",
+				"PRPWPBGKPOKWYPWW",
+				"YWWWPGOKWWWOGBRW",
+				"GGGRWKRWKOGKRWPK",
+				"GWGRBYOYKYWYRYYB",
+				"KGPKGKGGGYGPKGKG"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"ORBOKKPROGRWYBGG",
+				"GWYYPYKPRKWYWKBB",
+				"KKKRRRYGRWRYBGYY",
+				"WWYPWPOOPOYGGOYK",
+				"RPPPOOORBYWWPKYK",
+				"WPYGYPWGYRKWGRPW",
+				"YRWGPGWYWRWBBOYB",
+				"WWWPYYKGYWWRPWOR",
+				"PPGKWRBGOYPWWOGG",
+				"WRWBPOKPOKWWGRYW",
+				"WKRGRPPOORPBGPBO",
+				"GKBGKGKBBGOBGBGK"
+			]
+		},
+		{
+			"name": "C",
+			"colors": [
+				"WWWWWWWWWWWWWWWW",
+				"WWWWWWRWWWWWWWYW",
+				"WWWBWWWWWWWWYWWW",
+				"WWKWWWYWWWWWWYYW",
+				"WWWRWWWRWWWWWWWW",
+				"WWWWWWWBWWWWWWWW",
+				"WWWWWWWBWWWWWWWW",
+				"WWWWWWWYWWWWWWWW",
+				"WWWWWWWYWWWWWWWW",
+				"WWWWWYYOYWWWWWWW",
+				"WWWWWWYOWWWWWWWW",
+				"YWYWYBBYYBBYYYWW"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "f",
+				"kind": "invention",
+				"invention": "filter",
+				"x": 4,
+				"y": 1
+			},
+			{
+				"id": "mix",
+				"kind": "mix",
+				"x": 6,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"f.0"
+			],
+			[
+				"card1",
+				"f.1"
+			],
+			[
+				"f",
+				"mix.0"
+			],
+			[
+				"card2",
+				"mix.1"
+			],
+			[
+				"mix",
+				"loom"
+			]
+		]
+	}
+}

@@ -1,0 +1,84 @@
+{
+	"id": "06_third_color",
+	"name": "The Third Color",
+	"goal": "Each pair of cards holds two primaries. Weave the missing one.",
+	"pieces": [
+		"red_pot",
+		"mix",
+		"shift",
+		"split",
+		"invert"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 3,
+		"best": 2
+	},
+	"target": [
+		"BBBBBBYY",
+		"BBBRBBYY",
+		"BBRRRBBB",
+		"BBBRBBBB",
+		"BBBBYBBB",
+		"BBBBBYBB"
+	],
+	"card_rule": "third_color",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"RYRRRYBB",
+				"YYYYRYRR",
+				"RYYYYYYR",
+				"YRYBRYYY",
+				"YRYYBRRR",
+				"RYYYRBRR"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"YRYYYRRR",
+				"RRRBYRBB",
+				"YRBBBRRY",
+				"RYRYYRRR",
+				"RYRRRYYY",
+				"YRRRYRYY"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "mix",
+				"kind": "mix",
+				"x": 6,
+				"y": 1
+			},
+			{
+				"id": "inv",
+				"kind": "invert",
+				"x": 6,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"mix.0"
+			],
+			[
+				"card1",
+				"mix.1"
+			],
+			[
+				"mix",
+				"inv"
+			],
+			[
+				"inv",
+				"loom"
+			]
+		]
+	}
+}

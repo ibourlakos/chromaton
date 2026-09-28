@@ -1,0 +1,62 @@
+{
+	"id": "02_orange",
+	"name": "Orange",
+	"goal": "Mix red into the card to weave an orange sun.",
+	"pieces": [
+		"red_pot",
+		"mix"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 3,
+		"best": 2
+	},
+	"target": [
+		"RROORR",
+		"ROOOOR",
+		"ROOOOR",
+		"RROORR"
+	],
+	"card_rule": "remove_red",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"WWYYWW",
+				"WYYYYW",
+				"WYYYYW",
+				"WWYYWW"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "pot",
+				"kind": "red_pot",
+				"x": 8,
+				"y": 0
+			},
+			{
+				"id": "mix",
+				"kind": "mix",
+				"x": 6,
+				"y": 2
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"mix.0"
+			],
+			[
+				"pot",
+				"mix.1"
+			],
+			[
+				"mix",
+				"loom"
+			]
+		]
+	}
+}

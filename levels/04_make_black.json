@@ -1,0 +1,112 @@
+{
+	"id": "04_make_black",
+	"name": "Make Black",
+	"goal": "All the paints together make black. Weave the black cat.",
+	"pieces": [
+		"red_pot",
+		"mix",
+		"shift",
+		"split"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 6,
+		"best": 4
+	},
+	"target": [
+		"KWWWWK",
+		"KKKKKK",
+		"KWKKWK",
+		"WKKKKW"
+	],
+	"card_rule": "any_red",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"RWWWWR",
+				"RRRRRR",
+				"RWRRWR",
+				"WRRRRW"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "s1",
+				"kind": "split",
+				"x": 6,
+				"y": 0
+			},
+			{
+				"id": "h1",
+				"kind": "shift",
+				"x": 7,
+				"y": 1
+			},
+			{
+				"id": "s2",
+				"kind": "split",
+				"x": 7,
+				"y": 2
+			},
+			{
+				"id": "m1",
+				"kind": "mix",
+				"x": 6,
+				"y": 3
+			},
+			{
+				"id": "h2",
+				"kind": "shift",
+				"x": 8,
+				"y": 3
+			},
+			{
+				"id": "m2",
+				"kind": "mix",
+				"x": 7,
+				"y": 4
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"s1"
+			],
+			[
+				"s1.0",
+				"m1.0"
+			],
+			[
+				"s1.1",
+				"h1"
+			],
+			[
+				"h1",
+				"s2"
+			],
+			[
+				"s2.0",
+				"m1.1"
+			],
+			[
+				"s2.1",
+				"h2"
+			],
+			[
+				"m1",
+				"m2.0"
+			],
+			[
+				"h2",
+				"m2.1"
+			],
+			[
+				"m2",
+				"loom"
+			]
+		]
+	}
+}

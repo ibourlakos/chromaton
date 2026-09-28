@@ -1,0 +1,96 @@
+{
+	"id": "08_wash_out",
+	"name": "Wash Out",
+	"goal": "Weave the first card with the second card's paint washed out.",
+	"pieces": [
+		"red_pot",
+		"mix",
+		"shift",
+		"split",
+		"invert"
+	],
+	"inventions": [
+		"filter"
+	],
+	"stars": {
+		"budget": 5,
+		"best": 3
+	},
+	"target": [
+		"BBBBBBBB",
+		"BBBOOOBO",
+		"BBOKOOOO",
+		"BBOOOOOO",
+		"BBBOOOBO",
+		"GGBBBBGB"
+	],
+	"card_rule": "bleach",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"PBGBBGPB",
+				"BPBKKOBO",
+				"KPOKKOOK",
+				"BKOOKKOO",
+				"BKGOKOBO",
+				"GGBGBGKK"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"OWYYYYOR",
+				"RORBBBYB",
+				"ORBWBWBB",
+				"ROBBBBBB",
+				"OOYWBBRW",
+				"RRROYORO"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "ia",
+				"kind": "invert",
+				"x": 4,
+				"y": 1
+			},
+			{
+				"id": "mix",
+				"kind": "mix",
+				"x": 6,
+				"y": 2
+			},
+			{
+				"id": "out",
+				"kind": "invert",
+				"x": 6,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"ia"
+			],
+			[
+				"ia",
+				"mix.0"
+			],
+			[
+				"card1",
+				"mix.1"
+			],
+			[
+				"mix",
+				"out"
+			],
+			[
+				"out",
+				"loom"
+			]
+		]
+	}
+}

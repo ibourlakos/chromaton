@@ -1,0 +1,181 @@
+## A campaign level, loaded from levels/<id>.json.
+##
+## Pictures and pattern cards are rows of color letters:
+##   W R Y O B P G K = White, Red, Yellow, Orange, Blue, Purple, Green, Black.
+## Cards are read and the loom is woven row by row, left to right.
+##
+## JSON fields: id, name, goal, pieces (tray kinds), inventions (invention ids
+## allowed in the tray), target (rows), cards ([{name, colors: rows}]),
+## stars {budget, best}, optional invention {id, name, check} on invention
+## levels, reference (a solution: {pieces: [{id, kind, x, y}], tubes:
+## [[from, to]]}, endpoints written "name" or "name.port", with "card0",
+## "card1", ... and "loom" predefined), and card_rule (used by
+## tools/make_cards.gd to derive cards from the target).
+extends RefCounted
+
+const Machine = preload("res://core/machine.gd")
+const Pieces = preload("res://core/pieces.gd")
+
+const LETTERS := "WRYOBPGK"
+const INDEX_PATH := "res://levels/index.json"
+
+var id := ""
+var name := ""
+var goal := ""
+var cols := 0
+var rows := 0
+var target := PackedByteArray()
+var cards: Array = []
+var card_names: Array = []
+var pieces: Array = []
+var inventions: Array = []
+var invention := {}
+var budget := 0
+var best := 0
+var reference := {}
+var raw := {}
+var error := ""
+
+
+static func load_all() -> Array:
+	var ids = _read_json(INDEX_PATH)
+	var out := []
+	if not ids is Array:
+		push_error("cannot read " + INDEX_PATH)
+		return out
+	for level_id in ids:
+		var level = load_file("res://levels/%s.json" % level_id)
+		if level.error != "":
+			push_error(level.error)
+		out.append(level)
+	return out
+
+
+static func load_file(path: String):
+	var d = _read_json(path)
+	if not d is Dictionary:
+		var bad = load("res://core/level.gd").new()
+		bad.error = "cannot read level " + path
+		return bad
+	return from_dict(d)
+
+
+static func from_dict(d: Dictionary):
+	var level = load("res://core/level.gd").new()
+	level.raw = d
+	level.id = str(d.get("id", ""))
+	level.name = str(d.get("name", ""))
+	level.goal = str(d.get("goal", ""))
+	var rows_in: Array = d.get("target", [])
+	level.rows = rows_in.size()
+	level.cols = str(rows_in[0]).length() if rows_in.size() > 0 else 0
+	for r in rows_in:
+		if str(r).length() != level.cols:
+			level.error = "%s: target rows differ in length" % level.id
+	level.target = parse_rows(rows_in)
+	for card in d.get("cards", []):
+		level.card_names.append(str(card.get("name", "")))
+		var seq := parse_rows(card.get("colors", []))
+		if seq.size() != level.target.size():
+			level.error = "%s: card %s has %d colors, loom has %d stitches" % [level.id, card.get("name", ""), seq.size(), level.target.size()]
+		level.cards.append(seq)
+	level.pieces = d.get("pieces", []).duplicate()
+	level.inventions = d.get("inventions", []).duplicate()
+	level.invention = d.get("invention", {}).duplicate()
+	var stars: Dictionary = d.get("stars", {})
+	level.budget = int(stars.get("budget", 0))
+	level.best = int(stars.get("best", 0))
+	level.reference = d.get("reference", {})
+	if level.target.size() == 0:
+		level.error = "%s: empty target" % level.id
+	return level
+
+
+## Color letters to colors. Unknown letters become -1.
+static func parse_rows(rows_in: Array) -> PackedByteArray:
+	var out := PackedByteArray()
+	for r in rows_in:
+		for ch in str(r):
+			var c := LETTERS.find(ch)
+			if c < 0:
+				push_error("unknown color letter: " + ch)
+			out.append(maxi(c, 0))
+	return out
+
+
+static func letters(seq: PackedByteArray, width: int) -> Array:
+	var out := []
+	var line := ""
+	for i in seq.size():
+		line += LETTERS[seq[i]]
+		if line.length() == width:
+			out.append(line)
+			line = ""
+	if line != "":
+		out.append(line)
+	return out
+
+
+func size() -> int:
+	return target.size()
+
+
+## The bench with only the level's fixed parts: its cards and the loom.
+func new_machine():
+	var m = Machine.new()
+	for i in cards.size():
+		m.add_node(Pieces.CARD, 0, 0, {"card": i})
+	m.add_node(Pieces.LOOM)
+	return m
+
+
+## Builds a machine from a compact spec (the "reference" format above).
+func machine_from_spec(spec: Dictionary):
+	var m = new_machine()
+	var names := {"loom": m.find_kind(Pieces.LOOM)}
+	for i in cards.size():
+		names["card%d" % i] = m.find_kind(Pieces.CARD, i)
+	for p in spec.get("pieces", []):
+		var extra := {}
+		if p.has("invention"):
+			extra["invention"] = p["invention"]
+		names[p["id"]] = m.add_node(p["kind"], int(p["x"]), int(p["y"]), extra)
+	for t in spec.get("tubes", []):
+		var a := _endpoint(t[0])
+		var b := _endpoint(t[1])
+		if not names.has(a[0]) or not names.has(b[0]):
+			push_error("%s: unknown tube endpoint in %s" % [id, str(t)])
+			continue
+		m.connect_ports(names[a[0]], a[1], names[b[0]], b[1])
+	return m
+
+
+func reference_machine():
+	return machine_from_spec(reference)
+
+
+## Stars for a solve: 1 solved, 2 within budget, 3 at or under the best known.
+func stars_for(piece_count: int) -> int:
+	if piece_count <= best:
+		return 3
+	if piece_count <= budget:
+		return 2
+	return 1
+
+
+static func _endpoint(s: String) -> Array:
+	var dot := s.find(".")
+	if dot < 0:
+		return [s, 0]
+	return [s.substr(0, dot), int(s.substr(dot + 1))]
+
+
+static func _read_json(path: String):
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return null
+	var j := JSON.new()
+	if j.parse(f.get_as_text()) != OK:
+		push_error("%s:%d: %s" % [path, j.get_error_line(), j.get_error_message()])
+		return null
+	return j.data

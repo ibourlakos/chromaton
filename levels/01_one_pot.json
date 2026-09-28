@@ -1,0 +1,15 @@
+{
+	"id": "01_one_pot",
+	"name": "One Pot of Red",
+	"goal": "Tube the red pot to the loom.",
+	"pieces": ["red_pot"],
+	"inventions": [],
+	"stars": {"budget": 1, "best": 1},
+	"target": ["RRRR", "RRRR", "RRRR"],
+	"card_rule": "",
+	"cards": [],
+	"reference": {
+		"pieces": [{"id": "pot", "kind": "red_pot", "x": 6, "y": 2}],
+		"tubes": [["pot", "loom"]]
+	}
+}
