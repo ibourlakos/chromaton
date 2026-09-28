@@ -249,6 +249,20 @@ func test_editing(level, progress) -> void:
 	wb._reset_pressed()
 	wb._step_pressed()
 	check(wb.sim.tick == 1 and not wb.running, "step advances one tick")
+	var at_one: String = wb.sim.signature()
+	wb._step_pressed()
+	wb._step_pressed()
+	wb._step_back_pressed()
+	wb._step_back_pressed()
+	check(wb.sim.tick == 1 and wb.sim.signature() == at_one, "step back returns to the same state")
+	wb._step_back_pressed()
+	wb._step_back_pressed()
+	check(wb.sim.tick == 0, "step back stops at the start")
+	wb._toggle_run()
+	for n in 8:
+		wb._process(0.25)
+	wb._step_back_pressed()
+	check(not wb.running and wb.sim.tick > 0, "step back pauses a running machine")
 	wb.queue_free()
 
 

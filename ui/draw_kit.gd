@@ -602,6 +602,9 @@ static func icon(ci: CanvasItem, kind: String, c: Vector2, s: float, col: Color)
 		"step":
 			shape(ci, PackedVector2Array([c + Vector2(-9, -8) * s, c + Vector2(4, 0) * s, c + Vector2(-9, 8) * s]), col, col, w * 0.6)
 			line(ci, c + Vector2(9, -8) * s, c + Vector2(9, 8) * s, col, w)
+		"step_back":
+			shape(ci, PackedVector2Array([c + Vector2(9, -8) * s, c + Vector2(-4, 0) * s, c + Vector2(9, 8) * s]), col, col, w * 0.6)
+			line(ci, c + Vector2(-9, -8) * s, c + Vector2(-9, 8) * s, col, w)
 		"reset":
 			ci.draw_arc(c, 9 * s, -0.3 * PI, 1.2 * PI, 20, col, w, true)
 			var tip := c + Vector2(cos(-0.3 * PI), sin(-0.3 * PI)) * 9 * s

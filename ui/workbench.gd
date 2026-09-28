@@ -84,6 +84,7 @@ var drag_moved := false
 
 var btn_run
 var btn_step
+var btn_back
 var btn_reset
 var btn_undo
 var btn_speed := []
@@ -143,8 +144,9 @@ func _ready() -> void:
 	x -= 20
 	btn_run = _control_button("play", x - 58, _toggle_run, Vector2(58, 52))
 	btn_step = _control_button("step", x - 58 - 58, _step_pressed)
-	btn_reset = _control_button("reset", x - 58 - 58 * 2, _reset_pressed)
-	btn_undo = _control_button("undo", x - 58 - 58 * 3 - 12, _undo)
+	btn_back = _control_button("step_back", x - 58 - 58 * 2, _step_back_pressed)
+	btn_reset = _control_button("reset", x - 58 - 58 * 3, _reset_pressed)
+	btn_undo = _control_button("undo", x - 58 - 58 * 4 - 12, _undo)
 	_set_speed(speed)
 
 
@@ -310,6 +312,15 @@ func _step_pressed() -> void:
 	_sync_buttons()
 
 
+## Goes back one tick: the run is deterministic, so replay it to one tick earlier.
+func _step_back_pressed() -> void:
+	var to: int = sim.tick - 1
+	if to < 0:
+		return
+	_rebuild()
+	fast_forward(to, 1.0)
+
+
 func _reset_pressed() -> void:
 	_rebuild()
 
@@ -321,6 +332,8 @@ func _sync_buttons() -> void:
 	btn_run.toggled_on = running
 	btn_run.queue_redraw()
 	btn_undo.disabled = undo_stack.is_empty()
+	btn_back.disabled = sim.tick == 0
+	btn_back.queue_redraw()
 
 
 func _do_step() -> void:
@@ -337,7 +350,7 @@ func _do_step() -> void:
 	phase = 0.0
 	if sim.status != Simulator.Status.RUNNING:
 		running = false
-		_sync_buttons()
+	_sync_buttons()
 
 
 func _process(delta: float) -> void:
@@ -372,6 +385,7 @@ func fast_forward(ticks: int, at_phase := 0.5) -> void:
 			break
 		sim.step()
 	phase = at_phase
+	_sync_buttons()
 
 
 func _finish_solve() -> void:
@@ -424,6 +438,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			_toggle_run()
 		KEY_RIGHT, KEY_S:
 			_step_pressed()
+		KEY_LEFT, KEY_A:
+			_step_back_pressed()
 		KEY_R:
 			_reset_pressed()
 		KEY_Z:
