@@ -1,0 +1,89 @@
+{
+	"id": "smudges",
+	"name": "Smudges",
+	"goal": "Weave the heart. Mind the smudges.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"filter",
+		"invert",
+		"split"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 3,
+		"best": 2
+	},
+	"target": [
+		"WRRWWRRW",
+		"RRRRRRRR",
+		"RRRRRRRR",
+		"WRRRRRRW",
+		"WWRRRRWW",
+		"WWWRRWWW"
+	],
+	"card_rule": "smudges",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"WOOYYORW",
+				"RRORRRRR",
+				"RRRRORRO",
+				"WRRRORRY",
+				"WYROORWW",
+				"YYYRRYWW"
+			],
+			"smudges": [
+				1,
+				2,
+				3,
+				4,
+				5,
+				10,
+				20,
+				23,
+				28,
+				31,
+				33,
+				35,
+				36,
+				40,
+				41,
+				42,
+				45
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "pot",
+				"kind": "red_pot",
+				"x": 3,
+				"y": 5
+			},
+			{
+				"id": "f",
+				"kind": "filter",
+				"x": 6,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"f.0"
+			],
+			[
+				"pot",
+				"f.1"
+			],
+			[
+				"f",
+				"loom"
+			]
+		]
+	}
+}

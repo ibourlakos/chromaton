@@ -1,11 +1,11 @@
 {
-	"id": "keep_what_they_share",
-	"name": "Keep What They Share",
-	"goal": "Weave the house.",
+	"id": "mix_without_mix",
+	"name": "Mix Without Mix",
+	"goal": "Weave the tree.",
 	"pieces": [
 		"red_pot",
 		"shift",
-		"mix",
+		"filter",
 		"invert",
 		"split"
 	],
@@ -15,35 +15,35 @@
 		"best": 4
 	},
 	"target": [
-		"BBBRRBBB",
-		"BBRRRRBB",
-		"BRRRRRRB",
-		"BOOYOOOB",
-		"BOOOOKOB",
-		"GGGGGGGG"
+		"WWGGGGWW",
+		"WGGRGGGW",
+		"GGGGGGRG",
+		"WGGGGGGW",
+		"WWWOOWWW",
+		"WWWOOWWW"
 	],
-	"card_rule": "filter",
+	"card_rule": "mix",
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"BBBOOBPP",
-				"KPKPKOGB",
-				"BRRRORRG",
-				"BOKKKKKB",
-				"GOKOKKKP",
-				"GGGKKGGK"
+				"WWBYYYWW",
+				"WBGRYBYW",
+				"YYBBYBWB",
+				"WBWBBGGW",
+				"WWWOYWWW",
+				"WWWOYWWW"
 			]
 		},
 		{
 			"name": "B",
 			"colors": [
-				"KGGRRKGB",
-				"BGRORRPK",
-				"PPPORKPB",
-				"PKOYOOOP",
-				"PKOKOKOG",
-				"KKKGGKKG"
+				"WWGGBGWW",
+				"WGYWGYGW",
+				"GBYYBGRG",
+				"WGGYGGYW",
+				"WWWROWWW",
+				"WWWWRWWW"
 			]
 		}
 	],
@@ -62,8 +62,8 @@
 				"y": 5
 			},
 			{
-				"id": "mix",
-				"kind": "mix",
+				"id": "f",
+				"kind": "filter",
 				"x": 6,
 				"y": 3
 			},
@@ -85,14 +85,14 @@
 			],
 			[
 				"ia",
-				"mix.0"
+				"f.0"
 			],
 			[
 				"ib",
-				"mix.1"
+				"f.1"
 			],
 			[
-				"mix",
+				"f",
 				"out"
 			],
 			[

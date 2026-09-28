@@ -35,7 +35,7 @@ func _initialize() -> void:
 	for i in levels.size():
 		play_level(levels[i], progress, i)
 	test_tray_lists_only_the_level(by_id["green"], progress)
-	test_not_general(by_id["keep_what_they_share"])
+	test_not_general(by_id["either_not_both"])
 	test_round_rect()
 	test_level_select(levels)
 	if failures == 0:
@@ -150,9 +150,9 @@ func play_level(level, progress, index: int) -> void:
 
 ## An invention the player owns stays out of a level that doesn't list it.
 func test_tray_lists_only_the_level(level, progress) -> void:
-	check(progress.inventions.has("filter") and not "filter" in level.inventions, "%s: set up with an owned, unlisted Filter" % level.id)
+	check(progress.inventions.has("contrast") and not "contrast" in level.inventions, "%s: set up with an owned, unlisted Contrast" % level.id)
 	var wb = open(level, progress)
-	check(tray_point(wb, "inv:filter").x < 0, "%s: an unlisted invention is not in the tray" % level.id)
+	check(tray_point(wb, "inv:contrast").x < 0, "%s: an unlisted invention is not in the tray" % level.id)
 	wb.queue_free()
 
 
@@ -271,9 +271,9 @@ func test_editing(level, progress) -> void:
 
 
 ## An invention must work for every pair of paints, not only the level's cards.
-func test_not_general(level7) -> void:
-	var raw: Dictionary = level7.raw.duplicate(true)
-	raw["invention"]["check"] = "bleach"  # the Filter picture, judged as a Bleach
+func test_not_general(inv_level) -> void:
+	var raw: Dictionary = inv_level.raw.duplicate(true)
+	raw["invention"]["check"] = "bleach"  # the Contrast picture, judged as a Bleach
 	var level = Level.from_dict(raw)
 	var progress = Progress.new()
 	var wb = open(level, progress)

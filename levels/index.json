@@ -5,6 +5,10 @@
 	},
 	{
 		"name": "Pattern Cards",
-		"levels": ["pattern_card", "orange_sun", "black_cat", "third_color", "keep_what_they_share", "wash_out", "the_flower"]
+		"levels": ["pattern_card", "orange_sun", "opposites", "turn_the_wheel", "smudges", "black_cat", "third_color", "wash_out", "the_flower"]
+	},
+	{
+		"name": "Invent What You Know",
+		"levels": ["missing_from_either", "keep_what_they_share", "mix_without_mix", "either_not_both"]
 	}
 ]

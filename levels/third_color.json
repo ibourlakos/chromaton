@@ -1,13 +1,14 @@
 {
 	"id": "third_color",
 	"name": "The Third Color",
-	"goal": "Each pair of cards holds two primaries. Weave the missing one.",
+	"goal": "Weave the kite.",
 	"pieces": [
 		"red_pot",
-		"mix",
 		"shift",
-		"split",
-		"invert"
+		"mix",
+		"filter",
+		"invert",
+		"split"
 	],
 	"inventions": [],
 	"stars": {

@@ -1,20 +1,19 @@
 {
 	"id": "the_flower",
 	"name": "The Flower",
-	"goal": "Keep what the first two cards share, then mix in the third.",
+	"goal": "Weave the flower.",
 	"pieces": [
 		"red_pot",
-		"mix",
 		"shift",
-		"split",
-		"invert"
+		"mix",
+		"filter",
+		"invert",
+		"split"
 	],
-	"inventions": [
-		"filter"
-	],
+	"inventions": [],
 	"stars": {
-		"budget": 7,
-		"best": 5
+		"budget": 6,
+		"best": 4
 	},
 	"target": [
 		"WWWWWWWWWWWWWWWW",
@@ -30,95 +29,142 @@
 		"WWWWWWOOOWWWWWWW",
 		"GGGGGGGGGGGGGGGG"
 	],
-	"card_rule": "filter_mix",
+	"card_rule": "two_of_three",
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"YORBPBWWRPWROBBB",
-				"RYWYGKRKWBPWYKOW",
-				"RPPKYPRORRWYROGY",
-				"PYGRROYYPROOWGYY",
-				"GPYRRWRKYYKWRYPW",
-				"OWBWWBOKBYPGRBWO",
-				"RYWYGGBGGWYYBKKY",
-				"GPROOWKGGKRWWOPW",
-				"WWKGYYOGOYOBRWYG",
-				"BWWRPOKPKRWGGKYK",
-				"YWRBWWKROWWYWKWW",
-				"KWKKGGBKYKGGYGGO"
+				"YRWRBWWWWWBRRYRW",
+				"WRBWYBRRYWWWBGOW",
+				"RRWRWOGOOWWWRYOB",
+				"WYKRWKOWRWRWYYYY",
+				"WPWPWWWOWBWWWOOW",
+				"YYWPGRWGWWWRBWBW",
+				"WWWWRKPBRRWBWWWG",
+				"WWWYWBGWYYRWRWYW",
+				"WKWBWBWWWWRBROBR",
+				"RGRWRYRKOPWWWYYW",
+				"YWOWWYKOYWWWBPYW",
+				"YGGGGGYGBGGYYKGG"
 			]
 		},
 		{
 			"name": "B",
 			"colors": [
-				"PBBYWOORBYGYWYOY",
-				"WBOBRWBRGRYBPYWY",
-				"YKWPBOBYOYKBGYOK",
-				"YWKWGPKBOWBWGYKK",
-				"WKPKGKORRPWBBOYK",
-				"BPYKPRBGOPYWWWGW",
-				"BBBPRKWKWBRPOWWB",
-				"WYBBWYGBWWBRGBWP",
-				"PPWRPRBKWPBWYRRR",
-				"RRKWWKOOOKPWRWPW",
-				"BGBWPGOPKGGPBWGK",
-				"GYGGKKPGKGKPKKKY"
+				"WWWYRWRBBYWWWWWW",
+				"RWYRRYRBWPBRWYWR",
+				"WKBBWRWWRWRWYOYY",
+				"WWPBYWYORWBWKYBO",
+				"YRBPBRRROWWWWWYW",
+				"WBRWWBRYGOWWWPWW",
+				"WRRRWWYYWWYRWWPW",
+				"RWWRYWGGWBWRWRWW",
+				"WWWYWWBGPOWWWWWW",
+				"YRWYWRKYYOOWRWWR",
+				"WWWBRWOYOWWWRWBY",
+				"BKYGBGBGOGGPBGWG"
 			]
 		},
 		{
 			"name": "C",
 			"colors": [
-				"WWWWWWWWWWWWWWWW",
-				"WWWWWWRWWWWWWWYW",
-				"WRWWWWYWRWWWYWWY",
-				"WWRWWWYYWWWWYWYW",
-				"WPWBWWWWWWWWWYYW",
-				"WWWWWWWWWWWWWWWW",
-				"WWWWWWWGWWWWWWWW",
-				"WWWWWWYYWWWWWWWW",
-				"WWWWWWWYWWWWWWWW",
-				"WWWWWWRYOYWWWWWW",
-				"WWWWWWYYWWWWWWWW",
-				"WGWBWYGBBGWYGBWG"
+				"WWWWWOBYWPWGBWWO",
+				"YGRYWWPORWRBWYYG",
+				"YPRKWWYYWYBWYBWY",
+				"RRKWRRWYKOWPYOYY",
+				"WBWYWWKPWWKYGYYG",
+				"WRWWWYBGWWWWRYYY",
+				"KWWBBGWGYWPWGOWR",
+				"GGWBWYYGPRWBYGWW",
+				"BWWWYYWGYBWYWBWW",
+				"BWBPYOOROYWOYBBW",
+				"WWBYWBROOWWWYWWB",
+				"GWBKKWGRGGBGGYGK"
 			]
 		}
 	],
 	"reference": {
 		"pieces": [
 			{
-				"id": "f",
-				"kind": "invention",
-				"invention": "filter",
+				"id": "sb",
+				"kind": "split",
+				"x": 2,
+				"y": 3
+			},
+			{
+				"id": "sc",
+				"kind": "split",
+				"x": 2,
+				"y": 6
+			},
+			{
+				"id": "f1",
+				"kind": "filter",
 				"x": 4,
+				"y": 4
+			},
+			{
+				"id": "m1",
+				"kind": "mix",
+				"x": 5,
+				"y": 6
+			},
+			{
+				"id": "m2",
+				"kind": "mix",
+				"x": 6,
 				"y": 1
 			},
 			{
-				"id": "mix",
-				"kind": "mix",
+				"id": "f2",
+				"kind": "filter",
 				"x": 8,
-				"y": 3
+				"y": 4
 			}
 		],
 		"tubes": [
 			[
-				"card0",
-				"f.0"
-			],
-			[
 				"card1",
-				"f.1"
-			],
-			[
-				"f",
-				"mix.0"
+				"sb"
 			],
 			[
 				"card2",
-				"mix.1"
+				"sc"
 			],
 			[
-				"mix",
+				"sc.0",
+				"f1.1"
+			],
+			[
+				"sb.0",
+				"f1.0"
+			],
+			[
+				"sc.1",
+				"m1.1"
+			],
+			[
+				"sb.1",
+				"m1.0"
+			],
+			[
+				"card0",
+				"m2.0"
+			],
+			[
+				"f1",
+				"m2.1"
+			],
+			[
+				"m1",
+				"f2.1"
+			],
+			[
+				"m2",
+				"f2.0"
+			],
+			[
+				"f2",
 				"loom"
 			]
 		]

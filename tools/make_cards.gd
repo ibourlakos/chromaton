@@ -15,7 +15,14 @@
 ##   third_color  two cards: the two primaries t is not, in random order
 ##   filter       two cards that share exactly t
 ##   bleach       two cards: the first minus the second's paint is t
-##   filter_mix   three cards: what the first two share, mixed with the third, is t
+##   smudges      one card: t with stray yellow on about a third of the stitches
+##                (at least one in the first row); also writes the card's
+##                "smudges", the stitches that carry stray paint
+##   missing      two cards that share exactly the opposite of t
+##   mix          two cards whose mix is t
+##   contrast     two cards: the first random, the second holding the primaries
+##                in exactly one of t and the first
+##   two_of_three three cards: a primary is in t exactly when two or more cards have it
 extends SceneTree
 
 const Paint = preload("res://core/paint.gd")
@@ -23,7 +30,8 @@ const Level = preload("res://core/level.gd")
 
 const CARD_COUNT := {
 	"copy": 1, "remove_red": 1, "unshift": 1, "any_red": 1, "invert": 1,
-	"third_color": 2, "filter": 2, "bleach": 2, "filter_mix": 3,
+	"smudges": 1, "third_color": 2, "filter": 2, "bleach": 2, "missing": 2,
+	"mix": 2, "contrast": 2, "two_of_three": 3,
 }
 const NAMES := ["A", "B", "C"]
 
@@ -56,6 +64,14 @@ func _init() -> void:
 		var cards := []
 		for k in cols.size():
 			cards.append({"name": NAMES[k], "colors": Level.letters(PackedByteArray(cols[k]), width)})
+		if rule == "smudges":
+			# The first row always shows a smudge, so the lesson starts at once.
+			var first := range(width).filter(func(i): return cols[0][i] != target[i])
+			if first.is_empty():
+				var j := rnd(0, salt, 8) % width
+				cols[0][j] = target[j] | Paint.YELLOW
+				cards[0]["colors"] = Level.letters(PackedByteArray(cols[0]), width)
+			cards[0]["smudges"] = range(target.size()).filter(func(i): return cols[0][i] != target[i])
 		d["cards"] = cards
 		var f := FileAccess.open(path, FileAccess.WRITE)
 		f.store_string(JSON.stringify(_ints(d), "\t", false) + "\n")
@@ -121,11 +137,29 @@ static func derive(rule: String, t: int, i: int, salt: int) -> Array:
 			if b == 0:
 				b = sub(Paint.BLACK & ~t, rnd(i, salt, 2))
 			return [t | sub(b, rnd(i, salt, 3)), b]
-		"filter_mix":
-			var c := sub(t, rnd(i, salt, 4))
-			var s := (t & ~c) | sub(t & c, rnd(i, salt, 5))
-			var ab := share(s, i, salt, 6)
-			return [ab[0], ab[1], c]
+		"smudges":
+			return [t | Paint.YELLOW] if rnd(i, salt, 7) % 3 == 0 else [t]
+		"missing":
+			return share(Paint.invert(t), i, salt, 0)
+		"mix":
+			var part := sub(t, rnd(i, salt, 1))
+			return [part, (t & ~part) | sub(part, rnd(i, salt, 2))]
+		"contrast":
+			var any := rnd(i, salt, 1) % 8
+			return [any, Paint.contrast(any, t)]
+		"two_of_three":
+			var out := [0, 0, 0]
+			for p in Paint.PRIMARIES:
+				var r := rnd(i, salt, 10 + p)
+				var holders := []
+				if t & p:
+					# two cards, now and then all three
+					holders = [0, 1, 2] if r % 4 == 0 else [0, 1, 2].filter(func(k): return k != (r >> 3) % 3)
+				elif r % 5 >= 2:
+					holders = [(r >> 3) % 3]  # one card, now and then none
+				for k in holders:
+					out[k] |= p
+			return out
 	return []
 
 

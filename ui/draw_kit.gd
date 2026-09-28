@@ -579,8 +579,9 @@ static func sticker(ci: CanvasItem, c: Vector2, s: float, name: String, age: flo
 # Level furniture
 # ---------------------------------------------------------------------------
 
-## A punched pattern card showing its next colors.
-static func card(ci: CanvasItem, c: Vector2, name: String, upcoming: Array, age: float) -> void:
+## A punched pattern card showing its next colors. `smudged` marks which of
+## them carry stray paint (an ink smudge behind the swatch).
+static func card(ci: CanvasItem, c: Vector2, name: String, upcoming: Array, age: float, smudged: Array = []) -> void:
 	var r := Rect2(c + Vector2(-72, -26), Vector2(144, 52))
 	fill(ci, round_rect(Rect2(r.position + Vector2(3, 4), r.size), 8), P.SHADOW)
 	shape(ci, round_rect(r, 8), P.TAG, P.INK, 2)
@@ -595,9 +596,21 @@ static func card(ci: CanvasItem, c: Vector2, name: String, upcoming: Array, age:
 	var slide := -clampf(1.0 - age, 0, 1) * 18 if age < 1 else 0.0
 	for i in mini(upcoming.size(), 6):
 		var p := Vector2(r.end.x - 20 - i * 18 + slide, r.position.y + 21)
+		if i < smudged.size() and smudged[i]:
+			smudge(ci, p)
 		swatch(ci, p, 7.5 if i > 0 else 8.5, upcoming[i])
 	if upcoming.is_empty():
 		stroke(ci, arc(Vector2(c.x + 10, r.position.y + 21), 6, 0, TAU, 16), P.WARP, 2)
+
+
+## An ink blot on a card swatch's shoulder: this stitch carries stray paint.
+## Neutral ink, never a paint color.
+static func smudge(ci: CanvasItem, c: Vector2) -> void:
+	var ink := Color(P.INK, 0.6)
+	disc(ci, c + Vector2(5, -9), 3.6, ink)
+	disc(ci, c + Vector2(8, -7), 2.4, ink)
+	disc(ci, c + Vector2(2.5, -11.5), 1.8, ink)
+	disc(ci, c + Vector2(9.5, -12), 1.1, ink)
 
 
 ## The loom: cloth with warp threads, wooden frame, woven stitches, shuttle.

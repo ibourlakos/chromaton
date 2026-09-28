@@ -1,7 +1,7 @@
 {
-	"id": "keep_what_they_share",
-	"name": "Keep What They Share",
-	"goal": "Weave the house.",
+	"id": "missing_from_either",
+	"name": "Missing From Either",
+	"goal": "Weave the mushroom.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -11,39 +11,39 @@
 	],
 	"inventions": [],
 	"stars": {
-		"budget": 6,
-		"best": 4
+		"budget": 5,
+		"best": 3
 	},
 	"target": [
-		"BBBRRBBB",
-		"BBRRRRBB",
-		"BRRRRRRB",
-		"BOOYOOOB",
-		"BOOOOKOB",
+		"WRRRRRRW",
+		"RRWRRRWR",
+		"RRRRRRRR",
+		"WWWYYWWW",
+		"WWWYYWWW",
 		"GGGGGGGG"
 	],
-	"card_rule": "filter",
+	"card_rule": "missing",
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"BBBOOBPP",
-				"KPKPKOGB",
-				"BRRRORRG",
-				"BOKKKKKB",
-				"GOKOKKKP",
-				"GGGKKGGK"
+				"KGGGKKGK",
+				"GKKGGKKG",
+				"GGGGGKGG",
+				"KKKPKKKK",
+				"KKKKKKKK",
+				"ORPKPORO"
 			]
 		},
 		{
 			"name": "B",
 			"colors": [
-				"KGGRRKGB",
-				"BGRORRPK",
-				"PPPORKPB",
-				"PKOYOOOP",
-				"PKOKOKOG",
-				"KKKGGKKG"
+				"KKKKGGKK",
+				"KGKKKGKK",
+				"KKKKKGKK",
+				"KKKKPKKK",
+				"KKKPPKKK",
+				"POORORKP"
 			]
 		}
 	],
@@ -64,13 +64,7 @@
 			{
 				"id": "mix",
 				"kind": "mix",
-				"x": 6,
-				"y": 3
-			},
-			{
-				"id": "out",
-				"kind": "invert",
-				"x": 8,
+				"x": 7,
 				"y": 3
 			}
 		],
@@ -93,10 +87,6 @@
 			],
 			[
 				"mix",
-				"out"
-			],
-			[
-				"out",
 				"loom"
 			]
 		]

@@ -1,0 +1,49 @@
+{
+	"id": "opposites",
+	"name": "Opposites",
+	"goal": "Weave the thread.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"invert",
+		"split"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 2,
+		"best": 1
+	},
+	"target": [
+		"KGPBOYRW"
+	],
+	"card_rule": "invert",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"WRYOBPGK"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "inv",
+				"kind": "invert",
+				"x": 5,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"inv"
+			],
+			[
+				"inv",
+				"loom"
+			]
+		]
+	}
+}

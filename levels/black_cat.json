@@ -4,8 +4,10 @@
 	"goal": "Weave the black cat.",
 	"pieces": [
 		"red_pot",
-		"mix",
 		"shift",
+		"mix",
+		"filter",
+		"invert",
 		"split"
 	],
 	"inventions": [],

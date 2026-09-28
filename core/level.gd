@@ -5,7 +5,8 @@
 ## Cards are read and the loom is woven row by row, left to right.
 ##
 ## JSON fields: id, name, goal, pieces (tray kinds), inventions (invention ids
-## allowed in the tray), target (rows), cards ([{name, colors: rows}]),
+## allowed in the tray), target (rows), cards ([{name, colors: rows, optional
+## smudges: [stitch indices that carry stray paint]}]),
 ## stars {budget, best}, optional invention {id, name, check} on invention
 ## levels, reference (a solution: {pieces: [{id, kind, x, y}], tubes:
 ## [[from, to]]}, endpoints written "name" or "name.port", with "card0",
@@ -30,6 +31,7 @@ var rows := 0
 var target := PackedByteArray()
 var cards: Array = []
 var card_names: Array = []
+var smudges: Array = []  # per card, the stitch indices marked as stray paint
 var pieces: Array = []
 var inventions: Array = []
 var invention := {}
@@ -101,6 +103,7 @@ static func from_dict(d: Dictionary):
 		if seq.size() != level.target.size():
 			level.error = "%s: card %s has %d colors, loom has %d stitches" % [level.id, card.get("name", ""), seq.size(), level.target.size()]
 		level.cards.append(seq)
+		level.smudges.append(card.get("smudges", []).map(func(i): return int(i)))
 	level.pieces = d.get("pieces", []).duplicate()
 	level.inventions = d.get("inventions", []).duplicate()
 	level.invention = d.get("invention", {}).duplicate()

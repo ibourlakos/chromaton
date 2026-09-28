@@ -693,9 +693,11 @@ func _draw_bench() -> void:
 		if n["kind"] == Pieces.CARD:
 			var c: int = n["card"]
 			var upcoming := []
+			var smudged := []
 			for k in range(sim.card_cursor[c], mini(sim.card_cursor[c] + 6, level.cards[c].size())):
 				upcoming.append(level.cards[c][k])
-			K.card(self, node_center(id), level.card_names[c], upcoming, _age(id))
+				smudged.append(k in level.smudges[c])
+			K.card(self, node_center(id), level.card_names[c], upcoming, _age(id), smudged)
 	# Tubes
 	for i in machine.tubes.size():
 		if drag == "tube" and i == drag_detach and drag_moved:

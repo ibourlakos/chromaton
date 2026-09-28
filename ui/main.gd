@@ -146,6 +146,7 @@ func _screenshot(args: Dictionary) -> void:
 	get_window().size = Vector2i(DESIGN)
 	# A throwaway progress with the reference inventions; the real save is untouched.
 	progress = Progress.new()
+	progress.unlock_all = args.has("unlock-all")
 	for level in levels:
 		if not level.invention.is_empty():
 			progress.inventions[level.invention["id"]] = Invention.package(level, level.reference_machine(), progress.inventions)

@@ -1,0 +1,138 @@
+{
+	"id": "either_not_both",
+	"name": "Either, Not Both",
+	"goal": "Weave the butterfly. Your machine becomes a new piece.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"filter",
+		"invert",
+		"split"
+	],
+	"inventions": [],
+	"invention": {
+		"id": "contrast",
+		"name": "Contrast",
+		"check": "contrast"
+	},
+	"stars": {
+		"budget": 6,
+		"best": 4
+	},
+	"target": [
+		"PPWWWWPP",
+		"PPPWWPPP",
+		"PYPKKPYP",
+		"WPPKKPPW",
+		"PPWKKWPP",
+		"PPWWWWPP"
+	],
+	"card_rule": "contrast",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"GRBGROKR",
+				"KPKYYWRB",
+				"PGWGOYGB",
+				"KYGPBOWK",
+				"YGORPKOO",
+				"GPWOYKGP"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"OBBGROYB",
+				"YWYYYPBR",
+				"WBPRBKBR",
+				"KKOYOGPK",
+				"KOOGYKGG",
+				"OWWOYKOW"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "sa",
+				"kind": "split",
+				"x": 2,
+				"y": 1
+			},
+			{
+				"id": "sb",
+				"kind": "split",
+				"x": 2,
+				"y": 5
+			},
+			{
+				"id": "m",
+				"kind": "mix",
+				"x": 5,
+				"y": 1
+			},
+			{
+				"id": "f1",
+				"kind": "filter",
+				"x": 4,
+				"y": 5
+			},
+			{
+				"id": "inv",
+				"kind": "invert",
+				"x": 6,
+				"y": 5
+			},
+			{
+				"id": "f2",
+				"kind": "filter",
+				"x": 8,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"sa"
+			],
+			[
+				"card1",
+				"sb"
+			],
+			[
+				"sa.0",
+				"m.0"
+			],
+			[
+				"sb.0",
+				"m.1"
+			],
+			[
+				"sa.1",
+				"f1.0"
+			],
+			[
+				"sb.1",
+				"f1.1"
+			],
+			[
+				"f1",
+				"inv"
+			],
+			[
+				"m",
+				"f2.0"
+			],
+			[
+				"inv",
+				"f2.1"
+			],
+			[
+				"f2",
+				"loom"
+			]
+		]
+	}
+}

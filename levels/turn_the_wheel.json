@@ -1,0 +1,49 @@
+{
+	"id": "turn_the_wheel",
+	"name": "Turn the Wheel",
+	"goal": "Weave the thread.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"invert",
+		"split"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 2,
+		"best": 1
+	},
+	"target": [
+		"WYBGROPK"
+	],
+	"card_rule": "unshift",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"WRYOBPGK"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "sh",
+				"kind": "shift",
+				"x": 5,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"sh"
+			],
+			[
+				"sh",
+				"loom"
+			]
+		]
+	}
+}

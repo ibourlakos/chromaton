@@ -91,7 +91,7 @@ Findings:
 - Filter arrives early as a critter (a sieve tub that holds back whatever the two paints don't share). With a pot it works as a mask (`Filter(card, Red)` keeps only a picture's red), which makes for better early card levels and suits noisy cards (§5.1).
 - The De Morgan discovery isn't lost; it moves to the **"invent what you know"** chapter, where the player rebuilds critters they already use: *"one of these critters can be built from the others."* Filter from Mix and Invert, and its mirror, Mix from Filter and Invert.
 - One more critter to draw and animate than the lean kit, but far less than the full kit's three extra pots.
-- Built so far (2026-09-28): the Filter critter and piece, offered in Wash Out. The campaign (§5.1) still needs reordering around it.
+- Built (2026-09-28): the Filter critter and piece. It arrives in Smudges, and from there every tray offers the whole kit (chapter 3's trays each leave one critter out, §5.1).
 
 *Superseded recommendation, kept for the reasoning:* **the lean kit.** Three vat critters and a pot. *"Everything in Chromaton is made from three critters and a pot of red paint."*
 
@@ -194,24 +194,14 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 | 7 | Green | Invert. Mixing yellow and blue is ★★; Invert(red) is ★★★ | + Invert | 4 | 2 |
 | 8 | Nothing at All | White: make black, then flip it | all | 6 | 4 |
 
-✅ **The pattern card gets its own level**, then the card levels follow:
+✅ **The pattern card gets its own level** (The Pattern Card: tube a card straight to the loom and the first picture appears, a sailboat; no pieces, the hand hint shows the tube). The card levels that follow are the 21-level campaign under "The next campaign" below.
 
-| # | Level | Teaches | Loom | ★★ budget | ★★★ best |
-|---|---|---|---|---|---|
-| 9 | The Pattern Card | A card is paint that changes over time: tube it straight to the loom and the first picture appears (a sailboat). No pieces; the hand hint shows the tube | 8×6 | – | 0 |
-| 10 | Orange Sun | A card meets the red pot: Mix | 6×4 | 3 | 2 |
-| 11 | Black Cat | Split and Shift a card; black = every primary (a red/white card weaves a black cat) | 6×4 | 6 | 4 |
-| 12 | The Third Color | Invert(Mix(a, b)), two cards | 8×6 | 3 | 2 |
-| 13 | Keep What They Share | **Invention level:** the player builds Filter | 8×6 | 6 | 4 |
-| 14 | Wash Out | Bleach: the Filter critter with a card as the mask, `Filter(A, Invert B)` | 8×6 | 3 | 2 |
-| 15 | The Flower | Filter of two cards mixed with a third (the mockup flower) | 16×12 | 7 | 5 |
-
-- The v0.1 levels "Yellow from Red" (Shift a card) and "Opposites" (Invert a card) were cut: chapter 1 teaches both. Their files were removed.
+- The v0.1 levels "Yellow from Red" (Shift a card) and "Opposites" (Invert a card) were cut: chapter 1 teaches both. Their files were removed. Opposites came back as a thread level (below).
 - ✅ **Each level's tray is an explicit list.** A level offers only the pieces and inventions it names, so tools the player has earned (future color pots, inventions) never trample a puzzle that is meant to go without them. An invention also has to be owned to appear.
 - Level ids are stable names (`green`, `black_cat`), not numbers; the number shown is the level's place in `index.json`, so levels can be inserted without renaming files or breaking saves.
 - Pattern cards are derived from each target picture by `tools/make_cards.gd` (seeded by level id, so reruns match). The solver also proves the card data has no cheap shortcut.
 - 🟡 Black Cat uses a red/white card instead of the red pot, so the black cat is a picture and not a plain black cloth.
-- 🟡 Levels unlock in order. The level select shows four per row, so the paint box fills the first two rows and the card levels the last two.
+- ✅ **Chapters** (built 2026-09-28): `levels/index.json` lists chapters, each a name and its levels. The level select shows one chapter per page (four tags per row, twelve at most), turned with arrows, with a dot per chapter; it opens on the chapter the player was last in. Level numbers run on across chapters.
 - ✅ **Every other color pot is an invention** (designer, 2026-09-28): solving a paint-box level earns a pot of that color, a piece that makes that paint every tick. Like any invention it costs the pieces of the machine that made it (Yellow 2, Blue 3, Orange 4, ...), and it appears only where a level lists it.
 - ✅ **The pots collapse into one tray slot** (designer): the tray shows one pot slot instead of up to eight. ✅ Its form: tapping the slot fans out the owned pots above the shelf; drag one out (touch-first, no hover). A dropdown list would look like desktop UI.
 - ✅ A pot's price is the cheapest the player has made it for, so going back for ★★★ makes the pot cheaper. Star thresholds assume the cheapest price.
@@ -229,32 +219,35 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 - ✅ Solving a level opens the next two, so one hard level never walls off the rest.
 - ✅ With Filter as a piece, Wash Out becomes `Filter(A, Invert B)` (2 pieces). The Flower gets a new rule, **two of three**: a primary shows if at least two cards have it (4 pieces, `Filter(Mix(C, B), Mix(A, Filter(C, B)))`). Fallback if playtests find it too hard: `Mix(C, Filter(A, Invert B))`, 3 pieces.
 
-🟡 **Noisy cards** (designer's idea): cards carrying stray paint on some stitches that the machine must clean up. With today's pieces every card drop weaves a stitch, so stray paint is *recolored* (e.g. `Filter(card, Red)`), not skipped; skipping stitches needs routing pieces (§2.3), later. A first level, **Smudges**: a red-and-white card with yellow smudges, cleaned by `Filter(A, Red)`. Stray stitches on a card are marked with a neutral ink smudge (never a signal hue), so it's clear where the noise is.
+🟡 **Noisy cards** (designer's idea): cards carrying stray paint on some stitches that the machine must clean up. With today's pieces every card drop weaves a stitch, so stray paint is *recolored* (e.g. `Filter(card, Red)`), not skipped; skipping stitches needs routing pieces (§2.3), later. ✅ Built: **Smudges**, a red-and-white card with yellow smudges on about a third of its stitches (always some in the first row), cleaned by `Filter(A, Red)`. Stray stitches on a card are marked with a neutral ink blot (never a signal hue), so it's clear where the noise is; the card JSON lists them (`"smudges"`).
 
-✅ **The next campaign** (approved 2026-09-28; not built yet). Chapter 1, the paint box (1–8), stays as above, but each level now earns its pot. Cheapest counts come from a search over every input paint; the solver sets the budgets once card data exists.
+✅ **The next campaign** (approved 2026-09-28; **built** 2026-09-28, pots as inventions still to come). Chapter 1, the paint box (1–8), stays as above, but each level now earns its pot. Cheapest counts are proven by the solver ([docs/level-report.md](docs/level-report.md)). Goal lines say only what to weave ("Weave the heart. Mind the smudges."), never the rule.
 
-*Chapter 2, cards:*
+*Chapter 2, Pattern Cards.* From Smudges on, every tray is the whole kit (pot, Shift, Mix, Filter, Invert, Split); before it, everything but Filter (Orange Sun: pot and Mix).
 
-| # | Level | Teaches | Cheapest |
-|---|---|---|---|
-| 9 | The Pattern Card | A card is paint over time | 0 |
-| 10 | Orange Sun | Mix a card with the pot | 2 |
-| 11 | **Opposites** (thread) | Invert on every paint | 1 `Invert(A)` |
-| 12 | **Turn the Wheel** (thread) | Shift on every paint | 1 `Shift(A)` |
-| 13 | **Smudges** | **Filter arrives**; noisy cards | 2 `Filter(A, Red)` |
-| 14 | Black Cat | Split and Shift a card | 4 |
-| 15 | The Third Color | Invert(Mix) | 2 |
-| 16 | Wash Out | Filter with a card as the mask | 2 `Filter(A, Invert B)` |
-| 17 | **The Flower**, rule: **two of three** | A primary shows if at least two cards have it | 4 |
+| # | Level | Teaches | Loom | ★★ budget | ★★★ best |
+|---|---|---|---|---|---|
+| 9 | The Pattern Card | A card is paint over time | 8×6 | – | 0 |
+| 10 | Orange Sun | Mix a card with the pot | 6×4 | 3 | 2 `Mix(A, Red)` |
+| 11 | **Opposites** (thread) | Invert on every paint | 8×1 | 2 | 1 `Invert(A)` |
+| 12 | **Turn the Wheel** (thread) | Shift on every paint | 8×1 | 2 | 1 `Shift(A)` |
+| 13 | **Smudges** (a heart) | **Filter arrives**; noisy cards | 8×6 | 3 | 2 `Filter(A, Red)` |
+| 14 | Black Cat | Split and Shift a card | 6×4 | 6 | 4 |
+| 15 | The Third Color (a kite) | Invert(Mix) | 8×6 | 3 | 2 `Invert(Mix(A, B))` |
+| 16 | Wash Out (a fish) | Filter with a card as the mask | 8×6 | 3 | 2 `Filter(A, Invert B)` |
+| 17 | **The Flower**, rule: **two of three** | A primary shows if at least two cards have it | 16×12 | 6 | 4 `Filter(Mix(C, B), Mix(A, Filter(C, B)))` |
 
-*Chapter 3, invent what you know* (each tray leaves out one critter):
+*Chapter 3, Invent What You Know* (each tray leaves out one critter):
 
-| # | Level | Rebuild | Cheapest |
-|---|---|---|---|
-| 18 | **Missing From Either** | Stepping stone, no Filter | 3 |
-| 19 | Keep What They Share | Filter from Mix and Invert | 4 |
-| 20 | **Mix Without Mix** | The mirror image | 4 |
-| 21 | **Either, Not Both** | A new invention: **Contrast** | 4 `Filter(Mix(A, B), Invert(Filter(A, B)))` |
+| # | Level | Rebuild | Tray leaves out | Loom | ★★ budget | ★★★ best |
+|---|---|---|---|---|---|---|
+| 18 | **Missing From Either** (a mushroom) | Stepping stone | Filter | 8×6 | 5 | 3 `Mix(Invert A, Invert B)` |
+| 19 | Keep What They Share (a house) | Filter from Mix and Invert | Filter | 8×6 | 6 | 4 |
+| 20 | **Mix Without Mix** (a tree) | The mirror image | Mix | 8×6 | 6 | 4 `Invert(Filter(Invert A, Invert B))` |
+| 21 | **Either, Not Both** (a butterfly) | A new invention: **Contrast** | – | 8×6 | 6 | 4 `Filter(Mix(A, B), Invert(Filter(A, B)))` |
+
+- Card rules added to `tools/make_cards.gd`: `smudges`, `two_of_three`, `missing` (two cards sharing exactly the opposite of the target), `mix`, `contrast` (card A random, B = what makes the difference).
+- The Filter sticker is gone from the campaign (it shared a name with the Filter critter); the tests still build one from Keep What They Share as a fixture, so inventions inside inventions stay covered.
 
 - ✅ Rebuilding a critter earns a Swatch Book page on what that critter is made of, plus stars; no sticker (the critter is already in the tray). The chapter ends with a real invention, Contrast, which keeps the invention loop going into chapter 4.
 - ✅ Threads are 8 stitches, every paint once, in the Swatch Book's order, so the cloth reads as a lookup row and fills the piece's Swatch Book page in one run.

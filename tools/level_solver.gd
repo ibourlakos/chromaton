@@ -48,7 +48,7 @@ func _init() -> void:
 	lines.append("godot_console --headless --path . --script res://tools/level_solver.gd")
 	lines.append("```")
 	lines.append("")
-	lines.append("**Cheapest** is the fewest pieces any machine needs to weave the level (splits free where the level offers them, otherwise each result feeds one piece; the Filter invention at its reference price of %d). It is found by trying every machine the level's pieces can build, cheapest first. Three stars need the cheapest count; two stars need the budget." % int(inventions.get("filter", {}).get("cost", 0)))
+	lines.append("**Cheapest** is the fewest pieces any machine needs to weave the level (splits free where the level offers them, otherwise each result feeds one piece; an invention at its reference price). It is found by trying every machine the level's pieces can build, cheapest first. Three stars need the cheapest count; two stars need the budget.")
 	lines.append("")
 	lines.append("| Level | Stitches | Cards | Card combos | Reference | Ticks | Cheapest | Cheapest machine | ★★ budget | ★★★ best |")
 	lines.append("|---|---|---|---|---|---|---|---|---|---|")

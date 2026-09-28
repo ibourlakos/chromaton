@@ -46,7 +46,7 @@ func reference_inventions(levels: Array) -> Dictionary:
 
 
 func test_loading(levels: Array) -> void:
-	check(levels.size() == 15, "fifteen campaign levels (got %d)" % levels.size())
+	check(levels.size() == 21, "twenty-one campaign levels (got %d)" % levels.size())
 	var ids := {}
 	for level in levels:
 		check(level.error == "", "level loads cleanly: %s %s" % [level.id, level.error])
@@ -67,8 +67,11 @@ func test_loading(levels: Array) -> void:
 			check(p.get("invention", "") == "" or p["invention"] in level.inventions, "%s reference uses an offered invention" % level.id)
 	check(Level.parse_rows(["WRYOBPGK"]) == PackedByteArray([0, 1, 2, 3, 4, 5, 6, 7]), "color letters")
 	check(Level.letters(PackedByteArray([1, 2, 3, 4]), 2) == ["RY", "OB"], "letters round trip")
+	var smudgy = levels.filter(func(l): return l.id == "smudges")[0]
+	var stray := range(smudgy.size()).filter(func(i): return smudgy.cards[0][i] != smudgy.target[i])
+	check(smudgy.smudges[0] == stray and stray.any(func(i): return i < smudgy.cols), "Smudges marks exactly its stray stitches, some in the first row")
 	var inv_levels := levels.filter(func(l): return not l.invention.is_empty())
-	check(inv_levels.size() == 1 and inv_levels[0].invention["id"] == "filter", "one invention level, and it makes Filter")
+	check(inv_levels.size() == 1 and inv_levels[0].invention["id"] == "contrast", "one invention level, and it makes Contrast")
 
 
 func test_references(levels: Array, inventions: Dictionary) -> void:
@@ -95,10 +98,12 @@ func formula(f: String, a: int, b: int, c: int) -> int:
 			return Paint.shift(Paint.RED)
 		"bleach_swapped":
 			return Paint.bleach(b, a)
-		"third_no_invert":
+		"mix_ab":
 			return Paint.mix(a, b)
-		"flower_swapped":
-			return Paint.mix(Paint.filter(a, c), b)
+		"shift_a":
+			return Paint.shift(a)
+		"flower_half":
+			return Paint.mix(Paint.filter(a, b), c)
 	return -1
 
 
@@ -111,15 +116,17 @@ func test_wrong_solutions(levels: Array) -> void:
 		["one_pot", {"pieces": [{"id": "p", "kind": "red_pot", "x": 0, "y": 0}, {"id": "h", "kind": "shift", "x": 0, "y": 1}], "tubes": [["p", "h"], ["h", "loom"]]}, "red_shift"],
 		["orange_sun", {"pieces": [], "tubes": [["card0", "loom"]]}, "A"],
 		["green", {"pieces": [{"id": "p", "kind": "red_pot", "x": 0, "y": 0}, {"id": "h", "kind": "shift", "x": 0, "y": 1}], "tubes": [["p", "h"], ["h", "loom"]]}, "red_shift"],
-		["third_color", {"pieces": [{"id": "m", "kind": "mix", "x": 0, "y": 0}], "tubes": [["card0", "m.0"], ["card1", "m.1"], ["m", "loom"]]}, "third_no_invert"],
+		["third_color", {"pieces": [{"id": "m", "kind": "mix", "x": 0, "y": 0}], "tubes": [["card0", "m.0"], ["card1", "m.1"], ["m", "loom"]]}, "mix_ab"],
 		["keep_what_they_share", {"pieces": [], "tubes": [["card1", "loom"]]}, "B"],
 		["wash_out", {"pieces": [
 			{"id": "ia", "kind": "invert", "x": 0, "y": 0}, {"id": "m", "kind": "mix", "x": 0, "y": 1}, {"id": "o", "kind": "invert", "x": 0, "y": 2}],
 			"tubes": [["card1", "ia"], ["ia", "m.0"], ["card0", "m.1"], ["m", "o"], ["o", "loom"]]}, "bleach_swapped"],
-		["the_flower", {"pieces": [
-			{"id": "ia", "kind": "invert", "x": 0, "y": 0}, {"id": "ib", "kind": "invert", "x": 1, "y": 0},
-			{"id": "m", "kind": "mix", "x": 0, "y": 1}, {"id": "o", "kind": "invert", "x": 0, "y": 2}, {"id": "m2", "kind": "mix", "x": 0, "y": 3}],
-			"tubes": [["card0", "ia"], ["card2", "ib"], ["ia", "m.0"], ["ib", "m.1"], ["m", "o"], ["o", "m2.0"], ["card1", "m2.1"], ["m2", "loom"]]}, "flower_swapped"],
+		["the_flower", {"pieces": [{"id": "f", "kind": "filter", "x": 0, "y": 0}, {"id": "m", "kind": "mix", "x": 0, "y": 1}],
+			"tubes": [["card0", "f.0"], ["card1", "f.1"], ["f", "m.0"], ["card2", "m.1"], ["m", "loom"]]}, "flower_half"],
+		["opposites", {"pieces": [{"id": "h", "kind": "shift", "x": 0, "y": 0}], "tubes": [["card0", "h"], ["h", "loom"]]}, "shift_a"],
+		["smudges", {"pieces": [], "tubes": [["card0", "loom"]]}, "A"],
+		["missing_from_either", {"pieces": [{"id": "m", "kind": "mix", "x": 0, "y": 0}], "tubes": [["card0", "m.0"], ["card1", "m.1"], ["m", "loom"]]}, "mix_ab"],
+		["either_not_both", {"pieces": [{"id": "m", "kind": "mix", "x": 0, "y": 0}], "tubes": [["card0", "m.0"], ["card1", "m.1"], ["m", "loom"]]}, "mix_ab"],
 	]
 	for case in cases:
 		var level = by_id[case[0]]
@@ -161,14 +168,14 @@ func test_progress(levels: Array) -> void:
 	var rec: Dictionary = p.level_record(ids[0])
 	check(rec["best_pieces"] == 3 and rec["best_ticks"] == 30 and rec["stars"] == 2, "best pieces and ticks kept separately")
 
-	var level7 = levels.filter(func(l): return l.id == "keep_what_they_share")[0]
-	p.inventions["filter"] = Invention.package(level7, level7.reference_machine(), {})
-	p.store_machine(level7.id, level7.reference_machine().to_dict())
+	var inv_level = levels.filter(func(l): return l.id == "either_not_both")[0]
+	p.inventions["contrast"] = Invention.package(inv_level, inv_level.reference_machine(), {})
+	p.store_machine(inv_level.id, inv_level.reference_machine().to_dict())
 	var path := "user://test_progress.json"
 	check(p.save(path), "progress saves")
 	var q = Progress.load_from(path)
 	check(q.to_dict() == p.to_dict(), "progress loads back the same")
-	check(q.inventions["filter"]["cost"] == 4 and q.inventions["filter"]["inputs"] == 2, "saved invention keeps its ports and price")
+	check(q.inventions["contrast"]["cost"] == 4 and q.inventions["contrast"]["inputs"] == 2, "saved invention keeps its ports and price")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	var fresh = Progress.load_from("user://no_such_save.json")
 	check(fresh.levels.is_empty(), "a missing save starts fresh")

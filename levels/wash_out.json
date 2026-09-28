@@ -1,14 +1,14 @@
 {
 	"id": "wash_out",
 	"name": "Wash Out",
-	"goal": "Weave the first card with the second card's paint washed out.",
+	"goal": "Weave the fish.",
 	"pieces": [
 		"red_pot",
+		"shift",
 		"mix",
 		"filter",
-		"shift",
-		"split",
-		"invert"
+		"invert",
+		"split"
 	],
 	"inventions": [],
 	"stars": {
