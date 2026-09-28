@@ -85,9 +85,15 @@ Findings:
   - a kit built only on Contrast can only toggle, so it can't mix or filter (proven).
 - Complete kits verified: NOR + Shift + Red pot; Mix + Invert + Shift + Red pot; Mix + Filter + Invert + Shift + 3 pots; Mix + Filter + Contrast + Shift + Red pot. Random machines of 1–3 inputs were built from each kit's own pieces and matched their tables exactly.
 
-### 2.5 Starting pieces 🟡 (recommendation pending designer approval)
+### 2.5 Starting pieces
 
-**Recommended: the lean kit.** Three vat critters and a pot. *"Everything in Chromaton is made from three critters and a pot of red paint."*
+✅ **Decided (2026-09-28): the middle kit.** Red pot, **Mix, Filter, Invert, Shift**, plus the free Split and Catch pot. Only the red pot is placeable.
+- Filter arrives early as a critter (a sieve tub that holds back whatever the two paints don't share). With a pot it works as a mask (`Filter(card, Red)` keeps only a picture's red), which makes for better early card levels and suits noisy cards (§5.1).
+- The De Morgan discovery isn't lost; it moves to the **"invent what you know"** chapter, where the player rebuilds critters they already use: *"one of these critters can be built from the others."* Filter from Mix and Invert, and its mirror, Mix from Filter and Invert.
+- One more critter to draw and animate than the lean kit, but far less than the full kit's three extra pots.
+- Not built yet: the prototype still ships the lean kit below, and the campaign (§5.1) needs reordering around Filter.
+
+*Superseded recommendation, kept for the reasoning:* **the lean kit.** Three vat critters and a pot. *"Everything in Chromaton is made from three critters and a pot of red paint."*
 
 | Piece | In → out | Behaviour | Critter idea | Signature animation |
 |---|---|---|---|---|
@@ -100,7 +106,7 @@ Findings:
 
 - **Filter becomes the first invention** (Act 2): "keep only what both share" = invert both, mix, invert back. It takes 4 pieces and is a real "aha" moment.
 - Levels may still provide extra pots (yellow, white, ...) as givens. Only the red pot is a placeable piece.
-- 🟡 **Prototype v0.1 ships the lean kit** (Red pot, Mix, Invert, Shift, free Split). Pieces are one data table (`core/pieces.gd`), so adding Filter as a piece is a one-line change if the full kit wins.
+- **Prototype v0.1 ships the lean kit** (Red pot, Mix, Invert, Shift, free Split). Pieces are one data table (`core/pieces.gd`), so adding Filter as a piece is a one-line change (plus its critter).
 - Trade-off: in the lean kit, routing machines cost more (Three-way Switch 35 pieces vs 21 with Filter as a piece; see report §4). Fewer critters to design and animate outweighs this (see §7.2 risk). Placed recipes appear as one block anyway, so the price only shows on the optimizer's scoreboard.
 - Alternative (full kit): Mix, Filter, Invert, Shift + 3 pots. Cheaper machines, but 5 critters and 3 pot variants, and the De Morgan discovery is lost.
 
@@ -131,7 +137,7 @@ Notes:
 - **Dye works + loom** gives the strongest story (Jacquard → Babbage, see §4).
 - **Waterworks** fits vertical flow literally.
 
-Working vocabulary until decided: *vat* (component), *thread* (wire), *braid* (bus: parallel threads), *recipe*, *machine*, *Pattern Book* (the player's collection of inventions).
+Working vocabulary until decided: *vat* (component), *thread* (wire), *braid* (bus: parallel threads), *recipe*, *machine*, *Swatch Book* (§5.7; its Inventions tab holds the player's inventions).
 
 Buses: ✅ parallel = a **braid** of N threads; serial = a **sequence of colors over time** on one thread.
 
@@ -208,8 +214,23 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 - 🟡 Levels unlock in order. The level select shows four per row, so the paint box fills the first two rows and the card levels the last two.
 - 🟡 Idea for later: each solved paint level puts a pot of that color on a paint-box shelf; a full shelf closes the chapter. Earned pots could later become tray pieces (priced like inventions, at the pieces that made them), offered only where a level lists them.
 
-**Inventions in the prototype** ✅: solving an invention level saves the player's own machine to the Pattern Book as a new piece. Its cards become input ports (in card order), the loom its output port; it is drawn as a sticker with its name, behaves exactly like the machine inside (same timing), and costs the total of its pieces.
-- 🟡 Before an invention is accepted it is run on every combination of input paints (64 for two inputs). A machine that only happens to match the level's cards is refused with a short note.
+**Playtest findings (2026-09-28)** and what they changed:
+
+✅ **Teach what each piece does to every paint.** The paint box only shows Shift and Invert acting on primaries and black, so the card levels asked for rules nobody had seen (Keep What They Share needs Invert on any paint). Two ways at once, because not everyone learns the same way:
+- Two short levels weave a single **thread** (one row), not a full picture: **Opposites** (a card of all eight paints through Invert) and **Turn the Wheel** (the same card through Shift). Each thread shows every paint beside what it becomes. A level needn't weave a full tapestry, especially early on.
+- **Glyph dots show the rule when a piece fires:** Shift turns the dots one notch; Invert empties the filled dots and fills the empty ones.
+
+✅ **Card levels don't write the rule in the goal line.** The cards and the design card carry it; the cloth is evidence to read, not just a check. Measured: many cheap machines match the first stitch (83 on Keep What They Share, 2,925 on The Flower) but only one weaves the whole cloth; most wrong ones fail by stitch 2–4, a few only at stitch 79. `tools/make_cards.gd` should order the card data so the cheap wrong machines fail within the first row.
+
+✅ **Keep What They Share (the De Morgan level) was too steep and blocked the campaign.** Resolved by **Filter first, reinvent it later** (§2.5): Filter is a starting critter, and building it moves to the "invent what you know" chapter, opened by a stepping-stone level, **Missing From Either** (`Mix(Invert A, Invert B)`, 3 pieces), so Filter is "the opposite of what you just built". Nothing later needs the invention.
+- 🟡 Solving a level opens the next two, so one hard level never walls off the rest.
+- ❓ With Filter as a piece, Wash Out becomes `Filter(A, Invert B)` (2 pieces) and The Flower `Mix(C, Filter(A, B))` (2 pieces). The finale needs a harder rule; redesign once the new order settles.
+
+🟡 **Noisy cards** (designer's idea): cards carrying stray paint on some stitches that the machine must clean up. With today's pieces every card drop weaves a stitch, so stray paint is *recolored* (e.g. `Filter(card, Red)`), not skipped; skipping stitches needs routing pieces (§2.3), later. A first level, **Smudges**: a red-and-white card with yellow smudges, cleaned by `Filter(A, Red)`. Stray stitches on a card are marked with a neutral ink smudge (never a signal hue), so it's clear where the noise is.
+
+**Inventions in the prototype** ✅: solving an invention level saves the player's own machine to the Pattern Book (the Swatch Book's Inventions tab, §5.7) as a new piece. Its cards become input ports (in card order), the loom its output port; it is drawn as a sticker with its name and costs the total of its pieces.
+- ✅ **An invention is one piece that takes one tick** (built 2026-09-28). Before, it ran the machine inside, so a Filter sticker took 3 ticks and hid drops in flight: paint seemed to vanish into it and come out late. The simulator stores the invention's answer for every combination of input paints and looks it up. Pieces still count everything inside; Ticks improve, which rewards inventing. Stateful machines (memory) will need their own rule.
+- ✅ Before an invention is accepted it is run on every combination of input paints (64 for two inputs). A machine that only happens to match the level's cards is refused with a short note. The one-tick lookup depends on this check.
 - 🟡 Re-solving an invention level replaces the invention with the newest machine. The name comes from the level; players don't name inventions yet.
 
 ### 5.2 Optimization layer ✅
@@ -235,6 +256,14 @@ Customer orders arrive as incoming color streams with deadlines; the player patc
 ⚠️ Real-time pressure fights the thoughtful-puzzler mindset → offer slow-down/pause, keep it a separate later mode.
 
 **Mode build order:** Campaign → Optimization layer → Creative loom → Commissions.
+
+### 5.7 The Swatch Book ✅
+An in-game book that explains how the game works: the eight paints and how they mix, the loom's timing (ticks, one-drop tubes, when a piece fires or waits) and every piece. Named after the swatch books textile mills kept: pages of dyed samples with notes.
+- ✅ **One book with tabs: Paint · Loom · Pieces · Inventions.** The Pattern Book (the player's inventions) becomes its Inventions tab.
+- ✅ Every entry exists from the start. Entries not discovered yet stay in the book, visibly locked (an empty swatch frame), so the player can see there's more to find.
+- ✅ Every level can add knowledge to it.
+- 🟡 Knowledge arrives from play: each piece's page has a frame per paint (Invert's page holds eight pairs), and a frame fills the first time the player's own machine does that in a run. Opposites fills the whole Invert page at once.
+- 🟡 No bits or binary here either (§2.1): glyph dots and paint do the explaining.
 
 ---
 
@@ -277,7 +306,7 @@ Chosen after comparing three animated directions in [mockups/style-studies.html]
 
 ### 7.3 Progressive depth (the Bloons lesson) ✅
 1. Early: drag, drop, watch paint flow. No reading needed.
-2. Collecting: the Pattern Book fills like a sticker album.
+2. Collecting: the Swatch Book (§5.7) fills like a sticker album.
 3. After each solve: stars first; histograms unlock later.
 4. Late: restoration, constraints, creative loom, commissions.
 
@@ -315,8 +344,9 @@ Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never 
   - all pieces decide from the state at the start of the tick, so the result never depends on processing order (deterministic, tested);
   - solved when the loom is full and every stitch matches; the first wrong stitch stops the run; a tick where nothing can fire means the machine is stuck.
   - 🟡 A port with no tube never fires (paint never spills). A piece with an unconnected output just waits.
-  - 🟡 Consequence worth the designer's eye: because a tube must be empty at the *start* of a tick, a steady pipeline alternates full/empty and weaves **one stitch every two ticks**. A 16×12 picture takes about 390 ticks. If that feels slow, a "chain reaction" rule (a piece may fire into a tube that is being emptied this tick) doubles throughput and stays deterministic.
-  - Inventions are flattened: the machine inside is wired straight into the outer tubes, so it keeps its exact timing.
+  - ✅ **Chain reactions** (built 2026-09-28): a piece may also fire into a full tube if the piece that tube feeds fires this same tick. Firing sets only grow as the check repeats, so the result still doesn't depend on visiting order. Under the strict rule a steady pipeline alternated full/empty and wove one stitch every two ticks (The Flower 388 ticks); with chain reactions it weaves one per tick (195 with the Filter sticker as one piece). Measured on every reference solution: balanced machines halve their ticks, but where a Split feeds paths of different lengths into a Mix the short path's drop still waits (Purple 50 → 39, Black Cat 99 → 76). That remaining slowness is a Pieces-vs-Ticks trade-off (two pots instead of a split), not a bug.
+  - Caveat for memory pieces: under this rule a closed loop with every tube full can't turn.
+  - An invention is one node that takes one tick and looks up its answer (§5.1).
   - Machines can never loop in this model (a loop waits on itself), so every working machine is a pure function of the cards. Memory pieces will need their own rule.
 - **Distribution:** web export on itch.io for friends → Steam later (GodotSteam; Steam Direct fee $100; Steamworks leaderboards) → mobile later.
 - ✅ **Prototype v0.1 is built** (Godot 4.7, GDScript only, Compatibility renderer, no threads or plugins). See CLAUDE.md for layout and commands.
@@ -342,7 +372,7 @@ Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never 
 
 ## 11. Roadmap
 
-1. **Lock the algebra:** ✅ completeness verified by script ([docs/algebra-report.md](docs/algebra-report.md)); 🟡 lean starting kit recommended (§2.5), awaiting approval.
+1. **Lock the algebra:** ✅ completeness verified by script ([docs/algebra-report.md](docs/algebra-report.md)); ✅ middle kit with Filter as a starting critter (§2.5).
 2. ✅ ~~Pick the art style~~: **Critter Workshop** (see §7.2). Still to confirm: world vocabulary (§3).
 3. ✅ ~~Specify ~10 campaign levels~~: fifteen prototype levels (§5.1): a paint-box chapter of plain cloths, then pattern cards, ending in the woven flower.
 4. ✅ ~~Godot vertical slice~~: **prototype v0.1** with workbench, loom, 15 levels, stars, Pieces and Ticks, inventions, saved progress.
@@ -355,14 +385,13 @@ Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never 
 - Final world vocabulary (§3): leaning dye works + loom.
 - Workshop cast / story voice on top of the component critters (§7.2).
 - How critters simplify when zoomed out on large machines.
-- Final primitive set and which arities Mix/Filter support (2 only, or n?).
+- Which arities Mix/Filter support (2 only, or n?). The primitive set is decided (§2.5).
 - Is the Red source the only biased primitive, or do all three primary sources exist from the start?
 - Grid-based placement: square grid? Thread routing rules (crossings, bridges)?
 - Title: "Chromaton" conflict search.
 
 Raised by the prototype (see the 🟡 markers above):
-- One stitch every two ticks: keep the strict one-drop rule, or allow chain reactions (§9)? Paths of unequal length slow it further: Purple takes 50 ticks for 12 stitches, Black Cat 99 for 24.
-- Should inventions be accepted only if they work for every paint (current), and should re-solving replace or keep the cheapest?
+- Should re-solving an invention level replace the invention or keep the cheapest?
 - Should players name their inventions?
 - Glyph dots on woven stitches, or keep the tapestry clean?
 - Are the level-8 budget (the Filter route earns ★★, the De Morgan route ★★★) and the other thresholds the right pressure?

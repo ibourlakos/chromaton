@@ -98,12 +98,13 @@ func test_each_piece() -> void:
 
 
 func test_timing() -> void:
-	# Card straight to loom: the card fills the tube, the loom empties it the
-	# next tick, and the card can only refill it the tick after.
+	# Card straight to loom: the card fills the tube, and from then on the
+	# loom empties it and the card refills it in the same tick (a chain
+	# reaction), so a steady machine weaves one stitch per tick.
 	var b := bench(1)
 	b[0].connect_ports(b[1][0], 0, b[2], 0)
 	var sim := run(b[0], [seq("RYB")], "RYB")
-	check(sim.status == S.SOLVED and sim.tick == 6, "direct card: 3 stitches in 6 ticks (got %d)" % sim.tick)
+	check(sim.status == S.SOLVED and sim.tick == 4, "direct card: 3 stitches in 4 ticks (got %d)" % sim.tick)
 
 	# One piece in between adds one tick of latency.
 	b = bench(1)
@@ -111,17 +112,30 @@ func test_timing() -> void:
 	b[0].connect_ports(b[1][0], 0, inv, 0)
 	b[0].connect_ports(inv, 0, b[2], 0)
 	sim = run(b[0], [seq("RYB")], "GPO")
-	check(sim.status == S.SOLVED and sim.tick == 7, "card-invert-loom: 7 ticks (got %d)" % sim.tick)
+	check(sim.status == S.SOLVED and sim.tick == 5, "card-invert-loom: 5 ticks (got %d)" % sim.tick)
 
 	# Step by step: nothing moves at tick 0, the card fires first.
 	sim = Simulator.new(b[0], [seq("RYB")], seq("GPO"))
 	var tube: int = b[0].tube_from(b[1][0], 0)
+	var out: int = b[0].tube_from(inv, 0)
 	check(sim.tube_drop(tube) == -1, "tubes start empty")
 	sim.step()
 	check(sim.tick == 1 and sim.tube_drop(tube) == Paint.RED, "tick 1: card releases red")
 	sim.step()
-	check(sim.tube_drop(tube) == -1 and sim.tube_drop(b[0].tube_from(inv, 0)) == Paint.GREEN, "tick 2: invert fires, card waits")
+	check(sim.tube_drop(tube) == Paint.YELLOW and sim.tube_drop(out) == Paint.GREEN, "tick 2: invert fires and the card refills its tube")
 	check(sim.node_color(inv) == Paint.GREEN and sim.node_last_fire(inv) == 2, "invert remembers what it made")
+	sim.step()
+	check(sim.tube_drop(tube) == Paint.BLUE and sim.tube_drop(out) == Paint.PURPLE and sim.woven.size() == 1, "tick 3: card, invert and loom all fire")
+
+	# A chain reaction never passes a piece that can't fire: behind a piece
+	# with no tube out, everything stops once the tubes fill.
+	b = bench(1)
+	inv = b[0].add_node("invert", 0, 0)
+	var shift: int = b[0].add_node("shift", 1, 0)
+	b[0].connect_ports(b[1][0], 0, inv, 0)
+	b[0].connect_ports(inv, 0, shift, 0)
+	sim = run(b[0], [seq("RYBW")], "RYBW")
+	check(sim.status == S.STALLED and sim.card_remaining(0) == 2, "a dead end stops the chain (card left %d)" % sim.card_remaining(0))
 
 
 func test_backpressure() -> void:

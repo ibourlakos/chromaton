@@ -30,7 +30,7 @@ func _init() -> void:
 	var inventions := test_packaging()
 	test_every_paint(inventions)
 	test_in_later_levels(inventions)
-	test_same_timing_as_inside(inventions)
+	test_one_tick(inventions)
 	test_nested(inventions)
 	test_edges()
 	if failures == 0:
@@ -92,8 +92,16 @@ func test_in_later_levels(inventions: Dictionary) -> void:
 	check(sim.status == S.STALLED, "a missing invention does nothing")
 
 
-## An invention behaves exactly like the machine inside it, timing included.
-func test_same_timing_as_inside(inventions: Dictionary) -> void:
+## An invention makes the same colors as the machine inside it, but it is one
+## piece that takes one tick.
+func test_one_tick(inventions: Dictionary) -> void:
+	var table := Simulator.invention_table(inventions["filter"], inventions)
+	var exact := table.size() == 64
+	for a in 8:
+		for b in 8:
+			exact = exact and table[a + 8 * b] == Paint.filter(a, b)
+	check(exact, "Filter's table holds the right color for every pair of paints")
+
 	var level = by_id["the_flower"]
 	var boxed := Simulator.new(level.reference_machine(), level.cards, level.target, inventions)
 	var flat_machine = level.machine_from_spec({
@@ -103,14 +111,17 @@ func test_same_timing_as_inside(inventions: Dictionary) -> void:
 			{"id": "m2", "kind": "mix", "x": 6, "y": 3}],
 		"tubes": [["card0", "ia"], ["card1", "ib"], ["ia", "m.0"], ["ib", "m.1"], ["m", "o"], ["o", "m2.0"], ["card2", "m2.1"], ["m2", "loom"]]})
 	var flat := Simulator.new(flat_machine, level.cards, level.target, inventions)
-	var same := true
-	while boxed.status == S.RUNNING or flat.status == S.RUNNING:
-		boxed.step()
-		flat.step()
-		if boxed.woven != flat.woven or boxed.tick != flat.tick:
-			same = false
-			break
-	check(same and boxed.status == S.SOLVED, "boxed and unboxed Filter weave in the same ticks (%d vs %d)" % [boxed.tick, flat.tick])
+	boxed.run()
+	flat.run()
+	check(boxed.status == S.SOLVED and flat.status == S.SOLVED and boxed.woven == flat.woven, "boxed and unboxed Filter weave the same cloth")
+	# Card, Filter, Mix, loom: two pieces deep. Unboxed it is four deep.
+	var n: int = level.size()
+	check(boxed.tick == n + 3 and flat.tick == n + 5, "the Filter sticker takes one tick, its inside three (%d and %d ticks for %d stitches)" % [boxed.tick, flat.tick, n])
+	var f: int = level.reference_machine().find_kind(Pieces.INVENTION)
+	var probe := Simulator.new(level.reference_machine(), level.cards, level.target, inventions)
+	for k in 2:
+		probe.step()
+	check(probe.node_last_fire(f) == 2 and probe.node_fire_count(f) == 1 and probe.node_color(f) == Paint.filter(level.cards[0][0], level.cards[1][0]), "the sticker fires on the tick after its paint arrives")
 
 
 func test_nested(inventions: Dictionary) -> void:
@@ -152,8 +163,8 @@ func test_edges() -> void:
 	var seq := Level.parse_rows(["RYBK"])
 	var sim := Simulator.new(outer, [seq], seq, inventions)
 	sim.run()
-	check(sim.status == S.SOLVED and sim.tick == 8, "a pass-through invention adds no ticks (%d)" % sim.tick)
-	check(sim.tube_drop(0) == -1 and sim.tube_drop(1) == -1, "its outer tubes are the tubes inside")
+	check(sim.status == S.SOLVED and sim.tick == 6, "a pass-through invention takes one tick like any piece (%d)" % sim.tick)
+	check(sim.tube_drop(0) == -1 and sim.tube_drop(1) == -1, "its tubes are empty once the cloth is woven")
 
 	# An invention with an unconnected input never fires.
 	outer.remove_tube(outer.tube_from(a, 0))

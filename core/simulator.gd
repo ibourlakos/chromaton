@@ -3,18 +3,19 @@
 ## Dataflow with one-drop tubes (DESIGN.md 9):
 ## - every tube holds at most one drop;
 ## - on each tick a piece fires if every input tube holds a drop and every
-##   output tube is empty; it takes one drop per input and puts its result in
-##   its output tubes (a split puts a copy in each);
-## - a red pot fires whenever its tube is empty; a pattern card releases its
-##   next color whenever its tube is empty, until it runs out;
+##   output tube is empty or is being emptied this same tick (a chain
+##   reaction); it takes one drop per input and puts its result in its output
+##   tubes (a split puts a copy in each);
+## - a red pot fires whenever its tube is free; a pattern card releases its
+##   next color whenever its tube is free, until it runs out;
 ## - the loom takes one drop per tick and weaves the next stitch; a catch pot
 ##   takes one drop per tick and keeps it;
 ## - every node decides from the state at the start of the tick, so the result
 ##   never depends on the order nodes are visited.
 ##
-## Inventions are flattened: the machine inside is wired straight into the
-## outer tubes (its cards become the outer input tubes, its loom the outer
-## output tube), so an invention behaves exactly like the machine inside.
+## An invention is one piece that takes one tick (DESIGN.md 5.1): it looks its
+## answer up in a table of what the machine inside makes from every
+## combination of input paints. The every-paint check makes that table exact.
 extends RefCounted
 
 const Pieces = preload("res://core/pieces.gd")
@@ -24,6 +25,7 @@ enum Status { RUNNING, SOLVED, WRONG, STALLED }
 
 const MAX_TICKS := 20000
 const MAX_DEPTH := 16
+const NO_COLOR := 255  # a table entry where the machine inside makes nothing
 
 var tick := 0
 var status := Status.RUNNING
@@ -34,14 +36,17 @@ var target := PackedByteArray()
 var cards: Array = []
 var card_cursor := PackedInt32Array()
 
-# The flat network: every piece at any invention depth, plus the top-level
-# cards and loom. Node "kind" is "card", "loom" or a piece operation.
+# The network: one node per card, loom, piece and invention, one tube per
+# machine tube. Node "kind" is "card", "loom", "table" (an invention) or a
+# piece operation.
 var drops := PackedInt32Array()       # per tube: its color, or -1 when empty
 var filled_at := PackedInt32Array()   # per tube: tick its drop arrived
+var consumer := PackedInt32Array()    # per tube: the node it feeds (-1 = none)
 var node_kind: Array = []
 var node_ins: Array = []              # per node: PackedInt32Array of tubes (-1 = none)
 var node_outs: Array = []
 var node_card := PackedInt32Array()
+var node_table: Array = []            # per node: an invention's PackedByteArray
 var last_fire := PackedInt32Array()   # per node: tick it last fired (0 = never)
 var last_color := PackedInt32Array()  # per node: color it last made or wove
 var fire_count := PackedInt32Array()
@@ -49,10 +54,7 @@ var caught := {}  # per catch-pot node: the colors it swallowed, oldest first
 
 const CAUGHT_KEPT := 8
 
-var tube_of := {}   # top-level tube index -> flat tube
-var nodes_of := {}  # top-level node id -> Array of flat nodes (all pieces inside an invention)
-
-var _parent := PackedInt32Array()
+var node_of := {}  # machine node id -> network node (missing inventions have none)
 
 
 func _init(machine, level_cards: Array, level_target: PackedByteArray, inventions := {}) -> void:
@@ -60,17 +62,52 @@ func _init(machine, level_cards: Array, level_target: PackedByteArray, invention
 	target = level_target
 	card_cursor.resize(cards.size())
 	card_cursor.fill(0)
-	_expand(machine, inventions, [], -1, true, -1, 0)
-	var index := {}
-	for i in node_kind.size():
-		node_ins[i] = _renumber(node_ins[i], index)
-		node_outs[i] = _renumber(node_outs[i], index)
-	for k in tube_of:
-		tube_of[k] = _renumber_one(tube_of[k], index)
-	drops.resize(index.size())
+	var tables := {}
+	var ids: Array = machine.nodes.keys()
+	ids.sort()
+	for id in ids:
+		var n: Dictionary = machine.nodes[id]
+		var kind: String = n["kind"]
+		var table := PackedByteArray()
+		match kind:
+			Pieces.CARD, Pieces.LOOM:
+				pass
+			Pieces.INVENTION:
+				var inv_id: String = n.get("invention", "")
+				if not inventions.has(inv_id):
+					continue
+				if not tables.has(inv_id):
+					tables[inv_id] = invention_table(inventions[inv_id], inventions)
+				table = tables[inv_id]
+				kind = "table"
+			_:
+				if not Pieces.is_piece(kind):
+					continue
+				kind = Pieces.TABLE[kind]["op"]
+		var p := Pieces.ports(n, inventions)
+		var ins := PackedInt32Array()
+		for k in p.x:
+			ins.append(machine.tube_into(id, k))
+		var outs := PackedInt32Array()
+		for k in p.y:
+			outs.append(machine.tube_from(id, k))
+		node_of[id] = node_kind.size()
+		node_kind.append(kind)
+		node_ins.append(ins)
+		node_outs.append(outs)
+		node_card.append(int(n.get("card", -1)))
+		node_table.append(table)
+	var tube_count: int = machine.tubes.size()
+	drops.resize(tube_count)
 	drops.fill(-1)
-	filled_at.resize(index.size())
+	filled_at.resize(tube_count)
 	filled_at.fill(0)
+	consumer.resize(tube_count)
+	consumer.fill(-1)
+	for i in node_kind.size():
+		for t in node_ins[i]:
+			if t >= 0:
+				consumer[t] = i
 	last_fire.resize(node_kind.size())
 	last_color.resize(node_kind.size())
 	fire_count.resize(node_kind.size())
@@ -80,116 +117,91 @@ func _init(machine, level_cards: Array, level_target: PackedByteArray, invention
 
 
 # ---------------------------------------------------------------------------
-# Building the flat network
+# Inventions
 # ---------------------------------------------------------------------------
 
-func _expand(machine, inventions: Dictionary, bind_in: Array, bind_out: int, top: bool, owner: int, depth: int) -> void:
+## What an invention's machine makes from every combination of input paints.
+## Input k's color counts 8^k in the index; NO_COLOR where it makes nothing.
+static func invention_table(inv: Dictionary, inventions: Dictionary, depth := 0) -> PackedByteArray:
+	var input_count := int(inv.get("inputs", 0))
+	var table := PackedByteArray()
+	table.resize(int(pow(8, input_count)))
+	table.fill(NO_COLOR)
 	if depth > MAX_DEPTH:
 		push_error("inventions nested too deeply")
-		return
-	var raw := []
-	for i in machine.tubes.size():
-		var r := _new_tube()
-		raw.append(r)
-		if top:
-			tube_of[i] = r
-	var ids: Array = machine.nodes.keys()
-	ids.sort()
-	for id in ids:
-		var n: Dictionary = machine.nodes[id]
-		var kind: String = n["kind"]
-		var who: int = id if top else owner
-		var p := Pieces.ports(n, inventions)
-		var ins := PackedInt32Array()
-		for k in p.x:
-			var ti: int = machine.tube_into(id, k)
-			ins.append(raw[ti] if ti >= 0 else -1)
-		var outs := PackedInt32Array()
-		for k in p.y:
-			var ti: int = machine.tube_from(id, k)
-			outs.append(raw[ti] if ti >= 0 else -1)
-		match kind:
-			Pieces.CARD:
-				if top:
-					_add_node("card", ins, outs, int(n["card"]), who)
-				else:
-					var c := int(n["card"])
-					_union(outs[0], bind_in[c] if c < bind_in.size() else -1)
-			Pieces.LOOM:
-				if top:
-					_add_node("loom", ins, outs, -1, who)
-				else:
-					_union(ins[0], bind_out)
-			Pieces.INVENTION:
-				var inv: Dictionary = inventions.get(n.get("invention", ""), {})
-				if inv.is_empty():
-					continue
-				var inner = Machine.from_dict(inv["machine"])
-				_expand(inner, inventions, Array(ins), outs[0] if outs.size() > 0 else -1, false, who, depth + 1)
-			_:
-				if Pieces.is_piece(kind):
-					_add_node(Pieces.TABLE[kind]["op"], ins, outs, -1, who)
+		return table
+	var machine = Machine.from_dict(inv.get("machine", {}))
+	var loom: int = machine.find_kind(Pieces.LOOM)
+	var into: int = machine.tube_into(loom, 0) if loom >= 0 else -1
+	if into < 0:
+		return table
+	var inner_tables := {}
+	for index in table.size():
+		var ins := []
+		var rest := index
+		for k in input_count:
+			ins.append(rest % 8)
+			rest /= 8
+		var color := _tube_color(machine, into, ins, inventions, inner_tables, {}, depth)
+		if color >= 0:
+			table[index] = color
+	return table
 
 
-func _add_node(kind: String, ins: PackedInt32Array, outs: PackedInt32Array, card: int, owner: int) -> void:
-	var i := node_kind.size()
-	node_kind.append(kind)
-	node_ins.append(ins)
-	node_outs.append(outs)
-	node_card.append(card)
-	if owner >= 0:
-		if not nodes_of.has(owner):
-			nodes_of[owner] = []
-		nodes_of[owner].append(i)
+## The color a tube of an invention's machine carries for these input paints,
+## or -1 if nothing reaches it.
+static func _tube_color(machine, tube: int, ins: Array, inventions: Dictionary, tables: Dictionary, memo: Dictionary, depth: int) -> int:
+	if memo.has(tube):
+		return memo[tube]
+	memo[tube] = -1
+	var t: Dictionary = machine.tubes[tube]
+	var n: Dictionary = machine.nodes[t["from"]]
+	var kind: String = n["kind"]
+	var colors := []
+	for k in Pieces.ports(n, inventions).x:
+		var into: int = machine.tube_into(n["id"], k)
+		var c := _tube_color(machine, into, ins, inventions, tables, memo, depth) if into >= 0 else -1
+		if c < 0:
+			return -1
+		colors.append(c)
+	var color := -1
+	match kind:
+		Pieces.CARD:
+			var card := int(n.get("card", -1))
+			color = ins[card] if card >= 0 and card < ins.size() else -1
+		Pieces.INVENTION:
+			var inv_id: String = n.get("invention", "")
+			if inventions.has(inv_id):
+				if not tables.has(inv_id):
+					tables[inv_id] = invention_table(inventions[inv_id], inventions, depth + 1)
+				var v: int = tables[inv_id][_index_of(colors)]
+				color = v if v != NO_COLOR else -1
+		_:
+			if Pieces.is_piece(kind):
+				var made: Array = Pieces.apply(Pieces.TABLE[kind]["op"], colors)
+				color = made[t["fp"]] if t["fp"] < made.size() else -1
+	memo[tube] = color
+	return color
 
 
-func _new_tube() -> int:
-	_parent.append(_parent.size())
-	return _parent.size() - 1
-
-
-func _find(t: int) -> int:
-	while _parent[t] != t:
-		_parent[t] = _parent[_parent[t]]
-		t = _parent[t]
-	return t
-
-
-func _union(a: int, b: int) -> void:
-	if a < 0 or b < 0:
-		return
-	a = _find(a)
-	b = _find(b)
-	if a != b:
-		_parent[a] = b
-
-
-func _renumber_one(raw: int, index: Dictionary) -> int:
-	if raw < 0:
-		return -1
-	var r := _find(raw)
-	if not index.has(r):
-		index[r] = index.size()
-	return index[r]
-
-
-func _renumber(list: PackedInt32Array, index: Dictionary) -> PackedInt32Array:
-	var out := PackedInt32Array()
-	for raw in list:
-		out.append(_renumber_one(raw, index))
-	return out
+static func _index_of(colors: Array) -> int:
+	var index := 0
+	for k in range(colors.size() - 1, -1, -1):
+		index = index * 8 + colors[k]
+	return index
 
 
 # ---------------------------------------------------------------------------
 # Running
 # ---------------------------------------------------------------------------
 
-func _can_fire(i: int) -> bool:
+## True if node i has what it needs to fire, not counting full output tubes.
+func _ready_to_fire(i: int) -> bool:
 	for t in node_ins[i]:
 		if t < 0 or drops[t] < 0:
 			return false
 	for t in node_outs[i]:
-		if t < 0 or drops[t] >= 0:
+		if t < 0:
 			return false
 	match node_kind[i]:
 		"card":
@@ -197,7 +209,47 @@ func _can_fire(i: int) -> bool:
 			return card_cursor[c] < cards[c].size()
 		"loom":
 			return woven.size() < target.size()
+		"table":
+			return node_table[i][_index_of(_colors_in(i))] != NO_COLOR
 	return true
+
+
+func _colors_in(i: int) -> Array:
+	var colors := []
+	for t in node_ins[i]:
+		colors.append(drops[t])
+	return colors
+
+
+## The nodes that fire this tick: ready nodes whose every output tube is empty
+## or is emptied this tick by a node that fires. The set only grows while it
+## is worked out, so it doesn't depend on the order nodes are visited.
+func _firing() -> PackedInt32Array:
+	var ready := []
+	for i in node_kind.size():
+		ready.append(_ready_to_fire(i))
+	var fires := []
+	fires.resize(node_kind.size())
+	fires.fill(false)
+	var changed := true
+	while changed:
+		changed = false
+		for i in node_kind.size():
+			if fires[i] or not ready[i]:
+				continue
+			var free := true
+			for t in node_outs[i]:
+				if drops[t] >= 0 and (consumer[t] < 0 or not fires[consumer[t]]):
+					free = false
+					break
+			if free:
+				fires[i] = true
+				changed = true
+	var out := PackedInt32Array()
+	for i in node_kind.size():
+		if fires[i]:
+			out.append(i)
+	return out
 
 
 ## Advances one tick. Does nothing once the run has ended.
@@ -207,10 +259,7 @@ func step() -> void:
 	if tick >= MAX_TICKS:
 		status = Status.STALLED
 		return
-	var firing := PackedInt32Array()
-	for i in node_kind.size():
-		if _can_fire(i):
-			firing.append(i)
+	var firing := _firing()
 	if firing.is_empty():
 		status = Status.STALLED
 		return
@@ -218,9 +267,7 @@ func step() -> void:
 	var results := []
 	var wrong := false
 	for i in firing:
-		var colors := []
-		for t in node_ins[i]:
-			colors.append(drops[t])
+		var colors := _colors_in(i)
 		match node_kind[i]:
 			"card":
 				var c: int = node_card[i]
@@ -234,6 +281,8 @@ func step() -> void:
 					wrong = true
 					wrong_index = idx
 				results.append([colors[0]])
+			"table":
+				results.append([int(node_table[i][_index_of(colors)])])
 			_:
 				results.append(Pieces.apply(node_kind[i], colors))
 	for i in firing:
@@ -274,43 +323,35 @@ func run(max_ticks := MAX_TICKS) -> int:
 # Views for the workbench
 # ---------------------------------------------------------------------------
 
-## Color in a top-level tube, or -1.
+## Color in a tube, or -1.
 func tube_drop(tube_index: int) -> int:
-	var t: int = tube_of.get(tube_index, -1)
-	return drops[t] if t >= 0 else -1
+	return drops[tube_index] if tube_index >= 0 and tube_index < drops.size() else -1
 
 
-## Tick the drop in a top-level tube arrived.
+## Tick the drop in a tube arrived.
 func tube_filled_at(tube_index: int) -> int:
-	var t: int = tube_of.get(tube_index, -1)
-	return filled_at[t] if t >= 0 else 0
+	return filled_at[tube_index] if tube_index >= 0 and tube_index < filled_at.size() else 0
 
 
-## Most recent tick any part of a top-level node fired (0 = never).
+## Tick a machine node last fired (0 = never).
 func node_last_fire(node_id: int) -> int:
-	var best := 0
-	for i in nodes_of.get(node_id, []):
-		best = maxi(best, last_fire[i])
-	return best
+	return last_fire[node_of[node_id]] if node_of.has(node_id) else 0
 
 
-## Color a top-level piece last made (-1 = none yet).
+## Color a machine node last made (-1 = none yet).
 func node_color(node_id: int) -> int:
-	var list: Array = nodes_of.get(node_id, [])
-	return last_color[list[0]] if list.size() == 1 else -1
+	return last_color[node_of[node_id]] if node_of.has(node_id) else -1
 
 
 func node_fire_count(node_id: int) -> int:
-	var list: Array = nodes_of.get(node_id, [])
-	return fire_count[list[0]] if list.size() > 0 else 0
+	return fire_count[node_of[node_id]] if node_of.has(node_id) else 0
 
 
-## The last colors a top-level catch pot swallowed, newest first.
+## The last colors a catch pot swallowed, newest first.
 func node_caught(node_id: int) -> Array:
-	var list: Array = nodes_of.get(node_id, [])
-	if list.size() != 1:
+	if not node_of.has(node_id):
 		return []
-	var out: Array = caught.get(list[0], []).duplicate()
+	var out: Array = caught.get(node_of[node_id], []).duplicate()
 	out.reverse()
 	return out
 

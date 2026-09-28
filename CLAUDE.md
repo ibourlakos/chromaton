@@ -35,7 +35,7 @@ Godot 4.7.2 is installed via winget. `godot_console` may not be on PATH (winget 
 
 ## Layout
 
-- `core/`: the simulation, pure GDScript with no scene nodes. `paint.gd` (the eight colors and operations), `pieces.gd` (the data-driven piece table), `machine.gd` (nodes and tubes as plain data), `simulator.gd` (one-drop-tube dataflow; flattens inventions), `level.gd` (level JSON), `invention.gd` (packaging and the every-paint check), `progress.gd` (save data in `user://chromaton_save.json`).
+- `core/`: the simulation, pure GDScript with no scene nodes. `paint.gd` (the eight colors and operations), `pieces.gd` (the data-driven piece table), `machine.gd` (nodes and tubes as plain data), `simulator.gd` (one-drop-tube dataflow with chain reactions; an invention is one piece that looks its answer up), `level.gd` (level JSON), `invention.gd` (packaging and the every-paint check), `progress.gd` (save data in `user://chromaton_save.json`).
 - `ui/`: everything on screen, built in code. `main.gd` (screens and command-line options), `workbench.gd` (the bench, gestures, run controls, loom), `draw_kit.gd` (Critter Workshop drawing), `palette.gd` (colors, fonts), `toy_button.gd`, `level_select.gd`, `pattern_book.gd`, `success_panel.gd`. `main.tscn` is the only scene.
 - `levels/`: `index.json` (campaign order; a level's number is its place there) and one JSON per level, named by its stable id: target picture, pattern cards, pieces offered (the tray is exactly this list plus listed, owned inventions), star thresholds, reference solution. Format documented at the top of `core/level.gd`.
 - `tests/`: headless test scripts (extend SceneTree, exit code 1 on failure).
@@ -49,5 +49,5 @@ Godot 4.7.2 is installed via winget. `godot_console` may not be on PATH (winget 
 - Godot 4, GDScript only, Compatibility renderer, no threads or plugins (web export needs it). A web export must include `levels/*.json` in its export filter (non-resource files).
 - Simulation core as pure GDScript classes (no scene nodes), deterministic, unit-tested headless. Scripts load each other with `preload` constants, not `class_name`, so `--script` runs work without an editor import.
 - UI built in code; one design canvas of 1280×800 scaled to the window.
-- Dataflow with one-drop tubes (DESIGN.md §9): a piece fires when all its inputs hold a drop and all its outputs are empty; every piece decides from the start-of-tick state.
+- Dataflow with one-drop tubes (DESIGN.md §9): a piece fires when all its inputs hold a drop and each output is empty or is being emptied the same tick (chain reaction); every piece decides from the start-of-tick state.
 - When changing levels, rerun `tools/make_cards.gd` (if cards derive from a rule) and `tools/level_solver.gd`, then the tests: every level's reference solution must solve it at exactly its three-star count.

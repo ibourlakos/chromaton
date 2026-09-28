@@ -1,8 +1,9 @@
 ## Inventions: a solved machine packaged as a new piece for the Pattern Book.
 ##
 ## The level's pattern cards become the invention's input ports (in card
-## order) and the loom becomes its one output port. The simulator opens the
-## invention up and runs the machine inside, so it keeps its internal timing.
+## order) and the loom becomes its one output port. The simulator runs an
+## invention as one piece that takes one tick, looking up what the machine
+## inside makes (exact, because of the every-paint check below).
 ## Its piece cost is the total of the pieces inside it.
 extends RefCounted
 

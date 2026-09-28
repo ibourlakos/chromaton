@@ -81,7 +81,7 @@ func test_references(levels: Array, inventions: Dictionary) -> void:
 		var cost: int = m.cost(inventions)
 		check(cost == level.best, "%s: reference sets the three-star count (%d vs %d)" % [level.id, cost, level.best])
 		check(level.stars_for(cost) == 3, "%s: reference earns three stars" % level.id)
-		check(sim.tick >= 2 * level.size(), "%s: at least two ticks per stitch" % level.id)
+		check(sim.tick > level.size(), "%s: at most one stitch per tick" % level.id)
 
 
 ## Evaluates a small formula on one stitch's card colors.
