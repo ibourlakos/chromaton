@@ -27,6 +27,7 @@ func _initialize() -> void:
 	test_editing(levels[5], Progress.new())
 	for i in levels.size():
 		play_level(levels[i], progress, i)
+	test_not_general(levels[6])
 	if failures == 0:
 		print("test_workbench: all %d checks passed" % checks)
 	quit(1 if failures > 0 else 0)
@@ -203,4 +204,23 @@ func test_editing(level, progress) -> void:
 	wb._reset_pressed()
 	wb._step_pressed()
 	check(wb.sim.tick == 1 and not wb.running, "step advances one tick")
+	wb.queue_free()
+
+
+## An invention must work for every pair of paints, not only the level's cards.
+func test_not_general(level7) -> void:
+	var raw: Dictionary = level7.raw.duplicate(true)
+	raw["invention"]["check"] = "bleach"  # the Filter picture, judged as a Bleach
+	var level = Level.from_dict(raw)
+	var progress = Progress.new()
+	var wb = open(level, progress)
+	wb.load_machine(level.reference_machine())
+	wb._set_speed(2)
+	wb._toggle_run()
+	var frames := 0
+	while wb.outcome == "" and frames < 5000:
+		wb._process(0.05)
+		frames += 1
+	check(wb.outcome == "not_general", "a machine that only fits the cards is not accepted (%s)" % wb.outcome)
+	check(not progress.is_solved(level.id) and progress.inventions.is_empty(), "nothing is recorded")
 	wb.queue_free()

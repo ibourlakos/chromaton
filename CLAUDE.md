@@ -22,22 +22,32 @@ A puzzle game about inventing machines out of **color logic**: 8 pigment colors,
 
 ## Commands
 
-Godot 4.7.2 is installed via winget. `godot_console` may not be on PATH (winget can't create aliases without admin); the executable is `%LOCALAPPDATA%\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_*\Godot_v4.7.2-stable_win64_console.exe`.
+Godot 4.7.2 is installed via winget. `godot_console` may not be on PATH (winget can't create aliases without admin); the executables are in `%LOCALAPPDATA%\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_*\`: `Godot_v4.7.2-stable_win64_console.exe` (tests, tools, screenshots) and `Godot_v4.7.2-stable_win64.exe` (play without a console window).
 
-- Unit tests: `godot_console --headless --path . --script res://tests/test_paint.gd`
+- Play: `godot --path .` (add `-- --unlock-all` to open every level, `-- --level=<id>` to jump into one).
+- All tests: `godot_console --headless --path . --script res://tests/test_all.gd` (runs every `tests/test_*.gd` in its own process). One suite: `--script res://tests/test_sim.gd` (also `test_paint`, `test_levels`, `test_inventions`, `test_workbench`).
 - Color-algebra checker (rewrites docs/algebra-report.md; rerun after changing pieces or recipes): `godot_console --headless --path . --script res://tools/algebra_check.gd`
+- Level solver (rewrites docs/level-report.md; proves each level's three-star count; rerun after changing levels or pieces): `--script res://tools/level_solver.gd`
+- Derive pattern cards from target pictures (rewrites the `cards` of levels with a `card_rule`): `--script res://tools/make_cards.gd`
+- Compile check with line numbers (when Godot only says a dependency failed): `--script res://tools/check_scripts.gd`
+- After adding fonts or other assets, import once: `godot_console --headless --path . --import`
+- Self-check screenshots (windowed, not headless; saves a PNG and quits): `godot_console --path . -- --screenshot=<level_id>:<png path> [--ticks=N] [--phase=0.5] [--finish] [--wrong] [--empty]`. `<level_id>` can also be `levels` or `book`. Uses the reference solutions and a throwaway save.
 
 ## Layout
 
-- `core/paint.gd`: the eight colors and the basic operations (pure, no scene nodes).
+- `core/`: the simulation, pure GDScript with no scene nodes. `paint.gd` (the eight colors and operations), `pieces.gd` (the data-driven piece table), `machine.gd` (nodes and tubes as plain data), `simulator.gd` (one-drop-tube dataflow; flattens inventions), `level.gd` (level JSON), `invention.gd` (packaging and the every-paint check), `progress.gd` (save data in `user://chromaton_save.json`).
+- `ui/`: everything on screen, built in code. `main.gd` (screens and command-line options), `workbench.gd` (the bench, gestures, run controls, loom), `draw_kit.gd` (Critter Workshop drawing), `palette.gd` (colors, fonts), `toy_button.gd`, `level_select.gd`, `pattern_book.gd`, `success_panel.gd`. `main.tscn` is the only scene.
+- `levels/`: `index.json` (campaign order) and one JSON per level: target picture, pattern cards, pieces offered, star thresholds, reference solution. Format documented at the top of `core/level.gd`.
 - `tests/`: headless test scripts (extend SceneTree, exit code 1 on failure).
 - `tools/`: design tools, not shipped with the game.
 - `docs/`: generated reports.
+- `fonts/`: Fredoka and Nunito (SIL OFL, licenses alongside).
 - `mockups/`: HTML mockups (the art-style reference).
 
-## Tech (planned)
+## Tech
 
-- Godot 4, GDScript only (web export needs it).
-- Simulation core as pure GDScript classes (no scene nodes), deterministic, unit-tested headless.
-- UI built mostly in code.
-- Discrete tick simulation; every component takes 1 tick.
+- Godot 4, GDScript only, Compatibility renderer, no threads or plugins (web export needs it). A web export must include `levels/*.json` in its export filter (non-resource files).
+- Simulation core as pure GDScript classes (no scene nodes), deterministic, unit-tested headless. Scripts load each other with `preload` constants, not `class_name`, so `--script` runs work without an editor import.
+- UI built in code; one design canvas of 1280×800 scaled to the window.
+- Dataflow with one-drop tubes (DESIGN.md §9): a piece fires when all its inputs hold a drop and all its outputs are empty; every piece decides from the start-of-tick state.
+- When changing levels, rerun `tools/make_cards.gd` (if cards derive from a rule) and `tools/level_solver.gd`, then the tests: every level's reference solution must solve it at exactly its three-star count.

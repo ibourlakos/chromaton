@@ -99,6 +99,7 @@ Findings:
 
 - **Filter becomes the first invention** (Act 2): "keep only what both share" = invert both, mix, invert back. It takes 4 pieces and is a real "aha" moment.
 - Levels may still provide extra pots (yellow, white, ...) as givens. Only the red pot is a placeable piece.
+- 🟡 **Prototype v0.1 ships the lean kit** (Red pot, Mix, Invert, Shift, free Split). Pieces are one data table (`core/pieces.gd`), so adding Filter as a piece is a one-line change if the full kit wins.
 - Trade-off: in the lean kit, routing machines cost more (Three-way Switch 35 pieces vs 21 with Filter as a piece; see report §4). Fewer critters to design and animate outweighs this (see §7.2 risk). Placed recipes appear as one block anyway, so the price only shows on the optimizer's scoreboard.
 - Alternative (full kit): Mix, Filter, Invert, Shift + 3 pots. Cheaper machines, but 5 critters and 3 pot variants, and the De Morgan discovery is lost.
 
@@ -151,6 +152,9 @@ The central visual and the late-campaign goal. Historical anchor: the **Jacquard
 - **Chapter payoff:** each level weaves one band; completing a chapter joins the bands into a full tapestry (quilt reveal).
 - Finale: a **programmable loom** (the CPU equivalent) that weaves a tapestry from a pattern card.
 - 🟡 **Serial vs row weaving:** a single output thread weaves one stitch per tick with a shuttle walking the rows (as in the style mockup); a braid of W threads weaves a whole row per tick. Early levels can be serial; braids arrive later and weave faster.
+- ✅ **Prototype: serial weaving.** One output thread; the loom takes one drop per tick and weaves the next stitch, row by row, left to right. The first wrong stitch stops the run and is marked.
+- 🟡 The loom shows a faint ghost of the target in unwoven cells, and the target picture is pinned beside it as a small design card.
+- 🟡 Woven stitches carry no glyph dots (as in the mockup); the wrong-stitch bubble compares the two drops with dots.
 
 ---
 
@@ -167,6 +171,28 @@ Draft arc:
 5. **The Loom:** programmable loom weaving from a pattern card.
 
 Level specs are shown as **animated input/output swatch streams**, not truth tables.
+
+**Prototype v0.1 campaign** 🟡 (levels/*.json; cheapest counts proven by `tools/level_solver.gd`, see [docs/level-report.md](docs/level-report.md)):
+
+| # | Level | Teaches | Loom | ★★ budget | ★★★ best |
+|---|---|---|---|---|---|
+| 1 | One Pot of Red | Place a piece, lay a tube (wordless hand hint) | 4×3 | 1 | 1 |
+| 2 | Orange | Mix with the red pot | 6×4 | 3 | 2 |
+| 3 | Yellow from Red | Shift | 6×4 | 2 | 1 |
+| 4 | Make Black | Split; black = every primary (a red/white card weaves a black cat) | 6×4 | 6 | 4 |
+| 5 | Opposites | Invert | 6×4 | 2 | 1 |
+| 6 | The Third Color | Invert(Mix(a, b)), two cards | 8×6 | 3 | 2 |
+| 7 | Keep What They Share | **Invention level:** the player builds Filter | 8×6 | 6 | 4 |
+| 8 | Wash Out | Bleach; Filter + Invert is 5, De Morgan is 3 | 8×6 | 5 | 3 |
+| 9 | The Flower | Filter of two cards mixed with a third (the mockup flower) | 16×12 | 7 | 5 |
+
+- Pattern cards are derived from each target picture by `tools/make_cards.gd` (seeded, so reruns match). The solver also proves the card data has no cheap shortcut.
+- 🟡 Level 4 uses a red/white card instead of the red pot, so the black cat is a picture and not a plain black cloth.
+- 🟡 Levels unlock in order.
+
+**Inventions in the prototype** ✅: solving an invention level saves the player's own machine to the Pattern Book as a new piece. Its cards become input ports (in card order), the loom its output port; it is drawn as a sticker with its name, behaves exactly like the machine inside (same timing), and costs the total of its pieces.
+- 🟡 Before an invention is accepted it is run on every combination of input paints (64 for two inputs). A machine that only happens to match the level's cards is refused with a short note.
+- 🟡 Re-solving an invention level replaces the invention with the newest machine. The name comes from the level; players don't name inventions yet.
 
 ### 5.2 Optimization layer ✅
 Every level has a second loop after solving (the Zachtronics model), not a separate mode. Details in §6.
@@ -200,6 +226,7 @@ Lessons from Opus Magnum:
 - **Multiple metrics:** Cost, Ticks (speed), Area (footprint), plus Edits for repair puzzles. No single solution wins all.
 - **Histograms, not just top-10 lists** ("you beat 72% on cost"). Plus **friend leaderboards**.
 - **Stars are the kid-friendly face of the optimizer:** ★ solved · ★★ under budget · ★★★ near-optimal. Experts open the same screen and find the histograms.
+- ✅ **Prototype stars:** ★ solved · ★★ at or under the level's piece budget · ★★★ at or under the best known count (every best known count is proven minimal by `tools/level_solver.gd`). Metrics: **Pieces** (splits free, inventions at full price) and **Ticks** (until the loom is full). Best Pieces and best Ticks are kept separately.
 - **Invented recipes cost the sum of their primitives** (flattened), or rankings break.
 - **Deterministic simulation** so every submitted solution can be re-simulated and verified (anti-cheat).
 - **GIF export** of solutions (Opus Magnum's viral marketing).
@@ -224,6 +251,9 @@ Chosen after comparing three animated directions in [mockups/style-studies.html]
 - Reference palette from the mockup: paper `#ECE5D6`, ink `#3A302A`, wood `#C99A69` / `#A97C52`, hoop `#8C7A68`, tag paper `#F8F3E8`, glass `#F6F1E6`. Font: Fredoka (display) + Nunito (UI).
 - ❓ A workshop cast of small animals with a master who hands out commissions (story voice), on top of the component critters.
 - ⚠️ Known risk: every new component needs a character and animations; faces must stay out of the way on big machines (consider zoomed-out simplification).
+- ✅ **Prototype critters** (`ui/draw_kit.gd`): Mix tub stirs with a spoon; Invert tub flips like a pancake; the Red pot is a sleepy clay pot that burps; Shift is a hamster in a wheel that clicks one notch per drop; Split is a small plumbing junction; inventions are stickers with their name.
+- 🟡 The Shift wheel is painted red, yellow and blue: the one place outside paint where signal hues appear, because the wheel *is* the rule it applies. Stars, confetti and UI stay in wood and paper tones.
+- ✅ Fredoka and Nunito are bundled in `fonts/` (SIL Open Font License).
 
 ### 7.3 Progressive depth (the Bloons lesson) ✅
 1. Early: drag, drop, watch paint flow. No reading needed.
@@ -252,13 +282,34 @@ Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never 
 
 ---
 
-## 9. Tech 🟡
+## 9. Tech 🟡 (prototype built ✅)
 
 - **Engine: Godot 4 from day zero**, with **GDScript** (Godot 4 web export does not support C#).
 - **Simulation core = pure GDScript classes** with no scene-node dependencies, unit-tested headless from the command line. Same core re-verifies leaderboard submissions.
 - **UI built mostly in code** rather than hand-edited scenes (keeps the AI-assisted loop tight; the human runs it and reports visual issues).
 - **Simulation model:** discrete ticks; every component takes 1 tick. Gives the Ticks metric, makes loops/memory natural, avoids race conditions.
+- ✅ **Simulation model for the prototype: dataflow with one-drop tubes** (`core/simulator.gd`):
+  - every tube holds at most one drop;
+  - each tick a piece fires if every input tube holds a drop and every output tube is empty; it takes one drop per input and puts its result in each output tube (a split copies);
+  - a red pot fires whenever its tube is empty; a pattern card releases its next color whenever its tube is empty, until it runs out; the loom takes one drop per tick;
+  - all pieces decide from the state at the start of the tick, so the result never depends on processing order (deterministic, tested);
+  - solved when the loom is full and every stitch matches; the first wrong stitch stops the run; a tick where nothing can fire means the machine is stuck.
+  - 🟡 A port with no tube never fires (paint never spills). A piece with an unconnected output just waits.
+  - 🟡 Consequence worth the designer's eye: because a tube must be empty at the *start* of a tick, a steady pipeline alternates full/empty and weaves **one stitch every two ticks**. A 16×12 picture takes about 390 ticks. If that feels slow, a "chain reaction" rule (a piece may fire into a tube that is being emptied this tick) doubles throughput and stays deterministic.
+  - Inventions are flattened: the machine inside is wired straight into the outer tubes, so it keeps its exact timing.
+  - Machines can never loop in this model (a loop waits on itself), so every working machine is a pure function of the cards. Memory pieces will need their own rule.
 - **Distribution:** web export on itch.io for friends → Steam later (GodotSteam; Steam Direct fee $100; Steamworks leaderboards) → mobile later.
+- ✅ **Prototype v0.1 is built** (Godot 4.7, GDScript only, Compatibility renderer, no threads or plugins). See CLAUDE.md for layout and commands.
+
+### 9.1 Workbench UI (prototype) 🟡
+
+- 1280×800 design canvas that scales to the window. Top bar: back, level name and one-line goal, Undo · Reset · Step · Run/Pause, and three speeds (0.55 s, 0.22 s and 0.05 s per tick; Normal is the default).
+- Parts tray on the left, a 13×5 bench grid in the middle (one piece per cell), pattern cards fixed along the top, loom below with the design card on its left and Pieces, Ticks and star targets on its right.
+- Pieces take paint in at the top and send it out at the bottom, like the mockup. Tubes are drawn as glass curves between ports; crossings are allowed (no routing rules yet).
+- Gestures: drag from the tray to place; drag a piece to move it, or back onto the tray (trash) to remove it; drag from an output to an input (or the other way) to lay a tube; drag a tube's end off an input to re-route or drop it; tap a tube, then its delete button. Any edit rewinds the run. Undo covers every edit.
+- Tubes can end anywhere on the loom. A drop travels down its tube during the tick it was made, then waits at the bottom; a woven drop flies into its cell.
+- Level 1 has a wordless hand hint; Run glows once the loom is fed. Keyboard shortcuts exist for desktop (space, S, R, Ctrl+Z, Delete, Esc) but nothing requires them.
+- Invert shows its input color during the first half of its flip (Invert is its own inverse, so the input is known from the output).
 
 ---
 
@@ -273,9 +324,9 @@ Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never 
 
 1. **Lock the algebra:** ✅ completeness verified by script ([docs/algebra-report.md](docs/algebra-report.md)); 🟡 lean starting kit recommended (§2.5), awaiting approval.
 2. ✅ ~~Pick the art style~~: **Critter Workshop** (see §7.2). Still to confirm: world vocabulary (§3).
-3. **Specify ~10 campaign levels on paper**, ending in a first small woven band.
-4. **Godot vertical slice:** grid, wiring, tick simulation, loom output, 2 metrics, local only.
-5. Share a web build with friends; iterate.
+3. ✅ ~~Specify ~10 campaign levels~~: nine prototype levels (§5.1), ending in the woven flower.
+4. ✅ ~~Godot vertical slice~~: **prototype v0.1** with workbench, loom, 9 levels, stars, Pieces and Ticks, inventions, saved progress.
+5. Play it, show friends, decide the 🟡 items below; then a web build (needs `levels/*.json` in the export filter) on itch.io; iterate.
 
 ---
 
@@ -288,3 +339,10 @@ Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never 
 - Is the Red source the only biased primitive, or do all three primary sources exist from the start?
 - Grid-based placement: square grid? Thread routing rules (crossings, bridges)?
 - Title: "Chromaton" conflict search.
+
+Raised by the prototype (see the 🟡 markers above):
+- One stitch every two ticks: keep the strict one-drop rule, or allow chain reactions (§9)?
+- Should inventions be accepted only if they work for every paint (current), and should re-solving replace or keep the cheapest?
+- Should players name their inventions?
+- Glyph dots on woven stitches, or keep the tapestry clean?
+- Are the level-8 budget (the Filter route earns ★★, the De Morgan route ★★★) and the other thresholds the right pressure?
