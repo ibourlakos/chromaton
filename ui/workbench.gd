@@ -43,7 +43,7 @@ const PORT_DY := 32.0
 const PORT_HIT := 20.0
 const TICK_SECONDS := [0.55, 0.22, 0.05]
 const SPEEDS := ["slow", "normal", "fast"]
-const PIECE_SCALE := 0.56
+const PIECE_SCALE := 0.6
 const DROP_R := 9.0
 const IDLE_AGE := 99.0
 
@@ -59,6 +59,8 @@ var phase := 1.0
 var speed := 1
 var clock := 0.0
 var frozen := false  # screenshot mode: hold the current frame still
+var placed_at := {}  # node id -> clock when it landed on a cell (for the bounce)
+var landed_at := -9.0  # clock when the last stitch landed (for the puff)
 var undo_stack := []
 var selected_tube := -1
 var outcome := ""  # "", "solved", "wrong", "stalled", "not_general"
@@ -332,6 +334,8 @@ func _process(delta: float) -> void:
 	if phase < 1.0:
 		phase = minf(1.0, phase + delta / TICK_SECONDS[speed])
 		if phase >= 1.0:
+			if sim.last_weave_tick == sim.tick and sim.tick > 0:
+				landed_at = clock
 			_on_tick_shown()
 	elif running:
 		_do_step()
@@ -504,10 +508,12 @@ func _place_new(pos: Vector2) -> void:
 	if cell.x < 0 or machine.piece_at(cell.x, cell.y) >= 0:
 		return
 	_push_undo()
+	var id: int
 	if drag_kind.begins_with("inv:"):
-		machine.add_node(Pieces.INVENTION, cell.x, cell.y, {"invention": drag_kind.substr(4)})
+		id = machine.add_node(Pieces.INVENTION, cell.x, cell.y, {"invention": drag_kind.substr(4)})
 	else:
-		machine.add_node(drag_kind, cell.x, cell.y)
+		id = machine.add_node(drag_kind, cell.x, cell.y)
+	placed_at[id] = clock
 	_edited()
 
 
@@ -529,6 +535,7 @@ func _finish_move(pos: Vector2) -> void:
 		return
 	_push_undo()
 	machine.move_node(id, cell.x, cell.y)
+	placed_at[id] = clock
 	_edited()
 
 
@@ -598,9 +605,11 @@ func _age(id: int) -> float:
 
 func _draw() -> void:
 	_draw_frame()
+	_draw_run_halo()
 	_draw_tray()
 	_draw_bench()
 	_draw_loom_area()
+	_draw_hint()
 	if drag == "new":
 		_draw_piece_kind(drag_kind, drag_pos, -1)
 	if drag == "move":
@@ -627,7 +636,7 @@ func _draw_tray() -> void:
 			var inv: Dictionary = inventions[kind.substr(4)]
 			label = "%d pieces" % int(inv["cost"])
 		else:
-			label = Pieces.display_name(kind)
+			label = Pieces.display_name(kind) + ("  free" if Pieces.TABLE[kind]["cost"] == 0 else "")
 		_draw_piece_kind(kind, r.get_center() + Vector2(0, -8), -1, 0.82)
 		K.text(self, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, P.INK_SOFT)
 	# Trash: lights up while a piece is dragged over the tray.
@@ -707,7 +716,11 @@ func _draw_piece(id: int, c: Vector2) -> void:
 	var kind: String = n["kind"]
 	if kind == Pieces.INVENTION:
 		kind = "inv:" + str(n.get("invention", ""))
-	_draw_piece_kind(kind, c, id)
+	var s := 1.0
+	var u: float = (clock - placed_at.get(id, -9.0)) / 0.45
+	if u < 1.0:
+		s = 1.0 + 0.22 * sin(u * PI) * (1.0 - u)
+	_draw_piece_kind(kind, c, id, s)
 
 
 ## Draws a piece. id < 0 draws it idle (tray, drag ghost).
@@ -760,6 +773,7 @@ func _draw_loom_area() -> void:
 		var cell := loom_cloth.position + Vector2((i % level.cols + 0.5) * loom_cs, (i / level.cols + 0.5) * loom_cs)
 		var eased := 1.0 - pow(1.0 - phase, 2)
 		K.drop(self, port.lerp(cell, eased), DROP_R * lerpf(1.0, 0.7, eased), sim.woven[i])
+	_draw_stitch_puff()
 	_draw_status()
 
 
@@ -796,3 +810,81 @@ func _draw_status() -> void:
 			K.shape(self, K.round_rect(bubble, 12), P.TAG, P.INK, 2)
 			K.text(self, font, bubble.position + Vector2(14, 16), "Right picture! But a real %s must" % level.invention["name"], 14, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 			K.text(self, font, bubble.position + Vector2(14, 36), "work for every pair of paints.", 14, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+
+
+# ---------------------------------------------------------------------------
+# Hints and juice
+# ---------------------------------------------------------------------------
+
+## True once the loom is fed and the run hasn't started: the Run button glows.
+func _run_ready() -> bool:
+	var loom: int = machine.find_kind(Pieces.LOOM)
+	return machine.tube_into(loom, 0) >= 0 and sim.tick == 0 and not running and outcome == "" and drag == ""
+
+
+func _draw_run_halo() -> void:
+	if btn_run == null or not _run_ready():
+		return
+	var c: Vector2 = btn_run.position + btn_run.size / 2
+	var r := 36.0 + 4.0 * sin(clock * 5.0)
+	K.ring(self, c, r, Color(P.HOOP, 0.55), 5)
+
+
+## For levels marked "hints": a hand shows the next gesture (no words).
+func _hint_path() -> Array:
+	if not level.raw.get("hints", false) or drag != "" or running or outcome != "":
+		return []
+	var placed := []
+	for id in machine.nodes:
+		if not machine.is_fixed(id):
+			placed.append(id)
+	if placed.is_empty():
+		return [tray[0]["rect"].get_center(), cell_center(6, 2)] if tray.size() > 0 else []
+	var loom: int = machine.find_kind(Pieces.LOOM)
+	for id in placed:
+		var p := Pieces.ports(machine.nodes[id], inventions)
+		for k in p.y:
+			if machine.tube_from(id, k) < 0 and machine.tube_into(loom, 0) < 0:
+				return [out_port(id, k), loom_port]
+	return []
+
+
+func _draw_hint() -> void:
+	var path := _hint_path()
+	if path.is_empty():
+		return
+	var cycle := fmod(clock, 2.6)
+	var from: Vector2 = path[0]
+	var to: Vector2 = path[1]
+	var pos := from
+	var down := false
+	var alpha := 1.0
+	if cycle < 0.4:
+		alpha = cycle / 0.4
+		down = cycle > 0.25
+	elif cycle < 1.7:
+		var u := (cycle - 0.4) / 1.3
+		pos = from.lerp(to, u * u * (3 - 2 * u))
+		down = true
+	elif cycle < 2.1:
+		pos = to
+	else:
+		pos = to
+		alpha = 1.0 - (cycle - 2.1) / 0.5
+	if down:
+		K.dashed(self, PackedVector2Array([from, pos]), Color(P.INK, 0.35 * alpha), 3, 8, 7)
+	K.hand(self, pos, down, alpha)
+
+
+## A little puff where the last stitch landed.
+func _draw_stitch_puff() -> void:
+	var age := clock - landed_at
+	if age < 0 or age > 0.5 or sim.woven.size() == 0:
+		return
+	var i: int = sim.woven.size() - 1
+	var cell := loom_cloth.position + Vector2((i % level.cols + 0.5) * loom_cs, (i / level.cols + 0.5) * loom_cs)
+	var u := age / 0.5
+	K.ring(self, cell, loom_cs * (0.55 + u * 0.7), Color(P.INK, 0.35 * (1 - u)), 2)
+	for k in 4:
+		var a := k * PI / 2 + PI / 4
+		K.disc(self, cell + Vector2(cos(a), sin(a)) * loom_cs * (0.5 + u * 0.8), 2.2 * (1 - u), Color(P.WOOD_DK, 1 - u))

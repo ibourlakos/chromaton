@@ -2,6 +2,7 @@
 	"id": "01_one_pot",
 	"name": "One Pot of Red",
 	"goal": "Tube the red pot to the loom.",
+	"hints": true,
 	"pieces": ["red_pot"],
 	"inventions": [],
 	"stars": {"budget": 1, "best": 1},

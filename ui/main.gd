@@ -9,6 +9,9 @@
 ##   --ticks=<n>                 ticks to run before the screenshot
 ##                               (default: one per stitch)
 ##   --phase=<0..1>              how far drops are along their tubes
+##   --finish                    run to the end and show the result
+##   --wrong                     tube card A straight to the loom instead
+##   --empty                     leave the bench empty
 extends Control
 
 const P = preload("res://ui/palette.gd")
@@ -146,10 +149,21 @@ func _screenshot(args: Dictionary) -> void:
 				get_tree().quit(1)
 				return
 			open_level(i)
-			screen.load_machine(levels[i].reference_machine())
+			if args.has("empty"):
+				screen.load_machine(levels[i].new_machine())
+			elif args.has("wrong"):
+				screen.load_machine(levels[i].machine_from_spec({"pieces": [], "tubes": [["card0", "loom"]]}))
+			else:
+				screen.load_machine(levels[i].reference_machine())
 			screen.frozen = true
 			screen.clock = 3.3
-			screen.fast_forward(int(args.get("ticks", levels[i].size())), float(args.get("phase", 0.5)))
+			if args.has("finish") or args.has("wrong"):
+				screen.fast_forward(1000000, 1.0)
+				screen._on_tick_shown()
+				if screen.panel != null:
+					screen.panel.t = 3.0
+			else:
+				screen.fast_forward(int(args.get("ticks", levels[i].size())), float(args.get("phase", 0.5)))
 	for n in 4:
 		await get_tree().process_frame
 	await RenderingServer.frame_post_draw

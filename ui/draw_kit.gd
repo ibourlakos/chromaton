@@ -341,6 +341,7 @@ static func tub(ci: CanvasItem, c: Vector2, s: float, liq: int, age: float, kind
 			ci.draw_polyline(swirl, Color(1, 1, 1, 0.45) if not P.is_dark(shown) else Color(1, 1, 1, 0.3), 2.5, true)
 		if shown == 0:
 			dashed(ci, closed(ellipse(Vector2(0, -62), 38, 6, 0, 30)), P.INK_SOFT, 1.5, 5, 4)
+		_surface_pips(ci, Vector2(0, -62), shown)
 	reset_xf(ci)
 	if kind == "mix":
 		var a := t * (1.2 + 5 * k)
@@ -646,3 +647,31 @@ static func icon(ci: CanvasItem, kind: String, c: Vector2, s: float, col: Color)
 				var o := c + Vector2(-5 + i * 9, 3 - i * 8) * s
 				var z := (4 - i) * s
 				ci.draw_polyline(PackedVector2Array([o + Vector2(-z, -z), o + Vector2(z, -z), o + Vector2(-z, z), o + Vector2(z, z)]), col, w * 0.7, true)
+
+
+## A pointing hand for wordless hints. The fingertip is at p.
+static func hand(ci: CanvasItem, p: Vector2, down: bool, alpha: float) -> void:
+	var fill_col := Color(P.TAG, alpha)
+	var ink := Color(P.INK, alpha)
+	if down:
+		ring(ci, p, 14, Color(P.INK, 0.4 * alpha), 3)
+	var o := p + (Vector2(2, 3) if down else Vector2(6, 8))
+	fill(ci, round_rect(Rect2(o + Vector2(-6, 18), Vector2(30, 26)), 10), Color(P.SHADOW, P.SHADOW.a * alpha))
+	var palm := round_rect(Rect2(o + Vector2(-8, 14), Vector2(28, 26)), 10)
+	shape(ci, palm, fill_col, ink, 2.5)
+	shape(ci, ellipse(o + Vector2(-9, 26), 5, 8, 0.5, 16), fill_col, ink, 2.5)
+	var finger := round_rect(Rect2(o + Vector2(-5, -4), Vector2(10, 28)), 5)
+	shape(ci, finger, fill_col, ink, 2.5)
+	for k in 2:
+		ci.draw_line(o + Vector2(5 + k * 6, 16), o + Vector2(5 + k * 6, 22), Color(ink, 0.6 * alpha), 2, true)
+
+
+## Glyph dots lying flat on a paint surface (a squashed version of pips()).
+static func _surface_pips(ci: CanvasItem, c: Vector2, color: int) -> void:
+	var ink: Color = P.PIP_LIGHT if P.is_dark(color) else P.PIP_DARK
+	for pip in PIP:
+		var pc: Vector2 = c + Vector2(cos(pip[1]) * 13, sin(pip[1]) * 4.5)
+		if color & pip[0]:
+			fill(ci, ellipse(pc, 4, 2.4, 0, 12), ink)
+		else:
+			stroke(ci, ellipse(pc, 3.6, 2.1, 0, 12), Color(ink, 0.55), 1.3)
