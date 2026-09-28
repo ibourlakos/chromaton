@@ -1,0 +1,290 @@
+# Chromaton — Design Document
+
+> Working title (Steam name conflict check pending).
+> This file is the **single source of truth** for the design. Ideas explored elsewhere (claude.ai Project, chats) come back here.
+
+**Status legend:** ✅ Decided · 🟡 Proposed / leaning · ❓ Open
+
+---
+
+## 1. Vision
+
+A puzzle game about **inventing machines out of color logic**. Where computers build registers and adders out of binary logic gates, Chromaton players build ever-bigger contraptions out of **color operations** that mix, filter, invert, and route paint.
+
+- ✅ **Looks like a children's game, reveals its depth on its own.** North star: *Bloons TD 6*: friendly surface, hard-core depth underneath. Also: *Human Resource Machine* (cute look, real programming depth).
+- ✅ **Invent first, then optimize.** Solving a level earns the invention for your toolkit; optimizing it earns stars and leaderboard standing.
+- ✅ Shareable with friends early; Steam as a later goal.
+
+Genre neighbours: Zachtronics (SpaceChem, TIS-100, Shenzhen I/O, Opus Magnum), Turing Complete, NandGame, Human Resource Machine. **Watch out for:** *shapez / shapez 2*, a cute factory game that also mixes colors (additive RGB). Chromaton's difference: **logic and invention**, not logistics.
+
+---
+
+## 2. The color algebra
+
+### 2.1 Values ✅
+
+Exactly **8 colors**. A color is *the set of primaries present* in it. Mixing ignores quantity (red + yellow + yellow = orange).
+
+| Primaries present | Color | Complement |
+|---|---|---|
+| none | **White** (no paint, the empty canvas) | Black |
+| R | **Red** | Green |
+| Y | **Yellow** | Purple |
+| B | **Blue** | Orange |
+| R+Y | **Orange** | Blue |
+| Y+B | **Green** | Red |
+| R+B | **Purple** | Yellow |
+| R+Y+B | **Black** (all paint) | White |
+
+Pigment rules (subtractive), **not** light rules: all colors make black, white is nothing.
+
+✅ **Internal representation:** a color is a 3-bit integer (R, Y, B flags, 0–7), and every operation is a bitwise op. **Bits, bytes and "binary" are internal parlance only and never appear in player-facing text, UI or tutorials.** The player thinks in paint.
+
+### 2.2 How big the function space is (for reference)
+
+All functions from *n* colors to 1 color: **8^(8^n)**.
+
+| Arity | Count |
+|---|---|
+| 1 → 1 | 8^8 ≈ 16.7 million (of which 8! = 40,320 are permutations) |
+| 2 → 1 | 8^64 ≈ 6 × 10^57 |
+| 3 → 1 | 8^512 ≈ 10^462 |
+| n → m | 8^(m · 8^n) |
+
+- **Multi-output components** (n → m) are just *m* functions sharing inputs (e.g. Prism = three 1→1 functions side by side).
+- **Stateful components** (cells, buffers, counters) are *not* functions: their output depends on history. They are small machines.
+
+Enumerating everything is impossible, so the design job is: **a small primitive set that can build everything + a curated catalog of named inventions.**
+
+### 2.3 Families of operations 🟡
+
+| Family | Idea | Examples |
+|---|---|---|
+| **Paint-like** (each primary handled on its own) | 2^(2^n) per arity: 4 unary, 16 binary, 256 ternary | Mix (union), Filter (intersection), Contrast (in exactly one), Bleach (A minus B), Invert; **Consensus** (primaries present in ≥ 2 of 3 inputs) |
+| **Hue-like** (moving primaries around) | The 12 "even-handed" symmetries: identity, Shift, Reverse-shift, 3 Swaps, and each of those followed by Invert | Shift: R→Y→B→R, so Orange→Green→Purple |
+| **Counting / comparing** (information crosses between primaries) | | "how many primaries?", "is A darker than B?", "equal?" |
+| **Routing** (the most naturally ternary family) | A control primary (R/Y/B) chooses one of three paths | 3-way switch (1 in, 3 out), 3-way selector (3 in, 1 out) |
+| **Stateful** | Machines, not functions | Cell (holds a color), Buffer (queue), Counter |
+
+Nice facts to exploit in puzzles:
+- Invert matches art-class **complementary colors** (red↔green, blue↔orange, yellow↔purple).
+- *"Given two different primaries, output the third"* = `Invert(Mix(a, b))`, the SET card-game rule, discovered through paint.
+
+### 2.4 Completeness ✅ (verified)
+
+Verified by `tools/algebra_check.gd`; full results in [docs/algebra-report.md](docs/algebra-report.md). These three build **every** machine of any number of inputs:
+1. **NOR**: `Invert(Mix(a, b))`
+2. **Shift**
+3. **one Red pot**
+
+Findings:
+- **One pot is enough.** Shift turns red into yellow and blue. Without any pot, nothing can single out one primary (proven), so **at least one "biased" source is required**. Story beat: level 1 = "you have one pot of red paint."
+- **Every piece of Mix + Invert + Shift + Red pot is necessary:**
+  - without Invert, paint can never be taken away (proven);
+  - without Shift, paint never moves between primaries (proven). A single Swap (red/yellow) is *not* a substitute: blue stays stuck.
+  - a kit built only on Contrast can only toggle, so it can't mix or filter (proven).
+- Complete kits verified: NOR + Shift + Red pot; Mix + Invert + Shift + Red pot; Mix + Filter + Invert + Shift + 3 pots; Mix + Filter + Contrast + Shift + Red pot. Random machines of 1–3 inputs were built from each kit's own pieces and matched their tables exactly.
+
+### 2.5 Starting pieces 🟡 (recommendation pending designer approval)
+
+**Recommended: the lean kit.** Three vat critters and a pot. *"Everything in Chromaton is made from three critters and a pot of red paint."*
+
+| Piece | In → out | Behaviour | Critter idea | Signature animation |
+|---|---|---|---|---|
+| **Red pot** | 0 → 1 | Red paint, forever | Chubby clay pot, sleepy | Burps a red drop each tick |
+| **Mix** | 2 → 1 | Everything in either input | Wooden tub with a spoon (mockup) | Stirs; the paint swirls into the new color |
+| **Invert** | 1 → 1 | Complementary color | Tub that somersaults (mockup) | Flips like a pancake; the paint lands as its opposite |
+| **Shift** | 1 → 1 | Turn the wheel one step: Red → Yellow → Blue | Hamster in a red/yellow/blue wheel | Runs; the wheel clicks one notch |
+| Tube split | 1 → n | Copies the paint | Plumbing, not a critter | None; free and not counted as a piece |
+
+- **Filter becomes the first invention** (Act 2): "keep only what both share" = invert both, mix, invert back. It takes 4 pieces and is a real "aha" moment.
+- Levels may still provide extra pots (yellow, white, ...) as givens. Only the red pot is a placeable piece.
+- Trade-off: in the lean kit, routing machines cost more (Three-way Switch 35 pieces vs 21 with Filter as a piece; see report §4). Fewer critters to design and animate outweighs this (see §7.2 risk). Placed recipes appear as one block anyway, so the price only shows on the optimizer's scoreboard.
+- Alternative (full kit): Mix, Filter, Invert, Shift + 3 pots. Cheaper machines, but 5 critters and 3 pot variants, and the De Morgan discovery is lost.
+
+**Early inventions and their price in the lean kit** (verified; from report §4): Yellow pot 2 · Third Color 2 · Bleach 3 · Filter 4 · Black pot 5 · Contrast 7 · Any Red? 9 · Consensus 11 · Same Color? 12 · Prism 13 · Three-way Switch 35 · Three-way Selector 39.
+
+What the player invents and keeps: **recipes** (stateless) and **machines** (stateful).
+
+---
+
+## 3. World, theme and vocabulary 🟡
+
+🟡 **Leaning: dye works + loom**, the world the chosen Critter Workshop style (§7.2) was mocked up in: wooden vats with faces, glass tubes, pattern cards, a wooden loom. Vocabulary below still needs confirming.
+
+Candidate worlds (can be blended):
+
+| World | Component | Wire | Bus | Invention | Memory | Product |
+|---|---|---|---|---|---|---|
+| Dye works / textile mill | Vat | Thread | Skein / Braid | Recipe | Spool | Tapestry |
+| Print shop | Press / Plate | Ink line | Ribbon | Stencil | Ink well | Print / Poster |
+| Painter's guild | Mortar / Easel | Stroke | Band | Technique | Palette well | Masterpiece |
+| Alchemy lab | Alembic | Tube | Bundle | Formula | Vial | Elixir |
+| Waterworks / canals | Sluice / Lock | Canal | Aqueduct | Blueprint | Cistern | Fountain |
+| Botanist's garden | Graft | Stem | Trellis | Cultivar | Seed bank | Flowerbed |
+
+Notes:
+- **Print shop** fits the algebra best: real printers split images into color plates (= Prism) and overlay them (= Mix).
+- **Painter's guild** has the best progression: apprentice → journeyman → master; a *masterpiece* was historically the work you submitted to become a master, so it's a perfect finale.
+- **Dye works + loom** gives the strongest story (Jacquard → Babbage, see §4).
+- **Waterworks** fits vertical flow literally.
+
+Working vocabulary until decided: *vat* (component), *thread* (wire), *braid* (bus: parallel threads), *recipe*, *machine*, *Pattern Book* (the player's collection of inventions).
+
+Buses: ✅ parallel = a **braid** of N threads; serial = a **sequence of colors over time** on one thread.
+
+---
+
+## 4. The Loom 🟡
+
+The central visual and the late-campaign goal. Historical anchor: the **Jacquard loom (1804)** used punched cards and inspired Babbage; the campaign quietly retraces that history.
+
+| Loom | Chromaton |
+|---|---|
+| **Warp** (vertical threads) | Output columns: a loom of width W has W output threads |
+| **Weft** (one horizontal pass) | One tick: each tick weaves one row |
+| **Pattern card** | The program / input buffer |
+| **Cloth** | The history of the output over time, growing downward under the machine |
+
+- **Time is the vertical axis of the image**; from the painting's point of view, color flows purely vertically.
+- Every run of every level produces a strip of fabric.
+- **Chapter payoff:** each level weaves one band; completing a chapter joins the bands into a full tapestry (quilt reveal).
+- Finale: a **programmable loom** (the CPU equivalent) that weaves a tapestry from a pattern card.
+- 🟡 **Serial vs row weaving:** a single output thread weaves one stitch per tick with a shuttle walking the rows (as in the style mockup); a braid of W threads weaves a whole row per tick. Early levels can be serial; braids arrive later and weave faster.
+
+---
+
+## 5. Modes
+
+### 5.1 Campaign: Invention ✅ (arc 🟡)
+Solve a level → earn the construct (recipe/machine) → use it in later levels.
+
+Draft arc:
+1. **Mixing:** blend, "is it black?", sort primaries (monotone, gentle).
+2. **Negation:** Invert arrives. Contrast recipe (XOR analogue), equality detector.
+3. **Rotation:** Shift arrives. "Third color" recipe, hue counters, comparators.
+4. **Memory:** feedback loops → Palette Cell (latch) → braided registers.
+5. **The Loom:** programmable loom weaving from a pattern card.
+
+Level specs are shown as **animated input/output swatch streams**, not truth tables.
+
+### 5.2 Optimization layer ✅
+Every level has a second loop after solving (the Zachtronics model), not a separate mode. Details in §6.
+
+### 5.3 Fix-it puzzles 🟡
+"Zero- or semi-implemented" machines that need finishing or fixing (themed as **restoration** of old masters' machines):
+- **Repair:** find the bug, fix with fewest changes ("fewest edits" metric).
+- **Complete:** half-built, with locked parts.
+- **Constrained:** only these parts / this area / this budget (like BTD6's CHIMPS).
+- **Retrofit:** works for order A; adapt to order B with minimal disruption.
+
+### 5.4 Buffer puzzles 🟡
+"Here are your incoming colors (input buffer); produce these colors (output buffer)." Sequence puzzles: reverse, sort by darkness, dedupe, interleave two threads, count the reds.
+
+### 5.5 Creative loom (sandbox) 🟡
+- Build machines that weave images; share machine + tapestry.
+- **Generative textiles:** each row computed from the previous row by a local rule = an 8-color 1D cellular automaton.
+- **Compression challenges:** "weave this pixel-art image with the cheapest machine" (repetition → counters, symmetry → mirror recipes). Bridges creative and optimize.
+
+### 5.6 Commissions / rush orders (tower-defense-like) 🟡 *later*
+Customer orders arrive as incoming color streams with deadlines; the player patches the running machine live; completed orders earn currency for components; waves demand new transformations.
+⚠️ Real-time pressure fights the thoughtful-puzzler mindset → offer slow-down/pause, keep it a separate later mode.
+
+**Mode build order:** Campaign → Optimization layer → Creative loom → Commissions.
+
+---
+
+## 6. Optimization & leaderboards 🟡
+
+Lessons from Opus Magnum:
+- **Multiple metrics:** Cost, Ticks (speed), Area (footprint), plus Edits for repair puzzles. No single solution wins all.
+- **Histograms, not just top-10 lists** ("you beat 72% on cost"). Plus **friend leaderboards**.
+- **Stars are the kid-friendly face of the optimizer:** ★ solved · ★★ under budget · ★★★ near-optimal. Experts open the same screen and find the histograms.
+- **Invented recipes cost the sum of their primitives** (flattened), or rankings break.
+- **Deterministic simulation** so every submitted solution can be re-simulated and verified (anti-cheat).
+- **GIF export** of solutions (Opus Magnum's viral marketing).
+
+---
+
+## 7. Art direction 🟡
+
+### 7.1 The reserved-colors rule ✅
+Color *is* game state, so:
+- **Saturated pure hues are only for signals.** World, UI and characters use neutrals: warm paper, wood, soft greys, muted pastels.
+- **Light background (paper/canvas), not dark.** White = no paint, black = all paint: a painter's canvas. Dark neon backgrounds hide black signals and invert the intuition.
+- **White signal** = empty/outlined droplet; **black signal** = glossy ink drop.
+
+### 7.2 Style ✅ Critter Workshop
+Chosen after comparing three animated directions in [mockups/style-studies.html](mockups/style-studies.html) (Critter Workshop, Pixel Workshop, Paper Minimal).
+
+- ❌ Futuristic/neon: it looks like *light*, which mixes the opposite way.
+- ❌ Pixel Workshop (whole world in pixels) and Paper Minimal (transit-map diagram): not chosen.
+- ✅ **Critter Workshop:** **chunky flat toy-like vector art** (rounded shapes, thick ink outlines, soft shadows, bouncy "juicy" animation; think Bloons TD 6 meets a storybook dye works), **drawn procedurally in code**. The **loom's output is pixel art**: pixel art is *what the player makes*, not decoration.
+- ✅ **Components are critters:** wooden vats with faces, each with a signature animation (Mix stirs with a spoon, Invert does a flip). Signals stay clean teardrop droplets with glyph dots, riding through glass tubes.
+- Reference palette from the mockup: paper `#ECE5D6`, ink `#3A302A`, wood `#C99A69` / `#A97C52`, hoop `#8C7A68`, tag paper `#F8F3E8`, glass `#F6F1E6`. Font: Fredoka (display) + Nunito (UI).
+- ❓ A workshop cast of small animals with a master who hands out commissions (story voice), on top of the component critters.
+- ⚠️ Known risk: every new component needs a character and animations; faces must stay out of the way on big machines (consider zoomed-out simplification).
+
+### 7.3 Progressive depth (the Bloons lesson) ✅
+1. Early: drag, drop, watch paint flow. No reading needed.
+2. Collecting: the Pattern Book fills like a sticker album.
+3. After each solve: stars first; histograms unlock later.
+4. Late: restoration, constraints, creative loom, commissions.
+
+Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never talk down; near-zero text.
+
+### 7.4 Royalty-free sources
+- **Kenney.nl:** CC0 (public domain), commercial OK. Safest.
+- **Google Fonts:** SIL Open Font License; one round friendly font (Nunito / Fredoka / Baloo).
+- **SFX:** jsfxr / ChipTone (you own the output), Kenney / Freesound CC0.
+- **Music:** Incompetech (CC-BY, attribution); commission later.
+- **OpenGameArt / itch.io:** check each license; avoid CC-BY-SA / GPL art unless obligations are understood.
+- **game-icons.net:** CC BY (attribution required).
+- **AI-generated art:** Steam requires store-page disclosure; code-drawn style sidesteps it.
+
+---
+
+## 8. Accessibility ✅
+
+- **Colorblind support is mandatory** (~8% of men). Each primary gets a glyph segment; a color's badge fills the segments present. It also *teaches* the set structure.
+- **Touch-first UI:** big targets, drag-and-drop, nothing that depends on hover or right-click (tablets / future mobile).
+- Near-zero text; language independence.
+
+---
+
+## 9. Tech 🟡
+
+- **Engine: Godot 4 from day zero**, with **GDScript** (Godot 4 web export does not support C#).
+- **Simulation core = pure GDScript classes** with no scene-node dependencies, unit-tested headless from the command line. Same core re-verifies leaderboard submissions.
+- **UI built mostly in code** rather than hand-edited scenes (keeps the AI-assisted loop tight; the human runs it and reports visual issues).
+- **Simulation model:** discrete ticks; every component takes 1 tick. Gives the Ticks metric, makes loops/memory natural, avoids race conditions.
+- **Distribution:** web export on itch.io for friends → Steam later (GodotSteam; Steam Direct fee $100; Steamworks leaderboards) → mobile later.
+
+---
+
+## 10. Audience & platforms
+
+- Puzzle fans (programmers, Zachtronics players) **and** kids (~8+), families.
+- ⚠️ Online features for under-13s carry legal obligations (COPPA in the US, GDPR child rules in the EU). Steam accounts are 13+, so this matters mainly for mobile later. Build leaderboards/sharing so they can be disabled.
+
+---
+
+## 11. Roadmap
+
+1. **Lock the algebra:** ✅ completeness verified by script ([docs/algebra-report.md](docs/algebra-report.md)); 🟡 lean starting kit recommended (§2.5), awaiting approval.
+2. ✅ ~~Pick the art style~~: **Critter Workshop** (see §7.2). Still to confirm: world vocabulary (§3).
+3. **Specify ~10 campaign levels on paper**, ending in a first small woven band.
+4. **Godot vertical slice:** grid, wiring, tick simulation, loom output, 2 metrics, local only.
+5. Share a web build with friends; iterate.
+
+---
+
+## 12. Open questions ❓
+
+- Final world vocabulary (§3): leaning dye works + loom.
+- Workshop cast / story voice on top of the component critters (§7.2).
+- How critters simplify when zoomed out on large machines.
+- Final primitive set and which arities Mix/Filter support (2 only, or n?).
+- Is the Red source the only biased primitive, or do all three primary sources exist from the start?
+- Grid-based placement: square grid? Thread routing rules (crossings, bridges)?
+- Title: "Chromaton" conflict search.
