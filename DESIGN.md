@@ -200,7 +200,7 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 | 14 | Wash Out | Bleach; Filter + Invert is 5, De Morgan is 3 | 8×6 | 5 | 3 |
 | 15 | The Flower | Filter of two cards mixed with a third (the mockup flower) | 16×12 | 7 | 5 |
 
-- The v0.1 levels "Yellow from Red" (Shift a card) and "Opposites" (Invert a card) were cut: chapter 1 teaches both. Their files are still in `levels/` (unused, not in `index.json`).
+- The v0.1 levels "Yellow from Red" (Shift a card) and "Opposites" (Invert a card) were cut: chapter 1 teaches both. Their files were removed.
 - ✅ **Each level's tray is an explicit list.** A level offers only the pieces and inventions it names, so tools the player has earned (future color pots, inventions) never trample a puzzle that is meant to go without them. An invention also has to be owned to appear.
 - Level ids are stable names (`green`, `black_cat`), not numbers; the number shown is the level's place in `index.json`, so levels can be inserted without renaming files or breaking saves.
 - Pattern cards are derived from each target picture by `tools/make_cards.gd` (seeded by level id, so reruns match). The solver also proves the card data has no cheap shortcut.
@@ -262,6 +262,8 @@ Color *is* game state, so:
 ### 7.2 Style ✅ Critter Workshop
 Chosen after comparing three animated directions in [mockups/style-studies.html](mockups/style-studies.html) (Critter Workshop, Pixel Workshop, Paper Minimal).
 
+✅ The mockup is the reference for **style** (critters, palette, droplets, tubes, loom), not layout: it flows downward, the game flows left to right (§9.1). It is not kept in sync; screenshots of the game are the layout reference.
+
 - ❌ Futuristic/neon: it looks like *light*, which mixes the opposite way.
 - ❌ Pixel Workshop (whole world in pixels) and Paper Minimal (transit-map diagram): not chosen.
 - ✅ **Critter Workshop:** **chunky flat toy-like vector art** (rounded shapes, thick ink outlines, soft shadows, bouncy "juicy" animation; think Bloons TD 6 meets a storybook dye works), **drawn procedurally in code**. The **loom's output is pixel art**: pixel art is *what the player makes*, not decoration.
@@ -319,10 +321,10 @@ Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never 
 - **Distribution:** web export on itch.io for friends → Steam later (GodotSteam; Steam Direct fee $100; Steamworks leaderboards) → mobile later.
 - ✅ **Prototype v0.1 is built** (Godot 4.7, GDScript only, Compatibility renderer, no threads or plugins). See CLAUDE.md for layout and commands.
 
-### 9.1 Workbench UI (prototype) 🟡
+### 9.1 Workbench UI (prototype) 🟡 (flow direction ✅)
 
 - 1280×800 design canvas that scales to the window. Top bar: back, level name and one-line goal, Undo · Reset · Step back · Step · Run/Pause, and three speeds (0.55 s, 0.22 s and 0.05 s per tick; Normal is the default).
-- 🟡 **Paint flows left to right** (the mockup flows downward). Machines grow deeper as puzzles get harder, and the screen is landscape, so depth gets the long axis: the bench is 11 cells deep × 7 wide (one piece per cell), pattern cards sit on its left edge as fixed pieces covering the first two cells of their rows (the rest of the edge takes pieces), and the loom stands on the right with the design card above it and Pieces, Ticks and star targets below. The parts tray is a shelf along the bottom (room for about 9 pieces) with the trash at its right end.
+- ✅ **Paint flows left to right** (the mockup flows downward; it is the style reference only, see §7.2). Machines grow deeper as puzzles get harder, and the screen is landscape, so depth gets the long axis: the bench is 11 cells deep × 7 wide (one piece per cell), pattern cards sit on its left edge as fixed pieces covering the first two cells of their rows (the rest of the edge takes pieces), and the loom stands on the right with the design card above it and Pieces, Ticks and star targets below. The parts tray is a shelf along the bottom (room for about 9 pieces) with the trash at its right end.
 - Pieces take paint in on their left side through short glass pipes and send it out on their right through wooden spouts; with two ports, the first is on top. Cards release paint from their right end, next color nearest the spout. Tubes are drawn as glass curves between ports; crossings are allowed (no routing rules yet). The cloth still weaves top to bottom (§4).
 - Gestures: drag from the tray to place; drag a piece to move it, or back onto the tray (trash) to remove it; drag from an output to an input (or the other way) to lay a tube; drag a tube's end off an input to re-route or drop it; tap a tube, then its delete button. Any edit rewinds the run. Undo covers every edit.
 - Tubes can end anywhere on the loom. A drop travels along its tube during the tick it was made, then waits at the far end; a woven drop flies into its cell.

@@ -18,7 +18,7 @@ A puzzle game about inventing machines out of **color logic**: 8 pigment colors,
 - **The 8 signal colors are reserved.** Decorative art and UI must not use saturated signal hues; use neutrals on a light (paper/canvas) background.
 - **Colorblind glyphs are always on** for signals, not an optional mode.
 - **Touch-first UI:** no hover-only or right-click-only interactions.
-- **Art style is Critter Workshop** (DESIGN.md §7.2): toy-like vector art drawn in code, components as wooden-vat critters, pixel art only for the woven tapestry. [mockups/style-studies.html](mockups/style-studies.html) is the visual reference.
+- **Art style is Critter Workshop** (DESIGN.md §7.2): toy-like vector art drawn in code, components as wooden-vat critters, pixel art only for the woven tapestry. [mockups/style-studies.html](mockups/style-studies.html) is the visual reference for style, not layout (it flows downward; the game flows left to right, DESIGN.md §9.1).
 
 ## Commands
 
@@ -42,7 +42,7 @@ Godot 4.7.2 is installed via winget. `godot_console` may not be on PATH (winget 
 - `tools/`: design tools, not shipped with the game.
 - `docs/`: generated reports.
 - `fonts/`: Fredoka and Nunito (SIL OFL, licenses alongside).
-- `mockups/`: HTML mockups (the art-style reference).
+- `mockups/`: HTML mockups (the art-style reference; the game's layout supersedes theirs).
 
 ## Tech
 
