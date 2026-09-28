@@ -1,0 +1,43 @@
+{
+	"id": "pattern_card",
+	"name": "The Pattern Card",
+	"goal": "Tube the card to the loom.",
+	"hints": true,
+	"pieces": [],
+	"inventions": [],
+	"stars": {
+		"budget": 0,
+		"best": 0
+	},
+	"target": [
+		"WWWKWWYY",
+		"WWWKRWYY",
+		"WWWKRRWW",
+		"WWWKRRRW",
+		"WOOOOOOW",
+		"BBBBBBBB"
+	],
+	"card_rule": "copy",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"WWWKWWYY",
+				"WWWKRWYY",
+				"WWWKRRWW",
+				"WWWKRRRW",
+				"WOOOOOOW",
+				"BBBBBBBB"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [],
+		"tubes": [
+			[
+				"card0",
+				"loom"
+			]
+		]
+	}
+}

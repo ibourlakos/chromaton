@@ -1,6 +1,6 @@
 {
-	"id": "02_orange",
-	"name": "Orange",
+	"id": "orange_sun",
+	"name": "Orange Sun",
 	"goal": "Mix red into the card to weave an orange sun.",
 	"pieces": [
 		"red_pot",

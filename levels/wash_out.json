@@ -1,5 +1,5 @@
 {
-	"id": "08_wash_out",
+	"id": "wash_out",
 	"name": "Wash Out",
 	"goal": "Weave the first card with the second card's paint washed out.",
 	"pieces": [
@@ -29,23 +29,23 @@
 		{
 			"name": "A",
 			"colors": [
-				"PBGBBGPB",
-				"BPBKKOBO",
-				"KPOKKOOK",
-				"BKOOKKOO",
-				"BKGOKOBO",
-				"GGBGBGKK"
+				"GKBBBGBP",
+				"KBBOOKGO",
+				"PPKKOOOK",
+				"GGOKOOOK",
+				"BBGOOOPK",
+				"GKPGBBGB"
 			]
 		},
 		{
 			"name": "B",
 			"colors": [
-				"OWYYYYOR",
-				"RORBBBYB",
-				"ORBWBWBB",
-				"ROBBBBBB",
-				"OOYWBBRW",
-				"RRROYORO"
+				"YORRRORO",
+				"ORYBWBYB",
+				"RRBWWBWB",
+				"YOBBWBWB",
+				"OYYBBBRB",
+				"RRRYWRRR"
 			]
 		}
 	],

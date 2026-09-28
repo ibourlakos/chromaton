@@ -1,7 +1,7 @@
 {
-	"id": "04_make_black",
-	"name": "Make Black",
-	"goal": "All the paints together make black. Weave the black cat.",
+	"id": "black_cat",
+	"name": "Black Cat",
+	"goal": "Weave the black cat.",
 	"pieces": [
 		"red_pot",
 		"mix",

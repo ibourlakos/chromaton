@@ -7,7 +7,8 @@
 ## pseudo-random but fixed by the level id, so reruns give the same cards.
 ##
 ## Rules (t = target stitch):
-##   remove_red   one card: t without its red (a Mix with the red pot weaves t)
+##   copy         one card: t itself (the card tubed straight to the loom weaves t)
+##   remove_red  one card: t without its red (a Mix with the red pot weaves t)
 ##   unshift      one card: t turned back one step (a Shift weaves t)
 ##   any_red      one card: Red where t is Black, White elsewhere
 ##   invert       one card: the opposite of t
@@ -21,7 +22,7 @@ const Paint = preload("res://core/paint.gd")
 const Level = preload("res://core/level.gd")
 
 const CARD_COUNT := {
-	"remove_red": 1, "unshift": 1, "any_red": 1, "invert": 1,
+	"copy": 1, "remove_red": 1, "unshift": 1, "any_red": 1, "invert": 1,
 	"third_color": 2, "filter": 2, "bleach": 2, "filter_mix": 3,
 }
 const NAMES := ["A", "B", "C"]
@@ -94,6 +95,8 @@ static func share(shared: int, i: int, salt: int, k: int) -> Array:
 
 static func derive(rule: String, t: int, i: int, salt: int) -> Array:
 	match rule:
+		"copy":
+			return [t]
 		"remove_red":
 			return [t & ~Paint.RED] if t & Paint.RED else []
 		"unshift":

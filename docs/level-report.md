@@ -11,15 +11,21 @@ godot_console --headless --path . --script res://tools/level_solver.gd
 | Level | Stitches | Cards | Card combos | Reference | Ticks | Cheapest | Cheapest machine | ★★ budget | ★★★ best |
 |---|---|---|---|---|---|---|---|---|---|
 | One Pot of Red | 12 | 0 | 1 | 1 | 24 | 1 | `Red` | 1 | 1 |
-| Orange | 24 | 1 | 2 | 2 | 49 | 2 | `Mix(A, Red)` | 3 | 2 |
-| Yellow from Red | 24 | 1 | 2 | 1 | 49 | 1 | `Shift(A)` | 2 | 1 |
-| Make Black | 24 | 1 | 2 | 4 | 99 | 4 | `Mix(Mix(A, Shift(A)), Shift(Shift(A)))` | 6 | 4 |
-| Opposites | 24 | 1 | 5 | 1 | 49 | 1 | `Invert(A)` | 2 | 1 |
+| Yellow | 12 | 0 | 1 | 2 | 25 | 2 | `Shift(Red)` | 3 | 2 |
+| Blue | 12 | 0 | 1 | 3 | 26 | 3 | `Shift(Shift(Red))` | 4 | 3 |
+| Orange | 12 | 0 | 1 | 3 | 38 | 3 | `Mix(Red, Shift(Red))` | 4 | 3 |
+| Purple | 12 | 0 | 1 | 4 | 50 | 4 | `Mix(Red, Shift(Shift(Red)))` | 5 | 4 |
+| All the Paint | 12 | 0 | 1 | 5 | 51 | 5 | `Mix(Shift(Shift(Red)), Mix(Red, Shift(Red)))` | 6 | 5 |
+| Green | 12 | 0 | 1 | 2 | 25 | 2 | `Invert(Red)` | 4 | 2 |
+| Nothing at All | 12 | 0 | 1 | 4 | 39 | 4 | `Invert(Mix(Red, Invert(Red)))` | 6 | 4 |
+| The Pattern Card | 48 | 1 | 6 | 0 | 96 | 0 | `A` | 0 | 0 |
+| Orange Sun | 24 | 1 | 2 | 2 | 49 | 2 | `Mix(A, Red)` | 3 | 2 |
+| Black Cat | 24 | 1 | 2 | 4 | 99 | 4 | `Mix(Mix(A, Shift(A)), Shift(Shift(A)))` | 6 | 4 |
 | The Third Color | 48 | 2 | 6 | 2 | 98 | 2 | `Invert(Mix(A, B))` | 3 | 2 |
-| Keep What They Share | 48 | 2 | 19 | 4 | 99 | 4 | `Invert(Mix(Invert(A), Invert(B)))` | 6 | 4 |
+| Keep What They Share | 48 | 2 | 20 | 4 | 99 | 4 | `Invert(Mix(Invert(A), Invert(B)))` | 6 | 4 |
 | Wash Out | 48 | 2 | 15 | 3 | 99 | 3 | `Invert(Mix(B, Invert(A)))` | 5 | 3 |
-| The Flower | 192 | 3 | 65 | 5 | 388 | 5 | `Mix(C, Invert(Mix(Invert(A), Invert(B))))` | 7 | 5 |
+| The Flower | 192 | 3 | 72 | 5 | 388 | 5 | `Mix(C, Invert(Mix(Invert(A), Invert(B))))` | 7 | 5 |
 
 ---
 
-Checks: all passed. Run time 2.8 s.
+Checks: all passed. Run time 3.5 s.

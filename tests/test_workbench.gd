@@ -23,11 +23,16 @@ func check(ok: bool, what: String) -> void:
 
 func _initialize() -> void:
 	var levels := Level.load_all()
+	var by_id := {}
+	for level in levels:
+		by_id[level.id] = level
 	var progress = Progress.new()
-	test_editing(levels[5], Progress.new())
+	test_editing(by_id["third_color"], Progress.new())
+	test_card_hint(by_id["pattern_card"])
 	for i in levels.size():
 		play_level(levels[i], progress, i)
-	test_not_general(levels[6])
+	test_tray_lists_only_the_level(by_id["green"], progress)
+	test_not_general(by_id["keep_what_they_share"])
 	if failures == 0:
 		print("test_workbench: all %d checks passed" % checks)
 	quit(1 if failures > 0 else 0)
@@ -96,6 +101,11 @@ func node_named(wb, level, names: Dictionary, name: String) -> int:
 ## Builds the level's reference machine by hand, runs it, and checks the score.
 func play_level(level, progress, index: int) -> void:
 	var wb = open(level, progress)
+	var offered: Array = level.pieces.duplicate()
+	for inv_id in level.inventions:
+		if progress.inventions.has(inv_id):
+			offered.append("inv:" + inv_id)
+	check(wb.tray.map(func(item): return item["kind"]) == offered, "%s: the tray holds exactly the level's pieces" % level.id)
 	var names := {}
 	for p in level.reference["pieces"]:
 		var kind: String = p["kind"]
@@ -130,6 +140,24 @@ func play_level(level, progress, index: int) -> void:
 	if not level.invention.is_empty():
 		var inv: Dictionary = progress.inventions.get(level.invention["id"], {})
 		check(not inv.is_empty() and inv["cost"] == 4, "%s: the player's machine joins the Pattern Book" % level.id)
+	wb.queue_free()
+
+
+## An invention the player owns stays out of a level that doesn't list it.
+func test_tray_lists_only_the_level(level, progress) -> void:
+	check(progress.inventions.has("filter") and not "filter" in level.inventions, "%s: set up with an owned, unlisted Filter" % level.id)
+	var wb = open(level, progress)
+	check(tray_point(wb, "inv:filter").x < 0, "%s: an unlisted invention is not in the tray" % level.id)
+	wb.queue_free()
+
+
+## With nothing in the tray, the hand shows the tube from the card to the loom.
+func test_card_hint(level) -> void:
+	var wb = open(level, Progress.new())
+	var card: int = wb.machine.find_kind(Pieces.CARD, 0)
+	check(wb._hint_path() == [wb.out_port(card, 0), wb.loom_port], "%s: the hint lays the card's tube" % level.id)
+	drag(wb, wb.out_port(card, 0), wb.loom_port)
+	check(wb._hint_path().is_empty(), "%s: the hint stops once the loom is fed" % level.id)
 	wb.queue_free()
 
 

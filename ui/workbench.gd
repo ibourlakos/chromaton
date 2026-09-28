@@ -620,7 +620,7 @@ func _draw_frame() -> void:
 	# Top bar
 	K.fill(self, PackedVector2Array([Vector2(0, 0), Vector2(DESIGN.x, 0), Vector2(DESIGN.x, TOP_H), Vector2(0, TOP_H)]), Color(P.PAPER_DK, 0.6))
 	draw_line(Vector2(0, TOP_H), Vector2(DESIGN.x, TOP_H), Color(P.INK, 0.15), 2)
-	var index := str(int(level.id.substr(0, 2)))
+	var index := str(level.number)
 	K.text(self, P.display(600), Vector2(80, 22), "%s · %s" % [index, level.name], 24, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 	K.text(self, P.ui(600), Vector2(80, 47), level.goal, 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 
@@ -785,9 +785,10 @@ func _draw_status() -> void:
 	K.text(self, font, box.position + Vector2(36, 20), "Pieces  %d" % pieces, 18, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 	K.icon(self, "ticks", box.position + Vector2(18, 52), 1.0, P.INK)
 	K.text(self, font, box.position + Vector2(36, 52), "Ticks  %d" % sim.tick, 18, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-	# Star targets: two stars within budget, three at the best known.
+	# Star targets: two stars within budget, three at the best known
+	# (none on a level with nothing to place).
 	var y := box.position.y + 86
-	for row in [[2, level.budget], [3, level.best]]:
+	for row in ([[2, level.budget], [3, level.best]] if tray.size() > 0 else []):
 		for s in row[0]:
 			K.star(self, Vector2(box.position.x + 16 + s * 20, y), 8, pieces <= row[1] and pieces > 0)
 		K.text(self, font, Vector2(box.position.x + 16 + row[0] * 20 + 4, y), "≤ %d" % row[1], 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
@@ -838,8 +839,12 @@ func _hint_path() -> Array:
 	for id in machine.nodes:
 		if not machine.is_fixed(id):
 			placed.append(id)
+	if placed.is_empty() and tray.size() > 0:
+		return [tray[0]["rect"].get_center(), cell_center(6, 2)]
 	if placed.is_empty():
-		return [tray[0]["rect"].get_center(), cell_center(6, 2)] if tray.size() > 0 else []
+		# Nothing to place: the card itself feeds the loom.
+		var card: int = machine.find_kind(Pieces.CARD, 0)
+		placed = [card] if card >= 0 else []
 	var loom: int = machine.find_kind(Pieces.LOOM)
 	for id in placed:
 		var p := Pieces.ports(machine.nodes[id], inventions)

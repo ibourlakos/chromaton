@@ -1,5 +1,5 @@
 {
-	"id": "07_keep_what_they_share",
+	"id": "keep_what_they_share",
 	"name": "Keep What They Share",
 	"goal": "Weave only the paint both cards share. Your machine becomes a new piece.",
 	"pieces": [
@@ -32,23 +32,23 @@
 		{
 			"name": "A",
 			"colors": [
-				"BKBPOBBP",
-				"GKPOORBB",
-				"GRRORKKK",
-				"PKOGKKKG",
-				"PKOKKKKK",
-				"KKKGGKGK"
+				"BBBOOBPP",
+				"KPKPKOGB",
+				"BRRRORRG",
+				"BOKKKKKB",
+				"GOKOKKKP",
+				"GGGKKGGK"
 			]
 		},
 		{
 			"name": "B",
 			"colors": [
-				"KBPRPKGB",
-				"PBOPPKKK",
-				"PPKPPRRB",
-				"BOKYOOOP",
-				"GOKOOKOB",
-				"GGGKKGKG"
+				"KGGRRKGB",
+				"BGRORRPK",
+				"PPPORKPB",
+				"PKOYOOOP",
+				"PKOKOKOG",
+				"KKKGGKKG"
 			]
 		}
 	],

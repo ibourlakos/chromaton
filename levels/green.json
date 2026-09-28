@@ -1,0 +1,15 @@
+{
+	"id": "green",
+	"name": "Green",
+	"goal": "Weave a green cloth.",
+	"pieces": ["red_pot", "shift", "mix", "invert", "split"],
+	"inventions": [],
+	"stars": {"budget": 4, "best": 2},
+	"target": ["GGGG", "GGGG", "GGGG"],
+	"card_rule": "",
+	"cards": [],
+	"reference": {
+		"pieces": [{"id": "pot", "kind": "red_pot", "x": 6, "y": 1}, {"id": "i", "kind": "invert", "x": 6, "y": 3}],
+		"tubes": [["pot", "i"], ["i", "loom"]]
+	}
+}

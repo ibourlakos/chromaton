@@ -174,21 +174,38 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 
 **Prototype v0.1 campaign** 🟡 (levels/*.json; cheapest counts proven by `tools/level_solver.gd`, see [docs/level-report.md](docs/level-report.md)):
 
+✅ **Chapter 1, the paint box:** no pattern cards. Each level weaves a plain cloth of one color (4×3) from the red pot, one level per paint. Every level has a cheaper answer to find.
+
+| # | Level | Teaches | Tray | ★★ budget | ★★★ best |
+|---|---|---|---|---|---|
+| 1 | One Pot of Red | Place a piece, lay a tube (wordless hand hint) | pot | 1 | 1 |
+| 2 | Yellow | Shift | pot, Shift | 3 | 2 |
+| 3 | Blue | Pieces chain: Shift twice | pot, Shift | 4 | 3 |
+| 4 | Orange | Mix; Split (two pots is ★★, splitting one pot's paint is ★★★) | pot, Shift, Mix, Split | 4 | 3 |
+| 5 | Purple | Mix again, with a longer chain | pot, Shift, Mix, Split | 5 | 4 |
+| 6 | All the Paint | Black = every primary; two Mixes | pot, Shift, Mix, Split | 6 | 5 |
+| 7 | Green | Invert. Mixing yellow and blue is ★★; Invert(red) is ★★★ | + Invert | 4 | 2 |
+| 8 | Nothing at All | White: make black, then flip it | all | 6 | 4 |
+
+✅ **The pattern card gets its own level**, then the card levels follow:
+
 | # | Level | Teaches | Loom | ★★ budget | ★★★ best |
 |---|---|---|---|---|---|
-| 1 | One Pot of Red | Place a piece, lay a tube (wordless hand hint) | 4×3 | 1 | 1 |
-| 2 | Orange | Mix with the red pot | 6×4 | 3 | 2 |
-| 3 | Yellow from Red | Shift | 6×4 | 2 | 1 |
-| 4 | Make Black | Split; black = every primary (a red/white card weaves a black cat) | 6×4 | 6 | 4 |
-| 5 | Opposites | Invert | 6×4 | 2 | 1 |
-| 6 | The Third Color | Invert(Mix(a, b)), two cards | 8×6 | 3 | 2 |
-| 7 | Keep What They Share | **Invention level:** the player builds Filter | 8×6 | 6 | 4 |
-| 8 | Wash Out | Bleach; Filter + Invert is 5, De Morgan is 3 | 8×6 | 5 | 3 |
-| 9 | The Flower | Filter of two cards mixed with a third (the mockup flower) | 16×12 | 7 | 5 |
+| 9 | The Pattern Card | A card is paint that changes over time: tube it straight to the loom and the first picture appears (a sailboat). No pieces; the hand hint shows the tube | 8×6 | – | 0 |
+| 10 | Orange Sun | A card meets the red pot: Mix | 6×4 | 3 | 2 |
+| 11 | Black Cat | Split and Shift a card; black = every primary (a red/white card weaves a black cat) | 6×4 | 6 | 4 |
+| 12 | The Third Color | Invert(Mix(a, b)), two cards | 8×6 | 3 | 2 |
+| 13 | Keep What They Share | **Invention level:** the player builds Filter | 8×6 | 6 | 4 |
+| 14 | Wash Out | Bleach; Filter + Invert is 5, De Morgan is 3 | 8×6 | 5 | 3 |
+| 15 | The Flower | Filter of two cards mixed with a third (the mockup flower) | 16×12 | 7 | 5 |
 
-- Pattern cards are derived from each target picture by `tools/make_cards.gd` (seeded, so reruns match). The solver also proves the card data has no cheap shortcut.
-- 🟡 Level 4 uses a red/white card instead of the red pot, so the black cat is a picture and not a plain black cloth.
-- 🟡 Levels unlock in order.
+- The v0.1 levels "Yellow from Red" (Shift a card) and "Opposites" (Invert a card) were cut: chapter 1 teaches both. Their files are still in `levels/` (unused, not in `index.json`).
+- ✅ **Each level's tray is an explicit list.** A level offers only the pieces and inventions it names, so tools the player has earned (future color pots, inventions) never trample a puzzle that is meant to go without them. An invention also has to be owned to appear.
+- Level ids are stable names (`green`, `black_cat`), not numbers; the number shown is the level's place in `index.json`, so levels can be inserted without renaming files or breaking saves.
+- Pattern cards are derived from each target picture by `tools/make_cards.gd` (seeded by level id, so reruns match). The solver also proves the card data has no cheap shortcut.
+- 🟡 Black Cat uses a red/white card instead of the red pot, so the black cat is a picture and not a plain black cloth.
+- 🟡 Levels unlock in order. The level select shows four per row, so the paint box fills the first two rows and the card levels the last two.
+- 🟡 Idea for later: each solved paint level puts a pot of that color on a paint-box shelf; a full shelf closes the chapter. Earned pots could later become tray pieces (priced like inventions, at the pieces that made them), offered only where a level lists them.
 
 **Inventions in the prototype** ✅: solving an invention level saves the player's own machine to the Pattern Book as a new piece. Its cards become input ports (in card order), the loom its output port; it is drawn as a sticker with its name, behaves exactly like the machine inside (same timing), and costs the total of its pieces.
 - 🟡 Before an invention is accepted it is run on every combination of input paints (64 for two inputs). A machine that only happens to match the level's cards is refused with a short note.
@@ -324,8 +341,8 @@ Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never 
 
 1. **Lock the algebra:** ✅ completeness verified by script ([docs/algebra-report.md](docs/algebra-report.md)); 🟡 lean starting kit recommended (§2.5), awaiting approval.
 2. ✅ ~~Pick the art style~~: **Critter Workshop** (see §7.2). Still to confirm: world vocabulary (§3).
-3. ✅ ~~Specify ~10 campaign levels~~: nine prototype levels (§5.1), ending in the woven flower.
-4. ✅ ~~Godot vertical slice~~: **prototype v0.1** with workbench, loom, 9 levels, stars, Pieces and Ticks, inventions, saved progress.
+3. ✅ ~~Specify ~10 campaign levels~~: fifteen prototype levels (§5.1): a paint-box chapter of plain cloths, then pattern cards, ending in the woven flower.
+4. ✅ ~~Godot vertical slice~~: **prototype v0.1** with workbench, loom, 15 levels, stars, Pieces and Ticks, inventions, saved progress.
 5. Play it, show friends, decide the 🟡 items below; then a web build (needs `levels/*.json` in the export filter) on itch.io; iterate.
 
 ---
@@ -341,7 +358,8 @@ Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never 
 - Title: "Chromaton" conflict search.
 
 Raised by the prototype (see the 🟡 markers above):
-- One stitch every two ticks: keep the strict one-drop rule, or allow chain reactions (§9)?
+- One stitch every two ticks: keep the strict one-drop rule, or allow chain reactions (§9)? Paths of unequal length slow it further: Purple takes 50 ticks for 12 stitches, Black Cat 99 for 24.
+- The bench has 5 rows, but the cheapest black cloth (level 6) is 6 parts deep counting the pot, so one tube has to run sideways or upward. Is that acceptable, or does the bench need a sixth row?
 - Should inventions be accepted only if they work for every paint (current), and should re-solving replace or keep the cheapest?
 - Should players name their inventions?
 - Glyph dots on woven stitches, or keep the tapestry clean?

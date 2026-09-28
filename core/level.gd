@@ -20,6 +20,7 @@ const LETTERS := "WRYOBPGK"
 const INDEX_PATH := "res://levels/index.json"
 
 var id := ""
+var number := 0  # position in the campaign, from 1 (0 when loaded on its own)
 var name := ""
 var goal := ""
 var cols := 0
@@ -47,6 +48,7 @@ static func load_all() -> Array:
 		var level = load_file("res://levels/%s.json" % level_id)
 		if level.error != "":
 			push_error(level.error)
+		level.number = out.size() + 1
 		out.append(level)
 	return out
 

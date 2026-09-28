@@ -1,0 +1,15 @@
+{
+	"id": "purple",
+	"name": "Purple",
+	"goal": "Weave a purple cloth.",
+	"pieces": ["red_pot", "shift", "mix", "split"],
+	"inventions": [],
+	"stars": {"budget": 5, "best": 4},
+	"target": ["PPPP", "PPPP", "PPPP"],
+	"card_rule": "",
+	"cards": [],
+	"reference": {
+		"pieces": [{"id": "pot", "kind": "red_pot", "x": 6, "y": 0}, {"id": "s", "kind": "split", "x": 6, "y": 1}, {"id": "h1", "kind": "shift", "x": 7, "y": 2}, {"id": "h2", "kind": "shift", "x": 7, "y": 3}, {"id": "m", "kind": "mix", "x": 6, "y": 4}],
+		"tubes": [["pot", "s"], ["s.0", "m.0"], ["s.1", "h1"], ["h1", "h2"], ["h2", "m.1"], ["m", "loom"]]
+	}
+}

@@ -249,7 +249,7 @@ func test_order_independence() -> void:
 
 
 func test_determinism() -> void:
-	var level = Level.load_file("res://levels/04_make_black.json")
+	var level = Level.load_file("res://levels/black_cat.json")
 	var runs := []
 	for n in 2:
 		var sim := Simulator.new(level.reference_machine(), level.cards, level.target)

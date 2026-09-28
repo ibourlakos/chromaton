@@ -1,5 +1,5 @@
 {
-	"id": "06_third_color",
+	"id": "third_color",
 	"name": "The Third Color",
 	"goal": "Each pair of cards holds two primaries. Weave the missing one.",
 	"pieces": [
@@ -27,23 +27,23 @@
 		{
 			"name": "A",
 			"colors": [
-				"RYRRRYBB",
-				"YYYYRYRR",
-				"RYYYYYYR",
-				"YRYBRYYY",
-				"YRYYBRRR",
-				"RYYYRBRR"
+				"RRYRRRRR",
+				"RYRBRYBB",
+				"YRYYYYRR",
+				"RYYYYRYR",
+				"YYRRBRRY",
+				"RRRYYBRY"
 			]
 		},
 		{
 			"name": "B",
 			"colors": [
+				"YYRYYYBB",
 				"YRYYYRRR",
-				"RRRBYRBB",
-				"YRBBBRRY",
-				"RYRYYRRR",
-				"RYRRRYYY",
-				"YRRRYRYY"
+				"RYBBBRYY",
+				"YRRBRYRY",
+				"RRYYRYYR",
+				"YYYRRRYR"
 			]
 		}
 	],

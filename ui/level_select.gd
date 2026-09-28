@@ -9,8 +9,9 @@ signal level_chosen(index: int)
 signal book_requested
 
 const DESIGN := Vector2(1280, 800)
-const TAG := Vector2(300, 176)
-const GAP := Vector2(28, 22)
+const TAG := Vector2(280, 142)
+const GAP := Vector2(20, 16)
+const COLUMNS := 4  # eight paint levels fill the first two rows
 
 var levels: Array = []
 var progress
@@ -25,12 +26,12 @@ func setup(p_levels: Array, p_progress) -> void:
 func _ready() -> void:
 	size = DESIGN
 	var ids := levels.map(func(l): return l.id)
-	var origin := Vector2(DESIGN.x / 2 - (3 * TAG.x + 2 * GAP.x) / 2, 176)
+	var origin := Vector2(DESIGN.x / 2 - (COLUMNS * TAG.x + (COLUMNS - 1) * GAP.x) / 2, 158)
 	for i in levels.size():
 		var b = ToyButton.new()
 		b.custom_minimum_size = TAG
 		b.size = TAG
-		b.position = origin + Vector2(i % 3, i / 3) * (TAG + GAP)
+		b.position = origin + Vector2(i % COLUMNS, i / COLUMNS) * (TAG + GAP)
 		b.painter = _paint_tag.bind(i, progress.is_unlocked(ids, i))
 		b.disabled = not progress.is_unlocked(ids, i)
 		b.pressed.connect(func(): level_chosen.emit(i))
@@ -72,10 +73,10 @@ func _paint_tag(b: Control, r: Rect2, down: bool, i: int, open: bool) -> void:
 	K.text(b, P.display(600), num + Vector2(0, 1), str(i + 1), 18, ink)
 	K.text(b, P.display(600), body.position + Vector2(50, 26), level.name, 19, ink, HORIZONTAL_ALIGNMENT_LEFT)
 	if not level.invention.is_empty():
-		K.sticker(b, body.position + Vector2(body.size.x - 44, 142), 0.5, level.invention["name"], 99, t, 0.2)
+		K.sticker(b, body.position + Vector2(body.size.x - 40, body.size.y - 24), 0.45, level.invention["name"], 99, t, 0.2)
 	if open:
 		# The picture this level weaves
-		var pic := Rect2(body.position + Vector2(18, 52), Vector2(150, 110))
+		var pic := Rect2(body.position + Vector2(16, 50), Vector2(136, 80))
 		var cs := minf(pic.size.x / level.cols, pic.size.y / level.rows)
 		var size_px := Vector2(level.cols, level.rows) * cs
 		var o := pic.position + (pic.size - size_px) / 2
@@ -86,12 +87,12 @@ func _paint_tag(b: Control, r: Rect2, down: bool, i: int, open: bool) -> void:
 		b.draw_rect(Rect2(o - Vector2(4, 4), size_px + Vector2(8, 8)), Color(P.INK, 0.4), false, 1.5)
 		var stars: int = progress.stars(level.id)
 		for s in 3:
-			K.star(b, body.position + Vector2(200 + s * 30, 78), 12, s < stars)
+			K.star(b, body.position + Vector2(186 + s * 28, 70), 11, s < stars)
 		var rec: Dictionary = progress.level_record(level.id)
 		if rec.get("solved", false):
-			K.icon(b, "pieces", body.position + Vector2(196, 110), 0.8, P.INK_SOFT)
-			K.text(b, P.ui(700), body.position + Vector2(210, 110), str(rec.get("best_pieces", 0)), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
-			K.icon(b, "ticks", body.position + Vector2(240, 110), 0.8, P.INK_SOFT)
-			K.text(b, P.ui(700), body.position + Vector2(254, 110), str(rec.get("best_ticks", 0)), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+			K.icon(b, "pieces", body.position + Vector2(176, 100), 0.8, P.INK_SOFT)
+			K.text(b, P.ui(700), body.position + Vector2(190, 100), str(rec.get("best_pieces", 0)), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+			K.icon(b, "ticks", body.position + Vector2(220, 100), 0.8, P.INK_SOFT)
+			K.text(b, P.ui(700), body.position + Vector2(234, 100), str(rec.get("best_ticks", 0)), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	else:
 		K.icon(b, "lock", body.get_center() + Vector2(0, 16), 1.6, Color(P.INK, 0.4))

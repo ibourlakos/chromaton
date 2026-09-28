@@ -39,7 +39,7 @@ func _init() -> void:
 
 
 func test_packaging() -> Dictionary:
-	var level = by_id["07_keep_what_they_share"]
+	var level = by_id["keep_what_they_share"]
 	var inv := Invention.package(level, level.reference_machine(), {})
 	check(inv["id"] == "filter" and inv["name"] == "Filter", "level 7 makes Filter")
 	check(inv["inputs"] == 2, "its cards become two input ports")
@@ -52,7 +52,7 @@ func test_packaging() -> Dictionary:
 
 
 func test_every_paint(inventions: Dictionary) -> void:
-	var level = by_id["07_keep_what_they_share"]
+	var level = by_id["keep_what_they_share"]
 	check(Invention.works_for_every_paint(level.reference_machine(), 2, "filter", {}), "the reference Filter works for every pair of paints")
 	# Invert(Mix(A, B)) is not a Filter.
 	var nor = level.machine_from_spec({
@@ -68,7 +68,7 @@ func test_every_paint(inventions: Dictionary) -> void:
 
 func test_in_later_levels(inventions: Dictionary) -> void:
 	# Level 8 with the Filter: Filter(A, Invert(B)).
-	var level = by_id["08_wash_out"]
+	var level = by_id["wash_out"]
 	var m = level.machine_from_spec({
 		"pieces": [{"id": "ib", "kind": "invert", "x": 8, "y": 1}, {"id": "f", "kind": "invention", "invention": "filter", "x": 6, "y": 2}],
 		"tubes": [["card0", "f.0"], ["card1", "ib"], ["ib", "f.1"], ["f", "loom"]]})
@@ -79,7 +79,7 @@ func test_in_later_levels(inventions: Dictionary) -> void:
 	check(m.piece_counts(inventions) == {"invert": 4, "mix": 1}, "counts open the invention up")
 
 	# Level 9's reference uses the Filter.
-	level = by_id["09_the_flower"]
+	level = by_id["the_flower"]
 	m = level.reference_machine()
 	sim = Simulator.new(m, level.cards, level.target, inventions)
 	sim.run()
@@ -94,7 +94,7 @@ func test_in_later_levels(inventions: Dictionary) -> void:
 
 ## An invention behaves exactly like the machine inside it, timing included.
 func test_same_timing_as_inside(inventions: Dictionary) -> void:
-	var level = by_id["09_the_flower"]
+	var level = by_id["the_flower"]
 	var boxed := Simulator.new(level.reference_machine(), level.cards, level.target, inventions)
 	var flat_machine = level.machine_from_spec({
 		"pieces": [
@@ -116,7 +116,7 @@ func test_same_timing_as_inside(inventions: Dictionary) -> void:
 func test_nested(inventions: Dictionary) -> void:
 	# Package level 8's Filter solution as a Bleach invention: an invention
 	# that contains an invention.
-	var raw: Dictionary = by_id["08_wash_out"].raw.duplicate(true)
+	var raw: Dictionary = by_id["wash_out"].raw.duplicate(true)
 	raw["invention"] = {"id": "bleach", "name": "Bleach", "check": "bleach"}
 	var level = Level.from_dict(raw)
 	var m = level.machine_from_spec({

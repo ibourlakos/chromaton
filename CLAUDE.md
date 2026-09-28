@@ -37,7 +37,7 @@ Godot 4.7.2 is installed via winget. `godot_console` may not be on PATH (winget 
 
 - `core/`: the simulation, pure GDScript with no scene nodes. `paint.gd` (the eight colors and operations), `pieces.gd` (the data-driven piece table), `machine.gd` (nodes and tubes as plain data), `simulator.gd` (one-drop-tube dataflow; flattens inventions), `level.gd` (level JSON), `invention.gd` (packaging and the every-paint check), `progress.gd` (save data in `user://chromaton_save.json`).
 - `ui/`: everything on screen, built in code. `main.gd` (screens and command-line options), `workbench.gd` (the bench, gestures, run controls, loom), `draw_kit.gd` (Critter Workshop drawing), `palette.gd` (colors, fonts), `toy_button.gd`, `level_select.gd`, `pattern_book.gd`, `success_panel.gd`. `main.tscn` is the only scene.
-- `levels/`: `index.json` (campaign order) and one JSON per level: target picture, pattern cards, pieces offered, star thresholds, reference solution. Format documented at the top of `core/level.gd`.
+- `levels/`: `index.json` (campaign order; a level's number is its place there) and one JSON per level, named by its stable id: target picture, pattern cards, pieces offered (the tray is exactly this list plus listed, owned inventions), star thresholds, reference solution. Format documented at the top of `core/level.gd`.
 - `tests/`: headless test scripts (extend SceneTree, exit code 1 on failure).
 - `tools/`: design tools, not shipped with the game.
 - `docs/`: generated reports.

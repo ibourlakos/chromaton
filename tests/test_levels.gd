@@ -46,7 +46,7 @@ func reference_inventions(levels: Array) -> Dictionary:
 
 
 func test_loading(levels: Array) -> void:
-	check(levels.size() == 9, "nine campaign levels (got %d)" % levels.size())
+	check(levels.size() == 15, "fifteen campaign levels (got %d)" % levels.size())
 	var ids := {}
 	for level in levels:
 		check(level.error == "", "level loads cleanly: %s %s" % [level.id, level.error])
@@ -59,7 +59,8 @@ func test_loading(levels: Array) -> void:
 		check(level.card_names.size() == level.cards.size(), "%s names its cards" % level.id)
 		for kind in level.pieces:
 			check(Pieces.is_piece(kind), "%s offers a known piece %s" % [level.id, kind])
-		check(level.best > 0 and level.budget >= level.best, "%s star thresholds make sense" % level.id)
+		check(level.budget >= level.best and (level.best > 0 or level.pieces.is_empty()), "%s star thresholds make sense" % level.id)
+		check(level.number == ids.size(), "%s is numbered by its place in the campaign" % level.id)
 		check(not level.reference.is_empty(), "%s has a reference solution" % level.id)
 		for p in level.reference.get("pieces", []):
 			check(p["kind"] == Pieces.INVENTION or p["kind"] in level.pieces, "%s reference uses only offered pieces (%s)" % [level.id, p["kind"]])
@@ -107,15 +108,15 @@ func test_wrong_solutions(levels: Array) -> void:
 		by_id[level.id] = level
 	var cases := [
 		# level, wrong machine, formula it computes
-		["01_one_pot", {"pieces": [{"id": "p", "kind": "red_pot", "x": 0, "y": 0}, {"id": "h", "kind": "shift", "x": 0, "y": 1}], "tubes": [["p", "h"], ["h", "loom"]]}, "red_shift"],
-		["02_orange", {"pieces": [], "tubes": [["card0", "loom"]]}, "A"],
-		["05_opposites", {"pieces": [], "tubes": [["card0", "loom"]]}, "A"],
-		["06_third_color", {"pieces": [{"id": "m", "kind": "mix", "x": 0, "y": 0}], "tubes": [["card0", "m.0"], ["card1", "m.1"], ["m", "loom"]]}, "third_no_invert"],
-		["07_keep_what_they_share", {"pieces": [], "tubes": [["card1", "loom"]]}, "B"],
-		["08_wash_out", {"pieces": [
+		["one_pot", {"pieces": [{"id": "p", "kind": "red_pot", "x": 0, "y": 0}, {"id": "h", "kind": "shift", "x": 0, "y": 1}], "tubes": [["p", "h"], ["h", "loom"]]}, "red_shift"],
+		["orange_sun", {"pieces": [], "tubes": [["card0", "loom"]]}, "A"],
+		["green", {"pieces": [{"id": "p", "kind": "red_pot", "x": 0, "y": 0}, {"id": "h", "kind": "shift", "x": 0, "y": 1}], "tubes": [["p", "h"], ["h", "loom"]]}, "red_shift"],
+		["third_color", {"pieces": [{"id": "m", "kind": "mix", "x": 0, "y": 0}], "tubes": [["card0", "m.0"], ["card1", "m.1"], ["m", "loom"]]}, "third_no_invert"],
+		["keep_what_they_share", {"pieces": [], "tubes": [["card1", "loom"]]}, "B"],
+		["wash_out", {"pieces": [
 			{"id": "ia", "kind": "invert", "x": 0, "y": 0}, {"id": "m", "kind": "mix", "x": 0, "y": 1}, {"id": "o", "kind": "invert", "x": 0, "y": 2}],
 			"tubes": [["card1", "ia"], ["ia", "m.0"], ["card0", "m.1"], ["m", "o"], ["o", "loom"]]}, "bleach_swapped"],
-		["09_the_flower", {"pieces": [
+		["the_flower", {"pieces": [
 			{"id": "ia", "kind": "invert", "x": 0, "y": 0}, {"id": "ib", "kind": "invert", "x": 1, "y": 0},
 			{"id": "m", "kind": "mix", "x": 0, "y": 1}, {"id": "o", "kind": "invert", "x": 0, "y": 2}, {"id": "m2", "kind": "mix", "x": 0, "y": 3}],
 			"tubes": [["card0", "ia"], ["card2", "ib"], ["ia", "m.0"], ["ib", "m.1"], ["m", "o"], ["o", "m2.0"], ["card1", "m2.1"], ["m2", "loom"]]}, "flower_swapped"],
@@ -157,9 +158,9 @@ func test_progress(levels: Array) -> void:
 	var rec: Dictionary = p.level_record(ids[0])
 	check(rec["best_pieces"] == 3 and rec["best_ticks"] == 30 and rec["stars"] == 2, "best pieces and ticks kept separately")
 
-	var level7 = levels[6]
+	var level7 = levels.filter(func(l): return l.id == "keep_what_they_share")[0]
 	p.inventions["filter"] = Invention.package(level7, level7.reference_machine(), {})
-	p.store_machine(ids[6], level7.reference_machine().to_dict())
+	p.store_machine(level7.id, level7.reference_machine().to_dict())
 	var path := "user://test_progress.json"
 	check(p.save(path), "progress saves")
 	var q = Progress.load_from(path)
