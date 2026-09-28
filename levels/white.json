@@ -7,7 +7,8 @@
 		"shift",
 		"mix",
 		"invert",
-		"split"
+		"split",
+		"catch_pot"
 	],
 	"inventions": [],
 	"stars": {

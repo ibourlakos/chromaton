@@ -7,7 +7,8 @@
 ##   its output tubes (a split puts a copy in each);
 ## - a red pot fires whenever its tube is empty; a pattern card releases its
 ##   next color whenever its tube is empty, until it runs out;
-## - the loom takes one drop per tick and weaves the next stitch;
+## - the loom takes one drop per tick and weaves the next stitch; a catch pot
+##   takes one drop per tick and keeps it;
 ## - every node decides from the state at the start of the tick, so the result
 ##   never depends on the order nodes are visited.
 ##
@@ -44,6 +45,9 @@ var node_card := PackedInt32Array()
 var last_fire := PackedInt32Array()   # per node: tick it last fired (0 = never)
 var last_color := PackedInt32Array()  # per node: color it last made or wove
 var fire_count := PackedInt32Array()
+var caught := {}  # per catch-pot node: the colors it swallowed, oldest first
+
+const CAUGHT_KEPT := 8
 
 var tube_of := {}   # top-level tube index -> flat tube
 var nodes_of := {}  # top-level node id -> Array of flat nodes (all pieces inside an invention)
@@ -245,6 +249,12 @@ func step() -> void:
 		last_fire[i] = tick
 		last_color[i] = res[0]
 		fire_count[i] += 1
+		if node_kind[i] == "catch":
+			var list: Array = caught.get(i, [])
+			list.append(res[0])
+			if list.size() > CAUGHT_KEPT:
+				list.pop_front()
+			caught[i] = list
 	if wrong:
 		status = Status.WRONG
 	elif woven.size() == target.size():
@@ -293,6 +303,16 @@ func node_color(node_id: int) -> int:
 func node_fire_count(node_id: int) -> int:
 	var list: Array = nodes_of.get(node_id, [])
 	return fire_count[list[0]] if list.size() > 0 else 0
+
+
+## The last colors a top-level catch pot swallowed, newest first.
+func node_caught(node_id: int) -> Array:
+	var list: Array = nodes_of.get(node_id, [])
+	if list.size() != 1:
+		return []
+	var out: Array = caught.get(list[0], []).duplicate()
+	out.reverse()
+	return out
 
 
 func card_remaining(card: int) -> int:

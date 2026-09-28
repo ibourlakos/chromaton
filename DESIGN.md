@@ -96,6 +96,7 @@ Findings:
 | **Invert** | 1 → 1 | Complementary color | Tub that somersaults (mockup) | Flips like a pancake; the paint lands as its opposite |
 | **Shift** | 1 → 1 | Turn the wheel one step: Red → Yellow → Blue | Hamster in a red/yellow/blue wheel | Runs; the wheel clicks one notch |
 | Tube split | 1 → n | Copies the paint | Plumbing, not a critter | None; free and not counted as a piece |
+| Catch pot | 1 → 0 | Swallows every drop and remembers the last few | Pale glazed jar, wide awake, looking back up its tube | Gulps; its tag shows the last colors caught, newest first. Free. Offered wherever Split is: split a copy of any paint into it to see what flows there |
 
 - **Filter becomes the first invention** (Act 2): "keep only what both share" = invert both, mix, invert back. It takes 4 pieces and is a real "aha" moment.
 - Levels may still provide extra pots (yellow, white, ...) as givens. Only the red pot is a placeable piece.
@@ -308,7 +309,7 @@ Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never 
 - ✅ **Simulation model for the prototype: dataflow with one-drop tubes** (`core/simulator.gd`):
   - every tube holds at most one drop;
   - each tick a piece fires if every input tube holds a drop and every output tube is empty; it takes one drop per input and puts its result in each output tube (a split copies);
-  - a red pot fires whenever its tube is empty; a pattern card releases its next color whenever its tube is empty, until it runs out; the loom takes one drop per tick;
+  - a red pot fires whenever its tube is empty; a pattern card releases its next color whenever its tube is empty, until it runs out; the loom takes one drop per tick; a catch pot takes one drop per tick and keeps it;
   - all pieces decide from the state at the start of the tick, so the result never depends on processing order (deterministic, tested);
   - solved when the loom is full and every stitch matches; the first wrong stitch stops the run; a tick where nothing can fire means the machine is stuck.
   - 🟡 A port with no tube never fires (paint never spills). A piece with an unconnected output just waits.

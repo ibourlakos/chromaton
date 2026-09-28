@@ -779,6 +779,8 @@ func _draw_piece_kind(kind: String, c: Vector2, id: int, s := 1.0) -> void:
 	match Pieces.TABLE[kind]["look"]:
 		"pot":
 			K.pot(self, c + Vector2(0, -2) * s, PIECE_SCALE * s, age, clock, seed)
+		"catch":
+			K.catch_pot(self, c + Vector2(0, -4) * s, PIECE_SCALE * s, [] if id < 0 else sim.node_caught(id), age, clock, seed)
 		"mix":
 			K.tub(self, c, PIECE_SCALE * s, liq, age, "mix", clock, seed)
 		"invert":

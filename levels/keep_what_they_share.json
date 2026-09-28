@@ -7,7 +7,8 @@
 		"mix",
 		"shift",
 		"split",
-		"invert"
+		"invert",
+		"catch_pot"
 	],
 	"inventions": [],
 	"invention": {

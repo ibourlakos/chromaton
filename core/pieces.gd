@@ -18,6 +18,9 @@ const TABLE := {
 	"invert": {"name": "Invert", "inputs": 1, "outputs": 1, "op": "invert", "cost": 1, "look": "invert"},
 	"shift": {"name": "Shift", "inputs": 1, "outputs": 1, "op": "shift", "cost": 1, "look": "shift"},
 	"split": {"name": "Split", "inputs": 1, "outputs": 2, "op": "copy", "cost": 0, "look": "split"},
+	# Swallows every drop it is given and remembers the last few (for looking
+	# at what flows through a machine). Free, like Split.
+	"catch_pot": {"name": "Catch pot", "inputs": 1, "outputs": 0, "op": "catch", "cost": 0, "look": "catch"},
 	# Full-kit piece, left out of the lean kit (DESIGN.md 2.5). Uncomment to offer it:
 	# "filter": {"name": "Filter", "inputs": 2, "outputs": 1, "op": "filter", "cost": 1, "look": "tub"},
 }
@@ -74,6 +77,8 @@ static func apply(op: String, ins: Array) -> Array:
 			return [Paint.invert(ins[0])]
 		"shift":
 			return [Paint.shift(ins[0])]
+		"catch":
+			return [ins[0]]
 		"copy":
 			return [ins[0], ins[0]]
 	push_error("unknown piece operation: " + op)

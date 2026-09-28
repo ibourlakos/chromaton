@@ -394,6 +394,47 @@ static func pot(ci: CanvasItem, c: Vector2, s: float, age: float, t: float, seed
 		ci.draw_polyline(PackedVector2Array([zc + Vector2(-zs, -zs), zc + Vector2(zs, -zs), zc + Vector2(-zs, zs), zc + Vector2(zs, zs)]), col, 2 * s + 0.5, true)
 
 
+## Catch pot: a pale glazed jar, wide awake, that gulps every drop it is given.
+## Its surface shows the last color it caught, and a tag underneath the last
+## few, newest first (nearest the tube they came in by).
+static func catch_pot(ci: CanvasItem, c: Vector2, s: float, caught: Array, age: float, t: float, seed := 0.0) -> void:
+	var k := exp(-age * 6.0)
+	fill(ci, ellipse(c + Vector2(0, 36) * s, 44 * s, 7 * s, 0, 24), P.SHADOW)
+	set_xf(ci, c + Vector2(0, 32) * s, Vector2(s * (1 - 0.06 * k), s * (1 + 0.08 * k)))
+	var body := PackedVector2Array([Vector2(-32, -62)])
+	body.append_array(quad(Vector2(-32, -62), Vector2(-33, -54), Vector2(-37, -48.3), 5))
+	for i in range(1, 29):
+		var a := lerpf(3.88, -0.74, i / 28.0)
+		body.append(Vector2(44 * cos(a), -26 + 28 * sin(a)))
+	body.append_array(quad(Vector2(37, -48.3), Vector2(33, -54), Vector2(32, -62), 5))
+	shape(ci, body, P.TAG, P.INK, 3.5)
+	stroke(ci, quad(Vector2(-41, -14), Vector2(0, -4), Vector2(41, -14), 12), P.HOOP, 4, false)
+	var rim := ellipse(Vector2(0, -62), 36, 8)
+	shape(ci, rim, P.WOOD_LT, P.INK, 3)
+	var last: int = caught[0] if caught.size() > 0 else -1
+	var surface := ellipse(Vector2(0, -61.5), 29, 5, 0, 24)
+	fill(ci, surface, P.EMPTY_PAINT if last < 0 else P.SIG[last])
+	if last == 0:
+		dashed(ci, closed(ellipse(Vector2(0, -61.5), 24, 3.5, 0, 24)), P.INK_SOFT, 1.2, 4, 3)
+	elif last > 0:
+		_surface_pips(ci, Vector2(0, -61.5), last)
+	# Wide awake, looking back up the tube; gulps when a drop lands.
+	var blink := fmod(t * 0.27 + seed, 1.0) < 0.035
+	_eyes(ci, -36, 14, blink, Vector2(-1.8, -0.5))
+	_blush(ci, -25, 27)
+	if age < 0.45:
+		shape(ci, ellipse(Vector2(0, -21), 5.5, 6.5 * (1 - age), 0, 16), P.INK, P.INK, 1)
+	else:
+		stroke(ci, arc(Vector2(0, -25), 5, 0.2 * PI, 0.8 * PI, 6), P.INK, 2.2, false)
+	reset_xf(ci)
+	var n := mini(caught.size(), 4)
+	if n > 0:
+		var tag := Rect2(c + Vector2(-8 - n * 8, 25), Vector2(16 + n * 16, 18))
+		shape(ci, round_rect(tag, 6), P.TAG, Color(P.INK, 0.6), 1.5)
+		for i in n:
+			swatch(ci, Vector2(tag.position.x + 16 + i * 16, tag.get_center().y), 5.5, caught[i])
+
+
 ## Hamster in a red/yellow/blue wheel. The wheel clicks one notch per drop.
 static func hamster(ci: CanvasItem, c: Vector2, s: float, liq: int, age: float, turns: int, t: float, seed := 0.0) -> void:
 	var u := clampf(age / 0.6, 0, 1)

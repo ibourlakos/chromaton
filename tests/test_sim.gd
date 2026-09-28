@@ -47,6 +47,7 @@ func _init() -> void:
 	test_timing()
 	test_backpressure()
 	test_split()
+	test_catch_pot()
 	test_unconnected()
 	test_wrong_stitch()
 	test_stall_and_run_out()
@@ -277,3 +278,26 @@ func test_machine_edits() -> void:
 	check(copy.to_dict() == m.to_dict(), "machine survives a JSON round trip")
 	check(copy.add_node("mix") > inv, "new ids continue after loading")
 	check(m.cost({}) == 1 and m.piece_counts({}) == {"invert": 1}, "cost and counts")
+
+
+## A catch pot swallows one drop per tick and remembers the last few, so a
+## split can send a copy of any paint into it without stalling the machine.
+func test_catch_pot() -> void:
+	var level = Level.load_file("res://levels/green.json")
+	var spec := {
+		"pieces": [
+			{"id": "pot", "kind": "red_pot", "x": 0, "y": 0}, {"id": "s", "kind": "split", "x": 1, "y": 0},
+			{"id": "i", "kind": "invert", "x": 2, "y": 0}, {"id": "c", "kind": "catch_pot", "x": 2, "y": 1}],
+		"tubes": [["pot", "s"], ["s.0", "i"], ["i", "loom"], ["s.1", "c"]],
+	}
+	var m = level.machine_from_spec(spec)
+	var sim := Simulator.new(m, level.cards, level.target)
+	sim.run()
+	check(sim.status == S.SOLVED, "a machine with a catch pot on a branch still solves (status %d)" % sim.status)
+	var caught: Array = sim.node_caught(m.piece_at(2, 1))
+	check(caught.size() == Simulator.CAUGHT_KEPT and caught.all(func(c): return c == Paint.RED), "the catch pot keeps the last %d reds (%s)" % [Simulator.CAUGHT_KEPT, str(caught)])
+	check(Pieces.cost({"kind": "catch_pot"}, {}) == 0, "a catch pot is free")
+	spec["tubes"].pop_back()
+	sim = Simulator.new(level.machine_from_spec(spec), level.cards, level.target)
+	sim.run()
+	check(sim.status == S.STALLED, "without it, the split's spare branch stalls the machine")
