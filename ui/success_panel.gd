@@ -5,6 +5,7 @@ extends Control
 const P = preload("res://ui/palette.gd")
 const K = preload("res://ui/draw_kit.gd")
 const ToyButton = preload("res://ui/toy_button.gd")
+const Invention = preload("res://core/invention.gd")
 
 signal replay
 signal levels
@@ -95,10 +96,15 @@ func _draw() -> void:
 		K.text(self, P.ui(700), Vector2(bx + 4 + want * 20, y + 4), "with %d pieces or fewer" % (level.best if want == 3 else level.budget), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	if not invention.is_empty():
 		var sy := card.position.y + 380
-		K.sticker(self, Vector2(cx - 60, sy), 1.1, invention["name"], clampf(t - 1.2, 0, 99), t, 0.3)
+		var paint := Invention.paint_of(invention)
+		if paint >= 0:
+			K.pot(self, Vector2(cx - 60, sy + 4), 0.55, clampf(t - 1.2, 0, 99), t, 0.3, paint)
+		else:
+			K.sticker(self, Vector2(cx - 60, sy), 1.1, invention["name"], clampf(t - 1.2, 0, 99), t, 0.3)
 		K.icon(self, "next", Vector2(cx + 20, sy), 1.0, P.INK)
 		K.icon(self, "book", Vector2(cx + 64, sy), 1.6, P.INK)
-		K.text(self, P.ui(700), Vector2(cx, sy + 46), "New piece for your Pattern Book", 16, P.INK_SOFT)
+		var note: String = "%s for your Pattern Book" % invention["name"] if paint >= 0 else "New piece for your Pattern Book"
+		K.text(self, P.ui(700), Vector2(cx, sy + 46), note, 16, P.INK_SOFT)
 
 
 ## The woven picture in a little frame; stitches appear row by row.

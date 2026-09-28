@@ -400,8 +400,7 @@ func _finish_solve() -> void:
 	var better: Dictionary = progress.record_solve(level.id, pieces, ticks, stars)
 	var invention := {}
 	if not level.invention.is_empty():
-		invention = Invention.package(level, machine, inventions)
-		progress.inventions[invention["id"]] = invention
+		invention = progress.add_invention(Invention.package(level, machine, inventions))
 	progress.store_machine(level.id, machine.to_dict())
 	progress_changed.emit()
 	panel = SuccessPanel.new()
@@ -774,7 +773,11 @@ func _draw_piece_kind(kind: String, c: Vector2, id: int, s := 1.0) -> void:
 	var seed := 0.37 * id if id >= 0 else 0.5
 	if kind.begins_with("inv:"):
 		var inv: Dictionary = inventions.get(kind.substr(4), {})
-		K.sticker(self, c, 0.8 * s, str(inv.get("name", "?")), age, clock, seed)
+		var paint := Invention.paint_of(inv)
+		if paint >= 0:
+			K.pot(self, c + Vector2(0, -2) * s, PIECE_SCALE * s, age, clock, seed, paint)
+		else:
+			K.sticker(self, c, 0.8 * s, str(inv.get("name", "?")), age, clock, seed)
 		return
 	if not Pieces.TABLE.has(kind):
 		return

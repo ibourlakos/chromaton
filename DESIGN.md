@@ -205,6 +205,9 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 - ✅ **Every other color pot is an invention** (designer, 2026-09-28): solving a paint-box level earns a pot of that color, a piece that makes that paint every tick. Like any invention it costs the pieces of the machine that made it (Yellow 2, Blue 3, Orange 4, ...), and it appears only where a level lists it.
 - ✅ **The pots collapse into one tray slot** (designer): the tray shows one pot slot instead of up to eight. ✅ Its form: tapping the slot fans out the owned pots above the shelf; drag one out (touch-first, no hover). A dropdown list would look like desktop UI.
 - ✅ A pot's price is the cheapest the player has made it for, so going back for ★★★ makes the pot cheaper. Star thresholds assume the cheapest price.
+- ✅ **Built (2026-09-28):** paint-box levels 2–8 each earn their pot, an invention with no inputs and check `paint:<letter>` (the every-paint check is one stitch). A re-solve keeps the stored pot unless the new machine is cheaper. A pot invention is drawn as the clay pot with its own paint. No level lists pots in its tray yet, so the one-slot fan-out is still to build.
+- ✅ **The Pattern Book's paint shelf** (built): eight pots across the top of the page in Swatch Book order, each with its price; the red pot is always there, unearned pots are dashed outlines with the level that earns them. Invention slots follow below.
+- 🟡 Pots other than red wear a small swatch tag with the paint's glyph dots (always-on colorblind glyphs); the red pot has none, as the only pot players start with.
 - 🟡 A full paint-box shelf closes the chapter.
 
 **Playtest findings (2026-09-28)** and what they changed:
@@ -221,7 +224,7 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 
 🟡 **Noisy cards** (designer's idea): cards carrying stray paint on some stitches that the machine must clean up. With today's pieces every card drop weaves a stitch, so stray paint is *recolored* (e.g. `Filter(card, Red)`), not skipped; skipping stitches needs routing pieces (§2.3), later. ✅ Built: **Smudges**, a red-and-white card with yellow smudges on about a third of its stitches (always some in the first row), cleaned by `Filter(A, Red)`. Stray stitches on a card are marked with a neutral ink blot (never a signal hue), so it's clear where the noise is; the card JSON lists them (`"smudges"`).
 
-✅ **The next campaign** (approved 2026-09-28; **built** 2026-09-28, pots as inventions still to come). Chapter 1, the paint box (1–8), stays as above, but each level now earns its pot. Cheapest counts are proven by the solver ([docs/level-report.md](docs/level-report.md)). Goal lines say only what to weave ("Weave the heart. Mind the smudges."), never the rule.
+✅ **The next campaign** (approved 2026-09-28; **built** 2026-09-28). Chapter 1, the paint box (1–8), stays as above, but each level now earns its pot. Cheapest counts are proven by the solver ([docs/level-report.md](docs/level-report.md)). Goal lines say only what to weave ("Weave the heart. Mind the smudges."), never the rule.
 
 *Chapter 2, Pattern Cards.* From Smudges on, every tray is the whole kit (pot, Shift, Mix, Filter, Invert, Split); before it, everything but Filter (Orange Sun: pot and Mix).
 

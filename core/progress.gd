@@ -51,6 +51,18 @@ func record_solve(level_id: String, pieces: int, ticks: int, star_count: int) ->
 	return better
 
 
+## Stores a newly packaged invention and returns the one kept. A pot keeps
+## the cheapest price the player has made it for; other inventions take the
+## newest machine.
+func add_invention(inv: Dictionary) -> Dictionary:
+	var old: Dictionary = inventions.get(inv["id"], {})
+	var is_pot := str(inv.get("check", "")).begins_with("paint:")
+	if is_pot and not old.is_empty() and int(old["cost"]) <= int(inv["cost"]):
+		return old
+	inventions[inv["id"]] = inv
+	return inv
+
+
 func store_machine(level_id: String, machine_dict: Dictionary) -> void:
 	var rec: Dictionary = levels.get(level_id, {})
 	rec["machine"] = machine_dict

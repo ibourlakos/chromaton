@@ -9,6 +9,11 @@
 		"split"
 	],
 	"inventions": [],
+	"invention": {
+		"id": "pot_purple",
+		"name": "Purple pot",
+		"check": "paint:P"
+	},
 	"stars": {
 		"budget": 5,
 		"best": 4

@@ -144,7 +144,7 @@ func play_level(level, progress, index: int) -> void:
 	check(rec.get("best_pieces", -1) == level.best and rec.get("best_ticks", 0) == wb.sim.tick, "%s: pieces and ticks recorded" % level.id)
 	if not level.invention.is_empty():
 		var inv: Dictionary = progress.inventions.get(level.invention["id"], {})
-		check(not inv.is_empty() and inv["cost"] == 4, "%s: the player's machine joins the Pattern Book" % level.id)
+		check(not inv.is_empty() and inv["cost"] == level.best, "%s: the player's machine joins the Pattern Book" % level.id)
 	wb.queue_free()
 
 

@@ -71,7 +71,10 @@ func test_loading(levels: Array) -> void:
 	var stray := range(smudgy.size()).filter(func(i): return smudgy.cards[0][i] != smudgy.target[i])
 	check(smudgy.smudges[0] == stray and stray.any(func(i): return i < smudgy.cols), "Smudges marks exactly its stray stitches, some in the first row")
 	var inv_levels := levels.filter(func(l): return not l.invention.is_empty())
-	check(inv_levels.size() == 1 and inv_levels[0].invention["id"] == "contrast", "one invention level, and it makes Contrast")
+	var pot_ids := inv_levels.filter(func(l): return l.chapter == 0).map(func(l): return l.invention["id"])
+	check(pot_ids == ["pot_yellow", "pot_blue", "pot_orange", "pot_purple", "pot_black", "pot_green", "pot_white"], "paint-box levels 2 to 8 each earn their pot (%s)" % str(pot_ids))
+	var others := inv_levels.filter(func(l): return l.chapter > 0)
+	check(others.size() == 1 and others[0].invention["id"] == "contrast", "one invention level after the paint box, and it makes Contrast")
 
 
 func test_references(levels: Array, inventions: Dictionary) -> void:

@@ -407,23 +407,21 @@ static func _sieve(ci: CanvasItem, age: float) -> void:
 			shape(ci, ellipse(g, 3.2, 2.4, 0.4 * i, 10), Color(P.HOOP, fade), Color(P.INK, fade), 1.4)
 
 
-## Sleepy clay pot of red paint. Burps a drop when it fires.
-static func pot(ci: CanvasItem, c: Vector2, s: float, age: float, t: float, seed := 0.0) -> void:
+## Sleepy clay pot of paint (red unless told otherwise). Burps a drop when it
+## fires. Pots of other paints wear a swatch tag with the paint's dots.
+static func pot(ci: CanvasItem, c: Vector2, s: float, age: float, t: float, seed := 0.0, paint := 1) -> void:
 	var k := exp(-age * 6.0)
 	fill(ci, ellipse(c + Vector2(0, 36) * s, 44 * s, 7 * s, 0, 24), P.SHADOW)
 	set_xf(ci, c + Vector2(0, 32) * s, Vector2(s * (1 + 0.08 * k), s * (1 - 0.1 * k)))
-	var body := PackedVector2Array([Vector2(-26, -62)])
-	body.append_array(quad(Vector2(-26, -62), Vector2(-27, -54), Vector2(-31, -48.3), 5))
-	for i in range(1, 29):
-		var a := lerpf(3.88, -0.74, i / 28.0)
-		body.append(Vector2(42 * cos(a), -26 + 28 * sin(a)))
-	body.append_array(quad(Vector2(31, -48.3), Vector2(27, -54), Vector2(26, -62), 5))
-	shape(ci, body, P.CLAY, P.INK, 3.5)
+	shape(ci, _pot_body(), P.CLAY, P.INK, 3.5)
 	stroke(ci, quad(Vector2(-39, -20), Vector2(0, -10), Vector2(39, -20), 12), P.CLAY_DK, 4, false)
 	var rim := ellipse(Vector2(0, -62), 30, 7.5)
 	shape(ci, rim, P.CLAY_DK, P.INK, 3)
-	fill(ci, ellipse(Vector2(0, -61.5), 23, 4.5, 0, 24), P.SIG[1])
+	fill(ci, ellipse(Vector2(0, -61.5), 23, 4.5, 0, 24), P.WHITE_STITCH if paint == 0 else P.SIG[paint])
 	fill(ci, ellipse(Vector2(-9, -63), 7, 1.5, 0, 12), Color(1, 1, 1, 0.35))
+	if paint != 1:
+		line(ci, Vector2(-27, -52), Vector2(-37, -44), P.INK, 2)
+		swatch(ci, Vector2(-40, -38), 9, paint)
 	# Sleepy face: closed eyes, open mouth when it burps.
 	for ex in [-13, 13]:
 		stroke(ci, arc(Vector2(ex, -34), 6, 0.15 * PI, 0.85 * PI, 8), P.INK, 2.5, false)
@@ -439,6 +437,26 @@ static func pot(ci: CanvasItem, c: Vector2, s: float, age: float, t: float, seed
 		var zs := (5 + u * 3) * s
 		var col := Color(P.INK, 0.7 * (1 - u))
 		ci.draw_polyline(PackedVector2Array([zc + Vector2(-zs, -zs), zc + Vector2(zs, -zs), zc + Vector2(-zs, zs), zc + Vector2(zs, zs)]), col, 2 * s + 0.5, true)
+
+
+## A dashed pot outline: a pot not earned yet.
+static func pot_outline(ci: CanvasItem, c: Vector2, s: float, col: Color) -> void:
+	var pts := PackedVector2Array()
+	for p in _pot_body():
+		pts.append(c + (p + Vector2(0, 32)) * s)
+	dashed(ci, closed(pts), col, 2, 7, 5)
+	dashed(ci, closed(ellipse(c + Vector2(0, -30) * s, 30 * s, 7.5 * s, 0, 24)), col, 2, 7, 5)
+
+
+## The pot's clay body in its own coordinates (the rim sits at y = -62).
+static func _pot_body() -> PackedVector2Array:
+	var body := PackedVector2Array([Vector2(-26, -62)])
+	body.append_array(quad(Vector2(-26, -62), Vector2(-27, -54), Vector2(-31, -48.3), 5))
+	for i in range(1, 29):
+		var a := lerpf(3.88, -0.74, i / 28.0)
+		body.append(Vector2(42 * cos(a), -26 + 28 * sin(a)))
+	body.append_array(quad(Vector2(31, -48.3), Vector2(27, -54), Vector2(26, -62), 5))
+	return body
 
 
 ## Catch pot: a pale glazed jar, wide awake, that gulps every drop it is given.

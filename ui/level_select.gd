@@ -5,6 +5,7 @@ extends Control
 const P = preload("res://ui/palette.gd")
 const K = preload("res://ui/draw_kit.gd")
 const ToyButton = preload("res://ui/toy_button.gd")
+const Invention = preload("res://core/invention.gd")
 
 signal level_chosen(index: int)
 signal book_requested
@@ -134,7 +135,11 @@ func _paint_tag(b: Control, r: Rect2, down: bool, i: int, open: bool) -> void:
 	K.text(b, P.display(600), num + Vector2(0, 1), str(level.number), 18, ink)
 	K.text(b, P.display(600), body.position + Vector2(50, 26), level.name, 19, ink, HORIZONTAL_ALIGNMENT_LEFT)
 	if not level.invention.is_empty():
-		K.sticker(b, body.position + Vector2(body.size.x - 40, body.size.y - 24), 0.45, level.invention["name"], 99, t, 0.2)
+		var paint := Invention.paint_of(level.invention)
+		if paint >= 0:
+			K.pot(b, body.position + Vector2(body.size.x - 30, 30), 0.3, 1.0, t, 0.2, paint)
+		else:
+			K.sticker(b, body.position + Vector2(body.size.x - 40, body.size.y - 24), 0.45, level.invention["name"], 99, t, 0.2)
 	if open:
 		# The picture this level weaves
 		var pic := Rect2(body.position + Vector2(16, 50), Vector2(136, 80))

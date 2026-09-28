@@ -8,6 +8,11 @@
 		"mix"
 	],
 	"inventions": [],
+	"invention": {
+		"id": "pot_orange",
+		"name": "Orange pot",
+		"check": "paint:O"
+	},
 	"stars": {
 		"budget": 5,
 		"best": 4

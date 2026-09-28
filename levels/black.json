@@ -9,6 +9,11 @@
 		"split"
 	],
 	"inventions": [],
+	"invention": {
+		"id": "pot_black",
+		"name": "Black pot",
+		"check": "paint:K"
+	},
 	"stars": {
 		"budget": 6,
 		"best": 5

@@ -1,4 +1,5 @@
-## The Pattern Book: the player's inventions, like a sticker album.
+## The Pattern Book: a shelf of the paint pots earned so far, then the
+## player's inventions, like a sticker album.
 ## Empty slots show which levels still hold an invention.
 extends Control
 
@@ -6,6 +7,7 @@ const P = preload("res://ui/palette.gd")
 const K = preload("res://ui/draw_kit.gd")
 const ToyButton = preload("res://ui/toy_button.gd")
 const Pieces = preload("res://core/pieces.gd")
+const Invention = preload("res://core/invention.gd")
 
 signal back
 
@@ -35,13 +37,48 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 
-## Invention slots in campaign order: [level index, invention id, name].
+## Invention slots in campaign order, pots aside: [level index, invention id, name].
 func _slots() -> Array:
 	var out := []
 	for i in levels.size():
-		if not levels[i].invention.is_empty():
+		if not levels[i].invention.is_empty() and Invention.paint_of(levels[i].invention) < 0:
 			out.append([i, levels[i].invention["id"], levels[i].invention["name"]])
 	return out
+
+
+## The paint shelf, one place per paint: [paint, level index (-1 for the red
+## pot, which is always there), invention id].
+func _pots() -> Array:
+	var out := []
+	for paint in 8:
+		out.append([paint, -1, ""])
+	for i in levels.size():
+		var paint := Invention.paint_of(levels[i].invention)
+		if paint >= 0:
+			out[paint] = [paint, i, levels[i].invention["id"]]
+	return out
+
+
+func _draw_shelf(page: Rect2) -> void:
+	var y := page.position.y + 104
+	var plank := Rect2(page.position.x + 30, y + 30, page.size.x - 60, 14)
+	K.fill(self, K.round_rect(Rect2(plank.position + Vector2(2, 4), plank.size), 6), P.SHADOW)
+	K.shape(self, K.round_rect(plank, 6), P.WOOD_LT, P.INK, 2)
+	var step := (page.size.x - 80) / 8.0
+	for spot in _pots():
+		var paint: int = spot[0]
+		var x := page.position.x + 40 + step * (paint + 0.5)
+		var price := 1  # the red pot
+		if spot[1] >= 0:
+			var inv: Dictionary = progress.inventions.get(spot[2], {})
+			if inv.is_empty():
+				K.pot_outline(self, Vector2(x, y), 0.85, Color(P.INK, 0.3))
+				K.text(self, P.ui(700), Vector2(x, y + 64), "Level %d" % levels[spot[1]].number, 14, Color(P.INK, 0.45))
+				continue
+			price = int(inv["cost"])
+		K.pot(self, Vector2(x, y), 0.85, 99, t, paint * 0.37, paint)
+		K.icon(self, "pieces", Vector2(x - 12, y + 64), 0.8, P.INK_SOFT)
+		K.text(self, P.ui(800), Vector2(x + 2, y + 64), str(price), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 
 
 func _draw() -> void:
@@ -52,10 +89,11 @@ func _draw() -> void:
 	var page := Rect2(120, 140, DESIGN.x - 240, 620)
 	K.fill(self, K.round_rect(Rect2(page.position + Vector2(4, 6), page.size), 18), P.SHADOW)
 	K.shape(self, K.round_rect(page, 18), P.TAG, P.INK, 2.5)
+	_draw_shelf(page)
 	var slots := _slots()
 	var cols := 3
-	var origin := page.position + Vector2(40, 40)
-	for k in maxi(slots.size(), 6):
+	var origin := page.position + Vector2(40, 224)
+	for k in maxi(slots.size(), 3):
 		var r := Rect2(origin + Vector2(k % cols, k / cols) * (SLOT + Vector2(20, 16)), SLOT)
 		if k >= slots.size():
 			K.dashed(self, K.closed(K.round_rect(r.grow(-20), 16)), Color(P.INK, 0.18), 2, 8, 6)

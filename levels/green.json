@@ -10,6 +10,11 @@
 		"split"
 	],
 	"inventions": [],
+	"invention": {
+		"id": "pot_green",
+		"name": "Green pot",
+		"check": "paint:G"
+	},
 	"stars": {
 		"budget": 4,
 		"best": 2

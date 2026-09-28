@@ -7,6 +7,11 @@
 		"shift"
 	],
 	"inventions": [],
+	"invention": {
+		"id": "pot_yellow",
+		"name": "Yellow pot",
+		"check": "paint:Y"
+	},
 	"stars": {
 		"budget": 3,
 		"best": 2

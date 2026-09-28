@@ -9,6 +9,7 @@ const Machine = preload("res://core/machine.gd")
 const Level = preload("res://core/level.gd")
 const Simulator = preload("res://core/simulator.gd")
 const Invention = preload("res://core/invention.gd")
+const Progress = preload("res://core/progress.gd")
 
 const S = Simulator.Status
 
@@ -34,6 +35,7 @@ func _init() -> void:
 	test_one_tick(inventions)
 	test_nested(inventions)
 	test_edges()
+	test_pots(inventions)
 	if failures == 0:
 		print("test_inventions: all %d checks passed" % checks)
 	quit(1 if failures > 0 else 0)
@@ -184,3 +186,38 @@ func test_edges() -> void:
 	sim = Simulator.new(outer, [seq], seq, inventions)
 	sim.run()
 	check(sim.status == S.STALLED and sim.woven.size() == 0, "an unfed invention stays still")
+
+
+## A color pot is an invention with no inputs: one stitch checks it, it makes
+## its paint every tick, and it keeps the cheapest price the player has made
+## it for.
+func test_pots(inventions: Dictionary) -> void:
+	var level = by_id["orange"]
+	var pot := Invention.package(level, level.reference_machine(), {})
+	check(pot["id"] == "pot_orange" and pot["inputs"] == 0 and pot["cost"] == 4, "Orange earns an orange pot priced at its 4 pieces")
+	check(Invention.paint_of(pot) == Paint.ORANGE and Invention.paint_of(inventions["filter"]) == -1, "a pot knows its paint; other inventions aren't pots")
+	check(Invention.works_for_every_paint(level.reference_machine(), 0, "paint:O", {}), "the orange machine passes the every-paint check")
+	check(not Invention.works_for_every_paint(by_id["yellow"].reference_machine(), 0, "paint:O", {}), "a yellow machine is no orange pot")
+	var all := {"pot_orange": pot}
+	check(Simulator.invention_table(pot, all) == PackedByteArray([Paint.ORANGE]), "a pot's table has one entry")
+	var m = level.machine_from_spec({
+		"pieces": [{"id": "o", "kind": "invention", "invention": "pot_orange", "x": 4, "y": 3}],
+		"tubes": [["o", "loom"]]})
+	var sim := Simulator.new(m, level.cards, level.target, all)
+	sim.run()
+	check(sim.status == S.SOLVED and sim.tick == level.size() + 1, "the orange pot weaves an orange cloth, one drop a tick (%d ticks)" % sim.tick)
+	check(m.cost(all) == 4, "and costs what it's made of")
+
+	var p = Progress.new()
+	p.add_invention(pot)
+	var dearer := pot.duplicate(true)
+	dearer["cost"] = 6
+	check(p.add_invention(dearer)["cost"] == 4 and p.inventions["pot_orange"]["cost"] == 4, "a dearer orange pot keeps the cheaper price")
+	var cheaper := pot.duplicate(true)
+	cheaper["cost"] = 3
+	check(p.add_invention(cheaper)["cost"] == 3 and p.inventions["pot_orange"]["cost"] == 3, "a cheaper orange pot lowers the price")
+	var filter: Dictionary = inventions["filter"]
+	p.add_invention(filter)
+	var bigger := filter.duplicate(true)
+	bigger["cost"] = 9
+	check(p.add_invention(bigger)["cost"] == 9, "other inventions take the newest machine")

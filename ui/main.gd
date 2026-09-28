@@ -157,6 +157,8 @@ func _screenshot(args: Dictionary) -> void:
 			select_page = int(args.get("page", 0))
 			show_level_select()
 		"book":
+			if args.has("empty"):
+				progress.inventions = {}
 			show_book()
 		_:
 			var i := _level_index(what)

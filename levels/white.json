@@ -10,6 +10,11 @@
 		"split"
 	],
 	"inventions": [],
+	"invention": {
+		"id": "pot_white",
+		"name": "White pot",
+		"check": "paint:W"
+	},
 	"stars": {
 		"budget": 6,
 		"best": 4
