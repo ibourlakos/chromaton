@@ -303,8 +303,8 @@ static func _blush(ci: CanvasItem, y: float, dx: float) -> void:
 
 
 ## Wooden vat with a face. kind: "mix" (spoon, stirs), "invert" (flips like
-## a pancake) or "tub" (any other vat). liq is the paint it holds (-1 empty);
-## age is ticks since it last fired.
+## a pancake), "filter" (a sieve that shakes) or "tub" (any other vat). liq is
+## the paint it holds (-1 empty); age is ticks since it last fired.
 static func tub(ci: CanvasItem, c: Vector2, s: float, liq: int, age: float, kind: String, t: float, seed := 0.0) -> void:
 	var k := exp(-age * 6.0)
 	var sx := 1 + 0.05 * k
@@ -329,16 +329,26 @@ static func tub(ci: CanvasItem, c: Vector2, s: float, liq: int, age: float, kind
 		ci.draw_line(Vector2(-hw, hy), Vector2(hw, hy), P.HOOP, 5, true)
 	stroke(ci, body, P.INK, 3.5)
 	var blink := fmod(t * 0.31 + seed, 1.0) < 0.035
-	_eyes(ci, -32, 15, blink)
+	_eyes(ci, -32, 15, blink, Vector2(0, 2.5) if kind == "filter" else Vector2(1, 1.5))
 	_blush(ci, -21, 28)
 	match kind:
 		"invert":
 			fill(ci, ellipse(Vector2(0, -19), 4.5, 5.5, 0, 16), P.INK)
+		"filter":
+			# Fussy: heavy lids and a pursed mouth, as if checking every grain.
+			if not blink:
+				for ex in [-15, 15]:
+					var lid := arc(Vector2(ex, -33), 7.2, PI, TAU, 10)
+					fill(ci, lid, P.WOOD_LT)
+					line(ci, Vector2(ex - 7.5, -33), Vector2(ex + 7.5, -33), P.INK, 2.2)
+			stroke(ci, PackedVector2Array([Vector2(-6, -21), Vector2(-2, -22.5), Vector2(2, -21), Vector2(6, -22.5)]), P.INK, 2.4, false)
 		_:
 			stroke(ci, arc(Vector2(0, -23), 8, 0.15 * PI, 0.85 * PI, 10), P.INK, 2.5, false)
 	var surface := ellipse(Vector2(0, -62), 45, 9.5)
 	fill(ci, surface, P.EMPTY_PAINT if shown < 0 else P.SIG[shown])
 	stroke(ci, surface, P.INK, 3.5)
+	if kind == "filter":
+		_sieve(ci, age)
 	if shown >= 0:
 		fill(ci, ellipse(Vector2(-16, -64), 12, 2.5, 0, 16), Color(1, 1, 1, 0.35))
 		if kind == "mix":
@@ -358,6 +368,37 @@ static func tub(ci: CanvasItem, c: Vector2, s: float, liq: int, age: float, kind
 		var tip := b + Vector2(10, -42) * s
 		line(ci, b, tip, P.INK, 8 * s)
 		line(ci, b, tip, P.WOOD, 4 * s)
+
+
+## Filter's sieve, set in the tub's rim (tub coordinates). When the tub fires
+## the sieve shakes and a few grains rattle in it: the paint it held back,
+## drawn in neutrals because only paint may wear the signal colors.
+static func _sieve(ci: CanvasItem, age: float) -> void:
+	var shake := 0.0
+	if age < 1.0:
+		shake = sin(age * 38.0) * 6.0 * exp(-age * 4.0)
+	var o := Vector2(0, -62)
+	var mesh := Color(P.INK, 0.3)
+	for x in range(-36, 37, 9):
+		var h := 9.5 * sqrt(1.0 - pow(x / 45.0, 2))
+		ci.draw_line(o + Vector2(x, -h), o + Vector2(x, h), mesh, 1.3, true)
+	for dy in [-5.5, -2.0, 2.0, 5.5]:
+		var w := 45.0 * sqrt(1.0 - pow(dy / 9.5, 2))
+		ci.draw_line(o + Vector2(-w, dy), o + Vector2(w, dy), mesh, 1.3, true)
+	# The sieve's own hoop and two ear handles, riding the shake.
+	var rim := o + Vector2(shake, -1)
+	stroke(ci, ellipse(rim, 49, 11.5), P.INK, 7)
+	stroke(ci, ellipse(rim, 49, 11.5), P.HOOP, 3.5)
+	for side in [-1, 1]:
+		var ear := rim + Vector2(side * 53, -1)
+		shape(ci, ellipse(ear, 6, 4, 0, 14), P.HOOP, P.INK, 2.2)
+	if age < 0.8:
+		var fade := 1.0 - age / 0.8
+		for i in 3:
+			var gx: float = [-18.0, 4.0, 21.0][i] + shake * 1.4
+			var gy := -absf(sin(age * 24.0 + i * 1.7)) * 7.0 * fade
+			var g := o + Vector2(gx, gy - 10)  # along the back rim, clear of the glyph dots
+			shape(ci, ellipse(g, 3.2, 2.4, 0.4 * i, 10), Color(P.HOOP, fade), Color(P.INK, fade), 1.4)
 
 
 ## Sleepy clay pot of red paint. Burps a drop when it fires.

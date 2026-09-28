@@ -67,7 +67,7 @@ func test_every_paint(inventions: Dictionary) -> void:
 
 
 func test_in_later_levels(inventions: Dictionary) -> void:
-	# Level 8 with the Filter: Filter(A, Invert(B)).
+	# Wash Out with the Filter sticker: Filter(A, Invert(B)).
 	var level = by_id["wash_out"]
 	var m = level.machine_from_spec({
 		"pieces": [{"id": "ib", "kind": "invert", "x": 8, "y": 1}, {"id": "f", "kind": "invention", "invention": "filter", "x": 6, "y": 2}],
@@ -75,7 +75,7 @@ func test_in_later_levels(inventions: Dictionary) -> void:
 	var sim := Simulator.new(m, level.cards, level.target, inventions)
 	sim.run()
 	check(sim.status == S.SOLVED, "Filter solves Wash Out (status %d, stitch %d)" % [sim.status, sim.wrong_index])
-	check(m.cost(inventions) == 5 and level.stars_for(5) == 2, "Filter counts its full price: 5 pieces, two stars")
+	check(m.cost(inventions) == 5 and level.stars_for(5) == 1, "the sticker counts its full price: 5 pieces, where the Filter critter needs 2")
 	check(m.piece_counts(inventions) == {"invert": 4, "mix": 1}, "counts open the invention up")
 
 	# Level 9's reference uses the Filter.

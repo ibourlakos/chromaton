@@ -3,7 +3,7 @@
 ## Each entry gives the display name, the number of input and output ports,
 ## the operation the piece performs, its piece cost, and how it is drawn
 ## ("look"). Adding a piece is one new entry: the generic "tub" look draws any
-## vat, so for example Filter only needs the commented line below.
+## vat, so a new two-input vat is one line.
 ##
 ## Pattern cards, the loom and inventions are not in the table: cards and the
 ## loom are fixed parts of a level, and an invention's ports come from the
@@ -15,14 +15,14 @@ const Paint = preload("res://core/paint.gd")
 const TABLE := {
 	"red_pot": {"name": "Red pot", "inputs": 0, "outputs": 1, "op": "red", "cost": 1, "look": "pot"},
 	"mix": {"name": "Mix", "inputs": 2, "outputs": 1, "op": "mix", "cost": 1, "look": "mix"},
+	# Keeps only the paint both inputs share (DESIGN.md 2.5, the middle kit).
+	"filter": {"name": "Filter", "inputs": 2, "outputs": 1, "op": "filter", "cost": 1, "look": "filter"},
 	"invert": {"name": "Invert", "inputs": 1, "outputs": 1, "op": "invert", "cost": 1, "look": "invert"},
 	"shift": {"name": "Shift", "inputs": 1, "outputs": 1, "op": "shift", "cost": 1, "look": "shift"},
 	"split": {"name": "Split", "inputs": 1, "outputs": 2, "op": "copy", "cost": 0, "look": "split"},
 	# Swallows every drop it is given and remembers the last few (for looking
 	# at what flows through a machine). Free, like Split.
 	"catch_pot": {"name": "Catch pot", "inputs": 1, "outputs": 0, "op": "catch", "cost": 0, "look": "catch"},
-	# Full-kit piece, left out of the lean kit (DESIGN.md 2.5). Uncomment to offer it:
-	# "filter": {"name": "Filter", "inputs": 2, "outputs": 1, "op": "filter", "cost": 1, "look": "tub"},
 }
 
 const CARD := "card"

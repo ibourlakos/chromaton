@@ -5,17 +5,15 @@
 	"pieces": [
 		"red_pot",
 		"mix",
+		"filter",
 		"shift",
 		"split",
-		"invert",
-		"catch_pot"
+		"invert"
 	],
-	"inventions": [
-		"filter"
-	],
+	"inventions": [],
 	"stars": {
-		"budget": 5,
-		"best": 3
+		"budget": 3,
+		"best": 2
 	},
 	"target": [
 		"BBBBBBBB",
@@ -53,43 +51,33 @@
 	"reference": {
 		"pieces": [
 			{
-				"id": "ia",
+				"id": "ib",
 				"kind": "invert",
 				"x": 4,
-				"y": 1
+				"y": 5
 			},
 			{
-				"id": "mix",
-				"kind": "mix",
-				"x": 6,
-				"y": 3
-			},
-			{
-				"id": "out",
-				"kind": "invert",
-				"x": 8,
+				"id": "f",
+				"kind": "filter",
+				"x": 7,
 				"y": 3
 			}
 		],
 		"tubes": [
 			[
 				"card0",
-				"ia"
-			],
-			[
-				"ia",
-				"mix.0"
+				"f.0"
 			],
 			[
 				"card1",
-				"mix.1"
+				"ib"
 			],
 			[
-				"mix",
-				"out"
+				"ib",
+				"f.1"
 			],
 			[
-				"out",
+				"f",
 				"loom"
 			]
 		]

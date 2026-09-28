@@ -130,7 +130,7 @@ func solve(level, inventions: Dictionary, max_cost: int) -> Dictionary:
 	target_key = str(_pack(want))
 	ops = []
 	for kind in level.pieces:
-		if kind in ["red_pot", "mix", "invert", "shift"]:
+		if kind in ["red_pot", "mix", "filter", "invert", "shift"]:
 			ops.append({"op": kind, "cost": 1})
 	for inv_id in level.inventions:
 		if inv_id == "filter" and inventions.has("filter"):

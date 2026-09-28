@@ -87,11 +87,11 @@ Findings:
 
 ### 2.5 Starting pieces
 
-✅ **Decided (2026-09-28): the middle kit.** Red pot, **Mix, Filter, Invert, Shift**, plus the free Split and Catch pot. Only the red pot is placeable.
+✅ **Decided (2026-09-28): the middle kit.** Red pot, **Mix, Filter, Invert, Shift**, plus the free Split and Catch pot. The red pot is the only basic pot; the other seven are earned as inventions (§5.1).
 - Filter arrives early as a critter (a sieve tub that holds back whatever the two paints don't share). With a pot it works as a mask (`Filter(card, Red)` keeps only a picture's red), which makes for better early card levels and suits noisy cards (§5.1).
 - The De Morgan discovery isn't lost; it moves to the **"invent what you know"** chapter, where the player rebuilds critters they already use: *"one of these critters can be built from the others."* Filter from Mix and Invert, and its mirror, Mix from Filter and Invert.
 - One more critter to draw and animate than the lean kit, but far less than the full kit's three extra pots.
-- Not built yet: the prototype still ships the lean kit below, and the campaign (§5.1) needs reordering around Filter.
+- Built so far (2026-09-28): the Filter critter and piece, offered in Wash Out. The campaign (§5.1) still needs reordering around it.
 
 *Superseded recommendation, kept for the reasoning:* **the lean kit.** Three vat critters and a pot. *"Everything in Chromaton is made from three critters and a pot of red paint."*
 
@@ -102,10 +102,10 @@ Findings:
 | **Invert** | 1 → 1 | Complementary color | Tub that somersaults (mockup) | Flips like a pancake; the paint lands as its opposite |
 | **Shift** | 1 → 1 | Turn the wheel one step: Red → Yellow → Blue | Hamster in a red/yellow/blue wheel | Runs; the wheel clicks one notch |
 | Tube split | 1 → n | Copies the paint | Plumbing, not a critter | None; free and not counted as a piece |
-| Catch pot | 1 → 0 | Swallows every drop and remembers the last few | Pale glazed jar, wide awake, looking back up its tube | Gulps; its tag shows the last colors caught, newest first. Free. Offered wherever Split is: split a copy of any paint into it to see what flows there |
+| Catch pot | 1 → 0 | Swallows every drop and remembers the last few | Pale glazed jar, wide awake, looking back up its tube | Gulps; its tag shows the last colors caught, newest first. Free. ✅ **Out of the trays for now** (2026-09-28): players couldn't tell what it was for, since tubes already show their drops and Step back traces a run. Tapping a tube shows its last few colors instead. It comes back with a real job: the output bin for multi-output and buffer puzzles (§5.4), or where stray paint goes once routing can skip stitches |
 
 - **Filter becomes the first invention** (Act 2): "keep only what both share" = invert both, mix, invert back. It takes 4 pieces and is a real "aha" moment.
-- Levels may still provide extra pots (yellow, white, ...) as givens. Only the red pot is a placeable piece.
+- Every other pot is an invention earned in the paint box (§5.1), priced at the machine that made it. Levels may still provide pots as givens.
 - **Prototype v0.1 ships the lean kit** (Red pot, Mix, Invert, Shift, free Split). Pieces are one data table (`core/pieces.gd`), so adding Filter as a piece is a one-line change (plus its critter).
 - Trade-off: in the lean kit, routing machines cost more (Three-way Switch 35 pieces vs 21 with Filter as a piece; see report §4). Fewer critters to design and animate outweighs this (see §7.2 risk). Placed recipes appear as one block anyway, so the price only shows on the optimizer's scoreboard.
 - Alternative (full kit): Mix, Filter, Invert, Shift + 3 pots. Cheaper machines, but 5 critters and 3 pot variants, and the De Morgan discovery is lost.
@@ -203,7 +203,7 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 | 11 | Black Cat | Split and Shift a card; black = every primary (a red/white card weaves a black cat) | 6×4 | 6 | 4 |
 | 12 | The Third Color | Invert(Mix(a, b)), two cards | 8×6 | 3 | 2 |
 | 13 | Keep What They Share | **Invention level:** the player builds Filter | 8×6 | 6 | 4 |
-| 14 | Wash Out | Bleach; Filter + Invert is 5, De Morgan is 3 | 8×6 | 5 | 3 |
+| 14 | Wash Out | Bleach: the Filter critter with a card as the mask, `Filter(A, Invert B)` | 8×6 | 3 | 2 |
 | 15 | The Flower | Filter of two cards mixed with a third (the mockup flower) | 16×12 | 7 | 5 |
 
 - The v0.1 levels "Yellow from Red" (Shift a card) and "Opposites" (Invert a card) were cut: chapter 1 teaches both. Their files were removed.
@@ -212,7 +212,10 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 - Pattern cards are derived from each target picture by `tools/make_cards.gd` (seeded by level id, so reruns match). The solver also proves the card data has no cheap shortcut.
 - 🟡 Black Cat uses a red/white card instead of the red pot, so the black cat is a picture and not a plain black cloth.
 - 🟡 Levels unlock in order. The level select shows four per row, so the paint box fills the first two rows and the card levels the last two.
-- 🟡 Idea for later: each solved paint level puts a pot of that color on a paint-box shelf; a full shelf closes the chapter. Earned pots could later become tray pieces (priced like inventions, at the pieces that made them), offered only where a level lists them.
+- ✅ **Every other color pot is an invention** (designer, 2026-09-28): solving a paint-box level earns a pot of that color, a piece that makes that paint every tick. Like any invention it costs the pieces of the machine that made it (Yellow 2, Blue 3, Orange 4, ...), and it appears only where a level lists it.
+- ✅ **The pots collapse into one tray slot** (designer): the tray shows one pot slot instead of up to eight. ✅ Its form: tapping the slot fans out the owned pots above the shelf; drag one out (touch-first, no hover). A dropdown list would look like desktop UI.
+- ✅ A pot's price is the cheapest the player has made it for, so going back for ★★★ makes the pot cheaper. Star thresholds assume the cheapest price.
+- 🟡 A full paint-box shelf closes the chapter.
 
 **Playtest findings (2026-09-28)** and what they changed:
 
@@ -223,10 +226,38 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 ✅ **Card levels don't write the rule in the goal line.** The cards and the design card carry it; the cloth is evidence to read, not just a check. Measured: many cheap machines match the first stitch (83 on Keep What They Share, 2,925 on The Flower) but only one weaves the whole cloth; most wrong ones fail by stitch 2–4, a few only at stitch 79. `tools/make_cards.gd` should order the card data so the cheap wrong machines fail within the first row.
 
 ✅ **Keep What They Share (the De Morgan level) was too steep and blocked the campaign.** Resolved by **Filter first, reinvent it later** (§2.5): Filter is a starting critter, and building it moves to the "invent what you know" chapter, opened by a stepping-stone level, **Missing From Either** (`Mix(Invert A, Invert B)`, 3 pieces), so Filter is "the opposite of what you just built". Nothing later needs the invention.
-- 🟡 Solving a level opens the next two, so one hard level never walls off the rest.
-- ❓ With Filter as a piece, Wash Out becomes `Filter(A, Invert B)` (2 pieces) and The Flower `Mix(C, Filter(A, B))` (2 pieces). The finale needs a harder rule; redesign once the new order settles.
+- ✅ Solving a level opens the next two, so one hard level never walls off the rest.
+- ✅ With Filter as a piece, Wash Out becomes `Filter(A, Invert B)` (2 pieces). The Flower gets a new rule, **two of three**: a primary shows if at least two cards have it (4 pieces, `Filter(Mix(C, B), Mix(A, Filter(C, B)))`). Fallback if playtests find it too hard: `Mix(C, Filter(A, Invert B))`, 3 pieces.
 
 🟡 **Noisy cards** (designer's idea): cards carrying stray paint on some stitches that the machine must clean up. With today's pieces every card drop weaves a stitch, so stray paint is *recolored* (e.g. `Filter(card, Red)`), not skipped; skipping stitches needs routing pieces (§2.3), later. A first level, **Smudges**: a red-and-white card with yellow smudges, cleaned by `Filter(A, Red)`. Stray stitches on a card are marked with a neutral ink smudge (never a signal hue), so it's clear where the noise is.
+
+✅ **The next campaign** (approved 2026-09-28; not built yet). Chapter 1, the paint box (1–8), stays as above, but each level now earns its pot. Cheapest counts come from a search over every input paint; the solver sets the budgets once card data exists.
+
+*Chapter 2, cards:*
+
+| # | Level | Teaches | Cheapest |
+|---|---|---|---|
+| 9 | The Pattern Card | A card is paint over time | 0 |
+| 10 | Orange Sun | Mix a card with the pot | 2 |
+| 11 | **Opposites** (thread) | Invert on every paint | 1 `Invert(A)` |
+| 12 | **Turn the Wheel** (thread) | Shift on every paint | 1 `Shift(A)` |
+| 13 | **Smudges** | **Filter arrives**; noisy cards | 2 `Filter(A, Red)` |
+| 14 | Black Cat | Split and Shift a card | 4 |
+| 15 | The Third Color | Invert(Mix) | 2 |
+| 16 | Wash Out | Filter with a card as the mask | 2 `Filter(A, Invert B)` |
+| 17 | **The Flower**, rule: **two of three** | A primary shows if at least two cards have it | 4 |
+
+*Chapter 3, invent what you know* (each tray leaves out one critter):
+
+| # | Level | Rebuild | Cheapest |
+|---|---|---|---|
+| 18 | **Missing From Either** | Stepping stone, no Filter | 3 |
+| 19 | Keep What They Share | Filter from Mix and Invert | 4 |
+| 20 | **Mix Without Mix** | The mirror image | 4 |
+| 21 | **Either, Not Both** | A new invention: **Contrast** | 4 `Filter(Mix(A, B), Invert(Filter(A, B)))` |
+
+- ✅ Rebuilding a critter earns a Swatch Book page on what that critter is made of, plus stars; no sticker (the critter is already in the tray). The chapter ends with a real invention, Contrast, which keeps the invention loop going into chapter 4.
+- ✅ Threads are 8 stitches, every paint once, in the Swatch Book's order, so the cloth reads as a lookup row and fills the piece's Swatch Book page in one run.
 
 **Inventions in the prototype** ✅: solving an invention level saves the player's own machine to the Pattern Book (the Swatch Book's Inventions tab, §5.7) as a new piece. Its cards become input ports (in card order), the loom its output port; it is drawn as a sticker with its name and costs the total of its pieces.
 - ✅ **An invention is one piece that takes one tick** (built 2026-09-28). Before, it ran the machine inside, so a Filter sticker took 3 ticks and hid drops in flight: paint seemed to vanish into it and come out late. The simulator stores the invention's answer for every combination of input paints and looks it up. Pieces still count everything inside; Ticks improve, which rewards inventing. Stateful machines (memory) will need their own rule.
@@ -300,7 +331,7 @@ Chosen after comparing three animated directions in [mockups/style-studies.html]
 - Reference palette from the mockup: paper `#ECE5D6`, ink `#3A302A`, wood `#C99A69` / `#A97C52`, hoop `#8C7A68`, tag paper `#F8F3E8`, glass `#F6F1E6`. Font: Fredoka (display) + Nunito (UI).
 - ❓ A workshop cast of small animals with a master who hands out commissions (story voice), on top of the component critters.
 - ⚠️ Known risk: every new component needs a character and animations; faces must stay out of the way on big machines (consider zoomed-out simplification).
-- ✅ **Prototype critters** (`ui/draw_kit.gd`): Mix tub stirs with a spoon; Invert tub flips like a pancake; the Red pot is a sleepy clay pot that burps; Shift is a hamster in a wheel that clicks one notch per drop; Split is a small plumbing junction; inventions are stickers with their name.
+- ✅ **Prototype critters** (`ui/draw_kit.gd`): Mix tub stirs with a spoon; Invert tub flips like a pancake; Filter is a fussy, heavy-lidded tub with a sieve in its rim that shakes when it fires, grains of held-back paint (in neutrals) hopping on the rim; the Red pot is a sleepy clay pot that burps; Shift is a hamster in a wheel that clicks one notch per drop; Split is a small plumbing junction; inventions are stickers with their name.
 - 🟡 The Shift wheel is painted red, yellow and blue: the one place outside paint where signal hues appear, because the wheel *is* the rule it applies. Stars, confetti and UI stay in wood and paper tones.
 - ✅ Fredoka and Nunito are bundled in `fonts/` (SIL Open Font License).
 
@@ -386,7 +417,7 @@ Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never 
 - Workshop cast / story voice on top of the component critters (§7.2).
 - How critters simplify when zoomed out on large machines.
 - Which arities Mix/Filter support (2 only, or n?). The primitive set is decided (§2.5).
-- Is the Red source the only biased primitive, or do all three primary sources exist from the start?
+- ~~Is the Red source the only biased primitive?~~ Yes: the red pot is the only basic pot; the others are earned inventions (§5.1).
 - Grid-based placement: square grid? Thread routing rules (crossings, bridges)?
 - Title: "Chromaton" conflict search.
 

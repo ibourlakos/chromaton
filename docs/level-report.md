@@ -23,9 +23,9 @@ godot_console --headless --path . --script res://tools/level_solver.gd
 | Black Cat | 24 | 1 | 2 | 4 | 76 | 4 | `Mix(Mix(A, Shift(A)), Shift(Shift(A)))` | 6 | 4 |
 | The Third Color | 48 | 2 | 6 | 2 | 51 | 2 | `Invert(Mix(A, B))` | 3 | 2 |
 | Keep What They Share | 48 | 2 | 20 | 4 | 52 | 4 | `Invert(Mix(Invert(A), Invert(B)))` | 6 | 4 |
-| Wash Out | 48 | 2 | 15 | 3 | 52 | 3 | `Invert(Mix(B, Invert(A)))` | 5 | 3 |
+| Wash Out | 48 | 2 | 15 | 2 | 51 | 2 | `Filter(A, Invert(B))` | 3 | 2 |
 | The Flower | 192 | 3 | 72 | 5 | 195 | 5 | `Mix(C, Invert(Mix(Invert(A), Invert(B))))` | 7 | 5 |
 
 ---
 
-Checks: all passed. Run time 6.8 s.
+Checks: all passed. Run time 4.7 s.

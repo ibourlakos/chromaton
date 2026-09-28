@@ -785,6 +785,8 @@ func _draw_piece_kind(kind: String, c: Vector2, id: int, s := 1.0) -> void:
 			K.tub(self, c, PIECE_SCALE * s, liq, age, "mix", clock, seed)
 		"invert":
 			K.tub(self, c, PIECE_SCALE * s, liq, age, "invert", clock, seed)
+		"filter":
+			K.tub(self, c, PIECE_SCALE * s, liq, age, "filter", clock, seed)
 		"shift":
 			K.hamster(self, c + Vector2(0, -2) * s, 0.66 * s, liq, age, 0 if id < 0 else sim.node_fire_count(id), clock, seed)
 		"split":

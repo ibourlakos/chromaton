@@ -89,6 +89,8 @@ func _mini(kind: String, c: Vector2) -> void:
 			K.tub(self, c, 0.36, -1, 99, "mix", t, 0.2)
 		"invert":
 			K.tub(self, c, 0.36, -1, 99, "invert", t, 0.6)
+		"filter":
+			K.tub(self, c, 0.36, -1, 99, "filter", t, 0.5)
 		"shift":
 			K.hamster(self, c, 0.44, -1, 99, 0, t, 0.3)
 		_:
