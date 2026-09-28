@@ -165,12 +165,12 @@ func test_editing(level, progress) -> void:
 	var wb = open(level, progress)
 	var m = wb.machine
 	# Place a mix and an invert.
-	drag(wb, tray_point(wb, "mix"), wb.cell_center(6, 1))
-	drag(wb, tray_point(wb, "invert"), wb.cell_center(6, 3))
-	var mix: int = m.piece_at(6, 1)
-	var inv: int = m.piece_at(6, 3)
+	drag(wb, tray_point(wb, "mix"), wb.cell_center(3, 3))
+	drag(wb, tray_point(wb, "invert"), wb.cell_center(5, 3))
+	var mix: int = m.piece_at(3, 3)
+	var inv: int = m.piece_at(5, 3)
 	check(mix >= 0 and inv >= 0, "drag from tray places pieces")
-	drag(wb, tray_point(wb, "shift"), wb.cell_center(6, 1))
+	drag(wb, tray_point(wb, "shift"), wb.cell_center(3, 3))
 	check(wb.machine.nodes.size() == 5, "a piece can't be dropped on an occupied cell")
 	# Tubes: card A -> mix, card B -> mix (dragged backwards), mix -> invert -> loom.
 	var card_a: int = m.find_kind(Pieces.CARD, 0)
@@ -184,8 +184,8 @@ func test_editing(level, progress) -> void:
 	check(wb.machine.tube_into(mix, 1) >= 0, "a tube can be dragged from an input to an output")
 	check(wb.machine.tube_into(loom, 0) >= 0, "dropping a tube on the loom connects it")
 	# Move the invert; its tubes follow.
-	drag(wb, wb.cell_center(6, 3), wb.cell_center(8, 3))
-	check(wb.machine.piece_at(8, 3) == inv and wb.machine.piece_at(6, 3) == -1, "drag moves a piece")
+	drag(wb, wb.cell_center(5, 3), wb.cell_center(5, 5))
+	check(wb.machine.piece_at(5, 5) == inv and wb.machine.piece_at(5, 3) == -1, "drag moves a piece")
 	check(wb.machine.tubes.size() == 4, "moving keeps tubes")
 	# Tap a tube, then its delete button.
 	var ti: int = wb.machine.tube_into(inv, 0)
@@ -198,17 +198,17 @@ func test_editing(level, progress) -> void:
 	check(wb.machine.tubes.size() == 4, "undo restores the tube")
 	m = wb.machine
 	# Drag a tube's end off its input to empty space: removed.
-	drag(wb, wb.in_port(inv, 0), Vector2(1000, 300))
+	drag(wb, wb.in_port(inv, 0), wb.cell_center(6, 0))
 	check(wb.machine.tube_into(inv, 0) < 0, "dragging a tube end away removes it")
 	wb._undo()
 	# Re-route a tube end to another input.
-	drag(wb, tray_point(wb, "shift"), wb.cell_center(10, 3))
-	var shift: int = wb.machine.piece_at(10, 3)
+	drag(wb, tray_point(wb, "shift"), wb.cell_center(7, 5))
+	var shift: int = wb.machine.piece_at(7, 5)
 	drag(wb, wb.in_port(inv, 0), wb.in_port(shift, 0))
 	check(wb.machine.tube_into(shift, 0) >= 0 and wb.machine.tube_into(inv, 0) < 0, "a tube end can be moved to another input")
 	# Trash: drag a piece onto the tray.
-	drag(wb, wb.cell_center(10, 3), wb.TRASH.get_center())
-	check(wb.machine.piece_at(10, 3) == -1, "dragging a piece to the trash removes it")
+	drag(wb, wb.cell_center(7, 5), wb.TRASH.get_center())
+	check(wb.machine.piece_at(7, 5) == -1, "dragging a piece to the trash removes it")
 	check(wb.machine.tube_into(shift, 0) < 0, "its tubes go with it")
 	# An edit while running rewinds the run.
 	wb._undo()
@@ -220,7 +220,7 @@ func test_editing(level, progress) -> void:
 	drag(wb, tray_point(wb, "red_pot"), wb.cell_center(0, 0))
 	check(wb.sim.tick == 0 and not wb.running, "editing stops and rewinds the run")
 	# A wrong machine shows the wrong stitch.
-	drag(wb, wb.in_port(inv, 0), Vector2(1000, 300))
+	drag(wb, wb.in_port(inv, 0), wb.cell_center(6, 0))
 	drag(wb, wb.out_port(mix, 0), wb.loom_cloth.get_center())
 	wb._toggle_run()
 	var frames := 0

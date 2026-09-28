@@ -254,11 +254,20 @@ static func tube(ci: CanvasItem, pts: PackedVector2Array, selected := false) -> 
 	polyline_round(ci, pts, P.GLASS, 8)
 
 
+## A tube leaves an output going right and enters an input from the left.
 static func tube_path(a: Vector2, b: Vector2) -> PackedVector2Array:
-	var d := clampf(absf(b.y - a.y) * 0.5, 26, 120)
-	if b.y < a.y + 20:
-		d = 60 + (a.y - b.y) * 0.4
-	return cubic(a, a + Vector2(0, d), b - Vector2(0, d), b, 24)
+	var d := clampf(absf(b.x - a.x) * 0.5, 26, 120)
+	if b.x < a.x + 20:
+		d = 60 + (a.x - b.x) * 0.4
+	return cubic(a, a + Vector2(d, 0), b - Vector2(d, 0), b, 24)
+
+
+## A short pipe from a piece's side to one of its ports: glass going in,
+## a wooden spout coming out.
+static func stub(ci: CanvasItem, port: Vector2, body: Vector2, spout: bool) -> void:
+	var pts := PackedVector2Array([body, port])
+	polyline_round(ci, pts, P.INK, 12 if spout else 13)
+	polyline_round(ci, pts, P.WOOD_DK if spout else P.GLASS, 7 if spout else 8)
 
 
 static func port_in(ci: CanvasItem, p: Vector2, lit := false) -> void:
@@ -493,13 +502,18 @@ static func card(ci: CanvasItem, c: Vector2, name: String, upcoming: Array, age:
 	var tab := Vector2(r.position.x + 13, r.position.y + 13)
 	shape(ci, ellipse(tab, 9, 9, 0, 20), P.WOOD_LT, P.INK, 2)
 	text(ci, P.display(600), tab + Vector2(0, 0.5), name, 13, P.INK)
-	# next colors, the next one first; they slide left as the card releases
-	var slide := clampf(1.0 - age, 0, 1) * 18 if age < 1 else 0.0
+	# next colors, the next one on the right by the card's port; they slide
+	# right as the card releases
+	var slide := -clampf(1.0 - age, 0, 1) * 18 if age < 1 else 0.0
 	for i in mini(upcoming.size(), 6):
-		var p := Vector2(r.position.x + 38 + i * 19 + slide, r.position.y + 21)
+		var p := Vector2(r.end.x - 20 - i * 19 + slide, r.position.y + 21)
 		swatch(ci, p, 7.5 if i > 0 else 8.5, upcoming[i])
 	if upcoming.is_empty():
 		stroke(ci, arc(Vector2(c.x + 10, r.position.y + 21), 6, 0, TAU, 16), P.WARP, 2)
+	# the card's spout, towards the bench
+	var spout := PackedVector2Array([Vector2(r.end.x - 2, c.y), Vector2(c.x + 86, c.y)])
+	polyline_round(ci, spout, P.INK, 12)
+	polyline_round(ci, spout, P.WOOD_DK, 7)
 
 
 ## The loom: cloth with warp threads, wooden frame, woven stitches, shuttle.

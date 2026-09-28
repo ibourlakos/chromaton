@@ -2,14 +2,72 @@
 	"id": "orange",
 	"name": "Orange",
 	"goal": "Weave an orange cloth.",
-	"pieces": ["red_pot", "shift", "mix", "split"],
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"split"
+	],
 	"inventions": [],
-	"stars": {"budget": 4, "best": 3},
-	"target": ["OOOO", "OOOO", "OOOO"],
+	"stars": {
+		"budget": 4,
+		"best": 3
+	},
+	"target": [
+		"OOOO",
+		"OOOO",
+		"OOOO"
+	],
 	"card_rule": "",
 	"cards": [],
 	"reference": {
-		"pieces": [{"id": "pot", "kind": "red_pot", "x": 6, "y": 0}, {"id": "s", "kind": "split", "x": 6, "y": 1}, {"id": "h", "kind": "shift", "x": 7, "y": 2}, {"id": "m", "kind": "mix", "x": 6, "y": 3}],
-		"tubes": [["pot", "s"], ["s.0", "m.0"], ["s.1", "h"], ["h", "m.1"], ["m", "loom"]]
+		"pieces": [
+			{
+				"id": "pot",
+				"kind": "red_pot",
+				"x": 0,
+				"y": 3
+			},
+			{
+				"id": "s",
+				"kind": "split",
+				"x": 2,
+				"y": 3
+			},
+			{
+				"id": "h",
+				"kind": "shift",
+				"x": 4,
+				"y": 4
+			},
+			{
+				"id": "m",
+				"kind": "mix",
+				"x": 6,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"pot",
+				"s"
+			],
+			[
+				"s.0",
+				"m.0"
+			],
+			[
+				"s.1",
+				"h"
+			],
+			[
+				"h",
+				"m.1"
+			],
+			[
+				"m",
+				"loom"
+			]
+		]
 	}
 }

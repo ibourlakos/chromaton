@@ -2,14 +2,46 @@
 	"id": "yellow",
 	"name": "Yellow",
 	"goal": "Weave a yellow cloth from red paint.",
-	"pieces": ["red_pot", "shift"],
+	"pieces": [
+		"red_pot",
+		"shift"
+	],
 	"inventions": [],
-	"stars": {"budget": 3, "best": 2},
-	"target": ["YYYY", "YYYY", "YYYY"],
+	"stars": {
+		"budget": 3,
+		"best": 2
+	},
+	"target": [
+		"YYYY",
+		"YYYY",
+		"YYYY"
+	],
 	"card_rule": "",
 	"cards": [],
 	"reference": {
-		"pieces": [{"id": "pot", "kind": "red_pot", "x": 6, "y": 1}, {"id": "h", "kind": "shift", "x": 6, "y": 3}],
-		"tubes": [["pot", "h"], ["h", "loom"]]
+		"pieces": [
+			{
+				"id": "pot",
+				"kind": "red_pot",
+				"x": 2,
+				"y": 3
+			},
+			{
+				"id": "h",
+				"kind": "shift",
+				"x": 6,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"pot",
+				"h"
+			],
+			[
+				"h",
+				"loom"
+			]
+		]
 	}
 }

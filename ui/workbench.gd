@@ -27,19 +27,20 @@ signal progress_changed
 
 const DESIGN := Vector2(1280, 800)
 const TOP_H := 64.0
-const TRAY := Rect2(12, 74, 128, 716)
-const TRASH := Rect2(20, 694, 112, 88)
-const BENCH := Rect2(152, 74, 1116, 490)
-const GRID_ORIGIN := Vector2(164, 158)
+# Paint flows left to right: cards down the left edge, the bench in the
+# middle, the loom on the right, and the parts tray as a shelf along the bottom.
+const TRAY := Rect2(12, 662, 1256, 128)
+const TRASH := Rect2(1150, 670, 110, 112)
+const BENCH := Rect2(12, 74, 956, 578)
+const GRID_ORIGIN := Vector2(200, 84)
 const CELL := Vector2(84, 80)
-const COLS := 13
-const ROWS := 5
-const CARD_Y := 106.0
-const CARD_COLS := {1: [6], 2: [4, 8], 3: [3, 6, 9]}
-const LOOM_X := 710.0
-const LOOM_PORT_Y := 578.0
-const PORT_DX := 20.0
-const PORT_DY := 32.0
+const COLS := 9
+const ROWS := 7
+const CARD_X := 96.0
+const CARD_ROWS := {1: [3], 2: [1, 5], 3: [0, 3, 6]}
+const SIDE := Rect2(980, 74, 288, 578)  # design card, loom and status
+const PORT_DX := 34.0
+const PORT_DY := 17.0
 const PORT_HIT := 20.0
 const TICK_SECONDS := [0.55, 0.22, 0.05]
 const SPEEDS := ["slow", "normal", "fast"]
@@ -69,7 +70,7 @@ var panel: Control
 var tray := []  # [{"kind": String, "rect": Rect2}]
 var loom_cloth := Rect2()
 var loom_cs := 20.0
-var loom_port := Vector2(LOOM_X, LOOM_PORT_Y)
+var loom_port := Vector2.ZERO
 
 var drag := ""  # "", "new", "move", "tube", "tube_in"
 var drag_kind := ""
@@ -165,19 +166,21 @@ func _build_tray() -> void:
 		if inventions.has(inv_id):
 			kinds.append("inv:" + inv_id)
 	tray.clear()
-	var top := TRAY.position.y + 8
-	var h := minf(100.0, (TRASH.position.y - top - 6) / maxf(1, kinds.size()))
+	var left := TRAY.position.x + 8
+	var w := minf(118.0, (TRASH.position.x - 8 - left) / maxf(1, kinds.size()))
 	for i in kinds.size():
-		tray.append({"kind": kinds[i], "rect": Rect2(TRAY.position.x + 6, top + i * h, TRAY.size.x - 12, h - 6)})
+		tray.append({"kind": kinds[i], "rect": Rect2(left + i * w, TRAY.position.y + 8, w - 8, TRAY.size.y - 16)})
 
 
+## The loom sits in the side column, its intake on the left facing the bench.
 func _layout_loom() -> void:
-	var avail_h := DESIGN.y - (LOOM_PORT_Y + 34) - 24
-	loom_cs = floorf(clampf(minf(avail_h / level.rows, 400.0 / level.cols), 10, 30))
+	var avail := Vector2(SIDE.size.x - 100, 200)
+	loom_cs = floorf(clampf(minf(avail.y / level.rows, avail.x / level.cols), 10, 30))
 	var w: float = level.cols * loom_cs
 	var h: float = level.rows * loom_cs
-	loom_cloth = Rect2(LOOM_X - w / 2, LOOM_PORT_Y + 34, w, h)
-	loom_port = Vector2(LOOM_X, LOOM_PORT_Y)
+	var mid := Vector2(SIDE.position.x + 62 + avail.x / 2, SIDE.position.y + 276)
+	loom_cloth = Rect2(mid - Vector2(w, h) / 2, Vector2(w, h))
+	loom_port = Vector2(loom_cloth.position.x - 52, mid.y)
 
 
 func cell_center(x: int, y: int) -> Vector2:
@@ -198,24 +201,26 @@ func node_center(id: int) -> Vector2:
 		return drag_pos - grab
 	match n["kind"]:
 		Pieces.CARD:
-			var cols: Array = CARD_COLS.get(level.cards.size(), [6])
-			return Vector2(GRID_ORIGIN.x + (cols[int(n["card"])] + 0.5) * CELL.x, CARD_Y)
+			var rows: Array = CARD_ROWS.get(level.cards.size(), [3])
+			return Vector2(CARD_X, GRID_ORIGIN.y + (rows[int(n["card"])] + 0.5) * CELL.y)
 		Pieces.LOOM:
 			return loom_port
 	return cell_center(n["x"], n["y"])
 
 
-func _offsets(count: int, dy: float) -> Array:
+## Port offsets on one side of a piece (dx < 0: inputs, dx > 0: outputs),
+## the first port on top.
+func _offsets(count: int, dx: float) -> Array:
 	match count:
 		1:
-			return [Vector2(0, dy)]
+			return [Vector2(dx, 0)]
 		2:
-			return [Vector2(-PORT_DX, dy), Vector2(PORT_DX, dy)]
+			return [Vector2(dx, -PORT_DY), Vector2(dx, PORT_DY)]
 		3:
-			return [Vector2(-27, dy), Vector2(0, dy), Vector2(27, dy)]
+			return [Vector2(dx, -22), Vector2(dx, 0), Vector2(dx, 22)]
 	var out := []
 	for i in count:
-		out.append(Vector2((i - (count - 1) / 2.0) * 22, dy))
+		out.append(Vector2(dx, (i - (count - 1) / 2.0) * 18))
 	return out
 
 
@@ -224,15 +229,15 @@ func in_port(id: int, p: int) -> Vector2:
 	if n["kind"] == Pieces.LOOM:
 		return loom_port
 	var count := Pieces.ports(n, inventions).x
-	return node_center(id) + _offsets(count, -PORT_DY)[p]
+	return node_center(id) + _offsets(count, -PORT_DX)[p]
 
 
 func out_port(id: int, p: int) -> Vector2:
 	var n: Dictionary = machine.nodes[id]
 	if n["kind"] == Pieces.CARD:
-		return node_center(id) + Vector2(0, 34)
+		return node_center(id) + Vector2(86, 0)
 	var count := Pieces.ports(n, inventions).y
-	return node_center(id) + _offsets(count, PORT_DY)[p]
+	return node_center(id) + _offsets(count, PORT_DX)[p]
 
 
 func tube_points(i: int) -> PackedVector2Array:
@@ -589,7 +594,7 @@ func _tube_at(pos: Vector2) -> int:
 
 
 func _delete_button_pos() -> Vector2:
-	return K.along(tube_points(selected_tube), 0.5) + Vector2(30, 0)
+	return K.along(tube_points(selected_tube), 0.5) + Vector2(0, -30)
 
 
 # ---------------------------------------------------------------------------
@@ -676,10 +681,11 @@ func _draw_bench() -> void:
 		K.tube(self, K.tube_path(out_port(drag_node, drag_port), drag_pos), false)
 	if drag == "tube_in" and drag_moved:
 		K.tube(self, K.tube_path(drag_pos, in_port(drag_node, drag_port)), false)
-	# Pieces
+	# Pieces, with short pipes from their sides to their ports
 	for id in machine.nodes:
 		if machine.is_fixed(id) or (drag == "move" and id == drag_node):
 			continue
+		_draw_stubs(id, node_center(id))
 		_draw_piece(id, node_center(id))
 	# Ports
 	for id in machine.nodes:
@@ -709,6 +715,18 @@ func _draw_bench() -> void:
 		K.fill(self, K.ellipse(b + Vector2(0, 3), 22, 22), P.SHADOW)
 		K.shape(self, K.ellipse(b, 22, 22), P.TAG, P.INK, 2.5)
 		K.icon(self, "trash", b, 1.0, P.INK)
+
+
+## Glass pipes into a piece's left side, wooden spouts out of its right side.
+func _draw_stubs(id: int, c: Vector2) -> void:
+	var n: Dictionary = machine.nodes[id]
+	if n["kind"] == "split":
+		return
+	var p := Pieces.ports(n, inventions)
+	for o in _offsets(p.x, -PORT_DX):
+		K.stub(self, c + o, c + Vector2(-18, o.y * 0.7), false)
+	for o in _offsets(p.y, PORT_DX):
+		K.stub(self, c + o, c + Vector2(18, o.y * 0.7), true)
 
 
 func _draw_piece(id: int, c: Vector2) -> void:
@@ -746,9 +764,9 @@ func _draw_piece_kind(kind: String, c: Vector2, id: int, s := 1.0) -> void:
 		"split":
 			var ins := []
 			var outs := []
-			for o in _offsets(1, -PORT_DY):
+			for o in _offsets(1, -PORT_DX):
 				ins.append(c + o * s)
-			for o in _offsets(2, PORT_DY):
+			for o in _offsets(2, PORT_DX):
 				outs.append(c + o * s)
 			K.split(self, c, ins, outs, liq, age)
 		_:
@@ -762,11 +780,11 @@ func _draw_loom_area() -> void:
 	if flying:
 		shown -= 1
 	var wrong: int = sim.wrong_index if outcome == "wrong" else -1
-	K.design(self, Rect2(330, 590, 210, 196), level.cols, level.target)
+	K.design(self, Rect2(SIDE.position.x + 20, SIDE.position.y + 4, SIDE.size.x - 40, 136), level.cols, level.target)
 	K.loom(self, loom_cloth, level.cols, loom_cs, sim.woven, level.target, shown, true, wrong, clock)
-	# The loom's intake funnel
+	# The loom's intake funnel, opening towards the bench
 	var port := loom_port
-	K.shape(self, PackedVector2Array([port + Vector2(-16, -6), port + Vector2(16, -6), port + Vector2(6, 14), port + Vector2(-6, 14)]), P.WOOD_LT, P.INK, 2.5)
+	K.shape(self, PackedVector2Array([port + Vector2(-6, -16), port + Vector2(18, -6), port + Vector2(18, 6), port + Vector2(-6, 16)]), P.WOOD_LT, P.INK, 2.5)
 	K.port_in(self, port)
 	if flying:
 		var i: int = sim.woven.size() - 1
@@ -778,22 +796,22 @@ func _draw_loom_area() -> void:
 
 
 func _draw_status() -> void:
-	var box := Rect2(900, 590, 356, 196)
+	var box := Rect2(SIDE.position.x, SIDE.position.y + 410, SIDE.size.x, SIDE.end.y - SIDE.position.y - 410)
 	var font := P.ui(700)
 	var pieces: int = machine.cost(inventions)
-	K.icon(self, "pieces", box.position + Vector2(18, 20), 1.0, P.INK)
-	K.text(self, font, box.position + Vector2(36, 20), "Pieces  %d" % pieces, 18, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-	K.icon(self, "ticks", box.position + Vector2(18, 52), 1.0, P.INK)
-	K.text(self, font, box.position + Vector2(36, 52), "Ticks  %d" % sim.tick, 18, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+	K.icon(self, "pieces", box.position + Vector2(18, 16), 1.0, P.INK)
+	K.text(self, font, box.position + Vector2(36, 16), "Pieces  %d" % pieces, 18, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+	K.icon(self, "ticks", box.position + Vector2(158, 16), 1.0, P.INK)
+	K.text(self, font, box.position + Vector2(176, 16), "Ticks  %d" % sim.tick, 18, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 	# Star targets: two stars within budget, three at the best known
 	# (none on a level with nothing to place).
-	var y := box.position.y + 86
+	var x := box.position.x + 16
 	for row in ([[2, level.budget], [3, level.best]] if tray.size() > 0 else []):
 		for s in row[0]:
-			K.star(self, Vector2(box.position.x + 16 + s * 20, y), 8, pieces <= row[1] and pieces > 0)
-		K.text(self, font, Vector2(box.position.x + 16 + row[0] * 20 + 4, y), "≤ %d" % row[1], 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
-		y += 24
-	var bubble := Rect2(box.position + Vector2(0, 140), Vector2(box.size.x, 52))
+			K.star(self, Vector2(x + s * 20, box.position.y + 50), 8, pieces <= row[1] and pieces > 0)
+		K.text(self, font, Vector2(x + row[0] * 20 + 4, box.position.y + 50), "≤ %d" % row[1], 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+		x += 142
+	var bubble := Rect2(box.position + Vector2(0, 78), Vector2(box.size.x, 52))
 	match outcome:
 		"wrong":
 			K.shape(self, K.round_rect(bubble, 12), P.TAG, P.INK, 2)
@@ -840,7 +858,7 @@ func _hint_path() -> Array:
 		if not machine.is_fixed(id):
 			placed.append(id)
 	if placed.is_empty() and tray.size() > 0:
-		return [tray[0]["rect"].get_center(), cell_center(6, 2)]
+		return [tray[0]["rect"].get_center(), cell_center(4, 3)]
 	if placed.is_empty():
 		# Nothing to place: the card itself feeds the loom.
 		var card: int = machine.find_kind(Pieces.CARD, 0)

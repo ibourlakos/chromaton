@@ -321,10 +321,10 @@ Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never 
 ### 9.1 Workbench UI (prototype) 🟡
 
 - 1280×800 design canvas that scales to the window. Top bar: back, level name and one-line goal, Undo · Reset · Step · Run/Pause, and three speeds (0.55 s, 0.22 s and 0.05 s per tick; Normal is the default).
-- Parts tray on the left, a 13×5 bench grid in the middle (one piece per cell), pattern cards fixed along the top, loom below with the design card on its left and Pieces, Ticks and star targets on its right.
-- Pieces take paint in at the top and send it out at the bottom, like the mockup. Tubes are drawn as glass curves between ports; crossings are allowed (no routing rules yet).
+- 🟡 **Paint flows left to right** (the mockup flows downward). Machines grow deeper as puzzles get harder, and the screen is landscape, so depth gets the long axis: pattern cards are stacked down the left edge, the bench is 9 cells deep × 7 wide (one piece per cell), and the loom stands on the right with the design card above it and Pieces, Ticks and star targets below. The parts tray is a shelf along the bottom (room for about 9 pieces) with the trash at its right end.
+- Pieces take paint in on their left side through short glass pipes and send it out on their right through wooden spouts; with two ports, the first is on top. Cards release paint from their right end, next color nearest the spout. Tubes are drawn as glass curves between ports; crossings are allowed (no routing rules yet). The cloth still weaves top to bottom (§4).
 - Gestures: drag from the tray to place; drag a piece to move it, or back onto the tray (trash) to remove it; drag from an output to an input (or the other way) to lay a tube; drag a tube's end off an input to re-route or drop it; tap a tube, then its delete button. Any edit rewinds the run. Undo covers every edit.
-- Tubes can end anywhere on the loom. A drop travels down its tube during the tick it was made, then waits at the bottom; a woven drop flies into its cell.
+- Tubes can end anywhere on the loom. A drop travels along its tube during the tick it was made, then waits at the far end; a woven drop flies into its cell.
 - Level 1 has a wordless hand hint; Run glows once the loom is fed. Keyboard shortcuts exist for desktop (space, S, R, Ctrl+Z, Delete, Esc) but nothing requires them.
 - Invert shows its input color during the first half of its flip (Invert is its own inverse, so the input is known from the output).
 
@@ -359,7 +359,6 @@ Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never 
 
 Raised by the prototype (see the 🟡 markers above):
 - One stitch every two ticks: keep the strict one-drop rule, or allow chain reactions (§9)? Paths of unequal length slow it further: Purple takes 50 ticks for 12 stitches, Black Cat 99 for 24.
-- The bench has 5 rows, but the cheapest black cloth (level 6) is 6 parts deep counting the pot, so one tube has to run sideways or upward. Is that acceptable, or does the bench need a sixth row?
 - Should inventions be accepted only if they work for every paint (current), and should re-solving replace or keep the cheapest?
 - Should players name their inventions?
 - Glyph dots on woven stitches, or keep the tapestry clean?

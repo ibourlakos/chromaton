@@ -2,14 +2,56 @@
 	"id": "blue",
 	"name": "Blue",
 	"goal": "Weave a blue cloth.",
-	"pieces": ["red_pot", "shift"],
+	"pieces": [
+		"red_pot",
+		"shift"
+	],
 	"inventions": [],
-	"stars": {"budget": 4, "best": 3},
-	"target": ["BBBB", "BBBB", "BBBB"],
+	"stars": {
+		"budget": 4,
+		"best": 3
+	},
+	"target": [
+		"BBBB",
+		"BBBB",
+		"BBBB"
+	],
 	"card_rule": "",
 	"cards": [],
 	"reference": {
-		"pieces": [{"id": "pot", "kind": "red_pot", "x": 6, "y": 0}, {"id": "h1", "kind": "shift", "x": 6, "y": 2}, {"id": "h2", "kind": "shift", "x": 6, "y": 4}],
-		"tubes": [["pot", "h1"], ["h1", "h2"], ["h2", "loom"]]
+		"pieces": [
+			{
+				"id": "pot",
+				"kind": "red_pot",
+				"x": 0,
+				"y": 3
+			},
+			{
+				"id": "h1",
+				"kind": "shift",
+				"x": 4,
+				"y": 3
+			},
+			{
+				"id": "h2",
+				"kind": "shift",
+				"x": 8,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"pot",
+				"h1"
+			],
+			[
+				"h1",
+				"h2"
+			],
+			[
+				"h2",
+				"loom"
+			]
+		]
 	}
 }

@@ -2,14 +2,83 @@
 	"id": "white",
 	"name": "Nothing at All",
 	"goal": "Weave a white cloth.",
-	"pieces": ["red_pot", "shift", "mix", "invert", "split"],
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"invert",
+		"split"
+	],
 	"inventions": [],
-	"stars": {"budget": 6, "best": 4},
-	"target": ["WWWW", "WWWW", "WWWW"],
+	"stars": {
+		"budget": 6,
+		"best": 4
+	},
+	"target": [
+		"WWWW",
+		"WWWW",
+		"WWWW"
+	],
 	"card_rule": "",
 	"cards": [],
 	"reference": {
-		"pieces": [{"id": "pot", "kind": "red_pot", "x": 6, "y": 0}, {"id": "s", "kind": "split", "x": 6, "y": 1}, {"id": "i1", "kind": "invert", "x": 7, "y": 2}, {"id": "m", "kind": "mix", "x": 6, "y": 3}, {"id": "i2", "kind": "invert", "x": 6, "y": 4}],
-		"tubes": [["pot", "s"], ["s.0", "m.0"], ["s.1", "i1"], ["i1", "m.1"], ["m", "i2"], ["i2", "loom"]]
+		"pieces": [
+			{
+				"id": "pot",
+				"kind": "red_pot",
+				"x": 0,
+				"y": 3
+			},
+			{
+				"id": "s",
+				"kind": "split",
+				"x": 2,
+				"y": 3
+			},
+			{
+				"id": "i1",
+				"kind": "invert",
+				"x": 4,
+				"y": 4
+			},
+			{
+				"id": "m",
+				"kind": "mix",
+				"x": 6,
+				"y": 3
+			},
+			{
+				"id": "i2",
+				"kind": "invert",
+				"x": 8,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"pot",
+				"s"
+			],
+			[
+				"s.0",
+				"m.0"
+			],
+			[
+				"s.1",
+				"i1"
+			],
+			[
+				"i1",
+				"m.1"
+			],
+			[
+				"m",
+				"i2"
+			],
+			[
+				"i2",
+				"loom"
+			]
+		]
 	}
 }

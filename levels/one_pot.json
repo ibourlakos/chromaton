@@ -3,14 +3,35 @@
 	"name": "One Pot of Red",
 	"goal": "Tube the red pot to the loom.",
 	"hints": true,
-	"pieces": ["red_pot"],
+	"pieces": [
+		"red_pot"
+	],
 	"inventions": [],
-	"stars": {"budget": 1, "best": 1},
-	"target": ["RRRR", "RRRR", "RRRR"],
+	"stars": {
+		"budget": 1,
+		"best": 1
+	},
+	"target": [
+		"RRRR",
+		"RRRR",
+		"RRRR"
+	],
 	"card_rule": "",
 	"cards": [],
 	"reference": {
-		"pieces": [{"id": "pot", "kind": "red_pot", "x": 6, "y": 2}],
-		"tubes": [["pot", "loom"]]
+		"pieces": [
+			{
+				"id": "pot",
+				"kind": "red_pot",
+				"x": 4,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"pot",
+				"loom"
+			]
+		]
 	}
 }
