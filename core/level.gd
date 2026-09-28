@@ -22,6 +22,7 @@ const INDEX_PATH := "res://levels/index.json"
 var id := ""
 var number := 0  # position in the campaign, from 1 (0 when loaded on its own)
 var chapter := 0  # index into Level.chapters()
+var chapter_name := ""
 var name := ""
 var goal := ""
 var cols := 0
@@ -67,6 +68,7 @@ static func load_all() -> Array:
 				push_error(level.error)
 			level.number = out.size() + 1
 			level.chapter = c
+			level.chapter_name = str(index[c]["name"])
 			out.append(level)
 	return out
 

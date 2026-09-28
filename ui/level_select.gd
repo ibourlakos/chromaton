@@ -1,4 +1,5 @@
-## Level select: one tag per level with its picture and stars.
+## Level select: one page per chapter, one tag per level with its picture
+## and stars. Arrows turn the pages.
 extends Control
 
 const P = preload("res://ui/palette.gd")
@@ -7,39 +8,94 @@ const ToyButton = preload("res://ui/toy_button.gd")
 
 signal level_chosen(index: int)
 signal book_requested
+signal page_changed(chapter: int)
 
 const DESIGN := Vector2(1280, 800)
 const TAG := Vector2(280, 142)
 const GAP := Vector2(20, 16)
-const COLUMNS := 4  # eight paint levels fill the first two rows
+const COLUMNS := 4  # three rows fit a page: twelve levels per chapter at most
+const TAGS_Y := 196.0
+const DOTS_Y := 772.0
 
 var levels: Array = []
 var progress
+var page := 0  # the chapter on show
+var chapter_count := 1
+var tags: Array = []  # the ToyButtons on this page
+var prev_button
+var next_button
 var t := 0.0
 
 
-func setup(p_levels: Array, p_progress) -> void:
+func setup(p_levels: Array, p_progress, p_page := 0) -> void:
 	levels = p_levels
 	progress = p_progress
+	for level in levels:
+		chapter_count = maxi(chapter_count, level.chapter + 1)
+	page = clampi(p_page, 0, chapter_count - 1)
+	_build()
 
 
-func _ready() -> void:
-	size = DESIGN
-	var ids := levels.map(func(l): return l.id)
-	var origin := Vector2(DESIGN.x / 2 - (COLUMNS * TAG.x + (COLUMNS - 1) * GAP.x) / 2, 158)
+## Indices into levels of the levels on a chapter's page.
+func page_levels(chapter: int) -> Array:
+	var out := []
 	for i in levels.size():
-		var b = ToyButton.new()
-		b.custom_minimum_size = TAG
-		b.size = TAG
-		b.position = origin + Vector2(i % COLUMNS, i / COLUMNS) * (TAG + GAP)
-		b.painter = _paint_tag.bind(i, progress.is_unlocked(ids, i))
-		b.disabled = not progress.is_unlocked(ids, i)
-		b.pressed.connect(func(): level_chosen.emit(i))
-		add_child(b)
+		if levels[i].chapter == chapter:
+			out.append(i)
+	return out
+
+
+## Builds the screen's buttons; done in setup so the page works before it
+## enters the tree.
+func _build() -> void:
+	size = DESIGN
 	var book = ToyButton.make("book", Vector2(64, 64))
 	book.position = Vector2(DESIGN.x - 96, 40)
 	book.pressed.connect(func(): book_requested.emit())
 	add_child(book)
+	var left := DESIGN.x / 2 - (COLUMNS * TAG.x + (COLUMNS - 1) * GAP.x) / 2
+	prev_button = ToyButton.make("back")
+	prev_button.position = Vector2(left, DOTS_Y - 30)
+	prev_button.pressed.connect(func(): turn(-1))
+	add_child(prev_button)
+	next_button = ToyButton.make("next")
+	next_button.position = Vector2(DESIGN.x - left - 52, DOTS_Y - 30)
+	next_button.pressed.connect(func(): turn(1))
+	add_child(next_button)
+	_build_page()
+
+
+## Turns by pages (negative for back); stops at the first and last chapter.
+func turn(by: int) -> void:
+	var to := clampi(page + by, 0, chapter_count - 1)
+	if to == page:
+		return
+	page = to
+	_build_page()
+	page_changed.emit(page)
+
+
+func _build_page() -> void:
+	for b in tags:
+		b.queue_free()
+	tags.clear()
+	var ids := levels.map(func(l): return l.id)
+	var origin := Vector2(DESIGN.x / 2 - (COLUMNS * TAG.x + (COLUMNS - 1) * GAP.x) / 2, TAGS_Y)
+	var on_page := page_levels(page)
+	for k in on_page.size():
+		var i: int = on_page[k]
+		var b = ToyButton.new()
+		b.custom_minimum_size = TAG
+		b.size = TAG
+		b.position = origin + Vector2(k % COLUMNS, k / COLUMNS) * (TAG + GAP)
+		b.painter = _paint_tag.bind(i, progress.is_unlocked(ids, i))
+		b.disabled = not progress.is_unlocked(ids, i)
+		b.pressed.connect(func(): level_chosen.emit(i))
+		add_child(b)
+		tags.append(b)
+	prev_button.visible = page > 0
+	next_button.visible = page < chapter_count - 1
+	queue_redraw()
 
 
 func _process(delta: float) -> void:
@@ -50,6 +106,11 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	K.text(self, P.display(600), Vector2(DESIGN.x / 2, 74), "Chromaton", 56, P.INK)
 	K.text(self, P.ui(700), Vector2(DESIGN.x / 2, 124), "Invent machines out of paint", 18, P.INK_SOFT)
+	K.text(self, P.display(600), Vector2(DESIGN.x / 2, 168), _chapter_name(page), 24, P.INK)
+	# One dot per chapter, the one on show filled
+	for ch in chapter_count:
+		var at := Vector2(DESIGN.x / 2 + (ch - (chapter_count - 1) / 2.0) * 28, DOTS_Y)
+		K.shape(self, K.ellipse(at, 7, 7, 0, 16), P.INK if ch == page else P.TAG, P.INK, 2)
 	# A few drops dancing under the title
 	for i in 8:
 		var c: int = [1, 2, 4, 3, 6, 5, 7, 0][i]
@@ -70,7 +131,7 @@ func _paint_tag(b: Control, r: Rect2, down: bool, i: int, open: bool) -> void:
 	var ink := P.INK if open else Color(P.INK, 0.4)
 	var num := body.position + Vector2(26, 26)
 	K.shape(b, K.ellipse(num, 16, 16, 0, 24), P.WOOD_LT if open else P.PAPER, ink, 2)
-	K.text(b, P.display(600), num + Vector2(0, 1), str(i + 1), 18, ink)
+	K.text(b, P.display(600), num + Vector2(0, 1), str(level.number), 18, ink)
 	K.text(b, P.display(600), body.position + Vector2(50, 26), level.name, 19, ink, HORIZONTAL_ALIGNMENT_LEFT)
 	if not level.invention.is_empty():
 		K.sticker(b, body.position + Vector2(body.size.x - 40, body.size.y - 24), 0.45, level.invention["name"], 99, t, 0.2)
@@ -96,3 +157,10 @@ func _paint_tag(b: Control, r: Rect2, down: bool, i: int, open: bool) -> void:
 			K.text(b, P.ui(700), body.position + Vector2(234, 100), str(rec.get("best_ticks", 0)), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	else:
 		K.icon(b, "lock", body.get_center() + Vector2(0, 16), 1.6, Color(P.INK, 0.4))
+
+
+func _chapter_name(chapter: int) -> String:
+	for level in levels:
+		if level.chapter == chapter:
+			return level.chapter_name
+	return ""

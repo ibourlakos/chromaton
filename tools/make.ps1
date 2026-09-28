@@ -77,7 +77,7 @@ Design tools (rewrite files under docs/ or levels/)
 Other
   shot <level> <png> [options]
                        save a screenshot and quit; level can also be 'levels'
-                       or 'book'; options: --ticks=N --phase=0.5 --finish --wrong --empty
+                       or 'book'; options: --ticks=N --phase=0.5 --finish --wrong --empty --page=N
   import               import new fonts or other assets
   godot                print which Godot this script uses
 "@

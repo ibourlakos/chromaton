@@ -12,6 +12,7 @@
 ##   --finish                    run to the end and show the result
 ##   --wrong                     tube card A straight to the loom instead
 ##   --empty                     leave the bench empty
+##   --page=<n>                  the level select's chapter page (from 0)
 extends Control
 
 const P = preload("res://ui/palette.gd")
@@ -28,6 +29,7 @@ var levels: Array = []
 var progress
 var stage: Control
 var screen: Control
+var select_page := 0  # the level select's chapter page
 
 
 func _ready() -> void:
@@ -45,6 +47,7 @@ func _ready() -> void:
 	if args.has("screenshot"):
 		_screenshot(args)
 		return
+	select_page = _first_open_chapter()
 	var start := _level_index(str(args.get("level", "")))
 	if start >= 0:
 		open_level(start)
@@ -71,6 +74,15 @@ func _level_index(id: String) -> int:
 	return -1
 
 
+## The chapter of the first level that is open and not yet solved.
+func _first_open_chapter() -> int:
+	var ids := levels.map(func(l): return l.id)
+	for i in levels.size():
+		if progress.is_unlocked(ids, i) and not progress.is_solved(ids[i]):
+			return levels[i].chapter
+	return 0
+
+
 func _center() -> void:
 	stage.position = ((size - DESIGN) / 2).floor()
 	queue_redraw()
@@ -94,9 +106,10 @@ func _set_screen(c: Control) -> void:
 
 func show_level_select() -> void:
 	var s = LevelSelect.new()
-	s.setup(levels, progress)
+	s.setup(levels, progress, select_page)
 	s.level_chosen.connect(open_level)
 	s.book_requested.connect(show_book)
+	s.page_changed.connect(func(c): select_page = c)
 	_set_screen(s)
 
 
@@ -108,6 +121,7 @@ func show_book() -> void:
 
 
 func open_level(i: int) -> void:
+	select_page = levels[i].chapter
 	var w = Workbench.new()
 	w.setup(levels[i], progress, i + 1 < levels.size())
 	w.exit_requested.connect(func():
@@ -139,6 +153,7 @@ func _screenshot(args: Dictionary) -> void:
 		"levels":
 			for k in 6:
 				progress.record_solve(levels[k].id, levels[k].best + (k % 2), 40 + k, 3 - (k % 2))
+			select_page = int(args.get("page", 0))
 			show_level_select()
 		"book":
 			show_book()

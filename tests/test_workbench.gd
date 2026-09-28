@@ -9,6 +9,7 @@ const Level = preload("res://core/level.gd")
 const Progress = preload("res://core/progress.gd")
 const Pieces = preload("res://core/pieces.gd")
 const Workbench = preload("res://ui/workbench.gd")
+const LevelSelect = preload("res://ui/level_select.gd")
 const K = preload("res://ui/draw_kit.gd")
 
 var failures := 0
@@ -36,6 +37,7 @@ func _initialize() -> void:
 	test_tray_lists_only_the_level(by_id["green"], progress)
 	test_not_general(by_id["keep_what_they_share"])
 	test_round_rect()
+	test_level_select(levels)
 	if failures == 0:
 		print("test_workbench: all %d checks passed" % checks)
 	quit(1 if failures > 0 else 0)
@@ -299,3 +301,26 @@ func test_round_rect() -> void:
 		if Geometry2D.triangulate_polygon(pts).is_empty():
 			ok = false
 	check(ok, "narrow rounded rectangles have no repeated points and triangulate")
+
+
+## One page per chapter; the arrows stop at the first and last chapter.
+func test_level_select(levels: Array) -> void:
+	var chapters := Level.chapters()
+	var s = LevelSelect.new()
+	s.setup(levels, Progress.new(), 1)
+	root.add_child(s)
+	check(s.page == 1, "the level select opens on the page it is given")
+	var turned := []
+	s.page_changed.connect(func(c): turned.append(c))
+	for c in chapters.size():
+		var ids: Array = s.page_levels(c).map(func(i): return levels[i].id)
+		check(ids == chapters[c]["levels"], "page %d holds chapter %d's levels" % [c, c])
+	s.turn(-1)
+	check(s.page == 0 and s.tags.size() == chapters[0]["levels"].size(), "turning back shows the first chapter's tags")
+	check(not s.prev_button.visible and s.next_button.visible, "no back arrow on the first page")
+	s.turn(-1)
+	check(s.page == 0, "turning stops at the first page")
+	s.turn(chapters.size() + 3)
+	check(s.page == chapters.size() - 1 and not s.next_button.visible and s.prev_button.visible, "turning stops at the last page")
+	check(turned == [0, chapters.size() - 1], "each page turn is announced once")
+	s.queue_free()
