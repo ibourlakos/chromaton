@@ -396,6 +396,10 @@ func test_keys(level) -> void:
 	key(wb, KEY_PLUS)
 	key(wb, KEY_KP_ADD)
 	check(wb.speed == 2, "+ speeds up to fast")
+	key(wb, KEY_TAB)
+	check(wb.speed == 0, "Tab after fast goes round to slow")
+	key(wb, KEY_TAB)
+	check(wb.speed == 1, "Tab steps on to normal")
 	# A changed key works at once and the old one stops.
 	Keys.bind("run", 0, KEY_G)
 	key(wb, KEY_SPACE)

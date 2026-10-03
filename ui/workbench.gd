@@ -152,7 +152,7 @@ func _ready() -> void:
 		var b = ToyButton.make(SPEEDS[i], Vector2(46, 46))
 		x -= 46
 		b.position = Vector2(x, 9)
-		b.key = Keys.label(["slower", "", "faster"][i])
+		b.key = Keys.label(["slower", "speed", "faster"][i])
 		b.pressed.connect(_set_speed.bind(i))
 		add_child(b)
 		btn_speed.push_front(b)
@@ -492,6 +492,8 @@ func _key(act: String, event: InputEventKey) -> bool:
 			_set_speed(maxi(speed - 1, 0))
 		"faster":
 			_set_speed(mini(speed + 1, SPEEDS.size() - 1))
+		"speed":
+			_set_speed((speed + 1) % SPEEDS.size())  # slow, normal, fast, slow...
 		"delete":
 			if editing:
 				_delete_selected()

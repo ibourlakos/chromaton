@@ -29,6 +29,7 @@ const ACTIONS := [
 	["undo", "Workbench", "Undo", [KEY_Z]],
 	["slower", "Workbench", "Slower", [KEY_MINUS]],
 	["faster", "Workbench", "Faster", [KEY_EQUAL]],
+	["speed", "Workbench", "Next speed", [KEY_TAB]],
 	["delete", "Workbench", "Delete selected", [KEY_DELETE, KEY_BACKSPACE]],
 	["piece_1", "Workbench", "Tray piece 1", [KEY_1]],
 	["piece_2", "Workbench", "Tray piece 2", [KEY_2]],
