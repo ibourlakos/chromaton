@@ -985,7 +985,9 @@ func _draw_loom_area() -> void:
 	if flying:
 		shown -= 1
 	var wrong: int = sim.wrong_index if outcome == "wrong" else -1
-	K.loom(self, loom_cloth, level.cols, loom_cs, sim.woven, level.target, shown, true, wrong, clock)
+	# The shuttle slides on to the next slot just after a stitch lands.
+	var glide := clampf((clock - landed_at) / minf(0.3, TICK_SECONDS[speed] * 0.8), 0, 1)
+	K.loom(self, loom_cloth, level.cols, loom_cs, sim.woven, level.target, shown, true, wrong, clock, glide)
 	# The loom's intake funnel, opening towards the bench
 	var port := loom_port
 	K.shape(self, PackedVector2Array([port + Vector2(-6, -16), port + Vector2(18, -6), port + Vector2(18, 6), port + Vector2(-6, 16)]), P.WOOD_LT, P.INK, 2.5)

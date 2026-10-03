@@ -641,7 +641,8 @@ static func smudge(ci: CanvasItem, c: Vector2) -> void:
 
 
 ## The loom: cloth with warp threads, wooden frame, woven stitches, shuttle.
-static func loom(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: PackedByteArray, target: PackedByteArray, shown: int, ghost: bool, wrong: int, t: float) -> void:
+## glide (0 → 1) is how far the shuttle has slid on since the last stitch.
+static func loom(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: PackedByteArray, target: PackedByteArray, shown: int, ghost: bool, wrong: int, t: float, glide := 1.0) -> void:
 	fill(ci, PackedVector2Array([cloth.position, Vector2(cloth.end.x, cloth.position.y), cloth.end, Vector2(cloth.position.x, cloth.end.y)]), P.CLOTH)
 	for col in cols:
 		var x := cloth.position.x + (col + 0.5) * cs
@@ -681,8 +682,33 @@ static func loom(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: Pack
 		line(ci, wc + Vector2(-d, -d), wc + Vector2(d, d), P.INK, 3)
 		line(ci, wc + Vector2(-d, d), wc + Vector2(d, -d), P.INK, 3)
 	elif shown < target.size():
-		var sc := cloth.position + Vector2((shown % cols + 0.5) * cs, (shown / cols + 0.5) * cs)
-		shape(ci, ellipse(sc + Vector2(0, cs * 0.42), cs * 0.62, maxf(3.5, cs * 0.17), 0, 24), P.WOOD, P.INK, 1.8)
+		# The shuttle rides under the row it weaves and slides on to the next
+		# slot (glide 0 → 1 after a stitch lands), back to the left for a new row.
+		var to := cloth.position + Vector2((shown % cols + 0.5) * cs, (shown / cols + 0.92) * cs)
+		var from := to
+		if glide < 1.0 and shown > 0:
+			from = to - Vector2(cs, 0) if shown % cols != 0 else Vector2(cloth.position.x - cs * 0.6, to.y)
+		var at := from.lerp(to, 1.0 - pow(1.0 - clampf(glide, 0, 1), 3))
+		# the weft it lays, trailing back to the cloth's edge
+		ci.draw_line(Vector2(cloth.position.x, at.y), at, Color(P.HOOP, 0.6), maxf(1, cs * 0.06), true)
+		shuttle(ci, at, cs)
+
+
+## A loom shuttle: a pointed wooden boat with a bobbin of thread in its hollow.
+static func shuttle(ci: CanvasItem, c: Vector2, cs: float) -> void:
+	var hl := maxf(cs * 0.62, 11)
+	var hh := maxf(cs * 0.19, 4)
+	var body := quad(c + Vector2(-hl, 0), c + Vector2(0, -hh * 2), c + Vector2(hl, 0), 12)
+	body.append_array(quad(c + Vector2(hl, 0), c + Vector2(0, hh * 2), c + Vector2(-hl, 0), 12))
+	fill(ci, ellipse(c + Vector2(0, hh * 0.9), hl * 0.9, hh * 0.6, 0, 20), P.SHADOW)
+	shape(ci, body, P.WOOD, P.INK, 1.8)
+	var hollow := Rect2(c - Vector2(hl * 0.42, hh * 0.5), Vector2(hl * 0.84, hh))
+	fill(ci, round_rect(hollow, hh * 0.5, 3), P.WOOD_DK)
+	var bobbin := hollow.grow_individual(-hl * 0.08, -hh * 0.12, -hl * 0.08, -hh * 0.12)
+	shape(ci, round_rect(bobbin, hh * 0.38, 3), P.TAG, Color(P.HOOP, 0.9), 1)
+	for k in 3:
+		var x := bobbin.position.x + bobbin.size.x * (0.3 + k * 0.2)
+		ci.draw_line(Vector2(x, bobbin.position.y + 1), Vector2(x, bobbin.end.y - 1), Color(P.HOOP, 0.6), 1, true)
 
 
 ## A small copy of the target picture, pinned like a design sketch.
@@ -697,6 +723,12 @@ static func design(ci: CanvasItem, r: Rect2, cols: int, target: PackedByteArray)
 	for i in target.size():
 		var cell := Rect2(origin + Vector2((i % cols) * cs, (i / cols) * cs), Vector2(cs, cs))
 		ci.draw_rect(cell, P.WHITE_STITCH if target[i] == 0 else P.SIG[target[i]])
+	# Faint weft threads, one per row, as the loom will weave it.
+	for row in rows:
+		var y := origin.y + (row + 0.5) * cs
+		ci.draw_line(Vector2(origin.x, y), Vector2(origin.x + size.x, y), Color(1, 1, 1, 0.15), maxf(1, cs * 0.12), true)
+		if row > 0:
+			ci.draw_line(Vector2(origin.x, origin.y + row * cs), Vector2(origin.x + size.x, origin.y + row * cs), Color(P.INK, 0.1), 1, true)
 	ci.draw_rect(Rect2(origin, size), Color(P.INK, 0.25), false, 1)
 	# pin
 	var pin := Vector2(box.get_center().x, box.position.y + 2)
