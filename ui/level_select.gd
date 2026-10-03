@@ -186,10 +186,8 @@ func _paint_tag(b: Control, r: Rect2, down: bool, i: int, open: bool) -> void:
 	var body := Rect2(r.position + press, r.size)
 	K.shape(b, K.round_rect(body, 14), P.TAG if open else P.PAPER_DK, P.INK if open else Color(P.INK, 0.35), 2.5)
 	var ink := P.INK if open else Color(P.INK, 0.4)
-	var num := body.position + Vector2(26, 26)
-	K.shape(b, K.ellipse(num, 16, 16, 0, 24), P.WOOD_LT if open else P.PAPER, ink, 2)
-	K.text(b, P.display(600), num + Vector2(0, 1), str(level.number), 18, ink)
-	K.text(b, P.display(600), body.position + Vector2(50, 26), level.name, 19, ink, HORIZONTAL_ALIGNMENT_LEFT)
+	_stamp(b, body.position + Vector2(30, 29), level.number, open)
+	K.text(b, P.display(600), body.position + Vector2(57, 27), level.name, 19, ink, HORIZONTAL_ALIGNMENT_LEFT)
 	if not level.invention.is_empty():
 		var paint := Invention.paint_of(level.invention)
 		if paint >= 0:
@@ -218,6 +216,24 @@ func _paint_tag(b: Control, r: Rect2, down: bool, i: int, open: bool) -> void:
 			K.text(b, P.ui(700), body.position + Vector2(234, 100), str(rec.get("best_ticks", 0)), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	else:
 		K.icon(b, "lock", body.get_center() + Vector2(0, 16), 1.6, Color(P.INK, 0.4))
+
+
+## The level's number as a rubber stamp in wood-brown ink: a scalloped ring
+## pressed on a little askew (each number at its own tilt), so it doesn't read
+## as a key or a button.
+func _stamp(b: Control, c: Vector2, number: int, open: bool) -> void:
+	var ink := Color(P.WOOD_DK, 0.95) if open else Color(P.INK, 0.25)
+	K.set_xf(b, c, Vector2.ONE, -0.22 + 0.14 * sin(number * 2.3))
+	var edge := PackedVector2Array()
+	for i in 72:
+		var a := i * TAU / 72
+		edge.append(Vector2(cos(a), sin(a)) * (19.5 + 1.5 * cos(a * 12)))
+	K.shape(b, edge, Color(P.WOOD_LT, 0.3) if open else Color(P.PAPER, 0.4), ink, 2)
+	K.ring(b, Vector2.ZERO, 15, Color(ink, ink.a * 0.6), 1.2)
+	var digits := Color(P.INK, 0.85) if open else ink
+	for dx in [-0.4, 0.4]:  # pressed in thick, like a well-inked stamp
+		K.text(b, P.display(700), Vector2(dx, 1), str(number), 19, digits)
+	K.reset_xf(b)
 
 
 ## "[?] Hide key labels" (or Show): the key always shows here, labels on or off.
