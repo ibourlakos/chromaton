@@ -56,6 +56,69 @@ function Invoke-Tool([string]$Script) {
 	return Invoke-Godot @("--headless", "--path", $Root, "--script", "res://tools/$Script.gd")
 }
 
+# Godot's version as its export-template folder names it, e.g. 4.7.2.stable.
+function Get-GodotVersion {
+	$g = Find-Godot
+	$v = (& $g.Console --version | Select-Object -Last 1).Trim()
+	if ($v -notmatch '^(\d+\.\d+(\.\d+)?\.[a-z0-9]+)') { throw "Can't read the Godot version from '$v'." }
+	return $Matches[1]
+}
+
+function Get-TemplateDir {
+	return Join-Path $env:APPDATA "Godot\export_templates\$(Get-GodotVersion)"
+}
+
+# Installs the export templates for this Godot from a .tpz file, downloading
+# it from Godot's GitHub releases (about 1.3 GB) when none is given.
+function Install-Templates([string]$Tpz) {
+	$dir = Get-TemplateDir
+	$version = Get-GodotVersion
+	if (-not $Tpz) {
+		$tag = $version -replace '\.([a-z][a-z0-9]*)$', '-$1'
+		$url = "https://github.com/godotengine/godot/releases/download/$tag/Godot_v${tag}_export_templates.tpz"
+		$Tpz = Join-Path $env:TEMP "Godot_v${tag}_export_templates.tpz"
+		Write-Host "Downloading $url (about 1.3 GB)..."
+		& curl.exe -fL -o $Tpz $url
+		if ($LASTEXITCODE -ne 0) { throw "Download failed." }
+	}
+	Add-Type -AssemblyName System.IO.Compression.FileSystem
+	$zip = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path $Tpz).Path)
+	try {
+		New-Item -ItemType Directory -Force $dir | Out-Null
+		foreach ($e in $zip.Entries) {
+			if (-not $e.Name) { continue }
+			$out = Join-Path $dir ($e.FullName -replace '^templates/', '')
+			New-Item -ItemType Directory -Force (Split-Path -Parent $out) | Out-Null
+			[System.IO.Compression.ZipFileExtensions]::ExtractToFile($e, $out, $true)
+		}
+	} finally {
+		$zip.Dispose()
+	}
+	Write-Host "Export templates installed in $dir"
+	return 0
+}
+
+# Exports the web build to build/web and zips it as build/chromaton-web.zip,
+# ready to upload to itch.io.
+function Export-Web {
+	if (-not (Test-Path (Join-Path (Get-TemplateDir) "web_nothreads_release.zip"))) {
+		throw "Export templates for Godot $(Get-GodotVersion) are missing. Run: .\make templates"
+	}
+	$web = Join-Path $Root "build\web"
+	if (Test-Path $web) { Remove-Item -Recurse -Force $web }
+	New-Item -ItemType Directory -Force $web | Out-Null
+	$code = Invoke-Godot @("--headless", "--path", $Root, "--export-release", "Web", (Join-Path $web "index.html"))
+	if ($code -ne 0 -or -not (Test-Path (Join-Path $web "index.html"))) {
+		Write-Host "Web export failed."
+		return 1
+	}
+	$zip = Join-Path $Root "build\chromaton-web.zip"
+	if (Test-Path $zip) { Remove-Item -Force $zip }
+	Compress-Archive -Path (Join-Path $web "*") -DestinationPath $zip
+	Write-Host "Web build: $zip ($([math]::Round((Get-Item $zip).Length / 1MB, 1)) MB)"
+	return 0
+}
+
 function Show-Help {
 	Write-Host @"
 Chromaton tasks: .\make <task> [args]
@@ -73,6 +136,10 @@ Design tools (rewrite files under docs/ or levels/)
   solve                prove each level's star counts (docs/level-report.md)
   cards                derive pattern cards from target pictures
   algebra              check the color algebra (docs/algebra-report.md)
+
+Share
+  export               build the web version: build/web and build/chromaton-web.zip (for itch.io)
+  templates [tpz]      install Godot's export templates (downloads about 1.3 GB unless given a .tpz)
 
 Other
   shot <level> <png> [options]
@@ -109,6 +176,8 @@ switch ($Task) {
 		$a = @("--path", $Root, "--", "--screenshot=$($Rest[0]):$png") + ($Rest | Select-Object -Skip 2)
 		$code = Invoke-Godot $a
 	}
+	"export" { $code = Export-Web }
+	"templates" { $code = Install-Templates ($Rest | Select-Object -First 1) }
 	"import" { $code = Invoke-Godot @("--headless", "--path", $Root, "--import") }
 	"godot" {
 		$g = Find-Godot
