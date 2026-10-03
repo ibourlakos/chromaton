@@ -134,10 +134,19 @@ static func line(ci: CanvasItem, a: Vector2, b: Vector2, col: Color, w: float) -
 	ci.draw_circle(b, w / 2, col, true, -1, true)
 
 
+## Round caps at the ends, and round joints only where the line turns
+## sharply: on a smooth curve (a tube) a disc at every point would be
+## invisible but costly.
 static func polyline_round(ci: CanvasItem, pts: PackedVector2Array, col: Color, w: float) -> void:
 	ci.draw_polyline(pts, col, w, true)
-	for p in pts:
-		ci.draw_circle(p, w / 2, col, true, -1, true)
+	var n := pts.size()
+	for i in n:
+		if i > 0 and i < n - 1:
+			var a := pts[i] - pts[i - 1]
+			var b := pts[i + 1] - pts[i]
+			if a.length_squared() > 0 and b.length_squared() > 0 and a.normalized().dot(b.normalized()) > 0.94:
+				continue  # turns less than about 20°
+		ci.draw_circle(pts[i], w / 2, col, true, -1, true)
 
 
 static func disc(ci: CanvasItem, c: Vector2, r: float, col: Color) -> void:
