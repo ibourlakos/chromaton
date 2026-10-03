@@ -79,6 +79,8 @@ var hover_pos := Vector2(-1, -1)  # last pointer position over the bench (for ke
 var carrying := -1  # tray index of a picked-up piece that follows the pointer
 var outcome := ""  # "", "solved", "wrong", "stalled", "not_general"
 var panel: Control
+var still: Control  # the still layer (see _draw_still)
+var still_look := []
 
 var tray := []  # [{"kind": String, "rect": Rect2}]
 var loom_cloth := Rect2()
@@ -142,6 +144,14 @@ func _fixed_nodes_match() -> bool:
 func _ready() -> void:
 	size = DESIGN
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	still = Control.new()
+	still.size = DESIGN
+	still.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	still.show_behind_parent = true
+	still.draw.connect(_draw_still)
+	still.add_to_group(Keys.GROUP)  # redraws when key caps are toggled
+	add_child(still)
+	still_look = _still_look()
 	var back = ToyButton.make("back")
 	back.position = Vector2(14, 6)
 	back.key = Keys.label("back")
@@ -389,6 +399,10 @@ func _process(delta: float) -> void:
 	elif running:
 		_do_step()
 	queue_redraw()
+	var look := _still_look()
+	if still != null and look != still_look:
+		still_look = look
+		still.queue_redraw()
 
 
 func _on_tick_shown() -> void:
@@ -738,9 +752,8 @@ func _age(id: int) -> float:
 
 
 func _draw() -> void:
-	_draw_frame()
 	_draw_run_halo()
-	_draw_tray()
+	_draw_aim()
 	_draw_bench()
 	_draw_loom_area()
 	_draw_hint()
@@ -757,25 +770,42 @@ func _carried_ghost() -> bool:
 	return carrying >= 0 and drag == "" and BENCH.has_point(hover_pos)
 
 
-func _draw_frame() -> void:
+## What the still layer shows that can change: redrawn only when this does.
+func _still_look() -> Array:
+	return [carrying, drag == "move" and drag_moved and TRAY.has_point(drag_pos)]
+
+
+## The still layer: top bar, tray, bench and grid, design card. Drawn behind
+## everything else, and only when its look changes; tray pieces hold still.
+func _draw_still() -> void:
+	_draw_frame(still)
+	_draw_tray(still)
+	K.shape(still, K.round_rect(BENCH, 14), Color(P.TAG, 0.35), Color(P.INK, 0.12), 2)
+	for gx in COLS + 1:
+		for gy in ROWS + 1:
+			still.draw_circle(GRID_ORIGIN + Vector2(gx * CELL.x, gy * CELL.y), 2, Color(P.INK, 0.12))
+	K.design(still, Rect2(SIDE.position.x + 20, SIDE.position.y + 4, SIDE.size.x - 40, 136), level.cols, level.target)
+
+
+func _draw_frame(ci: CanvasItem) -> void:
 	# Top bar
-	K.fill(self, PackedVector2Array([Vector2(0, 0), Vector2(DESIGN.x, 0), Vector2(DESIGN.x, TOP_H), Vector2(0, TOP_H)]), Color(P.PAPER_DK, 0.6))
-	draw_line(Vector2(0, TOP_H), Vector2(DESIGN.x, TOP_H), Color(P.INK, 0.15), 2)
+	K.fill(ci, PackedVector2Array([Vector2(0, 0), Vector2(DESIGN.x, 0), Vector2(DESIGN.x, TOP_H), Vector2(0, TOP_H)]), Color(P.PAPER_DK, 0.6))
+	ci.draw_line(Vector2(0, TOP_H), Vector2(DESIGN.x, TOP_H), Color(P.INK, 0.15), 2)
 	var index := str(level.number)
-	K.text(self, P.display(600), Vector2(80, 22), "%s · %s" % [index, level.name], 24, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-	K.text(self, P.ui(600), Vector2(80, 47), level.goal, 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+	K.text(ci, P.display(600), Vector2(80, 22), "%s · %s" % [index, level.name], 24, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+	K.text(ci, P.ui(600), Vector2(80, 47), level.goal, 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 
 
-func _draw_tray() -> void:
-	K.shape(self, K.round_rect(TRAY, 14), Color(P.PAPER_DK, 0.9), Color(P.INK, 0.35), 2)
+func _draw_tray(ci: CanvasItem) -> void:
+	K.shape(ci, K.round_rect(TRAY, 14), Color(P.PAPER_DK, 0.9), Color(P.INK, 0.35), 2)
 	for i in tray.size():
 		var item: Dictionary = tray[i]
 		var r: Rect2 = item["rect"]
 		# A picked-up piece's slot is lit until it is put down.
 		if i == carrying:
-			K.shape(self, K.round_rect(r, 10), Color(P.HOOP, 0.3), P.INK, 3)
+			K.shape(ci, K.round_rect(r, 10), Color(P.HOOP, 0.3), P.INK, 3)
 		else:
-			K.shape(self, K.round_rect(r, 10), P.TAG, Color(P.INK, 0.5), 1.5)
+			K.shape(ci, K.round_rect(r, 10), P.TAG, Color(P.INK, 0.5), 1.5)
 		var label := ""
 		var kind: String = item["kind"]
 		if kind.begins_with("inv:"):
@@ -783,22 +813,18 @@ func _draw_tray() -> void:
 			label = "%d pieces" % int(inv["cost"])
 		else:
 			label = Pieces.display_name(kind) + ("  free" if Pieces.TABLE[kind]["cost"] == 0 else "")
-		_draw_piece_kind(kind, r.get_center() + Vector2(0, -8), -1, 0.82)
-		K.text(self, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, P.INK_SOFT)
+		_draw_piece_kind(kind, r.get_center() + Vector2(0, -8), -1, 0.82, ci, 0.0)
+		K.text(ci, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, P.INK_SOFT)
 		if i < 9:
-			Keys.cap(self, r.position + Vector2(16, 16), Keys.label("piece_%d" % (i + 1)))
+			Keys.cap(ci, r.position + Vector2(16, 16), Keys.label("piece_%d" % (i + 1)))
 	# Trash: lights up while a piece is dragged over the tray.
-	var lit := drag == "move" and drag_moved and TRAY.has_point(drag_pos)
-	K.shape(self, K.round_rect(TRASH, 12), Color(P.HOOP, 0.35) if lit else Color(P.PAPER, 0.8), Color(P.INK, 0.45), 2)
-	K.icon(self, "trash", TRASH.get_center(), 1.5 if lit else 1.3, Color(P.INK, 0.9 if lit else 0.5))
+	var lit: bool = _still_look()[1]
+	K.shape(ci, K.round_rect(TRASH, 12), Color(P.HOOP, 0.35) if lit else Color(P.PAPER, 0.8), Color(P.INK, 0.45), 2)
+	K.icon(ci, "trash", TRASH.get_center(), 1.5 if lit else 1.3, Color(P.INK, 0.9 if lit else 0.5))
 
 
-func _draw_bench() -> void:
-	K.shape(self, K.round_rect(BENCH, 14), Color(P.TAG, 0.35), Color(P.INK, 0.12), 2)
-	# Grid dots and the target cell while dragging a piece.
-	for gx in COLS + 1:
-		for gy in ROWS + 1:
-			draw_circle(GRID_ORIGIN + Vector2(gx * CELL.x, gy * CELL.y), 2, Color(P.INK, 0.12))
+## The target cell while dragging or carrying a piece.
+func _draw_aim() -> void:
 	var aim := Vector2(-1, -1)
 	if drag == "new" or (drag == "move" and drag_moved):
 		aim = drag_pos - (grab if drag == "move" else Vector2.ZERO)
@@ -810,6 +836,9 @@ func _draw_bench() -> void:
 			var ok: bool = not cell_taken(cell) or (drag == "move" and machine.piece_at(cell.x, cell.y) == drag_node)
 			var r := Rect2(GRID_ORIGIN + Vector2(cell) * CELL, CELL).grow(-4)
 			K.fill(self, K.round_rect(r, 10), Color(P.HOOP, 0.22) if ok else Color(P.INK, 0.08))
+
+
+func _draw_bench() -> void:
 	# Cards
 	for id in machine.nodes:
 		var n: Dictionary = machine.nodes[id]
@@ -895,8 +924,13 @@ func _draw_piece(id: int, c: Vector2) -> void:
 	_draw_piece_kind(kind, c, id, s)
 
 
-## Draws a piece. id < 0 draws it idle (tray, drag ghost).
-func _draw_piece_kind(kind: String, c: Vector2, id: int, s := 1.0) -> void:
+## Draws a piece. id < 0 draws it idle (tray, drag ghost). It draws on ci
+## (default: the workbench) at time t (default: now).
+func _draw_piece_kind(kind: String, c: Vector2, id: int, s := 1.0, ci: CanvasItem = null, t := -1.0) -> void:
+	if ci == null:
+		ci = self
+	if t < 0:
+		t = clock
 	var age := IDLE_AGE if id < 0 else _age(id)
 	var liq: int = -1 if id < 0 else sim.node_color(id)
 	var seed := 0.37 * id if id >= 0 else 0.5
@@ -904,25 +938,25 @@ func _draw_piece_kind(kind: String, c: Vector2, id: int, s := 1.0) -> void:
 		var inv: Dictionary = inventions.get(kind.substr(4), {})
 		var paint := Invention.paint_of(inv)
 		if paint >= 0:
-			K.pot(self, c + Vector2(0, -2) * s, PIECE_SCALE * s, age, clock, seed, paint)
+			K.pot(ci, c + Vector2(0, -2) * s, PIECE_SCALE * s, age, t, seed, paint)
 		else:
-			K.sticker(self, c, 0.8 * s, str(inv.get("name", "?")), age, clock, seed)
+			K.sticker(ci, c, 0.8 * s, str(inv.get("name", "?")), age, t, seed)
 		return
 	if not Pieces.TABLE.has(kind):
 		return
 	match Pieces.TABLE[kind]["look"]:
 		"pot":
-			K.pot(self, c + Vector2(0, -2) * s, PIECE_SCALE * s, age, clock, seed)
+			K.pot(ci, c + Vector2(0, -2) * s, PIECE_SCALE * s, age, t, seed)
 		"catch":
-			K.catch_pot(self, c + Vector2(0, -4) * s, PIECE_SCALE * s, [] if id < 0 else sim.node_caught(id), age, clock, seed)
+			K.catch_pot(ci, c + Vector2(0, -4) * s, PIECE_SCALE * s, [] if id < 0 else sim.node_caught(id), age, t, seed)
 		"mix":
-			K.tub(self, c, PIECE_SCALE * s, liq, age, "mix", clock, seed)
+			K.tub(ci, c, PIECE_SCALE * s, liq, age, "mix", t, seed)
 		"invert":
-			K.tub(self, c, PIECE_SCALE * s, liq, age, "invert", clock, seed)
+			K.tub(ci, c, PIECE_SCALE * s, liq, age, "invert", t, seed)
 		"filter":
-			K.tub(self, c, PIECE_SCALE * s, liq, age, "filter", clock, seed)
+			K.tub(ci, c, PIECE_SCALE * s, liq, age, "filter", t, seed)
 		"shift":
-			K.hamster(self, c + Vector2(0, -2) * s, 0.66 * s, liq, age, 0 if id < 0 else sim.node_fire_count(id), clock, seed)
+			K.hamster(ci, c + Vector2(0, -2) * s, 0.66 * s, liq, age, 0 if id < 0 else sim.node_fire_count(id), t, seed)
 		"split":
 			var ins := []
 			var outs := []
@@ -930,10 +964,10 @@ func _draw_piece_kind(kind: String, c: Vector2, id: int, s := 1.0) -> void:
 				ins.append(c + o * s)
 			for o in _offsets(2, PORT_DX):
 				outs.append(c + o * s)
-			K.split(self, c, ins, outs, liq, age)
+			K.split(ci, c, ins, outs, liq, age)
 		_:
-			K.tub(self, c, PIECE_SCALE * s, liq, age, "tub", clock, seed)
-			K.text(self, P.display(600), c + Vector2(0, 30) * s, Pieces.display_name(kind), 13, P.INK)
+			K.tub(ci, c, PIECE_SCALE * s, liq, age, "tub", t, seed)
+			K.text(ci, P.display(600), c + Vector2(0, 30) * s, Pieces.display_name(kind), 13, P.INK)
 
 
 func _draw_loom_area() -> void:
@@ -942,7 +976,6 @@ func _draw_loom_area() -> void:
 	if flying:
 		shown -= 1
 	var wrong: int = sim.wrong_index if outcome == "wrong" else -1
-	K.design(self, Rect2(SIDE.position.x + 20, SIDE.position.y + 4, SIDE.size.x - 40, 136), level.cols, level.target)
 	K.loom(self, loom_cloth, level.cols, loom_cs, sim.woven, level.target, shown, true, wrong, clock)
 	# The loom's intake funnel, opening towards the bench
 	var port := loom_port
