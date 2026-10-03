@@ -4,18 +4,19 @@
 ## Everything on the bench is drawn in _draw(). Every gesture is a
 ## press-drag-release (no hover, no right-click), so mouse and touch work the
 ## same way:
-## - drag a piece from the tray onto a free cell to place it;
+## - drag a piece from the tray onto a free cell to place it, or tap it to
+##   pick it up and tap a free cell to put it down;
 ## - drag a placed piece to move it, or onto the tray to throw it away;
 ## - drag from an output port to an input port to lay a tube (or the other
 ##   way round); drag a tube's end off an input port to re-route or remove it;
 ## - tap a tube or a placed piece to select it, then tap its delete button.
 ## Any edit stops the run and rewinds it to the start.
 ##
-## Keys only speed up what a tap already does (key caps show on the controls,
-## see keys.gd): Space run/pause, S or → step, A or ← step back, R reset,
-## Z undo, - and + speed, 1-9 put that tray piece on the cell under the
-## pointer, Delete or Backspace removes the selection (or what's under the
-## pointer), Esc clears the selection or leaves the level.
+## Keys (see keys.gd for the defaults; they can be changed in Options) only
+## do what a tap already does: run controls and speed, a tray piece's key
+## picks it up (it follows the pointer until a click puts it down), Delete
+## removes only what is selected, Back drops a carried piece, then clears the
+## selection, then leaves the level.
 extends Control
 
 const P = preload("res://ui/palette.gd")
@@ -55,7 +56,7 @@ const PIECE_SCALE := 0.6
 const DROP_R := 9.0
 const IDLE_AGE := 99.0
 ## Held keys repeat only where repeating helps: stepping and undo.
-const REPEATING := [KEY_RIGHT, KEY_LEFT, KEY_S, KEY_A, KEY_Z]
+const REPEATING := ["step", "step_back", "undo"]
 
 var level
 var progress
@@ -75,7 +76,7 @@ var undo_stack := []
 var selected_tube := -1
 var selected_piece := -1  # a placed piece (only one of the two is selected)
 var hover_pos := Vector2(-1, -1)  # last pointer position over the bench (for keys)
-var nudged_at := {}  # tray index -> clock when its key found no free cell
+var carrying := -1  # tray index of a picked-up piece that follows the pointer
 var outcome := ""  # "", "solved", "wrong", "stalled", "not_general"
 var panel: Control
 
@@ -86,6 +87,7 @@ var loom_port := Vector2.ZERO
 
 var drag := ""  # "", "new", "move", "tube", "tube_in"
 var drag_kind := ""
+var drag_index := -1  # tray index of a "new" drag
 var drag_node := -1
 var drag_port := -1
 var drag_detach := -1
@@ -142,7 +144,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var back = ToyButton.make("back")
 	back.position = Vector2(14, 6)
-	back.key = "Esc"
+	back.key = Keys.label("back")
 	back.pressed.connect(func(): exit_requested.emit())
 	add_child(back)
 	var x := DESIGN.x - 16
@@ -150,7 +152,7 @@ func _ready() -> void:
 		var b = ToyButton.make(SPEEDS[i], Vector2(46, 46))
 		x -= 46
 		b.position = Vector2(x, 9)
-		b.key = ["−", "", "+"][i]
+		b.key = Keys.label(["slower", "", "faster"][i])
 		b.pressed.connect(_set_speed.bind(i))
 		add_child(b)
 		btn_speed.push_front(b)
@@ -161,11 +163,11 @@ func _ready() -> void:
 	btn_back = _control_button("step_back", x - 58 - 58 * 2, _step_back_pressed)
 	btn_reset = _control_button("reset", x - 58 - 58 * 3, _reset_pressed)
 	btn_undo = _control_button("undo", x - 58 - 58 * 4 - 12, _undo)
-	btn_run.key = "Space"
-	btn_step.key = "S"
-	btn_back.key = "A"
-	btn_reset.key = "R"
-	btn_undo.key = "Z"
+	btn_run.key = Keys.label("run")
+	btn_step.key = Keys.label("step")
+	btn_back.key = Keys.label("step_back")
+	btn_reset.key = Keys.label("reset")
+	btn_undo.key = Keys.label("undo")
 	_set_speed(speed)
 
 
@@ -452,7 +454,7 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func _notification(what: int) -> void:
-	# The pointer went off the bench (or onto a button): keys have no cell.
+	# The pointer went off the bench (or onto a button): no ghost to show.
 	if what == NOTIFICATION_MOUSE_EXIT_SELF:
 		hover_pos = Vector2(-1, -1)
 
@@ -460,47 +462,43 @@ func _notification(what: int) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed) or panel != null:
 		return
-	if event.echo and not event.keycode in REPEATING:
+	var act := Keys.action(event, "Workbench")
+	if event.echo and not act in REPEATING:
 		return
-	if _key(event):
+	if _key(act, event):
 		Keys.handled(self)
 
 
-## Handles a key press; false if the key means nothing here.
-func _key(event: InputEventKey) -> bool:
-	var k := event.keycode
+## Does a key's action; false if the key means nothing here.
+func _key(act: String, event: InputEventKey) -> bool:
 	var editing := drag == ""  # keys don't edit under a finger mid-drag
-	# The digit row by position too: some layouts (AZERTY) need Shift for digits.
-	var pk := event.physical_keycode
-	if (k >= KEY_1 and k <= KEY_9) or (pk >= KEY_1 and pk <= KEY_9):
+	if act.begins_with("piece_"):
 		if editing:
-			_place_key((k if k >= KEY_1 and k <= KEY_9 else pk) - KEY_1)
+			_pick(int(act.substr(6)) - 1)
 		return true
-	if k >= KEY_KP_1 and k <= KEY_KP_9:
-		if editing:
-			_place_key(k - KEY_KP_1)
-		return true
-	match k:
-		KEY_SPACE:
+	match act:
+		"run":
 			_toggle_run()
-		KEY_RIGHT, KEY_S:
+		"step":
 			_step_pressed()
-		KEY_LEFT, KEY_A:
+		"step_back":
 			_step_back_pressed()
-		KEY_R:
+		"reset":
 			_reset_pressed()
-		KEY_Z:
+		"undo":
 			if editing and not event.shift_pressed:
 				_undo()
-		KEY_MINUS, KEY_KP_SUBTRACT:
+		"slower":
 			_set_speed(maxi(speed - 1, 0))
-		KEY_EQUAL, KEY_PLUS, KEY_KP_ADD:
+		"faster":
 			_set_speed(mini(speed + 1, SPEEDS.size() - 1))
-		KEY_DELETE, KEY_BACKSPACE:
+		"delete":
 			if editing:
-				_delete_key()
-		KEY_ESCAPE:
-			if _has_selection():
+				_delete_selected()
+		"back":
+			if carrying >= 0:
+				carrying = -1
+			elif _has_selection():
 				selected_tube = -1
 				selected_piece = -1
 			elif editing:
@@ -510,25 +508,14 @@ func _key(event: InputEventKey) -> bool:
 	return true
 
 
-## A number key puts that tray piece on the cell under the pointer; with no
-## free cell there, the tray piece gives a little shake instead.
-func _place_key(i: int) -> void:
+## Picks up a tray piece (a tap on it or its key): it follows the pointer
+## until a click on a free cell puts it down. Picking it again puts it back.
+func _pick(i: int) -> void:
 	if i >= tray.size():
 		return
-	var cell := cell_at(hover_pos)
-	if cell.x < 0 or cell_taken(cell):
-		nudged_at[i] = clock
-		return
-	_place(tray[i]["kind"], cell)
-
-
-## Delete removes the selection, or else the piece or tube under the pointer.
-func _delete_key() -> void:
-	if not _has_selection():
-		selected_piece = _piece_at_pos(hover_pos)
-		if selected_piece < 0:
-			selected_tube = _tube_at(hover_pos)
-	_delete_selected()
+	carrying = -1 if carrying == i else i
+	selected_tube = -1
+	selected_piece = -1
 
 
 func _has_selection() -> bool:
@@ -556,12 +543,21 @@ func _press(pos: Vector2) -> void:
 		_delete_selected()
 		return
 	selected_piece = -1
-	for item in tray:
-		if item["rect"].has_point(pos):
+	for i in tray.size():
+		if tray[i]["rect"].has_point(pos):
 			drag = "new"
-			drag_kind = item["kind"]
+			drag_kind = tray[i]["kind"]
+			drag_index = i
 			selected_tube = -1
 			return
+	if carrying >= 0:
+		# A click puts the carried piece down on a free cell; anywhere else
+		# it goes back to the tray.
+		var cell := cell_at(pos)
+		if cell.x >= 0 and not cell_taken(cell):
+			_place(tray[carrying]["kind"], cell)
+		carrying = -1
+		return
 	var port := _port_at(pos, "any", -1)
 	if not port.is_empty():
 		selected_tube = -1
@@ -596,7 +592,10 @@ func _release(pos: Vector2) -> void:
 	drag_pos = pos
 	match drag:
 		"new":
-			_place_new(pos)
+			if drag_moved:
+				_place_new(pos)
+			else:
+				_pick(drag_index)  # a tap picks the piece up
 		"move":
 			_finish_move(pos)
 		"tube":
@@ -745,8 +744,15 @@ func _draw() -> void:
 	_draw_hint()
 	if drag == "new":
 		_draw_piece_kind(drag_kind, drag_pos, -1)
+	elif _carried_ghost():
+		_draw_piece_kind(tray[carrying]["kind"], hover_pos, -1)
 	if drag == "move":
 		_draw_piece(drag_node, node_center(drag_node))
+
+
+## A picked-up piece follows the pointer while it is over the bench.
+func _carried_ghost() -> bool:
+	return carrying >= 0 and drag == "" and BENCH.has_point(hover_pos)
 
 
 func _draw_frame() -> void:
@@ -763,10 +769,11 @@ func _draw_tray() -> void:
 	for i in tray.size():
 		var item: Dictionary = tray[i]
 		var r: Rect2 = item["rect"]
-		var u: float = (clock - nudged_at.get(i, -9.0)) / 0.4
-		if u < 1.0:
-			r.position.x += sin(u * PI * 4) * 6 * (1 - u)
-		K.shape(self, K.round_rect(r, 10), P.TAG, Color(P.INK, 0.5), 1.5)
+		# A picked-up piece's slot is lit until it is put down.
+		if i == carrying:
+			K.shape(self, K.round_rect(r, 10), Color(P.HOOP, 0.3), P.INK, 3)
+		else:
+			K.shape(self, K.round_rect(r, 10), P.TAG, Color(P.INK, 0.5), 1.5)
 		var label := ""
 		var kind: String = item["kind"]
 		if kind.begins_with("inv:"):
@@ -777,7 +784,7 @@ func _draw_tray() -> void:
 		_draw_piece_kind(kind, r.get_center() + Vector2(0, -8), -1, 0.82)
 		K.text(self, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, P.INK_SOFT)
 		if i < 9:
-			Keys.cap(self, r.position + Vector2(16, 16), str(i + 1))
+			Keys.cap(self, r.position + Vector2(16, 16), Keys.label("piece_%d" % (i + 1)))
 	# Trash: lights up while a piece is dragged over the tray.
 	var lit := drag == "move" and drag_moved and TRAY.has_point(drag_pos)
 	K.shape(self, K.round_rect(TRASH, 12), Color(P.HOOP, 0.35) if lit else Color(P.PAPER, 0.8), Color(P.INK, 0.45), 2)
@@ -790,8 +797,13 @@ func _draw_bench() -> void:
 	for gx in COLS + 1:
 		for gy in ROWS + 1:
 			draw_circle(GRID_ORIGIN + Vector2(gx * CELL.x, gy * CELL.y), 2, Color(P.INK, 0.12))
+	var aim := Vector2(-1, -1)
 	if drag == "new" or (drag == "move" and drag_moved):
-		var cell := cell_at(drag_pos - (grab if drag == "move" else Vector2.ZERO))
+		aim = drag_pos - (grab if drag == "move" else Vector2.ZERO)
+	elif _carried_ghost():
+		aim = hover_pos
+	if aim.x >= 0:
+		var cell := cell_at(aim)
 		if cell.x >= 0:
 			var ok: bool = not cell_taken(cell) or (drag == "move" and machine.piece_at(cell.x, cell.y) == drag_node)
 			var r := Rect2(GRID_ORIGIN + Vector2(cell) * CELL, CELL).grow(-4)
@@ -854,7 +866,7 @@ func _draw_bench() -> void:
 		K.fill(self, K.ellipse(b + Vector2(0, 3), 22, 22), P.SHADOW)
 		K.shape(self, K.ellipse(b, 22, 22), P.TAG, P.INK, 2.5)
 		K.icon(self, "trash", b, 1.0, P.INK)
-		Keys.cap(self, b + Vector2(0, 24), "Del")
+		Keys.cap(self, b + Vector2(0, 24), Keys.label("delete"))
 
 
 ## Glass pipes into a piece's left side, wooden spouts out of its right side.
@@ -999,7 +1011,7 @@ func _draw_run_halo() -> void:
 
 ## For levels marked "hints": a hand shows the next gesture (no words).
 func _hint_path() -> Array:
-	if not level.raw.get("hints", false) or drag != "" or running or outcome != "":
+	if not level.raw.get("hints", false) or drag != "" or carrying >= 0 or running or outcome != "":
 		return []
 	var placed := []
 	for id in machine.nodes:

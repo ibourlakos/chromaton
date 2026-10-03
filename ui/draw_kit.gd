@@ -756,6 +756,14 @@ static func icon(ci: CanvasItem, kind: String, c: Vector2, s: float, col: Color)
 		"book":
 			stroke(ci, PackedVector2Array([c + Vector2(0, -6) * s, c + Vector2(-11, -9) * s, c + Vector2(-11, 8) * s, c + Vector2(0, 11) * s, c + Vector2(11, 8) * s, c + Vector2(11, -9) * s]), col, w * 0.8)
 			ci.draw_line(c + Vector2(0, -6) * s, c + Vector2(0, 11) * s, col, w * 0.8, true)
+		"options":
+			# A wooden cog: eight teeth round a ring.
+			for i in 8:
+				var a := i * TAU / 8
+				var d := Vector2(cos(a), sin(a))
+				ci.draw_line(c + d * 7 * s, c + d * 12 * s, col, w * 1.1, true)
+			ring(ci, c, 8 * s, col, w * 0.9)
+			ring(ci, c, 3 * s, col, w * 0.7)
 		"lock":
 			ci.draw_arc(c + Vector2(0, -3) * s, 6 * s, PI, TAU, 12, col, w * 0.9, true)
 			ci.draw_line(c + Vector2(-6, -3) * s, c + Vector2(-6, 1) * s, col, w * 0.9, true)

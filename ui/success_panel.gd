@@ -40,9 +40,9 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var h := 440.0 if invention.is_empty() else 540.0
 	card = Rect2(DESIGN.x / 2 - 310, DESIGN.y / 2 - h / 2 - 10, 620, h)
-	var buttons := [["reset", replay, "R"], ["levels", levels, "Esc"]]
+	var buttons := [["reset", replay, Keys.label("replay")], ["levels", levels, Keys.label("back")]]
 	if has_next:
-		buttons.append(["next", next, "Enter"])
+		buttons.append(["next", next, Keys.label("next")])
 	var total := buttons.size() * 76 - 16
 	for i in buttons.size():
 		var b = ToyButton.make(buttons[i][0], Vector2(60, 60))
@@ -59,13 +59,13 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo):
 		return
-	match event.keycode:
-		KEY_ENTER, KEY_KP_ENTER, KEY_RIGHT:
+	match Keys.action(event, "Woven"):
+		"next":
 			if has_next:
 				next.emit()
-		KEY_R:
+		"replay":
 			replay.emit()
-		KEY_ESCAPE:
+		"back":
 			levels.emit()
 		_:
 			return

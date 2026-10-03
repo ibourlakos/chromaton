@@ -11,6 +11,8 @@ const Pieces = preload("res://core/pieces.gd")
 const Workbench = preload("res://ui/workbench.gd")
 const LevelSelect = preload("res://ui/level_select.gd")
 const K = preload("res://ui/draw_kit.gd")
+const Keys = preload("res://ui/keys.gd")
+const Options = preload("res://ui/options.gd")
 
 var failures := 0
 var checks := 0
@@ -31,6 +33,7 @@ func _initialize() -> void:
 	var progress = Progress.new()
 	test_editing(by_id["third_color"], Progress.new())
 	test_keys(by_id["third_color"])
+	test_bindings()
 	test_card_hint(by_id["pattern_card"])
 	test_left_edge(by_id["orange"])
 	for i in levels.size():
@@ -337,26 +340,43 @@ func key(node, code: Key, shift := false) -> void:
 	node._unhandled_input(e)
 
 
-## Keys only repeat what taps do: number keys place tray pieces under the
-## pointer, Delete removes the selection or what's under the pointer, - and +
-## change speed, Esc clears a selection before it leaves the level.
+## Keys only do what taps do: a tray piece's key (or a tap on it) picks the
+## piece up and a click puts it down; Delete removes only a selection; Back
+## drops a carried piece, then clears a selection, then leaves.
 func test_keys(level) -> void:
+	Keys.reset()
 	var wb = open(level, Progress.new())
 	var left := []
 	wb.exit_requested.connect(func(): left.append(true))
 	var start: int = wb.machine.nodes.size()
 	move(wb, wb.cell_center(5, 3))
 	key(wb, KEY_1)
+	check(wb.carrying == 0 and wb.machine.nodes.size() == start, "1 picks up the first tray piece without placing it")
+	check(wb._carried_ghost(), "the carried piece follows the pointer over the bench")
+	tap(wb, wb.cell_center(5, 3))
 	var id: int = wb.machine.piece_at(5, 3)
-	check(id >= 0 and wb.machine.nodes[id]["kind"] == wb.tray[0]["kind"], "1 puts the first tray piece under the pointer")
+	check(id >= 0 and wb.machine.nodes[id]["kind"] == wb.tray[0]["kind"] and wb.carrying == -1, "a click puts the carried piece down")
 	key(wb, KEY_2)
-	check(wb.machine.nodes.size() == start + 1 and wb.nudged_at.has(1), "a number key on a taken cell places nothing and shakes the tray piece")
+	tap(wb, wb.cell_center(5, 3))
+	check(wb.machine.nodes.size() == start + 1 and wb.carrying == -1, "a click on a taken cell drops the carried piece back")
+	key(wb, KEY_2)
+	key(wb, KEY_2)
+	check(wb.carrying == -1, "picking the same piece again puts it back")
 	key(wb, KEY_9)
-	check(wb.machine.nodes.size() == start + 1, "a number past the tray does nothing")
-	move(wb, wb.cell_center(7, 3))
+	check(wb.carrying == -1, "a key past the tray picks nothing")
 	key(wb, KEY_KP_2)
-	check(wb.machine.piece_at(7, 3) >= 0, "the number pad places pieces too")
-	# Tap a piece: it is selected, and its delete button removes it.
+	key(wb, KEY_ESCAPE)
+	check(wb.carrying == -1 and left.is_empty(), "Esc drops a carried piece and stays")
+	tap(wb, tray_point(wb, wb.tray[1]["kind"]))
+	check(wb.carrying == 1, "tapping a tray piece picks it up")
+	tap(wb, wb.cell_center(7, 3))
+	check(wb.machine.piece_at(7, 3) >= 0, "and a tap on a free cell puts it down")
+	drag(wb, tray_point(wb, wb.tray[0]["kind"]), wb.cell_center(9, 3))
+	check(wb.machine.piece_at(9, 3) >= 0 and wb.carrying == -1, "dragging from the tray still places")
+	# Delete only acts on what is selected, never on what's under the pointer.
+	move(wb, wb.cell_center(7, 3))
+	key(wb, KEY_DELETE)
+	check(wb.machine.piece_at(7, 3) >= 0, "Delete with nothing selected does nothing")
 	tap(wb, wb.cell_center(5, 3))
 	check(wb.selected_piece == id, "tapping a piece selects it")
 	key(wb, KEY_ESCAPE)
@@ -366,26 +386,24 @@ func test_keys(level) -> void:
 	check(wb.machine.piece_at(5, 3) < 0, "a selected piece's delete button removes it")
 	key(wb, KEY_Z)
 	check(wb.machine.piece_at(5, 3) >= 0, "Z undoes")
-	# Delete with nothing selected takes what's under the pointer.
-	move(wb, wb.cell_center(7, 3))
-	key(wb, KEY_DELETE)
-	check(wb.machine.piece_at(7, 3) < 0 and wb.machine.piece_at(5, 3) >= 0, "Delete removes the piece under the pointer")
-	move(wb, wb.cell_center(9, 6))
-	var before: int = wb.machine.nodes.size()
-	key(wb, KEY_BACKSPACE)
-	check(wb.machine.nodes.size() == before, "Delete over an empty cell does nothing")
-	# Selected piece in the top row: its delete button sits below it.
 	tap(wb, wb.cell_center(5, 3))
 	key(wb, KEY_BACKSPACE)
 	check(wb.machine.piece_at(5, 3) < 0, "Backspace removes the selected piece")
 	key(wb, KEY_MINUS)
-	check(wb.speed == 0, "- slows down")
 	key(wb, KEY_MINUS)
-	check(wb.speed == 0, "slow is the slowest")
+	check(wb.speed == 0, "- slows down to slow")
 	key(wb, KEY_EQUAL)
 	key(wb, KEY_PLUS)
 	key(wb, KEY_KP_ADD)
 	check(wb.speed == 2, "+ speeds up to fast")
+	# A changed key works at once and the old one stops.
+	Keys.bind("run", 0, KEY_G)
+	key(wb, KEY_SPACE)
+	check(not wb.running, "an unbound key does nothing")
+	key(wb, KEY_G)
+	check(wb.running, "a newly bound key runs")
+	key(wb, KEY_G)
+	Keys.reset()
 	key(wb, KEY_ESCAPE)
 	check(left.size() == 1, "Esc with nothing selected leaves the level")
 	wb.queue_free()
@@ -399,3 +417,45 @@ func test_keys(level) -> void:
 	key(s, KEY_RIGHT)
 	check(chosen == [0] and s.page == 1, "the level select takes Enter and arrows")
 	s.queue_free()
+
+
+## Binding: a key moves off actions it clashes with (same screen, or
+## Everywhere), not off other screens' actions; settings save and load.
+func test_bindings() -> void:
+	Keys.settings_path = "user://chromaton_settings_test.json"
+	Keys.reset()
+	var moved: Array = Keys.bind("undo", 1, KEY_R)
+	check(moved == ["reset"] and Keys.bindings["reset"][0] == 0, "a key moves off a clashing action on the same screen")
+	check(Keys.bindings["replay"][0] == KEY_R, "but stays on another screen's action")
+	moved = Keys.bind("book", 0, KEY_ESCAPE)
+	check(moved == ["back"], "Everywhere keys clash with every screen")
+	moved = Keys.bind("step", 1, KEY_S)
+	check(moved.is_empty() and Keys.bindings["step"] == [0, KEY_S], "moving a key between an action's own slots")
+	Keys.bind("faster", 0, KEY_KP_ADD)
+	check(Keys.bindings["faster"][0] == KEY_EQUAL, "number pad keys count as their main keys")
+	check(Keys.key_name(KEY_ESCAPE) == "Esc" and Keys.key_name(KEY_LEFT) == "←" and Keys.key_name(KEY_F5) == "F5", "key names")
+	var path := "user://chromaton_settings_test.json"
+	Keys.save_settings(path)
+	var saved: Dictionary = Keys.bindings.duplicate(true)
+	Keys.reset()
+	Keys.load_settings(path)
+	check(Keys.bindings == saved, "keys survive a save and load")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	Keys.settings_path = path  # Options saves on every change
+	Keys.reset()
+	var o = Options.new()
+	root.add_child(o)
+	o._ready()
+	var undo_slot := -1
+	for i in o.slots.size():
+		if o.slots[i]["action"] == "undo" and o.slots[i]["slot"] == 1:
+			undo_slot = i
+	check(undo_slot >= 0, "Options has a second slot for Undo")
+	o.tap_slot(undo_slot)
+	check(o.capturing == {"action": "undo", "slot": 1}, "tapping a slot waits for a key")
+	o.tap_slot(undo_slot)
+	check(o.capturing.is_empty() and Keys.bindings["undo"][1] == 0, "tapping it again clears it")
+	o.queue_free()
+	Keys.reset()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	Keys.settings_path = Keys.PATH

@@ -32,12 +32,12 @@ Run everything through `.\make <task>` (`make.cmd` → `tools/make.ps1`; works f
 - Compile check with line numbers (when Godot only says a dependency failed): `.\make check`
 - After adding fonts or other assets, import once: `.\make import`
 - Web build for itch.io: `.\make export` writes `build/web/` and `build/chromaton-web.zip` (upload the zip; `build/` is git-ignored). Needs Godot's export templates once per machine: `.\make templates` (downloads about 1.3 GB, or pass a `.tpz`). The preset lives in `export_presets.cfg`: no threads, and it includes `levels/*.json` while leaving out `tests/`, `tools/`, `mockups/` and `docs/`.
-- Self-check screenshots (windowed, not headless; saves a PNG and quits): `.\make shot <level_id> <png path> [--ticks=N] [--phase=0.5] [--finish] [--wrong] [--empty]`. `<level_id>` can also be `levels` or `book`. Uses the reference solutions and a throwaway save.
+- Self-check screenshots (windowed, not headless; saves a PNG and quits): `.\make shot <level_id> <png path> [--ticks=N] [--phase=0.5] [--finish] [--wrong] [--empty]`. `<level_id>` can also be `levels`, `book` or `options`. Uses the reference solutions and a throwaway save.
 
 ## Layout
 
 - `core/`: the simulation, pure GDScript with no scene nodes. `paint.gd` (the eight colors and operations), `pieces.gd` (the data-driven piece table), `machine.gd` (nodes and tubes as plain data), `simulator.gd` (one-drop-tube dataflow with chain reactions; an invention is one piece that looks its answer up), `level.gd` (level JSON), `invention.gd` (packaging and the every-paint check), `progress.gd` (save data in `user://chromaton_save.json`).
-- `ui/`: everything on screen, built in code. `main.gd` (screens and command-line options), `workbench.gd` (the bench, gestures, run controls, loom), `draw_kit.gd` (Critter Workshop drawing), `palette.gd` (colors, fonts), `toy_button.gd`, `level_select.gd`, `pattern_book.gd`, `success_panel.gd`. `main.tscn` is the only scene.
+- `ui/`: everything on screen, built in code. `main.gd` (screens and command-line options), `workbench.gd` (the bench, gestures, run controls, loom), `draw_kit.gd` (Critter Workshop drawing), `palette.gd` (colors, fonts), `toy_button.gd`, `level_select.gd`, `pattern_book.gd`, `success_panel.gd`, `options.gd` (key settings), `keys.gd` (key bindings, settings file and key caps). `main.tscn` is the only scene.
 - `levels/`: `index.json` (campaign order; a level's number is its place there) and one JSON per level, named by its stable id: target picture, pattern cards, pieces offered (the tray is exactly this list plus listed, owned inventions), star thresholds, reference solution. Format documented at the top of `core/level.gd`.
 - `tests/`: headless test scripts (extend SceneTree, exit code 1 on failure).
 - `tools/`: design tools, not shipped with the game, and `make.ps1` (the tasks behind `make.cmd`).

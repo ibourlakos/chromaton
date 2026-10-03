@@ -5,7 +5,7 @@
 ##   --unlock-all                open every level
 ##   --screenshot=<id>:<path>    load a level's reference solution, run it,
 ##                               save a PNG and quit. <id> may also be
-##                               "levels" or "book".
+##                               "levels", "book" or "options".
 ##   --ticks=<n>                 ticks to run before the screenshot
 ##                               (default: one per stitch)
 ##   --phase=<0..1>              how far drops are along their tubes
@@ -22,6 +22,7 @@ const Invention = preload("res://core/invention.gd")
 const Workbench = preload("res://ui/workbench.gd")
 const LevelSelect = preload("res://ui/level_select.gd")
 const PatternBook = preload("res://ui/pattern_book.gd")
+const Options = preload("res://ui/options.gd")
 const Keys = preload("res://ui/keys.gd")
 
 const DESIGN := Vector2(1280, 800)
@@ -48,6 +49,7 @@ func _ready() -> void:
 	if args.has("screenshot"):
 		_screenshot(args)
 		return
+	Keys.load_settings()  # not for screenshots: they show the default keys
 	select_page = _first_open_chapter()
 	var start := _level_index(str(args.get("level", "")))
 	if start >= 0:
@@ -116,6 +118,7 @@ func show_level_select() -> void:
 	s.setup(levels, progress, select_page)
 	s.level_chosen.connect(open_level)
 	s.book_requested.connect(show_book)
+	s.options_requested.connect(show_options)
 	s.page_changed.connect(func(c): select_page = c)
 	_set_screen(s)
 
@@ -125,6 +128,12 @@ func show_book() -> void:
 	b.setup(levels, progress)
 	b.back.connect(show_level_select)
 	_set_screen(b)
+
+
+func show_options() -> void:
+	var o = Options.new()
+	o.back.connect(show_level_select)
+	_set_screen(o)
 
 
 func open_level(i: int) -> void:
@@ -167,6 +176,8 @@ func _screenshot(args: Dictionary) -> void:
 			if args.has("empty"):
 				progress.inventions = {}
 			show_book()
+		"options":
+			show_options()
 		_:
 			var i := _level_index(what)
 			if i < 0:

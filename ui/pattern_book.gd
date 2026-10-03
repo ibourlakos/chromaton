@@ -29,13 +29,13 @@ func _ready() -> void:
 	size = DESIGN
 	var b = ToyButton.make("back")
 	b.position = Vector2(14, 6)
-	b.key = "Esc"
+	b.key = Keys.label("back")
 	b.pressed.connect(func(): back.emit())
 	add_child(b)
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_ESCAPE, KEY_B]:
+	if event is InputEventKey and event.pressed and not event.echo and Keys.action(event, "Levels") in ["back", "book"]:
 		Keys.handled(self)
 		back.emit()
 

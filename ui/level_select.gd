@@ -10,6 +10,7 @@ const Invention = preload("res://core/invention.gd")
 
 signal level_chosen(index: int)
 signal book_requested
+signal options_requested
 signal page_changed(chapter: int)
 
 const DESIGN := Vector2(1280, 800)
@@ -53,18 +54,25 @@ func _build() -> void:
 	size = DESIGN
 	var book = ToyButton.make("book", Vector2(64, 64))
 	book.position = Vector2(DESIGN.x - 96, 40)
-	book.key = "B"
+	book.key = Keys.label("book")
 	book.pressed.connect(func(): book_requested.emit())
 	add_child(book)
+	# Options (only keys so far) on builds where a keyboard is likely.
+	if Keys.rebindable():
+		var options = ToyButton.make("options", Vector2(64, 64))
+		options.position = Vector2(32, 40)
+		options.key = Keys.label("options")
+		options.pressed.connect(func(): options_requested.emit())
+		add_child(options)
 	var left := DESIGN.x / 2 - (COLUMNS * TAG.x + (COLUMNS - 1) * GAP.x) / 2
 	prev_button = ToyButton.make("back")
 	prev_button.position = Vector2(left, DOTS_Y - 30)
-	prev_button.key = "←"
+	prev_button.key = Keys.label("prev_page")
 	prev_button.key_above = true
 	prev_button.pressed.connect(func(): turn(-1))
 	add_child(prev_button)
 	next_button = ToyButton.make("next")
-	next_button.key = "→"
+	next_button.key = Keys.label("next_page")
 	next_button.key_above = true
 	next_button.position = Vector2(DESIGN.x - left - 52, DOTS_Y - 30)
 	next_button.pressed.connect(func(): turn(1))
@@ -97,7 +105,7 @@ func _build_page() -> void:
 		b.position = origin + Vector2(k % COLUMNS, k / COLUMNS) * (TAG + GAP)
 		b.painter = _paint_tag.bind(i, progress.is_unlocked(ids, i))
 		b.disabled = not progress.is_unlocked(ids, i)
-		b.key = "Enter" if i == continue_level() else ""
+		b.key = Keys.label("continue") if i == continue_level() else ""
 		b.pressed.connect(func(): level_chosen.emit(i))
 		add_child(b)
 		tags.append(b)
@@ -106,19 +114,22 @@ func _build_page() -> void:
 	queue_redraw()
 
 
-## ← and → turn the pages, B opens the Pattern Book, Enter plays the first
-## open level not yet solved (the one marked with the Enter cap).
+## Keys (keys.gd): turn the pages, open the Pattern Book or Options, and play the first
+## open level not yet solved (the tag wearing that key's cap).
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed and not event.echo):
 		return
-	match event.keycode:
-		KEY_LEFT, KEY_A:
+	match Keys.action(event, "Levels"):
+		"prev_page":
 			turn(-1)
-		KEY_RIGHT, KEY_D:
+		"next_page":
 			turn(1)
-		KEY_B:
+		"book":
 			book_requested.emit()
-		KEY_ENTER, KEY_KP_ENTER:
+		"options":
+			if Keys.rebindable():
+				options_requested.emit()
+		"continue":
 			var i := continue_level()
 			if i >= 0:
 				level_chosen.emit(i)
