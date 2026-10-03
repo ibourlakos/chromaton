@@ -22,7 +22,13 @@ A puzzle game about inventing machines out of **color logic**: 8 pigment colors,
 
 ## Commands
 
-Run everything through `.\make <task>` (`make.cmd` → `tools/make.ps1`; works from PowerShell or cmd, no install, no script-policy change). It finds Godot by the `GODOT` environment variable, then `godot` on PATH, then the winget folder (`%LOCALAPPDATA%\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_*\`; winget can't create the `godot` alias without admin). `.\make help` lists the tasks; `.\make godot` shows which Godot it uses. From Git Bash, call `./make.cmd <task>`.
+On Linux, use `./make <task>` from this project. `./make help` lists the tasks;
+the launcher uses the project-local portable Godot 4.7.x and keeps generated
+data under this folder. `./make play`, `./make check`, `./make test`, and
+`./make export` are the Linux equivalents. See TESTING.md for renderer and
+portable engine details. The Linux export preset includes `levels/*.json`.
+
+On Windows, run everything through `.\make <task>` (`make.cmd` → `tools/make.ps1`; works from PowerShell or cmd, no install, no script-policy change). It finds Godot by the `GODOT` environment variable, then `godot` on PATH, then the winget folder (`%LOCALAPPDATA%\Microsoft\WinGet\Packages\GodotEngine.GodotEngine_*\`; winget can't create the `godot` alias without admin). `.\make help` lists the tasks; `.\make godot` shows which Godot it uses. From Git Bash, call `./make.cmd <task>`.
 
 - Play: `.\make play` (game args pass through), `.\make level <id>` to jump into one, `.\make unlock` to open every level.
 - Tests: `.\make test` runs every `tests/test_*.gd` in its own process; `.\make test sim paint` runs only those suites (`sim`, `paint`, `levels`, `inventions`, `workbench`). A suite also fails if it prints a GDScript error, and each runs with `--quit-after 2` so a runtime error can't hang it.
