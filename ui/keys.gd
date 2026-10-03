@@ -21,7 +21,7 @@ const GROUPS := [EVERYWHERE, "Workbench", "Woven", "Levels"]
 ## within a group, or with a group and Everywhere.
 const ACTIONS := [
 	["back", EVERYWHERE, "Back", [KEY_ESCAPE]],
-	["hints", EVERYWHERE, "Show key caps", [KEY_H, KEY_SLASH]],
+	["hints", EVERYWHERE, "Show key labels", [KEY_SLASH, KEY_H]],
 	["run", "Workbench", "Run / pause", [KEY_SPACE]],
 	["step", "Workbench", "Step", [KEY_S, KEY_RIGHT]],
 	["step_back", "Workbench", "Step back", [KEY_A, KEY_LEFT]],

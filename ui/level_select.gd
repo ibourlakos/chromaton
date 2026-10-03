@@ -19,6 +19,7 @@ const GAP := Vector2(20, 16)
 const COLUMNS := 4  # three rows fit a page: twelve levels per chapter at most
 const TAGS_Y := 196.0
 const DOTS_Y := 772.0
+const HINTS_CHIP := Vector2(196, 34)
 
 var levels: Array = []
 var progress
@@ -64,6 +65,14 @@ func _build() -> void:
 		options.key = Keys.label("options")
 		options.pressed.connect(func(): options_requested.emit())
 		add_child(options)
+		# Tells players the key labels can come and go: tap it, or press its key.
+		var hints = ToyButton.new()
+		hints.custom_minimum_size = HINTS_CHIP
+		hints.size = HINTS_CHIP
+		hints.position = Vector2(DESIGN.x / 2 - HINTS_CHIP.x / 2, DOTS_Y - 58)
+		hints.painter = _paint_hints_chip
+		hints.pressed.connect(func(): Keys.set_hints(not Keys.shown, get_tree()))
+		add_child(hints)
 	var left := DESIGN.x / 2 - (COLUMNS * TAG.x + (COLUMNS - 1) * GAP.x) / 2
 	prev_button = ToyButton.make("back")
 	prev_button.position = Vector2(left, DOTS_Y - 30)
@@ -210,6 +219,22 @@ func _paint_tag(b: Control, r: Rect2, down: bool, i: int, open: bool) -> void:
 			K.text(b, P.ui(700), body.position + Vector2(234, 100), str(rec.get("best_ticks", 0)), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	else:
 		K.icon(b, "lock", body.get_center() + Vector2(0, 16), 1.6, Color(P.INK, 0.4))
+
+
+## "[?] Hide key labels" (or Show): the key always shows here, labels on or off.
+func _paint_hints_chip(b: Control, r: Rect2, down: bool) -> void:
+	var press := Vector2(0, 2) if down else Vector2.ZERO
+	var body := Rect2(r.position + press, r.size)
+	if not down:
+		K.fill(b, K.round_rect(Rect2(r.position + Vector2(0, 3), r.size), r.size.y / 2), P.SHADOW)
+	K.shape(b, K.round_rect(body, r.size.y / 2), P.TAG, Color(P.INK, 0.5), 1.5)
+	var key := Keys.label("hints")
+	var w := maxf(20.0, Keys.text_width(key, 12) + 10)
+	var cap := Rect2(body.position + Vector2(10, body.size.y / 2 - 10), Vector2(w, 20))
+	K.shape(b, K.round_rect(cap, 5), P.PAPER, Color(P.INK, 0.7), 1.5)
+	Keys.key_text(b, cap.get_center(), key, 12, P.INK)
+	var text := "Hide key labels" if Keys.shown else "Show key labels"
+	K.text(b, P.ui(700), Vector2(cap.end.x + 10, body.get_center().y), text, 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 
 
 func _chapter_name(chapter: int) -> String:

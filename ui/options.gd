@@ -165,7 +165,7 @@ func _draw() -> void:
 			K.text(self, P.ui(700), l[0], l[1], 17, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 	for s in slots:
 		_draw_slot(s)
-	K.text(self, P.ui(700), Vector2(760, 608), "Show key caps on the controls", 17, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+	K.text(self, P.ui(700), Vector2(760, 608), "Show key labels on the controls", 17, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 	K.text(self, P.ui(700), Vector2(760, 672), "Put every key back", 17, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 
 
