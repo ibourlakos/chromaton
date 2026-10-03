@@ -119,6 +119,45 @@ function Export-Web {
 	return 0
 }
 
+# Serves build/web on http://localhost:<port>/ for trying the web build in a
+# browser (it won't load from file://). Runs until Ctrl+C.
+function Serve-Web([int]$Port) {
+	$web = Join-Path $Root "build\web"
+	if (-not (Test-Path (Join-Path $web "index.html"))) {
+		Write-Host "No web build yet. Run: .\make export"
+		return 1
+	}
+	$types = @{ ".html" = "text/html"; ".js" = "application/javascript"; ".wasm" = "application/wasm";
+		".pck" = "application/octet-stream"; ".png" = "image/png"; ".json" = "application/json" }
+	$listener = New-Object System.Net.HttpListener
+	$listener.Prefixes.Add("http://localhost:$Port/")
+	$listener.Start()
+	Write-Host "Serving build/web on http://localhost:$Port/  (Ctrl+C to stop)"
+	try {
+		while ($listener.IsListening) {
+			$ctx = $listener.GetContext()
+			$rel = [Uri]::UnescapeDataString($ctx.Request.Url.AbsolutePath).TrimStart("/")
+			if ($rel -eq "") { $rel = "index.html" }
+			$file = [System.IO.Path]::GetFullPath((Join-Path $web $rel))
+			$res = $ctx.Response
+			if ($file.StartsWith($web) -and (Test-Path $file -PathType Leaf)) {
+				$bytes = [System.IO.File]::ReadAllBytes($file)
+				$ext = [System.IO.Path]::GetExtension($file).ToLower()
+				$res.ContentType = if ($types.ContainsKey($ext)) { $types[$ext] } else { "application/octet-stream" }
+				$res.Headers.Add("Cache-Control", "no-store")
+				$res.ContentLength64 = $bytes.Length
+				$res.OutputStream.Write($bytes, 0, $bytes.Length)
+			} else {
+				$res.StatusCode = 404
+			}
+			$res.Close()
+		}
+	} finally {
+		$listener.Stop()
+	}
+	return 0
+}
+
 function Show-Help {
 	Write-Host @"
 Chromaton tasks: .\make <task> [args]
@@ -139,12 +178,13 @@ Design tools (rewrite files under docs/ or levels/)
 
 Share
   export               build the web version: build/web and build/chromaton-web.zip (for itch.io)
+  serve [port]         play the web build at http://localhost:8060/ (after export)
   templates [tpz]      install Godot's export templates (downloads about 1.3 GB unless given a .tpz)
 
 Other
   shot <level> <png> [options]
-                       save a screenshot and quit; level can also be 'levels'
-                       or 'book'; options: --ticks=N --phase=0.5 --finish --wrong --empty --page=N
+                       save a screenshot and quit; level can also be 'levels',
+                       'book' or 'options'; options: --ticks=N --phase=0.5 --finish --wrong --empty --page=N
   import               import new fonts or other assets
   godot                print which Godot this script uses
 "@
@@ -177,6 +217,7 @@ switch ($Task) {
 		$code = Invoke-Godot $a
 	}
 	"export" { $code = Export-Web }
+	"serve" { $code = Serve-Web ($(if ($Rest.Count -gt 0) { [int]$Rest[0] } else { 8060 })) }
 	"templates" { $code = Install-Templates ($Rest | Select-Object -First 1) }
 	"import" { $code = Invoke-Godot @("--headless", "--path", $Root, "--import") }
 	"godot" {
