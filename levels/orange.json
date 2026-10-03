@@ -1,7 +1,7 @@
 {
 	"id": "orange",
 	"name": "Orange",
-	"goal": "Weave an orange cloth.",
+	"goal": "Weave the orange cloth: mix red and yellow.",
 	"pieces": [
 		"red_pot",
 		"shift",
