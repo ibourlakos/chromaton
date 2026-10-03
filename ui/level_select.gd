@@ -58,13 +58,13 @@ func _build() -> void:
 	book.key = Keys.label("book")
 	book.pressed.connect(func(): book_requested.emit())
 	add_child(book)
-	# Options (only keys so far) on builds where a keyboard is likely.
+	# Options on every build (the bench grid); its keys only where a keyboard is likely.
+	var options = ToyButton.make("options", Vector2(64, 64))
+	options.position = Vector2(32, 40)
+	options.key = Keys.label("options")
+	options.pressed.connect(func(): options_requested.emit())
+	add_child(options)
 	if Keys.rebindable():
-		var options = ToyButton.make("options", Vector2(64, 64))
-		options.position = Vector2(32, 40)
-		options.key = Keys.label("options")
-		options.pressed.connect(func(): options_requested.emit())
-		add_child(options)
 		# Tells players the key labels can come and go: tap it, or press its key.
 		var hints = ToyButton.new()
 		hints.custom_minimum_size = HINTS_CHIP
@@ -136,8 +136,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		"book":
 			book_requested.emit()
 		"options":
-			if Keys.rebindable():
-				options_requested.emit()
+			options_requested.emit()
 		"continue":
 			var i := continue_level()
 			if i >= 0:

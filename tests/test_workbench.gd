@@ -488,6 +488,27 @@ func test_bindings() -> void:
 	check(o.capturing == {"action": "undo", "slot": 1}, "tapping a slot waits for a key")
 	o.tap_slot(undo_slot)
 	check(o.capturing.is_empty() and Keys.bindings["undo"][1] == 0, "tapping it again clears it")
+	# The bench grid: off at first, switched in Options and kept in the settings.
+	check(not Keys.grid, "the bench grid starts off")
+	o._toggle_grid()
+	Keys.grid = false
+	Keys.load_settings()
+	check(Keys.grid, "the grid switch is saved")
+	o.queue_free()
+	# Without a keyboard Options still has the grid, but no keys.
+	Keys.keyboard = false
+	o = Options.new()
+	root.add_child(o)
+	o._ready()
+	check(o.slots.is_empty() and o.hints_button == null and o.grid_button != null and o.grid_button.toggled_on, "keyboardless Options offers only the grid")
+	o._toggle_grid()
+	check(not Keys.grid, "and switches it off again")
+	var s = LevelSelect.new()
+	s.setup(Level.load_all(), Progress.new(), 0)
+	var gears := s.get_children().filter(func(c): return c.get("icon") == "options")
+	check(gears.size() == 1, "the level select offers Options on every build")
+	s.free()
+	Keys.keyboard = true
 	o.queue_free()
 	Keys.reset()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

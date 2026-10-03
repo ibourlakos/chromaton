@@ -782,6 +782,14 @@ func _draw_still() -> void:
 	_draw_frame(still)
 	_draw_tray(still)
 	K.shape(still, K.round_rect(BENCH, 14), Color(P.TAG, 0.35), Color(P.INK, 0.12), 2)
+	if Keys.grid:  # faint cell lines (Options)
+		var span := Vector2(COLS * CELL.x, ROWS * CELL.y)
+		for gx in COLS + 1:
+			var x := GRID_ORIGIN.x + gx * CELL.x
+			still.draw_line(Vector2(x, GRID_ORIGIN.y), Vector2(x, GRID_ORIGIN.y + span.y), Color(P.INK, 0.07), 1.5)
+		for gy in ROWS + 1:
+			var y := GRID_ORIGIN.y + gy * CELL.y
+			still.draw_line(Vector2(GRID_ORIGIN.x, y), Vector2(GRID_ORIGIN.x + span.x, y), Color(P.INK, 0.07), 1.5)
 	for gx in COLS + 1:
 		for gy in ROWS + 1:
 			still.draw_circle(GRID_ORIGIN + Vector2(gx * CELL.x, gy * CELL.y), 2, Color(P.INK, 0.12))

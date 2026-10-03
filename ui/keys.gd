@@ -8,7 +8,8 @@
 ## screen hides them, pressing a key brings them back, and the hints key (H or
 ## ?) or Options turns them on and off for good.
 ##
-## The settings file also keeps the run speed, so it carries across levels.
+## The settings file also keeps the run speed (so it carries across levels)
+## and whether the bench shows a grid.
 extends RefCounted
 
 const P = preload("res://ui/palette.gd")
@@ -74,6 +75,10 @@ static var settings_path := PATH  # tests point this elsewhere
 static var shown := not DisplayServer.is_touchscreen_available()
 static var _choice = null  # true/false once chosen for good (hints key, Options)
 static var speed := 1  # the workbench's run speed: 0 slow, 1 normal, 2 fast
+static var grid := false  # a faint grid on the bench (Options)
+## Whether a keyboard is likely (not phone builds): Options shows the keys
+## only then. Screenshots and tests may turn it off.
+static var keyboard := not (OS.has_feature("mobile") or OS.has_feature("web_android") or OS.has_feature("web_ios"))
 
 
 static func defaults() -> Dictionary:
@@ -94,7 +99,7 @@ static func group_of(action: String) -> String:
 
 ## Options shows keys only where a keyboard is likely (not phone builds).
 static func rebindable() -> bool:
-	return not (OS.has_feature("mobile") or OS.has_feature("web_android") or OS.has_feature("web_ios"))
+	return keyboard
 
 
 ## The key an event counts as.
@@ -170,7 +175,7 @@ static func save_settings(path := "") -> void:
 	var keys := {}
 	for act in bindings:
 		keys[act] = bindings[act]
-	var d := {"keys": keys, "speed": speed}
+	var d := {"keys": keys, "speed": speed, "grid": grid}
 	if _choice != null:
 		d["hints"] = _choice
 	var f := FileAccess.open(path, FileAccess.WRITE)
@@ -197,6 +202,12 @@ static func load_settings(path := "") -> void:
 		_choice = bool(d["hints"])
 		shown = _choice
 	speed = clampi(int(d.get("speed", 1)), 0, 2)
+	grid = bool(d.get("grid", false))
+
+
+static func set_grid(on: bool) -> void:
+	grid = on
+	save_settings()
 
 
 ## Keeps a new run speed for every level.

@@ -14,6 +14,9 @@
 ##   --empty                     leave the bench empty
 ##   --page=<n>                  the level select's chapter page (from 0)
 ##   --stale                     the intro as it reads for a stale save
+##   --grid                      the bench grid on (Options)
+##   --touch                     as on a phone build: no keys in Options, no
+##                               key labels
 extends Control
 
 const P = preload("res://ui/palette.gd")
@@ -205,6 +208,10 @@ func _screenshot(args: Dictionary) -> void:
 	# A throwaway progress with the reference inventions; the real save is untouched.
 	progress = Progress.new()
 	progress.unlock_all = args.has("unlock-all")
+	Keys.grid = args.has("grid")
+	if args.has("touch"):  # as on a phone: no keyboard, no key labels
+		Keys.keyboard = false
+		Keys.shown = false
 	for level in levels:
 		if not level.invention.is_empty():
 			progress.inventions[level.invention["id"]] = Invention.package(level, level.reference_machine(), progress.inventions)

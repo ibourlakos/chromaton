@@ -1,6 +1,6 @@
-## Options: the keys (every action, up to two keys each) and whether key caps
-## show on the controls. Only offered where a keyboard is likely (not on phone
-## builds, see Keys.rebindable).
+## Options: a faint grid on the bench, on every build. Where a keyboard is
+## likely (not on phone builds, see Keys.rebindable) also the keys (every
+## action, up to two keys each) and whether key caps show on the controls.
 ##
 ## Tap a key slot, then press the new key; Back's key cancels, and tapping
 ## the slot again clears it. A key moves off any action it would clash with
@@ -24,6 +24,9 @@ var slots := []  # [{"rect": Rect2, "action": String, "slot": int}]
 var labels := []  # [position, text, header?]
 var capturing := {}  # {"action", "slot"} while waiting for a key
 var flash := {}  # action -> t when a key moved off it
+var with_keys := Keys.rebindable()
+var toggles := []  # [button, text] for the round buttons with a line beside them
+var grid_button
 var hints_button
 var t := 0.0
 var _pressed_slot := -1
@@ -37,17 +40,27 @@ func _ready() -> void:
 	b.key = Keys.label("back")
 	b.pressed.connect(func(): back.emit())
 	add_child(b)
+	# With keys, the round buttons sit under the right-hand column of keys;
+	# without, the grid toggle is all there is.
+	var at := Vector2(700, 556) if with_keys else Vector2(DESIGN.x / 2 - 170, 170)
+	grid_button = _toggle("check", at, "Show a grid on the bench", _toggle_grid)
+	grid_button.toggled_on = Keys.grid
+	if not with_keys:
+		return
 	_layout()
-	hints_button = ToyButton.make("check", Vector2(44, 44))
-	hints_button.position = Vector2(700, 586)
+	hints_button = _toggle("check", at + Vector2(0, 62), "Show key labels on the controls", _toggle_hints)
 	hints_button.toggled_on = Keys.shown
 	hints_button.key = Keys.label("hints")
-	hints_button.pressed.connect(_toggle_hints)
-	add_child(hints_button)
-	var reset = ToyButton.make("reset", Vector2(44, 44))
-	reset.position = Vector2(700, 650)
-	reset.pressed.connect(_reset_keys)
-	add_child(reset)
+	_toggle("reset", at + Vector2(0, 124), "Put every key back", _reset_keys)
+
+
+func _toggle(icon: String, at: Vector2, text: String, action: Callable):
+	var b = ToyButton.make(icon, Vector2(44, 44))
+	b.position = at
+	b.pressed.connect(action)
+	add_child(b)
+	toggles.append([b, text])
+	return b
 
 
 ## Lays out the key slots: Everywhere and Workbench on the left (tray pieces
@@ -79,6 +92,12 @@ func _layout() -> void:
 				slots.append({"rect": r, "action": pieces[i], "slot": 0})
 			y[col] += ROW
 		y[col] += 14
+
+
+func _toggle_grid() -> void:
+	Keys.set_grid(not Keys.grid)
+	grid_button.toggled_on = Keys.grid
+	grid_button.queue_redraw()
 
 
 func _toggle_hints() -> void:
@@ -157,7 +176,10 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	K.text(self, P.display(600), Vector2(DESIGN.x / 2, 44), "Options", 40, P.INK)
-	K.text(self, P.ui(700), Vector2(DESIGN.x / 2, 96), "Tap a key to change it, then press the new one. Tap it again to clear it.", 16, P.INK_SOFT)
+	if with_keys:
+		K.text(self, P.ui(700), Vector2(DESIGN.x / 2, 96), "Tap a key to change it, then press the new one. Tap it again to clear it.", 16, P.INK_SOFT)
+	for tg in toggles:
+		K.text(self, P.ui(700), tg[0].position + Vector2(60, 22), tg[1], 17, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 	for l in labels:
 		if l[2]:
 			K.text(self, P.display(600), l[0] + Vector2(0, 8), l[1], 22, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
@@ -165,8 +187,6 @@ func _draw() -> void:
 			K.text(self, P.ui(700), l[0], l[1], 17, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 	for s in slots:
 		_draw_slot(s)
-	K.text(self, P.ui(700), Vector2(760, 608), "Show key labels on the controls", 17, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-	K.text(self, P.ui(700), Vector2(760, 672), "Put every key back", 17, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 
 
 func _draw_slot(s: Dictionary) -> void:
