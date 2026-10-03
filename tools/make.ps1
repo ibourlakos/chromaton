@@ -158,6 +158,31 @@ function Serve-Web([int]$Port) {
 	return 0
 }
 
+# Pushes build/web to itch.io with butler. The target (user/game:channel)
+# comes from the argument or the ITCH_TARGET environment variable.
+function Deploy-Web([string]$Target) {
+	if (-not (Get-Command butler -ErrorAction SilentlyContinue)) {
+		Write-Host "butler is not on PATH. Install it from https://itch.io/docs/butler/ and run 'butler login' once."
+		return 1
+	}
+	if (-not $Target) { $Target = $env:ITCH_TARGET }
+	if (-not $Target) {
+		Write-Host "usage: .\make deploy <user/game:channel>   (or set ITCH_TARGET)"
+		return 1
+	}
+	if ($Target -notmatch '^[^/:\s]+/[^/:\s]+:[^/:\s]+$') {
+		Write-Host "The itch target must look like user/game:channel, e.g. someone/chromaton:web (got '$Target')."
+		return 1
+	}
+	$web = Join-Path $Root "build\web"
+	if (-not (Test-Path (Join-Path $web "index.html"))) {
+		Write-Host "No web build yet. Run: .\make export web"
+		return 1
+	}
+	& butler push $web $Target | Out-Host
+	return $LASTEXITCODE
+}
+
 function Show-Help {
 	Write-Host @"
 Chromaton tasks: .\make <task> [args]
@@ -180,6 +205,8 @@ Share
   export <platform>    build the game for a platform; only web for now:
                        export web writes build/web and build/chromaton-web.zip (for itch.io)
   serve [port]         play the web build at http://localhost:8060/ (after export web)
+  deploy [target]      push build/web to itch.io with butler; target is user/game:channel,
+                       or set ITCH_TARGET (after export web)
   templates [tpz]      install Godot's export templates (downloads about 1.3 GB unless given a .tpz)
 
 Other
@@ -227,6 +254,7 @@ switch ($Task) {
 		}
 	}
 	"serve" { $code = Serve-Web ($(if ($Rest.Count -gt 0) { [int]$Rest[0] } else { 8060 })) }
+	"deploy" { $code = Deploy-Web ($Rest | Select-Object -First 1) }
 	"templates" { $code = Install-Templates ($Rest | Select-Object -First 1) }
 	"import" { $code = Invoke-Godot @("--headless", "--path", $Root, "--import") }
 	"godot" {
