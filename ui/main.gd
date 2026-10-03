@@ -1,12 +1,11 @@
 ## Entry point: loads levels and progress, switches between screens.
 ##
 ## Command-line options (after "--"):
-##   --level=<id>                open a level straight away
+##   --level=<id>                open a level straight away (no intro)
 ##   --unlock-all                open every level
 ##   --screenshot=<id>:<path>    load a level's reference solution, run it,
 ##                               save a PNG and quit. <id> may also be
-##                               "levels", "book", "options" or "intro" (the
-##                               stale-save note).
+##                               "levels", "book", "options" or "intro".
 ##   --ticks=<n>                 ticks to run before the screenshot
 ##                               (default: one per stitch)
 ##   --phase=<0..1>              how far drops are along their tubes
@@ -14,6 +13,7 @@
 ##   --wrong                     tube card A straight to the loom instead
 ##   --empty                     leave the bench empty
 ##   --page=<n>                  the level select's chapter page (from 0)
+##   --stale                     the intro as it reads for a stale save
 extends Control
 
 const P = preload("res://ui/palette.gd")
@@ -60,7 +60,9 @@ func _ready() -> void:
 		_screenshot(args)
 		return
 	Keys.load_settings()  # not for screenshots: they show the default keys
-	if stale:
+	# The intro opens every launch; jumping straight into a level skips it
+	# unless the save needs an answer.
+	if stale or not args.has("level"):
 		show_intro()
 	else:
 		_start()
@@ -134,6 +136,8 @@ func _set_screen(c: Control) -> void:
 
 func show_intro() -> void:
 	var s = Intro.new()
+	s.stale = stale
+	s.done.connect(_start)
 	s.fresh.connect(func(): _settle_save(true))
 	s.keep.connect(func(): _settle_save(false))
 	_set_screen(s)
@@ -215,6 +219,7 @@ func _screenshot(args: Dictionary) -> void:
 				progress.inventions = {}
 			show_book()
 		"intro":
+			stale = args.has("stale")
 			show_intro()
 		"options":
 			show_options()

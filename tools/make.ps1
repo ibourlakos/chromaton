@@ -212,7 +212,7 @@ Share
 Other
   shot <level> <png> [options]
                        save a screenshot and quit; level can also be 'levels',
-                       'book', 'options' or 'intro'; options: --ticks=N --phase=0.5 --finish --wrong --empty --page=N
+                       'book', 'options' or 'intro'; options: --ticks=N --phase=0.5 --finish --wrong --empty --page=N --stale
   import               import new fonts or other assets
   godot                print which Godot this script uses
 "@

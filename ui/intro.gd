@@ -1,7 +1,11 @@
-## The note shown at launch when the saved game no longer fits this build
-## (core/progress.gd, problems()): start fresh, or keep the levels and
+## The short note shown at launch: this is an early build, and an update may
+## reset saved progress. One tap anywhere (or Enter, the level select's
+## Continue key) goes on.
+##
+## When the save no longer fits this build (core/progress.gd, problems()) the
+## note says so instead and asks: start fresh, or keep the levels and
 ## inventions that still fit. Either way the old file is moved to a .bak.
-## Enter (the level select's Continue key) starts fresh.
+## Enter starts fresh.
 extends Control
 
 const P = preload("res://ui/palette.gd")
@@ -9,24 +13,30 @@ const K = preload("res://ui/draw_kit.gd")
 const ToyButton = preload("res://ui/toy_button.gd")
 const Keys = preload("res://ui/keys.gd")
 
+signal done
 signal fresh
 signal keep
 
 const DESIGN := Vector2(1280, 800)
 const BUTTON := Vector2(220, 60)
 
+var stale := false
 var card := Rect2()
+var t := 0.0
 
 
 func _ready() -> void:
 	size = DESIGN
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	card = Rect2(DESIGN.x / 2 - 330, 200, 660, 360)
-	var y := card.end.y - BUTTON.y - 36
-	var buttons := [["reset", "Start fresh", fresh, Keys.label("continue")], ["check", "Keep what fits", keep, ""]]
+	card = Rect2(DESIGN.x / 2 - 360, 205, 720, 370)
+	var y := card.end.y - BUTTON.y - 34
+	var buttons := [["next", "Let's paint", done, Keys.label("continue")]]
+	if stale:
+		buttons = [["reset", "Start fresh", fresh, Keys.label("continue")], ["check", "Keep what fits", keep, ""]]
+	var total := buttons.size() * (BUTTON.x + 24) - 24
 	for i in buttons.size():
 		var b = ToyButton.make(buttons[i][0], BUTTON)
-		b.position = Vector2(DESIGN.x / 2 - BUTTON.x - 12 + i * (BUTTON.x + 24), y)
+		b.position = Vector2(DESIGN.x / 2 - total / 2 + i * (BUTTON.x + 24), y)
 		b.painter = _label_painter(buttons[i][0], buttons[i][1], i == 0)
 		b.key = buttons[i][3]
 		var sig: Signal = buttons[i][2]
@@ -50,22 +60,43 @@ func _label_painter(icon: String, label: String, inked: bool) -> Callable:
 		K.text(b, font, Vector2(x + 34, r.get_center().y) + press, label, 22, col, HORIZONTAL_ALIGNMENT_LEFT)
 
 
+## Without a question to answer, a tap anywhere goes on.
+func _gui_input(event: InputEvent) -> void:
+	if not stale and event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		done.emit()
+		accept_event()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and Keys.action(event, "Levels") == "continue":
-		fresh.emit()
+		(fresh if stale else done).emit()
 		Keys.handled(self)
+
+
+func _process(delta: float) -> void:
+	t += delta
+	queue_redraw()
 
 
 func _draw() -> void:
 	K.fill(self, K.round_rect(Rect2(card.position + Vector2(5, 8), card.size), 22), P.SHADOW)
 	K.shape(self, K.round_rect(card, 22), P.TAG, P.INK, 3)
+	# An empty mix tub peeks over the card's corner, stirring now and then.
+	K.tub(self, card.position + Vector2(72, -10), 0.7, -1, fmod(t, 2.4), "mix", t, 0.4)
 	var cx := card.get_center().x
-	K.text(self, P.display(600), Vector2(cx, card.position.y + 58), "Your saved game is from an older build", 32, P.INK)
-	var font := P.ui(700)
+	var title := "Welcome to an early build!"
 	var lines := [
-		"Some of it no longer fits the levels in this one.",
-		"Start fresh, or keep the levels that still fit?",
-		"Your old save is tucked away in a backup either way.",
+		"Chromaton is still being made, so things will change.",
+		"An update may reset your saved progress.",
+		"Thanks for playing, and for telling us what you think.",
 	]
+	if stale:
+		lines = [
+			"This update no longer fits your saved game.",
+			"Start fresh, or keep the levels that still fit?",
+			"Your old save is tucked away in a backup either way.",
+		]
+	K.text(self, P.display(600), Vector2(cx, card.position.y + 72), title, 34, P.INK)
+	var font := P.ui(700)
 	for i in lines.size():
-		K.text(self, font, Vector2(cx, card.position.y + 124 + i * 34), lines[i], 20, P.INK_SOFT if i == 2 else P.INK)
+		K.text(self, font, Vector2(cx, card.position.y + 140 + i * 36), lines[i], 21, P.INK_SOFT if i == 2 else P.INK)

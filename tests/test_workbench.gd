@@ -13,6 +13,7 @@ const LevelSelect = preload("res://ui/level_select.gd")
 const K = preload("res://ui/draw_kit.gd")
 const Keys = preload("res://ui/keys.gd")
 const Options = preload("res://ui/options.gd")
+const Intro = preload("res://ui/intro.gd")
 const SETTINGS := "user://chromaton_settings_test.json"
 
 var failures := 0
@@ -44,6 +45,7 @@ func _initialize() -> void:
 	test_not_general(by_id["either_not_both"])
 	test_round_rect()
 	test_level_select(levels)
+	test_intro()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(SETTINGS))
 	Keys.settings_path = Keys.PATH
 	if failures == 0:
@@ -309,6 +311,23 @@ func test_round_rect() -> void:
 		if Geometry2D.triangulate_polygon(pts).is_empty():
 			ok = false
 	check(ok, "narrow rounded rectangles have no repeated points and triangulate")
+
+
+## The intro goes on with one tap anywhere or Enter; for a stale save it
+## waits for an answer, and Enter starts fresh.
+func test_intro() -> void:
+	var said := []
+	for stale in [false, true]:
+		var s = Intro.new()
+		s.stale = stale
+		root.add_child(s)
+		s._ready()
+		for sig in ["done", "fresh", "keep"]:
+			s.connect(sig, func(): said.append(sig))
+		tap(s, Vector2(100, 700))
+		key(s, KEY_ENTER)
+		s.queue_free()
+	check(said == ["done", "done", "fresh"], "the intro goes on by tap or Enter, a stale one only by an answer (got %s)" % str(said))
 
 
 ## One page per chapter; the arrows stop at the first and last chapter.
