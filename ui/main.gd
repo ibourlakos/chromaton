@@ -22,6 +22,7 @@ const Invention = preload("res://core/invention.gd")
 const Workbench = preload("res://ui/workbench.gd")
 const LevelSelect = preload("res://ui/level_select.gd")
 const PatternBook = preload("res://ui/pattern_book.gd")
+const Keys = preload("res://ui/keys.gd")
 
 const DESIGN := Vector2(1280, 800)
 
@@ -90,6 +91,12 @@ func _center() -> void:
 
 func _draw() -> void:
 	draw_texture_rect(P.paper_texture(), Rect2(Vector2.ZERO, size), true)
+
+
+## Sees every event first: shows or hides the key hints (keys.gd).
+func _input(event: InputEvent) -> void:
+	if Keys.watch(event, get_tree()):
+		get_viewport().set_input_as_handled()
 
 
 func _notification(what: int) -> void:

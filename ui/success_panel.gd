@@ -5,6 +5,7 @@ extends Control
 const P = preload("res://ui/palette.gd")
 const K = preload("res://ui/draw_kit.gd")
 const ToyButton = preload("res://ui/toy_button.gd")
+const Keys = preload("res://ui/keys.gd")
 const Invention = preload("res://core/invention.gd")
 
 signal replay
@@ -39,17 +40,36 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var h := 440.0 if invention.is_empty() else 540.0
 	card = Rect2(DESIGN.x / 2 - 310, DESIGN.y / 2 - h / 2 - 10, 620, h)
-	var buttons := [["reset", replay], ["levels", levels]]
+	var buttons := [["reset", replay, "R"], ["levels", levels, "Esc"]]
 	if has_next:
-		buttons.append(["next", next])
+		buttons.append(["next", next, "Enter"])
 	var total := buttons.size() * 76 - 16
 	for i in buttons.size():
 		var b = ToyButton.make(buttons[i][0], Vector2(60, 60))
 		b.position = Vector2(DESIGN.x / 2 - total / 2.0 + i * 76, card.end.y - 84)
+		b.key = buttons[i][2]
 		b.toggled_on = buttons[i][0] == "next"
 		var sig: Signal = buttons[i][1]
 		b.pressed.connect(func(): sig.emit())
 		add_child(b)
+
+
+## Enter (or →) for the next level, R to replay, Esc for the levels. Not
+## Space: it may still be held from running the machine.
+func _unhandled_input(event: InputEvent) -> void:
+	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	match event.keycode:
+		KEY_ENTER, KEY_KP_ENTER, KEY_RIGHT:
+			if has_next:
+				next.emit()
+		KEY_R:
+			replay.emit()
+		KEY_ESCAPE:
+			levels.emit()
+		_:
+			return
+	Keys.handled(self)
 
 
 func _process(delta: float) -> void:

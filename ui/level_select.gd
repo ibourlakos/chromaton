@@ -5,6 +5,7 @@ extends Control
 const P = preload("res://ui/palette.gd")
 const K = preload("res://ui/draw_kit.gd")
 const ToyButton = preload("res://ui/toy_button.gd")
+const Keys = preload("res://ui/keys.gd")
 const Invention = preload("res://core/invention.gd")
 
 signal level_chosen(index: int)
@@ -52,14 +53,19 @@ func _build() -> void:
 	size = DESIGN
 	var book = ToyButton.make("book", Vector2(64, 64))
 	book.position = Vector2(DESIGN.x - 96, 40)
+	book.key = "B"
 	book.pressed.connect(func(): book_requested.emit())
 	add_child(book)
 	var left := DESIGN.x / 2 - (COLUMNS * TAG.x + (COLUMNS - 1) * GAP.x) / 2
 	prev_button = ToyButton.make("back")
 	prev_button.position = Vector2(left, DOTS_Y - 30)
+	prev_button.key = "←"
+	prev_button.key_above = true
 	prev_button.pressed.connect(func(): turn(-1))
 	add_child(prev_button)
 	next_button = ToyButton.make("next")
+	next_button.key = "→"
+	next_button.key_above = true
 	next_button.position = Vector2(DESIGN.x - left - 52, DOTS_Y - 30)
 	next_button.pressed.connect(func(): turn(1))
 	add_child(next_button)
@@ -91,12 +97,43 @@ func _build_page() -> void:
 		b.position = origin + Vector2(k % COLUMNS, k / COLUMNS) * (TAG + GAP)
 		b.painter = _paint_tag.bind(i, progress.is_unlocked(ids, i))
 		b.disabled = not progress.is_unlocked(ids, i)
+		b.key = "Enter" if i == continue_level() else ""
 		b.pressed.connect(func(): level_chosen.emit(i))
 		add_child(b)
 		tags.append(b)
 	prev_button.visible = page > 0
 	next_button.visible = page < chapter_count - 1
 	queue_redraw()
+
+
+## ← and → turn the pages, B opens the Pattern Book, Enter plays the first
+## open level not yet solved (the one marked with the Enter cap).
+func _unhandled_input(event: InputEvent) -> void:
+	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	match event.keycode:
+		KEY_LEFT, KEY_A:
+			turn(-1)
+		KEY_RIGHT, KEY_D:
+			turn(1)
+		KEY_B:
+			book_requested.emit()
+		KEY_ENTER, KEY_KP_ENTER:
+			var i := continue_level()
+			if i >= 0:
+				level_chosen.emit(i)
+		_:
+			return
+	Keys.handled(self)
+
+
+## The first open level not yet solved, or -1 when every open level is solved.
+func continue_level() -> int:
+	var ids := levels.map(func(l): return l.id)
+	for i in levels.size():
+		if progress.is_unlocked(ids, i) and not progress.is_solved(ids[i]):
+			return i
+	return -1
 
 
 func _process(delta: float) -> void:

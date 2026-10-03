@@ -8,13 +8,20 @@
 ## - drag a placed piece to move it, or onto the tray to throw it away;
 ## - drag from an output port to an input port to lay a tube (or the other
 ##   way round); drag a tube's end off an input port to re-route or remove it;
-## - tap a tube to select it, then tap its delete button.
+## - tap a tube or a placed piece to select it, then tap its delete button.
 ## Any edit stops the run and rewinds it to the start.
+##
+## Keys only speed up what a tap already does (key caps show on the controls,
+## see keys.gd): Space run/pause, S or → step, A or ← step back, R reset,
+## Z undo, - and + speed, 1-9 put that tray piece on the cell under the
+## pointer, Delete or Backspace removes the selection (or what's under the
+## pointer), Esc clears the selection or leaves the level.
 extends Control
 
 const P = preload("res://ui/palette.gd")
 const K = preload("res://ui/draw_kit.gd")
 const ToyButton = preload("res://ui/toy_button.gd")
+const Keys = preload("res://ui/keys.gd")
 const SuccessPanel = preload("res://ui/success_panel.gd")
 const Pieces = preload("res://core/pieces.gd")
 const Machine = preload("res://core/machine.gd")
@@ -47,6 +54,8 @@ const SPEEDS := ["slow", "normal", "fast"]
 const PIECE_SCALE := 0.6
 const DROP_R := 9.0
 const IDLE_AGE := 99.0
+## Held keys repeat only where repeating helps: stepping and undo.
+const REPEATING := [KEY_RIGHT, KEY_LEFT, KEY_S, KEY_A, KEY_Z]
 
 var level
 var progress
@@ -64,6 +73,9 @@ var placed_at := {}  # node id -> clock when it landed on a cell (for the bounce
 var landed_at := -9.0  # clock when the last stitch landed (for the puff)
 var undo_stack := []
 var selected_tube := -1
+var selected_piece := -1  # a placed piece (only one of the two is selected)
+var hover_pos := Vector2(-1, -1)  # last pointer position over the bench (for keys)
+var nudged_at := {}  # tray index -> clock when its key found no free cell
 var outcome := ""  # "", "solved", "wrong", "stalled", "not_general"
 var panel: Control
 
@@ -130,6 +142,7 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var back = ToyButton.make("back")
 	back.position = Vector2(14, 6)
+	back.key = "Esc"
 	back.pressed.connect(func(): exit_requested.emit())
 	add_child(back)
 	var x := DESIGN.x - 16
@@ -137,6 +150,7 @@ func _ready() -> void:
 		var b = ToyButton.make(SPEEDS[i], Vector2(46, 46))
 		x -= 46
 		b.position = Vector2(x, 9)
+		b.key = ["−", "", "+"][i]
 		b.pressed.connect(_set_speed.bind(i))
 		add_child(b)
 		btn_speed.push_front(b)
@@ -147,6 +161,11 @@ func _ready() -> void:
 	btn_back = _control_button("step_back", x - 58 - 58 * 2, _step_back_pressed)
 	btn_reset = _control_button("reset", x - 58 - 58 * 3, _reset_pressed)
 	btn_undo = _control_button("undo", x - 58 - 58 * 4 - 12, _undo)
+	btn_run.key = "Space"
+	btn_step.key = "S"
+	btn_back.key = "A"
+	btn_reset.key = "R"
+	btn_undo.key = "Z"
 	_set_speed(speed)
 
 
@@ -273,6 +292,7 @@ func _rebuild() -> void:
 
 func _edited() -> void:
 	selected_tube = -1
+	selected_piece = -1
 	_rebuild()
 	progress.store_machine(level.id, machine.to_dict())
 
@@ -422,17 +442,45 @@ func _gui_input(event: InputEvent) -> void:
 		else:
 			_release(event.position)
 		accept_event()
-	elif event is InputEventMouseMotion and drag != "":
-		drag_pos = event.position
-		if drag_pos.distance_to(press_pos) > 8:
-			drag_moved = true
-		accept_event()
+	elif event is InputEventMouseMotion:
+		hover_pos = event.position
+		if drag != "":
+			drag_pos = event.position
+			if drag_pos.distance_to(press_pos) > 8:
+				drag_moved = true
+			accept_event()
+
+
+func _notification(what: int) -> void:
+	# The pointer went off the bench (or onto a button): keys have no cell.
+	if what == NOTIFICATION_MOUSE_EXIT_SELF:
+		hover_pos = Vector2(-1, -1)
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed and not event.echo) or panel != null:
+	if not (event is InputEventKey and event.pressed) or panel != null:
 		return
-	match event.keycode:
+	if event.echo and not event.keycode in REPEATING:
+		return
+	if _key(event):
+		Keys.handled(self)
+
+
+## Handles a key press; false if the key means nothing here.
+func _key(event: InputEventKey) -> bool:
+	var k := event.keycode
+	var editing := drag == ""  # keys don't edit under a finger mid-drag
+	# The digit row by position too: some layouts (AZERTY) need Shift for digits.
+	var pk := event.physical_keycode
+	if (k >= KEY_1 and k <= KEY_9) or (pk >= KEY_1 and pk <= KEY_9):
+		if editing:
+			_place_key((k if k >= KEY_1 and k <= KEY_9 else pk) - KEY_1)
+		return true
+	if k >= KEY_KP_1 and k <= KEY_KP_9:
+		if editing:
+			_place_key(k - KEY_KP_1)
+		return true
+	match k:
 		KEY_SPACE:
 			_toggle_run()
 		KEY_RIGHT, KEY_S:
@@ -442,15 +490,61 @@ func _unhandled_input(event: InputEvent) -> void:
 		KEY_R:
 			_reset_pressed()
 		KEY_Z:
-			if event.ctrl_pressed or event.meta_pressed:
+			if editing and not event.shift_pressed:
 				_undo()
+		KEY_MINUS, KEY_KP_SUBTRACT:
+			_set_speed(maxi(speed - 1, 0))
+		KEY_EQUAL, KEY_PLUS, KEY_KP_ADD:
+			_set_speed(mini(speed + 1, SPEEDS.size() - 1))
 		KEY_DELETE, KEY_BACKSPACE:
-			if selected_tube >= 0:
-				_push_undo()
-				machine.remove_tube(selected_tube)
-				_edited()
+			if editing:
+				_delete_key()
 		KEY_ESCAPE:
-			exit_requested.emit()
+			if _has_selection():
+				selected_tube = -1
+				selected_piece = -1
+			elif editing:
+				exit_requested.emit()
+		_:
+			return false
+	return true
+
+
+## A number key puts that tray piece on the cell under the pointer; with no
+## free cell there, the tray piece gives a little shake instead.
+func _place_key(i: int) -> void:
+	if i >= tray.size():
+		return
+	var cell := cell_at(hover_pos)
+	if cell.x < 0 or cell_taken(cell):
+		nudged_at[i] = clock
+		return
+	_place(tray[i]["kind"], cell)
+
+
+## Delete removes the selection, or else the piece or tube under the pointer.
+func _delete_key() -> void:
+	if not _has_selection():
+		selected_piece = _piece_at_pos(hover_pos)
+		if selected_piece < 0:
+			selected_tube = _tube_at(hover_pos)
+	_delete_selected()
+
+
+func _has_selection() -> bool:
+	return (selected_piece >= 0 and machine.nodes.has(selected_piece)) or (selected_tube >= 0 and selected_tube < machine.tubes.size())
+
+
+func _delete_selected() -> void:
+	if selected_piece >= 0 and machine.nodes.has(selected_piece):
+		_push_undo()
+		machine.remove_node(selected_piece)
+		_edited()
+	elif selected_tube >= 0 and selected_tube < machine.tubes.size():
+		_push_undo()
+		machine.remove_tube(selected_tube)
+		_edited()
+	_sync_buttons()
 
 
 func _press(pos: Vector2) -> void:
@@ -458,11 +552,10 @@ func _press(pos: Vector2) -> void:
 	drag_pos = pos
 	drag_moved = false
 	drag = ""
-	if selected_tube >= 0 and selected_tube < machine.tubes.size() and pos.distance_to(_delete_button_pos()) < 26:
-		_push_undo()
-		machine.remove_tube(selected_tube)
-		_edited()
+	if _has_selection() and pos.distance_to(_delete_button_pos()) < 26:
+		_delete_selected()
 		return
+	selected_piece = -1
 	for item in tray:
 		if item["rect"].has_point(pos):
 			drag = "new"
@@ -533,15 +626,19 @@ func _release(pos: Vector2) -> void:
 
 
 func _place_new(pos: Vector2) -> void:
-	var cell := cell_at(pos)
+	_place(drag_kind, cell_at(pos))
+
+
+## Puts a new piece of a tray kind on a free cell.
+func _place(kind: String, cell: Vector2i) -> void:
 	if cell.x < 0 or cell_taken(cell):
 		return
 	_push_undo()
 	var id: int
-	if drag_kind.begins_with("inv:"):
-		id = machine.add_node(Pieces.INVENTION, cell.x, cell.y, {"invention": drag_kind.substr(4)})
+	if kind.begins_with("inv:"):
+		id = machine.add_node(Pieces.INVENTION, cell.x, cell.y, {"invention": kind.substr(4)})
 	else:
-		id = machine.add_node(drag_kind, cell.x, cell.y)
+		id = machine.add_node(kind, cell.x, cell.y)
 	placed_at[id] = clock
 	_edited()
 
@@ -550,6 +647,8 @@ func _finish_move(pos: Vector2) -> void:
 	var id := drag_node
 	drag = ""
 	if not drag_moved:
+		selected_piece = id  # a tap selects the piece
+		selected_tube = -1
 		return
 	if TRAY.has_point(pos):
 		_push_undo()
@@ -617,7 +716,12 @@ func _tube_at(pos: Vector2) -> int:
 	return best
 
 
+## Where the selection's delete button floats: above a piece (below one in the
+## top row), or above the middle of a tube.
 func _delete_button_pos() -> Vector2:
+	if selected_piece >= 0:
+		var below: bool = machine.nodes[selected_piece]["y"] == 0
+		return node_center(selected_piece) + Vector2(0, 52 if below else -52)
 	return K.along(tube_points(selected_tube), 0.5) + Vector2(0, -30)
 
 
@@ -656,8 +760,12 @@ func _draw_frame() -> void:
 
 func _draw_tray() -> void:
 	K.shape(self, K.round_rect(TRAY, 14), Color(P.PAPER_DK, 0.9), Color(P.INK, 0.35), 2)
-	for item in tray:
+	for i in tray.size():
+		var item: Dictionary = tray[i]
 		var r: Rect2 = item["rect"]
+		var u: float = (clock - nudged_at.get(i, -9.0)) / 0.4
+		if u < 1.0:
+			r.position.x += sin(u * PI * 4) * 6 * (1 - u)
 		K.shape(self, K.round_rect(r, 10), P.TAG, Color(P.INK, 0.5), 1.5)
 		var label := ""
 		var kind: String = item["kind"]
@@ -668,6 +776,8 @@ func _draw_tray() -> void:
 			label = Pieces.display_name(kind) + ("  free" if Pieces.TABLE[kind]["cost"] == 0 else "")
 		_draw_piece_kind(kind, r.get_center() + Vector2(0, -8), -1, 0.82)
 		K.text(self, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, P.INK_SOFT)
+		if i < 9:
+			Keys.cap(self, r.position + Vector2(16, 16), str(i + 1))
 	# Trash: lights up while a piece is dragged over the tray.
 	var lit := drag == "move" and drag_moved and TRAY.has_point(drag_pos)
 	K.shape(self, K.round_rect(TRASH, 12), Color(P.HOOP, 0.35) if lit else Color(P.PAPER, 0.8), Color(P.INK, 0.45), 2)
@@ -706,7 +816,11 @@ func _draw_bench() -> void:
 		K.tube(self, K.tube_path(out_port(drag_node, drag_port), drag_pos), false)
 	if drag == "tube_in" and drag_moved:
 		K.tube(self, K.tube_path(drag_pos, in_port(drag_node, drag_port)), false)
-	# Pieces, with short pipes from their sides to their ports
+	# Pieces, with short pipes from their sides to their ports; a selected
+	# piece sits on a lit cell.
+	if selected_piece >= 0 and machine.nodes.has(selected_piece) and drag == "":
+		var r := Rect2(node_center(selected_piece) - CELL / 2, CELL).grow(-3)
+		K.shape(self, K.round_rect(r, 12), Color(P.HOOP, 0.25), Color(P.INK, 0.5), 2)
 	for id in machine.nodes:
 		if machine.is_fixed(id) or (drag == "move" and id == drag_node):
 			continue
@@ -734,12 +848,13 @@ func _draw_bench() -> void:
 		if sim.tube_filled_at(i) == sim.tick:
 			f = lerpf(0.06, 0.8, eased)
 		K.drop(self, K.along(tube_points(i), f), DROP_R, c)
-	# Delete button for the selected tube
-	if selected_tube >= 0 and selected_tube < machine.tubes.size():
+	# Delete button for the selected tube or piece
+	if _has_selection():
 		var b := _delete_button_pos()
 		K.fill(self, K.ellipse(b + Vector2(0, 3), 22, 22), P.SHADOW)
 		K.shape(self, K.ellipse(b, 22, 22), P.TAG, P.INK, 2.5)
 		K.icon(self, "trash", b, 1.0, P.INK)
+		Keys.cap(self, b + Vector2(0, 24), "Del")
 
 
 ## Glass pipes into a piece's left side, wooden spouts out of its right side.

@@ -6,6 +6,7 @@ extends Control
 const P = preload("res://ui/palette.gd")
 const K = preload("res://ui/draw_kit.gd")
 const ToyButton = preload("res://ui/toy_button.gd")
+const Keys = preload("res://ui/keys.gd")
 const Pieces = preload("res://core/pieces.gd")
 const Invention = preload("res://core/invention.gd")
 
@@ -28,8 +29,15 @@ func _ready() -> void:
 	size = DESIGN
 	var b = ToyButton.make("back")
 	b.position = Vector2(14, 6)
+	b.key = "Esc"
 	b.pressed.connect(func(): back.emit())
 	add_child(b)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_ESCAPE, KEY_B]:
+		Keys.handled(self)
+		back.emit()
 
 
 func _process(delta: float) -> void:

@@ -30,6 +30,7 @@ func _initialize() -> void:
 		by_id[level.id] = level
 	var progress = Progress.new()
 	test_editing(by_id["third_color"], Progress.new())
+	test_keys(by_id["third_color"])
 	test_card_hint(by_id["pattern_card"])
 	test_left_edge(by_id["orange"])
 	for i in levels.size():
@@ -323,4 +324,78 @@ func test_level_select(levels: Array) -> void:
 	s.turn(chapters.size() + 3)
 	check(s.page == chapters.size() - 1 and not s.next_button.visible and s.prev_button.visible, "turning stops at the last page")
 	check(turned == [0, chapters.size() - 1], "each page turn is announced once")
+	s.queue_free()
+
+
+# --- keys -------------------------------------------------------------------
+
+func key(node, code: Key, shift := false) -> void:
+	var e := InputEventKey.new()
+	e.keycode = code
+	e.pressed = true
+	e.shift_pressed = shift
+	node._unhandled_input(e)
+
+
+## Keys only repeat what taps do: number keys place tray pieces under the
+## pointer, Delete removes the selection or what's under the pointer, - and +
+## change speed, Esc clears a selection before it leaves the level.
+func test_keys(level) -> void:
+	var wb = open(level, Progress.new())
+	var left := []
+	wb.exit_requested.connect(func(): left.append(true))
+	var start: int = wb.machine.nodes.size()
+	move(wb, wb.cell_center(5, 3))
+	key(wb, KEY_1)
+	var id: int = wb.machine.piece_at(5, 3)
+	check(id >= 0 and wb.machine.nodes[id]["kind"] == wb.tray[0]["kind"], "1 puts the first tray piece under the pointer")
+	key(wb, KEY_2)
+	check(wb.machine.nodes.size() == start + 1 and wb.nudged_at.has(1), "a number key on a taken cell places nothing and shakes the tray piece")
+	key(wb, KEY_9)
+	check(wb.machine.nodes.size() == start + 1, "a number past the tray does nothing")
+	move(wb, wb.cell_center(7, 3))
+	key(wb, KEY_KP_2)
+	check(wb.machine.piece_at(7, 3) >= 0, "the number pad places pieces too")
+	# Tap a piece: it is selected, and its delete button removes it.
+	tap(wb, wb.cell_center(5, 3))
+	check(wb.selected_piece == id, "tapping a piece selects it")
+	key(wb, KEY_ESCAPE)
+	check(wb.selected_piece == -1 and left.is_empty(), "Esc clears the selection and stays")
+	tap(wb, wb.cell_center(5, 3))
+	tap(wb, wb._delete_button_pos())
+	check(wb.machine.piece_at(5, 3) < 0, "a selected piece's delete button removes it")
+	key(wb, KEY_Z)
+	check(wb.machine.piece_at(5, 3) >= 0, "Z undoes")
+	# Delete with nothing selected takes what's under the pointer.
+	move(wb, wb.cell_center(7, 3))
+	key(wb, KEY_DELETE)
+	check(wb.machine.piece_at(7, 3) < 0 and wb.machine.piece_at(5, 3) >= 0, "Delete removes the piece under the pointer")
+	move(wb, wb.cell_center(9, 6))
+	var before: int = wb.machine.nodes.size()
+	key(wb, KEY_BACKSPACE)
+	check(wb.machine.nodes.size() == before, "Delete over an empty cell does nothing")
+	# Selected piece in the top row: its delete button sits below it.
+	tap(wb, wb.cell_center(5, 3))
+	key(wb, KEY_BACKSPACE)
+	check(wb.machine.piece_at(5, 3) < 0, "Backspace removes the selected piece")
+	key(wb, KEY_MINUS)
+	check(wb.speed == 0, "- slows down")
+	key(wb, KEY_MINUS)
+	check(wb.speed == 0, "slow is the slowest")
+	key(wb, KEY_EQUAL)
+	key(wb, KEY_PLUS)
+	key(wb, KEY_KP_ADD)
+	check(wb.speed == 2, "+ speeds up to fast")
+	key(wb, KEY_ESCAPE)
+	check(left.size() == 1, "Esc with nothing selected leaves the level")
+	wb.queue_free()
+	var s = LevelSelect.new()
+	s.setup(Level.load_all(), Progress.new(), 0)
+	root.add_child(s)
+	check(s.continue_level() == 0, "Enter on a fresh save plays the first level")
+	var chosen := []
+	s.level_chosen.connect(func(i): chosen.append(i))
+	key(s, KEY_ENTER)
+	key(s, KEY_RIGHT)
+	check(chosen == [0] and s.page == 1, "the level select takes Enter and arrows")
 	s.queue_free()

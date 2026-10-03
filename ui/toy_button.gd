@@ -4,6 +4,7 @@ extends Control
 
 const P = preload("res://ui/palette.gd")
 const K = preload("res://ui/draw_kit.gd")
+const Keys = preload("res://ui/keys.gd")
 
 signal pressed
 
@@ -16,6 +17,10 @@ var disabled := false:
 ## Optional custom drawing: func(button: Control, rect: Rect2, down: bool).
 var painter: Callable
 var rounded := true
+## The key that also presses this button (the screen handles the key itself);
+## shown as a small cap on the button's bottom edge while key hints are on.
+var key := ""
+var key_above := false  # cap on the top edge (for buttons at the screen bottom)
 
 var _down := false
 
@@ -31,6 +36,7 @@ static func make(icon_kind: String, size_px := Vector2(52, 52)):
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	focus_mode = Control.FOCUS_NONE
+	add_to_group(Keys.GROUP)
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -55,6 +61,7 @@ func _draw() -> void:
 	var press := Vector2(0, 2) if _down else Vector2.ZERO
 	if painter.is_valid():
 		painter.call(self, r, _down)
+		Keys.cap(self, Vector2(size.x / 2, 0.0 if key_above else size.y), key)
 		return
 	var rad := minf(size.x, size.y) / 2 if rounded else 12.0
 	if not _down:
@@ -66,3 +73,4 @@ func _draw() -> void:
 	if disabled:
 		col = Color(col, 0.3)
 	K.icon(self, icon, r.get_center() + press, minf(size.x, size.y) / 52.0, col)
+	Keys.cap(self, Vector2(size.x / 2, 0.0 if key_above else size.y), key)
