@@ -33,7 +33,7 @@ Run everything through `.\make <task>` (`make.cmd` → `tools/make.ps1`; works f
 - After adding fonts or other assets, import once: `.\make import`
 - Web build for itch.io: `.\make export web` (the platform is an argument; web is the only one so far, and a bare `export` prints usage) writes `build/web/` and `build/chromaton-web.zip` (upload the zip; `build/` is git-ignored). `.\make serve [port]` plays `build/web/` at http://localhost:8060/ (a web build won't load from `file://`). Needs Godot's export templates once per machine: `.\make templates` (downloads about 1.3 GB, or pass a `.tpz`). The preset lives in `export_presets.cfg`: no threads, and it includes `levels/*.json` while leaving out `tests/`, `tools/`, `mockups/` and `docs/`.
 - Deploy to itch.io: `.\make deploy [user/game:channel]` pushes `build/web/` with butler (run `.\make export web` first). The target comes from the argument or the `ITCH_TARGET` environment variable, never from the repo. It stops with a message if butler isn't on PATH (install from https://itch.io/docs/butler/, then `butler login` once). It publishes, so don't run it unless the designer asks.
-- Self-check screenshots (windowed, not headless; saves a PNG and quits): `.\make shot <level_id> <png path> [--ticks=N] [--phase=0.5] [--finish] [--wrong] [--empty]`. `<level_id>` can also be `levels`, `book` or `options`. Uses the reference solutions and a throwaway save.
+- Self-check screenshots (windowed, not headless; saves a PNG and quits): `.\make shot <level_id> <png path> [--ticks=N] [--phase=0.5] [--finish] [--wrong] [--empty]`. `<level_id>` can also be `levels`, `book`, `options` or `intro`. Uses the reference solutions and a throwaway save.
 
 ## Layout
 

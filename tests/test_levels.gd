@@ -31,6 +31,7 @@ func _init() -> void:
 	test_wrong_solutions(levels)
 	test_stars(levels)
 	test_progress(levels)
+	test_stale_saves(levels, inventions)
 	if failures == 0:
 		print("test_levels: all %d checks passed" % checks)
 	quit(1 if failures > 0 else 0)
@@ -182,3 +183,71 @@ func test_progress(levels: Array) -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	var fresh = Progress.load_from("user://no_such_save.json")
 	check(fresh.levels.is_empty(), "a missing save starts fresh")
+
+
+## A save that no longer fits the levels is stale; loading keeps only what
+## fits, and the old file moves aside to a .bak instead of being deleted.
+func test_stale_saves(levels: Array, inventions: Dictionary) -> void:
+	var full = Progress.new()
+	full.inventions = inventions.duplicate(true)
+	for level in levels:
+		full.record_solve(level.id, level.best, 50, 3)
+		full.store_machine(level.id, level.reference_machine().to_dict())
+	var good: Dictionary = JSON.parse_string(JSON.stringify(full.to_dict()))
+	var found: Array = Progress.problems(good, levels)
+	check(found.is_empty(), "a save of every reference machine fits: %s" % str(found))
+	check(Progress.from_dict(good, levels).to_dict() == full.to_dict(), "a fitting save loads whole")
+
+	var bad := good.duplicate(true)
+	bad["version"] = Progress.VERSION + 1
+	check(not Progress.problems(bad, levels).is_empty(), "another version is stale")
+	bad = good.duplicate(true)
+	bad.erase("inventions")
+	check(not Progress.problems(bad, levels).is_empty(), "a missing key is stale")
+	check(not Progress.problems("not json", levels).is_empty() and not Progress.problems([], levels).is_empty(), "a file that isn't a save is stale")
+
+	bad = good.duplicate(true)
+	bad["levels"]["no_such_level"] = bad["levels"]["one_pot"].duplicate(true)
+	check(not Progress.problems(bad, levels).is_empty(), "an unknown level id is stale")
+	var kept = Progress.from_dict(bad, levels)
+	check(not kept.levels.has("no_such_level") and kept.levels.has("one_pot"), "loading drops the unknown level and keeps the rest")
+
+	bad = good.duplicate(true)
+	bad["levels"]["one_pot"]["machine"]["nodes"].append({"id": 99, "kind": "filter", "x": 5, "y": 5})
+	check(not Progress.problems(bad, levels).is_empty(), "a machine with a piece the level doesn't offer is stale")
+	check(not Progress.from_dict(bad, levels).levels.has("one_pot"), "loading drops that level's record")
+
+	bad = good.duplicate(true)
+	bad["levels"]["one_pot"].erase("stars")
+	check(not Progress.problems(bad, levels).is_empty(), "a solved level without its stars is stale")
+
+	# An invention on the bench needs the level to offer it and the save to hold it.
+	var host = levels.filter(func(l): return l.id == "third_color")[0]
+	host.inventions.append("contrast")
+	bad = good.duplicate(true)
+	bad["levels"]["third_color"]["machine"]["nodes"].append({"id": 99, "kind": "invention", "invention": "contrast", "x": 9, "y": 6})
+	check(Progress.problems(bad, levels).is_empty(), "an offered, saved invention on the bench fits")
+	bad["inventions"].erase("contrast")
+	check(not Progress.problems(bad, levels).is_empty(), "a machine with an invention the save lacks is stale")
+	host.inventions.erase("contrast")
+
+	bad = good.duplicate(true)
+	bad["inventions"]["made_up"] = bad["inventions"]["contrast"].duplicate(true)
+	check(not Progress.problems(bad, levels).is_empty(), "an unknown invention id is stale")
+	check(not Progress.from_dict(bad, levels).inventions.has("made_up"), "loading drops the unknown invention")
+
+	var path := "user://test_stale_save.json"
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	f.store_string("{\"version\": 0}")
+	f.close()
+	check(not Progress.problems(Progress.read(path), levels).is_empty(), "an old file on disk reads as stale")
+	var bak := Progress.back_up(path)
+	check(bak == path + ".bak" and not FileAccess.file_exists(path) and FileAccess.get_file_as_string(bak) == "{\"version\": 0}", "the old save moves to .bak")
+	f = FileAccess.open(path, FileAccess.WRITE)
+	f.store_string("second")
+	f.close()
+	var bak2 := Progress.back_up(path)
+	check(bak2 == path + ".2.bak" and FileAccess.get_file_as_string(bak) == "{\"version\": 0}", "an older backup is never overwritten")
+	check(Progress.read(path) == null and Progress.load_from(path, levels).levels.is_empty(), "after the backup the game starts fresh")
+	for p in [bak, bak2]:
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(p))

@@ -46,6 +46,8 @@ Each level shows the picture to weave and the paint you start with. Fewer pieces
 
 Your progress is saved in `%APPDATA%\Godot\app_userdata\Chromaton\chromaton_save.json`. Delete that file to start from level one.
 
+An update can change levels so that an old save no longer fits. The game then says so when it starts and lets you start fresh or keep what still fits; the old file is kept beside it as `chromaton_save.json.bak` either way.
+
 ## Reporting
 
 Open an issue on GitHub: https://github.com/ibourlakos/chromaton/issues

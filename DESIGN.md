@@ -376,6 +376,7 @@ Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never 
   - Caveat for memory pieces: under this rule a closed loop with every tube full can't turn.
   - An invention is one node that takes one tick and looks up its answer (§5.1).
   - Machines can never loop in this model (a loop waits on itself), so every working machine is a pure function of the cards. Memory pieces will need their own rule.
+- 🟡 **Saves** (from playtest notes): the save file carries a version and its layout is documented in `core/progress.gd`. A save from another version, or one that no longer fits the levels (unknown level or invention ids, machines with pieces the level doesn't offer, missing keys), is stale: at launch the game says so and offers Start fresh or Keep what fits. Either way the old file moves to a `.bak` beside it (never overwriting an older backup); nothing is deleted. No migration code while the game is in development.
 - **Distribution:** web export on itch.io for friends → Steam later (GodotSteam; Steam Direct fee $100; Steamworks leaderboards) → mobile later.
 - ✅ **Prototype v0.1 is built** (Godot 4.7, GDScript only, Compatibility renderer, no threads or plugins). See CLAUDE.md for layout and commands.
 

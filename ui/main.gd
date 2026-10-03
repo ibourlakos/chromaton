@@ -5,7 +5,8 @@
 ##   --unlock-all                open every level
 ##   --screenshot=<id>:<path>    load a level's reference solution, run it,
 ##                               save a PNG and quit. <id> may also be
-##                               "levels", "book" or "options".
+##                               "levels", "book", "options" or "intro" (the
+##                               stale-save note).
 ##   --ticks=<n>                 ticks to run before the screenshot
 ##                               (default: one per stitch)
 ##   --phase=<0..1>              how far drops are along their tubes
@@ -23,6 +24,7 @@ const Workbench = preload("res://ui/workbench.gd")
 const LevelSelect = preload("res://ui/level_select.gd")
 const PatternBook = preload("res://ui/pattern_book.gd")
 const Options = preload("res://ui/options.gd")
+const Intro = preload("res://ui/intro.gd")
 const Keys = preload("res://ui/keys.gd")
 
 const DESIGN := Vector2(1280, 800)
@@ -32,14 +34,22 @@ var progress
 var stage: Control
 var screen: Control
 var select_page := 0  # the level select's chapter page
+var stale := false  # the save doesn't fit this build and the player hasn't chosen yet
+var unlock_all := false
 
 
 func _ready() -> void:
 	levels = Level.load_all()
-	progress = Progress.load_from()
+	var saved = Progress.read()
+	var problems: Array = [] if saved == null else Progress.problems(saved, levels)
+	if not problems.is_empty():
+		print("The save doesn't fit this build: " + "; ".join(problems))
+	stale = not problems.is_empty()
+	# Only what still fits the levels is loaded (the intro asks about the rest).
+	progress = Progress.from_dict(saved, levels) if saved is Dictionary else Progress.new()
 	var args := _args()
-	if args.has("unlock-all"):
-		progress.unlock_all = true
+	unlock_all = args.has("unlock-all")
+	progress.unlock_all = unlock_all
 	stage = Control.new()
 	stage.size = DESIGN
 	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -50,8 +60,16 @@ func _ready() -> void:
 		_screenshot(args)
 		return
 	Keys.load_settings()  # not for screenshots: they show the default keys
+	if stale:
+		show_intro()
+	else:
+		_start()
+
+
+## The first screen after the intro: the level asked for, or the level select.
+func _start() -> void:
 	select_page = _first_open_chapter()
-	var start := _level_index(str(args.get("level", "")))
+	var start := _level_index(str(_args().get("level", "")))
 	if start >= 0:
 		open_level(start)
 	else:
@@ -102,7 +120,8 @@ func _input(event: InputEvent) -> void:
 
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_CLOSE_REQUEST and progress != null:
+	# A stale save stays as it is until the player chooses.
+	if what == NOTIFICATION_WM_CLOSE_REQUEST and progress != null and not stale:
 		progress.save()
 
 
@@ -111,6 +130,25 @@ func _set_screen(c: Control) -> void:
 		screen.queue_free()
 	screen = c
 	stage.add_child(c)
+
+
+func show_intro() -> void:
+	var s = Intro.new()
+	s.fresh.connect(func(): _settle_save(true))
+	s.keep.connect(func(): _settle_save(false))
+	_set_screen(s)
+
+
+## The player's answer about a stale save: the old file moves to a .bak, then
+## a fresh save, or the parts that still fit, take its place.
+func _settle_save(fresh: bool) -> void:
+	Progress.back_up()
+	if fresh:
+		progress = Progress.new()
+		progress.unlock_all = unlock_all
+	stale = false
+	progress.save()
+	_start()
 
 
 func show_level_select() -> void:
@@ -176,6 +214,8 @@ func _screenshot(args: Dictionary) -> void:
 			if args.has("empty"):
 				progress.inventions = {}
 			show_book()
+		"intro":
+			show_intro()
 		"options":
 			show_options()
 		_:
