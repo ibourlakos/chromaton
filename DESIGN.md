@@ -330,7 +330,7 @@ Chosen after comparing three animated directions in [mockups/style-studies.html]
 - ❓ A workshop cast of small animals with a master who hands out commissions (story voice), on top of the component critters.
 - ⚠️ Known risk: every new component needs a character and animations; faces must stay out of the way on big machines (consider zoomed-out simplification).
 - ✅ **Prototype critters** (`ui/draw_kit.gd`): Mix tub stirs with a spoon; Invert tub flips like a pancake; Filter is a fussy, heavy-lidded tub with a sieve in its rim that shakes when it fires, grains of held-back paint (in neutrals) hopping on the rim; the Red pot is a sleepy clay pot that burps; Shift is a hamster in a wheel that clicks one notch per drop; Split is a small plumbing junction; inventions are stickers with their name.
-- 🟡 The Shift wheel is painted red, yellow and blue: the one place outside paint where signal hues appear, because the wheel *is* the rule it applies. Stars, confetti and UI stay in wood and paper tones.
+- 🟡 The Shift wheel is painted red, yellow and blue: the one place outside paint where signal hues appear, because the wheel *is* the rule it applies. Stars, the success splashes and UI stay in wood and paper tones.
 - ✅ Fredoka and Nunito are bundled in `fonts/` (SIL Open Font License).
 
 ### 7.3 Progressive depth (the Bloons lesson) ✅
