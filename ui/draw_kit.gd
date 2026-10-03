@@ -646,13 +646,21 @@ static func loom(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: Pack
 	for col in cols:
 		var x := cloth.position.x + (col + 0.5) * cs
 		ci.draw_line(Vector2(x, cloth.position.y), Vector2(x, cloth.end.y), P.WARP, 1.5, true)
-	if ghost:
-		for i in target.size():
-			if i < shown:
-				continue
-			var cell := Rect2(cloth.position + Vector2((i % cols) * cs, (i / cols) * cs), Vector2(cs, cs))
-			if target[i] != 0:
-				fill(ci, round_rect(cell.grow(-cs * 0.3), cs * 0.15, 2), Color(P.SIG[target[i]], 0.28))
+	# Unwoven cells are sunken slots, darker than the cloth, so an empty slot
+	# never looks like a woven white stitch (bright, full size). The ghost of
+	# the target shows as a small faint chip inside; white as a pale chip.
+	for i in range(shown, target.size()):
+		var cell := Rect2(cloth.position + Vector2((i % cols) * cs, (i / cols) * cs), Vector2(cs, cs))
+		var slot := round_rect(cell.grow(-cs * 0.1), cs * 0.2, 2)
+		fill(ci, slot, Color(P.WARP, 0.55))
+		ci.draw_line(cell.position + Vector2(cs * 0.22, cs * 0.14), cell.position + Vector2(cs * 0.78, cs * 0.14), Color(P.INK, 0.12), maxf(1, cs * 0.06), true)
+		if ghost:
+			var chip := round_rect(cell.grow(-cs * 0.3), cs * 0.12, 2)
+			if target[i] == 0:
+				fill(ci, chip, Color(P.WHITE_STITCH, 0.85))
+				stroke(ci, chip, Color("#DDD3C1"), 1)
+			else:
+				fill(ci, chip, Color(P.SIG[target[i]], 0.35))
 	for i in mini(shown, woven.size()):
 		var cell := Rect2(cloth.position + Vector2((i % cols) * cs, (i / cols) * cs), Vector2(cs, cs))
 		var c: int = woven[i]

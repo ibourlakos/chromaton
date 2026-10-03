@@ -160,7 +160,7 @@ The central visual and the late-campaign goal. Historical anchor: the **Jacquard
 - Finale: a **programmable loom** (the CPU equivalent) that weaves a tapestry from a pattern card.
 - 🟡 **Serial vs row weaving:** a single output thread weaves one stitch per tick with a shuttle walking the rows (as in the style mockup); a braid of W threads weaves a whole row per tick. Early levels can be serial; braids arrive later and weave faster.
 - ✅ **Prototype: serial weaving.** One output thread; the loom takes one drop per tick and weaves the next stitch, row by row, left to right. The first wrong stitch stops the run and is marked.
-- 🟡 The loom shows a faint ghost of the target in unwoven cells, and the target picture is pinned beside it as a small design card.
+- 🟡 Unwoven cells are sunken slots, darker than the cloth, so an empty slot never looks like a woven white stitch (bright and full size); a small faint chip of the target's paint sits in each (white as a pale chip). The target picture is pinned beside the loom as a small design card.
 - 🟡 Woven stitches carry no glyph dots (as in the mockup); the wrong-stitch bubble compares the two drops with dots.
 
 ---
