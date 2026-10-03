@@ -7,6 +7,8 @@
 ## The caps show by default unless the device has a touch screen; touching the
 ## screen hides them, pressing a key brings them back, and the hints key (H or
 ## ?) or Options turns them on and off for good.
+##
+## The settings file also keeps the run speed, so it carries across levels.
 extends RefCounted
 
 const P = preload("res://ui/palette.gd")
@@ -71,6 +73,7 @@ static var bindings := defaults()  # action -> [key, key] (0: none)
 static var settings_path := PATH  # tests point this elsewhere
 static var shown := not DisplayServer.is_touchscreen_available()
 static var _choice = null  # true/false once chosen for good (hints key, Options)
+static var speed := 1  # the workbench's run speed: 0 slow, 1 normal, 2 fast
 
 
 static func defaults() -> Dictionary:
@@ -167,7 +170,7 @@ static func save_settings(path := "") -> void:
 	var keys := {}
 	for act in bindings:
 		keys[act] = bindings[act]
-	var d := {"keys": keys}
+	var d := {"keys": keys, "speed": speed}
 	if _choice != null:
 		d["hints"] = _choice
 	var f := FileAccess.open(path, FileAccess.WRITE)
@@ -193,6 +196,14 @@ static func load_settings(path := "") -> void:
 	if d.has("hints"):
 		_choice = bool(d["hints"])
 		shown = _choice
+	speed = clampi(int(d.get("speed", 1)), 0, 2)
+
+
+## Keeps a new run speed for every level.
+static func set_speed(i: int) -> void:
+	if i != speed:
+		speed = i
+		save_settings()
 
 
 # ---------------------------------------------------------------------------

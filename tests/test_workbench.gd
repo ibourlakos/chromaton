@@ -13,6 +13,7 @@ const LevelSelect = preload("res://ui/level_select.gd")
 const K = preload("res://ui/draw_kit.gd")
 const Keys = preload("res://ui/keys.gd")
 const Options = preload("res://ui/options.gd")
+const SETTINGS := "user://chromaton_settings_test.json"
 
 var failures := 0
 var checks := 0
@@ -26,6 +27,7 @@ func check(ok: bool, what: String) -> void:
 
 
 func _initialize() -> void:
+	Keys.settings_path = SETTINGS  # the speed and Options save on every change
 	var levels := Level.load_all()
 	var by_id := {}
 	for level in levels:
@@ -42,6 +44,8 @@ func _initialize() -> void:
 	test_not_general(by_id["either_not_both"])
 	test_round_rect()
 	test_level_select(levels)
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(SETTINGS))
+	Keys.settings_path = Keys.PATH
 	if failures == 0:
 		print("test_workbench: all %d checks passed" % checks)
 	quit(1 if failures > 0 else 0)
@@ -400,6 +404,14 @@ func test_keys(level) -> void:
 	check(wb.speed == 0, "Tab after fast goes round to slow")
 	key(wb, KEY_TAB)
 	check(wb.speed == 1, "Tab steps on to normal")
+	key(wb, KEY_EQUAL)
+	var next = open(level, Progress.new())
+	check(next.speed == 2, "the speed carries to the next level")
+	next.queue_free()
+	Keys.speed = 1
+	Keys.load_settings()
+	check(Keys.speed == 2, "the speed is kept in the settings file")
+	key(wb, KEY_MINUS)
 	# A changed key works at once and the old one stops.
 	Keys.bind("run", 0, KEY_G)
 	key(wb, KEY_SPACE)
@@ -426,7 +438,6 @@ func test_keys(level) -> void:
 ## Binding: a key moves off actions it clashes with (same screen, or
 ## Everywhere), not off other screens' actions; settings save and load.
 func test_bindings() -> void:
-	Keys.settings_path = "user://chromaton_settings_test.json"
 	Keys.reset()
 	var moved: Array = Keys.bind("undo", 1, KEY_R)
 	check(moved == ["reset"] and Keys.bindings["reset"][0] == 0, "a key moves off a clashing action on the same screen")
@@ -438,14 +449,13 @@ func test_bindings() -> void:
 	Keys.bind("faster", 0, KEY_KP_ADD)
 	check(Keys.bindings["faster"][0] == KEY_EQUAL, "number pad keys count as their main keys")
 	check(Keys.key_name(KEY_ESCAPE) == "Esc" and Keys.key_name(KEY_LEFT) == "←" and Keys.key_name(KEY_F5) == "F5", "key names")
-	var path := "user://chromaton_settings_test.json"
+	var path := SETTINGS
 	Keys.save_settings(path)
 	var saved: Dictionary = Keys.bindings.duplicate(true)
 	Keys.reset()
 	Keys.load_settings(path)
 	check(Keys.bindings == saved, "keys survive a save and load")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
-	Keys.settings_path = path  # Options saves on every change
 	Keys.reset()
 	var o = Options.new()
 	root.add_child(o)
@@ -462,4 +472,3 @@ func test_bindings() -> void:
 	o.queue_free()
 	Keys.reset()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
-	Keys.settings_path = Keys.PATH

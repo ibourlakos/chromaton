@@ -67,7 +67,7 @@ var sim
 
 var running := false
 var phase := 1.0
-var speed := 1
+var speed := Keys.speed  # kept across levels (keys.gd's settings file)
 var clock := 0.0
 var frozen := false  # screenshot mode: hold the current frame still
 var placed_at := {}  # node id -> clock when it landed on a cell (for the bounce)
@@ -324,6 +324,7 @@ func _undo() -> void:
 
 func _set_speed(i: int) -> void:
 	speed = i
+	Keys.set_speed(i)
 	for k in btn_speed.size():
 		btn_speed[k].toggled_on = k == i
 		btn_speed[k].queue_redraw()
