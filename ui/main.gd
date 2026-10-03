@@ -39,6 +39,7 @@ var screen: Control
 var select_page := 0  # the level select's chapter page
 var stale := false  # the save doesn't fit this build and the player hasn't chosen yet
 var unlock_all := false
+var throwaway := false  # screenshot mode: never write the real save
 
 
 func _ready() -> void:
@@ -127,6 +128,11 @@ func _input(event: InputEvent) -> void:
 func _notification(what: int) -> void:
 	# A stale save stays as it is until the player chooses.
 	if what == NOTIFICATION_WM_CLOSE_REQUEST and progress != null and not stale:
+		_save()
+
+
+func _save() -> void:
+	if not throwaway:
 		progress.save()
 
 
@@ -186,12 +192,12 @@ func open_level(i: int) -> void:
 	var w = Workbench.new()
 	w.setup(levels[i], progress, i + 1 < levels.size())
 	w.exit_requested.connect(func():
-		progress.save()
+		_save()
 		show_level_select())
 	w.next_requested.connect(func():
-		progress.save()
+		_save()
 		open_level(i + 1))
-	w.progress_changed.connect(func(): progress.save())
+	w.progress_changed.connect(func(): _save())
 	_set_screen(w)
 
 
@@ -206,6 +212,7 @@ func _screenshot(args: Dictionary) -> void:
 	var path := spec.substr(colon + 1)
 	get_window().size = Vector2i(DESIGN)
 	# A throwaway progress with the reference inventions; the real save is untouched.
+	throwaway = true
 	progress = Progress.new()
 	progress.unlock_all = args.has("unlock-all")
 	Keys.grid = args.has("grid")
