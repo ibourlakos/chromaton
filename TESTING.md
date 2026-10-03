@@ -30,6 +30,7 @@ Run the commands from PowerShell or Command Prompt inside the `chromaton` folder
 | `.\make level <id>` | Jump straight into one level. The id is the file name in `levels/` without `.json`, e.g. `.\make level wash_out` |
 | `git pull` | Get the latest version (do this before each session) |
 | `.\make godot` | Show which Godot the game found, if it won't start |
+| `.\make export web` | Build the browser version into `build/web` (needs `.\make templates` once, a 1.3 GB download); `.\make serve` then plays it at http://localhost:8060/ |
 
 ## How to play
 

@@ -98,8 +98,8 @@ function Install-Templates([string]$Tpz) {
 	return 0
 }
 
-# Exports the web build to build/web and zips it as build/chromaton-web.zip,
-# ready to upload to itch.io.
+# Exports the web build (.\make export web) to build/web and zips it as
+# build/chromaton-web.zip, ready to upload to itch.io.
 function Export-Web {
 	if (-not (Test-Path (Join-Path (Get-TemplateDir) "web_nothreads_release.zip"))) {
 		throw "Export templates for Godot $(Get-GodotVersion) are missing. Run: .\make templates"
@@ -124,7 +124,7 @@ function Export-Web {
 function Serve-Web([int]$Port) {
 	$web = Join-Path $Root "build\web"
 	if (-not (Test-Path (Join-Path $web "index.html"))) {
-		Write-Host "No web build yet. Run: .\make export"
+		Write-Host "No web build yet. Run: .\make export web"
 		return 1
 	}
 	$types = @{ ".html" = "text/html"; ".js" = "application/javascript"; ".wasm" = "application/wasm";
@@ -177,8 +177,9 @@ Design tools (rewrite files under docs/ or levels/)
   algebra              check the color algebra (docs/algebra-report.md)
 
 Share
-  export               build the web version: build/web and build/chromaton-web.zip (for itch.io)
-  serve [port]         play the web build at http://localhost:8060/ (after export)
+  export <platform>    build the game for a platform; only web for now:
+                       export web writes build/web and build/chromaton-web.zip (for itch.io)
+  serve [port]         play the web build at http://localhost:8060/ (after export web)
   templates [tpz]      install Godot's export templates (downloads about 1.3 GB unless given a .tpz)
 
 Other
@@ -216,7 +217,15 @@ switch ($Task) {
 		$a = @("--path", $Root, "--", "--screenshot=$($Rest[0]):$png") + ($Rest | Select-Object -Skip 2)
 		$code = Invoke-Godot $a
 	}
-	"export" { $code = Export-Web }
+	"export" {
+		switch ($(if ($Rest.Count -gt 0) { $Rest[0] } else { "" })) {
+			"web" { $code = Export-Web }
+			default {
+				Write-Host "usage: .\make export <platform>   (platforms: web)"
+				$code = 1
+			}
+		}
+	}
 	"serve" { $code = Serve-Web ($(if ($Rest.Count -gt 0) { [int]$Rest[0] } else { 8060 })) }
 	"templates" { $code = Install-Templates ($Rest | Select-Object -First 1) }
 	"import" { $code = Invoke-Godot @("--headless", "--path", $Root, "--import") }
