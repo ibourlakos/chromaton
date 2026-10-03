@@ -13,12 +13,6 @@ signal levels
 signal next
 
 const DESIGN := Vector2(1280, 800)
-## Where the splashes land, in order: left and right of the card by turns.
-const SPLASHES := [
-	Vector2(130, 150), Vector2(1150, 140), Vector2(235, 300), Vector2(1045, 290),
-	Vector2(115, 440), Vector2(1165, 430), Vector2(240, 580), Vector2(1040, 570),
-	Vector2(140, 710), Vector2(1150, 705),
-]
 
 var level
 var pieces := 0
@@ -85,7 +79,7 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, DESIGN), P.VEIL)
-	_splashes()
+	_confetti()
 	K.fill(self, K.round_rect(Rect2(card.position + Vector2(5, 8), card.size), 22), P.SHADOW)
 	K.shape(self, K.round_rect(card, 22), P.TAG, P.INK, 3)
 	var cx := card.get_center().x
@@ -149,32 +143,20 @@ func _tapestry(box: Rect2) -> void:
 		K.fill(self, K.round_rect(cell, cs * 0.25, 2), P.WHITE_STITCH if c == 0 else P.SIG[c])
 
 
-## Splashes of wood and paper tones (never paint colors: those are reserved)
-## land one after another on both sides of the card, each with a few
-## flecks, then soak away.
-func _splashes() -> void:
+## Paper and wood confetti (never paint colors: those are reserved).
+func _confetti() -> void:
 	var colors := [P.WOOD, P.WOOD_LT, P.HOOP, P.TAG, P.WOOD_DK]
-	for i in SPLASHES.size():
-		var h1 := float((i * 7919) % 997) / 997.0
-		var h2 := float((i * 104729) % 991) / 991.0
-		var age := t - (0.1 + i * 0.22)
-		if age < 0:
+	for i in 36:
+		var r0 := float((i * 7919) % 997) / 997.0
+		var u := t - r0 * 0.6
+		if u < 0:
 			continue
-		var fade := clampf(1.0 - (age - 2.6) / 1.0, 0, 1)
-		if fade <= 0:
+		var x := DESIGN.x * fmod(r0 * 13.7 + i * 0.137, 1.0)
+		var y := -20 + u * (120 + r0 * 90) + sin(u * 3 + i) * 10
+		if y > DESIGN.y + 20:
 			continue
-		var u := clampf(age / 0.22, 0, 1)
-		var pop := 1.0 + 0.25 * sin(u * PI) if u < 1 else 1.0  # lands, bulges, settles
-		var c: Vector2 = SPLASHES[i] + Vector2(h1 - 0.5, h2 - 0.5) * 40
-		var r := (26.0 + h2 * 16) * u * pop
-		var col: Color = Color(colors[i % colors.size()], fade)
-		var ink := Color(P.INK, fade)
-		var blob := PackedVector2Array()
-		for k in 48:
-			var a := k * TAU / 48
-			blob.append(c + Vector2(cos(a), sin(a)) * r * (1 + 0.09 * sin(6 * a + i) + 0.05 * sin(11 * a + 2 * i)))
-		K.shape(self, blob, col, ink, 2)
-		for k in 5:
-			var a := i * 1.7 + k * TAU / 5 + h1
-			var d := r * (1.45 + 0.3 * sin(k * 2.1 + i))
-			K.shape(self, K.ellipse(c + Vector2(cos(a), sin(a)) * d, r * 0.12 + 1, r * 0.12 + 1, 0, 12), col, ink, 1.5)
+		var rot := u * (2 + r0 * 3) + i
+		draw_set_transform(Vector2(x + sin(u * 2 + i) * 18, y), rot, Vector2(1, 0.4 + 0.6 * absf(sin(u * 4 + i))))
+		var col: Color = colors[i % colors.size()]
+		K.shape(self, K.round_rect(Rect2(-6, -4, 12, 8), 2, 2), col, P.INK, 1.5)
+		draw_set_transform_matrix(Transform2D.IDENTITY)
