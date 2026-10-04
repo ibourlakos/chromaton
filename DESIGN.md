@@ -185,7 +185,7 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 
 **Prototype v0.1 campaign** 🟡 (levels/*.json; cheapest counts proven by `tools/level_solver.gd`, see [docs/level-report.md](docs/level-report.md)):
 
-✅ **Chapter 1, the paint box:** no pattern cards. Each level weaves a plain cloth of one color (4×3) from the red pot, one level per paint. Every level has a cheaper answer to find.
+✅ **Chapter 1, the paint box:** no pattern cards. Each level weaves one row of one color from the red pot, one level per paint. ✅ One row of 8 stitches, the same length as the threads (playtest, 2026-10-04: single colors need no picture; was 4×3), so the eight rows stack into an 8×8 square of the paints. Every level has a cheaper answer to find.
 
 | # | Level | Teaches | Tray | ★★ budget | ★★★ best |
 |---|---|---|---|---|---|

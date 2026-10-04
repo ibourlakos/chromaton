@@ -10,14 +10,14 @@ godot_console --headless --path . --script res://tools/level_solver.gd
 
 | Level | Stitches | Cards | Card combos | Reference | Ticks | Cheapest | Cheapest machine | ★★ budget | ★★★ best |
 |---|---|---|---|---|---|---|---|---|---|
-| One Pot of Red | 12 | 0 | 1 | 1 | 13 | 1 | `Red` | 1 | 1 |
-| Yellow | 12 | 0 | 1 | 2 | 14 | 2 | `Shift(Red)` | 3 | 2 |
-| Blue | 12 | 0 | 1 | 3 | 15 | 3 | `Shift(Shift(Red))` | 4 | 3 |
-| Orange | 12 | 0 | 1 | 4 | 15 | 4 | `Mix(Red, Shift(Red))` | 5 | 4 |
-| Purple | 12 | 0 | 1 | 4 | 39 | 4 | `Mix(Red, Shift(Shift(Red)))` | 5 | 4 |
-| All the Paint | 12 | 0 | 1 | 5 | 40 | 5 | `Mix(Shift(Shift(Red)), Mix(Red, Shift(Red)))` | 6 | 5 |
-| Green | 12 | 0 | 1 | 2 | 14 | 2 | `Invert(Red)` | 4 | 2 |
-| Nothing at All | 12 | 0 | 1 | 4 | 28 | 4 | `Invert(Mix(Red, Invert(Red)))` | 6 | 4 |
+| One Pot of Red | 8 | 0 | 1 | 1 | 9 | 1 | `Red` | 1 | 1 |
+| Yellow | 8 | 0 | 1 | 2 | 10 | 2 | `Shift(Red)` | 3 | 2 |
+| Blue | 8 | 0 | 1 | 3 | 11 | 3 | `Shift(Shift(Red))` | 4 | 3 |
+| Orange | 8 | 0 | 1 | 4 | 11 | 4 | `Mix(Red, Shift(Red))` | 5 | 4 |
+| Purple | 8 | 0 | 1 | 4 | 27 | 4 | `Mix(Red, Shift(Shift(Red)))` | 5 | 4 |
+| All the Paint | 8 | 0 | 1 | 5 | 28 | 5 | `Mix(Shift(Shift(Red)), Mix(Red, Shift(Red)))` | 6 | 5 |
+| Green | 8 | 0 | 1 | 2 | 10 | 2 | `Invert(Red)` | 4 | 2 |
+| Nothing at All | 8 | 0 | 1 | 4 | 20 | 4 | `Invert(Mix(Red, Invert(Red)))` | 6 | 4 |
 | The Pattern Card | 48 | 1 | 6 | 0 | 49 | 0 | `A` | 0 | 0 |
 | Orange Sun | 24 | 1 | 2 | 2 | 26 | 2 | `Mix(A, Red)` | 3 | 2 |
 | Opposites | 8 | 1 | 8 | 1 | 10 | 1 | `Invert(A)` | 2 | 1 |
@@ -35,4 +35,4 @@ godot_console --headless --path . --script res://tools/level_solver.gd
 
 ---
 
-Checks: all passed. Run time 1.1 s.
+Checks: all passed. Run time 1.7 s.
