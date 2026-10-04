@@ -1219,7 +1219,10 @@ func _draw_frame(ci: CanvasItem) -> void:
 	K.shape(ci, K.ellipse(badge, 10, 10, 0, 20), P.TAG, Color(P.INK, 0.6), 1.5)
 	K.text(ci, P.ui(800), badge + Vector2(0, 0.5), "?", 14, P.INK)
 	if note == null:  # while the note is up, its line is on it
-		K.text(ci, P.ui(700), LINE_HOME, LevelNote.line(level), 15, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+		if LevelNote.line_size(level) == 15:
+			K.text(ci, P.ui(700), LINE_HOME, LevelNote.line(level), 15, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+		else:  # two sentences: two smaller lines, clear of the run controls
+			ci.draw_multiline_string(P.ui(700), LINE_HOME + Vector2(0, -1), LevelNote.line(level), HORIZONTAL_ALIGNMENT_LEFT, LevelNote.LINE_WIDTH, 12, 2, P.INK)
 
 
 ## The tray's shelf: its slots (a picked-up piece's slot is lit until it is

@@ -2,7 +2,7 @@
 	"id": "mix_without_mix",
 	"name": "Mix Without Mix",
 	"goal": "Weave the black bishop.",
-	"hint": "Keep What They Share in the looking glass: every Filter becomes a Mix. A paint shows where either card has it. Flip both cards to their opposites, then ask Missing From Either what one or the other lacks.",
+	"hint": "Keep What They Share in the looking glass: build a Mix. Flip both cards, then ask Missing From Either what they lack.",
 	"pieces": [
 		"red_pot",
 		"shift",

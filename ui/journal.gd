@@ -518,8 +518,15 @@ func _draw_inventions() -> void:
 	_draw_shelf(page)
 	var slots := _invention_slots()
 	var origin := page.position + Vector2(64, 236)
-	for k in maxi(slots.size(), 3):
-		var r := Rect2(origin + Vector2(k % 3, k / 3) * (SLOT + Vector2(46, 16)), SLOT)
+	# Three slots to a row, or all in one row of narrower slots when there
+	# are more (one row is all the page has room for).
+	var across := maxi(3, slots.size())
+	var gap := 46.0 if across == 3 else 16.0
+	var span := 3 * SLOT.x + 2 * 46.0
+	var size := Vector2((span - (across - 1) * gap) / across, SLOT.y)
+	var s := size.x / SLOT.x  # how much smaller than a slot of three
+	for k in across:
+		var r := Rect2(origin + Vector2(k * (size.x + gap), 0), size)
 		if k >= slots.size():
 			K.dashed(self, K.closed(K.round_rect(r.grow(-20), 16)), Color(P.INK, 0.18), 2, 8, 6)
 			continue
@@ -530,16 +537,16 @@ func _draw_inventions() -> void:
 			K.text(self, P.display(600), r.get_center() + Vector2(0, -10), "?", 48, Color(P.INK, 0.35))
 			K.text(self, P.ui(700), r.get_center() + Vector2(0, 40), "Level %d" % (slot[0] + 1), 16, Color(P.INK, 0.45))
 			continue
-		K.sticker(self, r.position + Vector2(r.size.x / 2, 66), 1.5, inv["name"], 99, t, k * 0.7)
+		K.sticker(self, r.position + Vector2(r.size.x / 2, 66), 1.5 * s, inv["name"], 99, t, k * 0.7)
 		var y := r.position.y + 142
 		K.icon(self, "pieces", Vector2(r.position.x + 40, y), 1.2, P.INK)
 		K.text(self, P.ui(800), Vector2(r.position.x + 58, y), "%d pieces" % int(inv["cost"]), 20, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 		var x := r.position.x + 40
 		var counts: Dictionary = inv.get("counts", {})
 		for kind in counts:
-			critter(self, kind, Vector2(x + 18, y + 56), 0.6, t)
-			K.text(self, P.ui(800), Vector2(x + 40, y + 60), "× %d" % int(counts[kind]), 17, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-			x += 96
+			critter(self, kind, Vector2(x + 18, y + 56), 0.6 * s, t)
+			K.text(self, P.ui(800), Vector2(x + 40 * s, y + 60), "× %d" % int(counts[kind]), 17, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+			x += 96 * s
 		K.text(self, P.ui(700), Vector2(r.position.x + r.size.x / 2, r.end.y - 6), "%d inputs · from level %d" % [int(inv["inputs"]), _number_of(str(inv.get("from_level", "")), slot[0] + 1)], 14, P.INK_SOFT)
 
 

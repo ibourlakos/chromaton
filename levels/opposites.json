@@ -2,7 +2,7 @@
 	"id": "opposites",
 	"name": "Opposites",
 	"goal": "Weave the swatch.",
-	"hint": "Every paint on the card, flipped to its opposite. Tube the card through Invert: each paint flips to the one across the paint card.",
+	"hint": "Every paint on the card, flipped. Tube the card through Invert: each paint flips to the one across the paint card.",
 	"pieces": [
 		"red_pot",
 		"shift",

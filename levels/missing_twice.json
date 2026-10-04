@@ -2,7 +2,7 @@
 	"id": "missing_twice",
 	"name": "Missing, Twice",
 	"goal": "Weave the black rook.",
-	"hint": "Neither, Twice in the looking glass: Missing From Either takes the Third Paint's place. Every paint flips to its opposite: split the card and give Missing From Either the same paint twice.",
+	"hint": "Neither, Twice in the looking glass. Every paint flips to its opposite: give Missing From Either the same paint twice.",
 	"pieces": [
 		"split"
 	],

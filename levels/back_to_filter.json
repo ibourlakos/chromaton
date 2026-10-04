@@ -2,7 +2,7 @@
 	"id": "back_to_filter",
 	"name": "Back to Filter",
 	"goal": "Weave the black knight.",
-	"hint": "Back to Mix in the looking glass: every Mix becomes a Filter. A paint shows where both cards have it. Ask Missing From Either what one card or the other lacks, then flip its answer with a second one.",
+	"hint": "Back to Mix in the looking glass: build a Filter. Ask Missing From Either what the cards lack, then flip its answer with another.",
 	"pieces": [
 		"split"
 	],

@@ -26,6 +26,7 @@
 ##   --stale                     the intro as it reads for a stale save
 ##   --grid                      the bench grid on (Options)
 ##   --paints                    the paint card up on the workbench
+##   --fan                       the pot slot's pots fanned out (chapter 2 on)
 ##   --touch                     as on a phone build: no keys in Options, no
 ##                               key labels
 extends Control
@@ -237,7 +238,7 @@ func _screenshot(args: Dictionary) -> void:
 		Keys.shown = false
 	for level in levels:
 		if not level.invention.is_empty():
-			progress.inventions[level.invention["id"]] = Invention.package(level, level.reference_machine(), progress.inventions)
+			progress.add_invention(Invention.package(level, level.reference_machine(), progress.inventions))
 	match what:
 		"levels":
 			for k in 6:
@@ -287,6 +288,8 @@ func _screenshot(args: Dictionary) -> void:
 						screen.show_news(func(): pass)
 			else:
 				screen.fast_forward(int(args.get("ticks", levels[i].size())), float(args.get("phase", 0.5)))
+			if args.has("fan"):  # the pot slot's pots fanned out
+				screen._show_fan(true)
 			if args.has("peek"):  # the journal over the bench, at a piece's page
 				screen.open_journal(str(args["peek"]) if str(args["peek"]) != "true" else "")
 	await _snap(path, what)

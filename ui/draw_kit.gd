@@ -650,7 +650,19 @@ static func sticker(ci: CanvasItem, c: Vector2, s: float, name: String, age: flo
 	var k := exp(-age * 5.0)
 	var rot := -0.05 + sin(seed * 7) * 0.02 + sin(t * 22) * 0.05 * k
 	var font := P.display(600)
-	var w := maxf(84.0, font.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, 17).x + 30)
+	# A long name goes on two lines, so the sticker stays about a cell wide.
+	var lines := [name]
+	var size := 17
+	if font.get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, 17).x > 96 and name.contains(" "):
+		var best := name.length()
+		for i in name.length():
+			if name[i] == " " and absi(i * 2 - name.length()) < absi(best * 2 - name.length()):
+				best = i
+		lines = [name.substr(0, best), name.substr(best + 1)]
+		size = 15
+	var w := 84.0
+	for l in lines:
+		w = maxf(w, font.get_string_size(l, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x + 30)
 	fill(ci, round_rect(Rect2(c + Vector2(-w / 2 + 3, -26 + 5) * s, Vector2(w, 52) * s), 12 * s), P.SHADOW)
 	set_xf(ci, c, Vector2(s * (1 + 0.04 * k), s * (1 - 0.04 * k)), rot)
 	var outer := round_rect(Rect2(-w / 2, -26, w, 52), 12)
@@ -665,7 +677,8 @@ static func sticker(ci: CanvasItem, c: Vector2, s: float, name: String, age: flo
 		disc(ci, badge + Vector2(cos(a), sin(a)) * 6, 2.2, P.HOOP)
 	disc(ci, badge, 5, P.HOOP)
 	disc(ci, badge, 2, P.TAG)
-	text(ci, font, Vector2(4, 1), name, 17, P.INK)
+	for i in lines.size():
+		text(ci, font, Vector2(4, 1 + (i - (lines.size() - 1) / 2.0) * 16), lines[i], size, P.INK)
 	reset_xf(ci)
 
 

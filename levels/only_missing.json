@@ -2,7 +2,7 @@
 	"id": "only_missing",
 	"name": "Only Missing From Either",
 	"goal": "Weave the black king.",
-	"hint": "Only the Third Paint in the looking glass. Paint from one card or the other, never both: ask Missing From Either what one card or the other lacks, ask it again of each card with that answer, then once more of those two answers.",
+	"hint": "Only the Third Paint in the looking glass: paint from one card, never both. Ask what the cards lack, ask each card with that, then the two answers.",
 	"pieces": [
 		"split"
 	],

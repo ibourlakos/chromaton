@@ -2,7 +2,7 @@
 	"id": "neither_twice",
 	"name": "Neither, Twice",
 	"goal": "Weave the rook.",
-	"hint": "Every paint flips to its opposite, and the Third Paint knows how. Split the card and give the Third Paint the same paint twice: what neither half has is the opposite.",
+	"hint": "Every paint flips to its opposite. Split the card and give the Third Paint the same paint twice: what neither has is the opposite.",
 	"pieces": [
 		"split"
 	],

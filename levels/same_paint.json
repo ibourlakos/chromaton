@@ -2,7 +2,7 @@
 	"id": "same_paint",
 	"name": "Same Paint",
 	"goal": "Weave the black queen. Your machine becomes a new piece.",
-	"hint": "Either, Not Both in the looking glass: Mix and Filter swap places. A paint shows where both cards have it or both lack it. Mix what the cards share with the opposite of their Mix.",
+	"hint": "Either, Not Both in the looking glass: Mix and Filter swap, black and white swap. Mix what the cards share with the opposite of their Mix.",
 	"pieces": [
 		"red_pot",
 		"shift",
