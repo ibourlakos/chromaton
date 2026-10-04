@@ -1012,22 +1012,35 @@ func _draw_loom_area() -> void:
 	_draw_status()
 
 
+## The pieces bar: one slot per piece placed, so it reads as progress, not a
+## limit. Markers stand after the three-star count (stars to its left) and the
+## two-star count (stars to its right); they light while the bench is within.
+## Room for two pieces past two stars; beyond that the bar stays full.
+func _draw_piece_bar(bar: Rect2, pieces: int) -> void:
+	K.icon(self, "pieces", Vector2(bar.position.x - 20, bar.get_center().y), 1.0, P.INK)
+	var slots: int = level.budget + 2
+	var w := bar.size.x / slots
+	for s in slots:
+		var cell := Rect2(bar.position.x + s * w + 1.5, bar.position.y, w - 3, bar.size.y)
+		K.shape(self, K.round_rect(cell, 5), P.WOOD if s < pieces else P.PAPER_DK, Color(P.INK, 0.6 if s < pieces else 0.3), 1.5)
+	var marks := [[3, level.best]]
+	if level.budget != level.best:
+		marks.append([2, level.budget])
+	for m in marks:
+		var x: float = bar.position.x + m[1] * w
+		K.line(self, Vector2(x, bar.position.y - 28), Vector2(x, bar.end.y + 4), P.INK, 2)
+		var side := -1.0 if m[0] == 3 else 1.0
+		for s in m[0]:
+			K.star(self, Vector2(x + side * (12 + s * 17), bar.position.y - 16), 8, pieces > 0 and pieces <= m[1])
+
+
 func _draw_status() -> void:
 	var box := Rect2(SIDE.position.x, SIDE.position.y + 410, SIDE.size.x, SIDE.end.y - SIDE.position.y - 410)
 	var font := P.ui(700)
-	var pieces: int = machine.cost(inventions)
-	K.icon(self, "pieces", box.position + Vector2(18, 16), 1.0, P.INK)
-	K.text(self, font, box.position + Vector2(36, 16), "Pieces  %d" % pieces, 18, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-	K.icon(self, "ticks", box.position + Vector2(158, 16), 1.0, P.INK)
-	K.text(self, font, box.position + Vector2(176, 16), "Ticks  %d" % sim.tick, 18, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-	# Star targets: two stars within budget, three at the best known
-	# (none on a level with nothing to place).
-	var x := box.position.x + 16
-	for row in ([[2, level.budget], [3, level.best]] if tray.size() > 0 else []):
-		for s in row[0]:
-			K.star(self, Vector2(x + s * 20, box.position.y + 50), 8, pieces <= row[1] and pieces > 0)
-		K.text(self, font, Vector2(x + row[0] * 20 + 4, box.position.y + 50), "≤ %d" % row[1], 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
-		x += 142
+	if tray.size() > 0:  # nothing to place: no bar
+		_draw_piece_bar(Rect2(box.position + Vector2(38, 36), Vector2(166, 20)), machine.cost(inventions))
+	K.icon(self, "ticks", box.position + Vector2(220, 46), 1.0, P.INK)
+	K.text(self, font, box.position + Vector2(236, 46), str(sim.tick), 18, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 	var bubble := Rect2(box.position + Vector2(0, 78), Vector2(box.size.x, 52))
 	match outcome:
 		"wrong":
