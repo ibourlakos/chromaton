@@ -195,6 +195,8 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 | 7 | Green | Invert. Mixing yellow and blue is ★★; Invert(red) is ★★★ | + Invert | 4 | 2 |
 | 8 | Nothing at All | White: make black, then flip it | all | 6 | 4 |
 
+🟡 Goal lines in the paint box name the paint's recipe (playtest): Orange "mix red and yellow", Purple "mix red and blue", Green "yellow and blue, the opposite of red" (pointing at the ★★★ Invert(red) too, not only the ★★ mix).
+
 ✅ **The pattern card gets its own level** (The Pattern Card: tube a card straight to the loom and the first picture appears, a sailboat; no pieces, the hand hint shows the tube). The card levels that follow are the 21-level campaign under "The next campaign" below.
 
 - The v0.1 levels "Yellow from Red" (Shift a card) and "Opposites" (Invert a card) were cut: chapter 1 teaches both. Their files were removed. Opposites came back as a thread level (below).
