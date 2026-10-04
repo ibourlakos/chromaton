@@ -4,3 +4,6 @@
 
 # Exported builds (.\make export)
 build/
+
+# The designer's raw playtest notes stay local, out of git
+PLAYTEST-NOTES.md
