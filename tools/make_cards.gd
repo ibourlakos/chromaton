@@ -13,11 +13,13 @@
 ##
 ## Rules (t = target stitch):
 ##   copy         one card: t itself (the card tubed straight to the loom weaves t)
-##   remove_red  one card: t without its red (a Mix with the red pot weaves t)
+##   remove_yellow one card: t without its yellow (a Mix with the yellow pot weaves t)
+##   fork         one card whose paint mixed with its own Shift is t (red for
+##                orange, yellow for green, blue for purple; black stays black)
 ##   unshift      one card: t turned back one step (a Shift weaves t)
 ##   any_red      one card: Red where t is Black, White elsewhere
 ##   invert       one card: the opposite of t
-##   third_color  two cards: the two primaries t is not, in random order
+##   third_paint  two cards whose mix is the opposite of t (the Third Paint weaves t)
 ##   filter       two cards that share exactly t
 ##   bleach       two cards: the first minus the second's paint is t
 ##   smudges      one card: t with stray yellow on about a third of the stitches
@@ -27,6 +29,8 @@
 ##   mix          two cards whose mix is t
 ##   contrast     two cards: the first random, the second holding the primaries
 ##                in exactly one of t and the first
+##   same         two cards: the first random, the second holding the primaries
+##                where the first and t disagree (Same Paint weaves t)
 ##   two_of_three three cards: a primary is in t exactly when two or more cards have it
 extends SceneTree
 
@@ -35,9 +39,9 @@ const Level = preload("res://core/level.gd")
 const Solver = preload("res://tools/level_solver.gd")
 
 const CARD_COUNT := {
-	"copy": 1, "remove_red": 1, "unshift": 1, "any_red": 1, "invert": 1,
-	"smudges": 1, "third_color": 2, "filter": 2, "bleach": 2, "missing": 2,
-	"mix": 2, "contrast": 2, "two_of_three": 3,
+	"copy": 1, "remove_yellow": 1, "fork": 1, "unshift": 1, "any_red": 1,
+	"invert": 1, "smudges": 1, "third_paint": 2, "filter": 2, "bleach": 2,
+	"missing": 2, "mix": 2, "contrast": 2, "same": 2, "two_of_three": 3,
 }
 const NAMES := ["A", "B", "C"]
 
@@ -347,8 +351,15 @@ static func derive(rule: String, t: int, i: int, salt: int) -> Array:
 	match rule:
 		"copy":
 			return [t]
-		"remove_red":
-			return [t & ~Paint.RED] if t & Paint.RED else []
+		"remove_yellow":
+			return [t & ~Paint.YELLOW] if t & Paint.YELLOW else []
+		"fork":
+			if t == Paint.BLACK:
+				return [Paint.BLACK]
+			for p in Paint.ALL:
+				if Paint.mix(p, Paint.shift(p)) == t:
+					return [p]
+			return []
 		"unshift":
 			return [Paint.shift(Paint.shift(t))]
 		"any_red":
@@ -357,13 +368,8 @@ static func derive(rule: String, t: int, i: int, salt: int) -> Array:
 			return [Paint.WHITE] if t == Paint.WHITE else []
 		"invert":
 			return [Paint.invert(t)]
-		"third_color":
-			if not t in Paint.PRIMARIES:
-				return []
-			var others := Paint.PRIMARIES.filter(func(p): return p != t)
-			if rnd(i, salt, 0) & 1:
-				others.reverse()
-			return others
+		"third_paint":
+			return derive("mix", Paint.invert(t), i, salt)
 		"filter":
 			return share(t, i, salt, 0)
 		"bleach":
@@ -381,6 +387,9 @@ static func derive(rule: String, t: int, i: int, salt: int) -> Array:
 		"contrast":
 			var any := rnd(i, salt, 1) % 8
 			return [any, Paint.contrast(any, t)]
+		"same":
+			var any := rnd(i, salt, 1) % 8
+			return [any, Paint.contrast(any, Paint.invert(t))]
 		"two_of_three":
 			var out := [0, 0, 0]
 			for p in Paint.PRIMARIES:

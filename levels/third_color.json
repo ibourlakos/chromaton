@@ -1,8 +1,8 @@
 {
 	"id": "third_color",
 	"name": "The Third Paint",
-	"goal": "Weave the kite.",
-	"hint": "The paint neither card has.",
+	"goal": "Weave the pawn. Your machine becomes a new piece.",
+	"hint": "A paint shows where neither card has it. Mix the two cards, then Invert the mix.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -17,70 +17,81 @@
 		"best": 2
 	},
 	"target": [
-		"BBBBBBYY",
-		"BBBRBBYY",
-		"BBRRRBBB",
-		"BBBRBBBB",
-		"BBBBYBBB",
-		"BBBBBYBB"
+		"OOBBOOBB",
+		"OOBWWOBB",
+		"BBWRRWOO",
+		"BBOWWBOO",
+		"OOBWWOBB",
+		"OOWWWWBB",
+		"BWWWWWWO",
+		"BBOOBBOO"
 	],
-	"card_rule": "third_color",
+	"card_rule": "third_paint",
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"RYYRRRRR",
-				"RYRBRYBB",
-				"YRYYYYRR",
-				"RYYYYRYR",
-				"YYRRBRRY",
-				"RRRYYBRY"
+				"WBYRBWYY",
+				"WWWGYBYR",
+				"ORYGYBWW",
+				"OWBBRWWW",
+				"BBOPOBOW",
+				"WBKYKOOW",
+				"WGGBWWBW",
+				"WWWWWOBW"
 			]
 		},
 		{
 			"name": "B",
 			"colors": [
-				"YRRYYYBB",
-				"YRYYYRRR",
-				"RYBBBRYY",
-				"YRRBRYRY",
-				"RRYYRYYR",
-				"YYYRRRYR"
+				"BWRYWBOO",
+				"BBOOPBOO",
+				"OYPGBOBB",
+				"ROWOGOBB",
+				"BBOYGWWO",
+				"BWGPRPWO",
+				"OOKOKKOB",
+				"OOBBOWWB"
 			]
 		}
 	],
 	"reference": {
 		"pieces": [
 			{
-				"id": "mix",
+				"id": "m",
 				"kind": "mix",
 				"x": 4,
 				"y": 3
 			},
 			{
-				"id": "inv",
+				"id": "i",
 				"kind": "invert",
-				"x": 8,
+				"x": 7,
 				"y": 3
 			}
 		],
 		"tubes": [
 			[
 				"card0",
-				"mix.0"
+				"m.0"
 			],
 			[
 				"card1",
-				"mix.1"
+				"m.1"
 			],
 			[
-				"mix",
-				"inv"
+				"m",
+				"i"
 			],
 			[
-				"inv",
+				"i",
 				"loom"
 			]
 		]
+	},
+	"invention": {
+		"id": "third_paint",
+		"name": "Third Paint",
+		"check": "third_paint"
 	}
 }

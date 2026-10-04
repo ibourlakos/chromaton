@@ -1,8 +1,8 @@
 {
 	"id": "green",
 	"name": "Green",
-	"goal": "Weave the green cloth.",
-	"hint": "Green is the opposite of red. The Invert flips any paint to its opposite.",
+	"goal": "Weave a green cloth.",
+	"hint": "Green is the opposite of red. Invert flips any paint to its opposite: tube the red pot through it.",
 	"pieces": [
 		"red_pot",
 		"shift",

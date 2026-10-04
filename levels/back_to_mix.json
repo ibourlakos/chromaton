@@ -1,0 +1,105 @@
+{
+	"id": "back_to_mix",
+	"name": "Back to Mix",
+	"goal": "Weave the knight.",
+	"hint": "A paint shows where either card has it. Ask a Third Paint what neither card has, then flip its answer with a second Third Paint.",
+	"pieces": [
+		"split"
+	],
+	"inventions": [
+		"third_paint"
+	],
+	"stars": {
+		"budget": 6,
+		"best": 4
+	},
+	"target": [
+		"OOBBOOBB",
+		"OOBWWOBB",
+		"BBWWWWOO",
+		"BWWPWWWO",
+		"OWBBWWWB",
+		"OOBWWWBB",
+		"BWWWWWWO",
+		"BBOOBBOO"
+	],
+	"card_rule": "mix",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"RRBBROWW",
+				"ROWWWRBW",
+				"WWWWWWOR",
+				"WWWPWWWW",
+				"YWWBWWWW",
+				"RYBWWWBB",
+				"BWWWWWWR",
+				"WBWWWBYY"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"YOBBOOBB",
+				"YWBWWYBB",
+				"BBWWWWOO",
+				"BWWPWWWO",
+				"OWBWWWWB",
+				"OOBWWWBB",
+				"BWWWWWWO",
+				"BWOOBWRO"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "t1",
+				"kind": "invention",
+				"invention": "third_paint",
+				"x": 4,
+				"y": 3
+			},
+			{
+				"id": "s",
+				"kind": "split",
+				"x": 6,
+				"y": 3
+			},
+			{
+				"id": "t2",
+				"kind": "invention",
+				"invention": "third_paint",
+				"x": 8,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"t1.0"
+			],
+			[
+				"card1",
+				"t1.1"
+			],
+			[
+				"t1",
+				"s"
+			],
+			[
+				"s.0",
+				"t2.0"
+			],
+			[
+				"s.1",
+				"t2.1"
+			],
+			[
+				"t2",
+				"loom"
+			]
+		]
+	}
+}

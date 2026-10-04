@@ -1,0 +1,145 @@
+{
+	"id": "same_paint",
+	"name": "Same Paint",
+	"goal": "Weave the black queen. Your machine becomes a new piece.",
+	"hint": "Either, Not Both in the looking glass: Mix and Filter swap places. A paint shows where both cards have it or both lack it. Mix what the cards share with the opposite of their Mix.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"filter",
+		"invert",
+		"split"
+	],
+	"inventions": [],
+	"invention": {
+		"id": "same_paint",
+		"name": "Same Paint",
+		"check": "same_paint"
+	},
+	"stars": {
+		"budget": 6,
+		"best": 4
+	},
+	"target": [
+		"BKOKKBKO",
+		"BKGKKGKO",
+		"OOKKKKBB",
+		"OOBKKOBB",
+		"BBOKKBOO",
+		"BBKKKKOO",
+		"OKKKKKKB",
+		"OOBBOOBB"
+	],
+	"card_rule": "same",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"BBBOPPGG",
+				"WWRKKGBB",
+				"WRKBKPWR",
+				"YWRBKBOY",
+				"OYGBKPPB",
+				"WOWYBRYO",
+				"YGRWWYOK",
+				"RYOPKKPP"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"KBWOPGGY",
+				"OWWKKKBW",
+				"BPKBKPOY",
+				"GBYBKWWR",
+				"WRYBKGRW",
+				"OWWYBRGK",
+				"GGRWWYOB",
+				"PGWGOOGG"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "sa",
+				"kind": "split",
+				"x": 2,
+				"y": 1
+			},
+			{
+				"id": "sb",
+				"kind": "split",
+				"x": 2,
+				"y": 5
+			},
+			{
+				"id": "f",
+				"kind": "filter",
+				"x": 5,
+				"y": 2
+			},
+			{
+				"id": "m",
+				"kind": "mix",
+				"x": 5,
+				"y": 4
+			},
+			{
+				"id": "i",
+				"kind": "invert",
+				"x": 7,
+				"y": 4
+			},
+			{
+				"id": "o",
+				"kind": "mix",
+				"x": 9,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"sa"
+			],
+			[
+				"card1",
+				"sb"
+			],
+			[
+				"sa.0",
+				"f.0"
+			],
+			[
+				"sb.0",
+				"f.1"
+			],
+			[
+				"sa.1",
+				"m.0"
+			],
+			[
+				"sb.1",
+				"m.1"
+			],
+			[
+				"m",
+				"i"
+			],
+			[
+				"f",
+				"o.0"
+			],
+			[
+				"i",
+				"o.1"
+			],
+			[
+				"o",
+				"loom"
+			]
+		]
+	}
+}

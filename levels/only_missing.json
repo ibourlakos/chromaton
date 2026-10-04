@@ -1,0 +1,155 @@
+{
+	"id": "only_missing",
+	"name": "Only Missing From Either",
+	"goal": "Weave the black king.",
+	"hint": "Only the Third Paint in the looking glass. Paint from one card or the other, never both: ask Missing From Either what one card or the other lacks, ask it again of each card with that answer, then once more of those two answers.",
+	"pieces": [
+		"split"
+	],
+	"inventions": [
+		"missing_from_either"
+	],
+	"stars": {
+		"budget": 10,
+		"best": 8
+	},
+	"target": [
+		"BBOKKBOO",
+		"BBKKKKOO",
+		"OOBKKOBB",
+		"OKKKKKKB",
+		"BBKYYKOO",
+		"BBKKKKOO",
+		"OKKKKKKB",
+		"OOBBOOBB"
+	],
+	"card_rule": "contrast",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"RGOPYRPW",
+				"WYRRBOYK",
+				"PWYKKYKO",
+				"OPBPKWOY",
+				"PRPRKBWY",
+				"YOBKWYOY",
+				"WOGROYKG",
+				"BGOOWPPY"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"PYWYPPGO",
+				"BGGGOBRB",
+				"GOGWWROK",
+				"WYOYWKBG",
+				"RPYOPOOR",
+				"GKOWKPWR",
+				"OBRGBPWY",
+				"KPKKOGRG"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "sa",
+				"kind": "split",
+				"x": 2,
+				"y": 1
+			},
+			{
+				"id": "sb",
+				"kind": "split",
+				"x": 2,
+				"y": 5
+			},
+			{
+				"id": "n",
+				"kind": "invention",
+				"invention": "missing_from_either",
+				"x": 4,
+				"y": 3
+			},
+			{
+				"id": "sn",
+				"kind": "split",
+				"x": 5,
+				"y": 3
+			},
+			{
+				"id": "x",
+				"kind": "invention",
+				"invention": "missing_from_either",
+				"x": 7,
+				"y": 1
+			},
+			{
+				"id": "y",
+				"kind": "invention",
+				"invention": "missing_from_either",
+				"x": 7,
+				"y": 5
+			},
+			{
+				"id": "o",
+				"kind": "invention",
+				"invention": "missing_from_either",
+				"x": 9,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"sa"
+			],
+			[
+				"card1",
+				"sb"
+			],
+			[
+				"sa.0",
+				"n.0"
+			],
+			[
+				"sb.0",
+				"n.1"
+			],
+			[
+				"n",
+				"sn"
+			],
+			[
+				"sa.1",
+				"x.0"
+			],
+			[
+				"sn.0",
+				"x.1"
+			],
+			[
+				"sb.1",
+				"y.0"
+			],
+			[
+				"sn.1",
+				"y.1"
+			],
+			[
+				"x",
+				"o.0"
+			],
+			[
+				"y",
+				"o.1"
+			],
+			[
+				"o",
+				"loom"
+			]
+		]
+	}
+}

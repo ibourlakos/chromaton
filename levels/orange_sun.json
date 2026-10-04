@@ -2,40 +2,46 @@
 	"id": "orange_sun",
 	"name": "Orange Sun",
 	"goal": "Weave the orange sun.",
-	"hint": "Mix red into the card's paint.",
+	"hint": "The card holds the sun's red. Mix in yellow from your yellow pot.",
 	"pieces": [
 		"red_pot",
+		"shift",
 		"mix"
 	],
 	"inventions": [],
 	"stars": {
-		"budget": 3,
-		"best": 2
+		"budget": 4,
+		"best": 3
 	},
 	"target": [
-		"RROORR",
-		"ROOOOR",
-		"ROOOOR",
-		"RROORR"
+		"YKYKYOOY",
+		"YYKYOOOO",
+		"YYYYOOOO",
+		"YYYYYOOY",
+		"GGGGGGGG",
+		"GGGGGOOG"
 	],
-	"card_rule": "remove_red",
+	"card_rule": "remove_yellow",
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"WWYYWW",
-				"WYYYYW",
-				"WYYYYW",
-				"WWYYWW"
+				"WPWPWRRW",
+				"WWPWRRRR",
+				"WWWWRRRR",
+				"WWWWWRRW",
+				"BBBBBBBB",
+				"BBBBBRRB"
 			]
 		}
 	],
 	"reference": {
 		"pieces": [
 			{
-				"id": "pot",
-				"kind": "red_pot",
-				"x": 2,
+				"id": "y",
+				"kind": "invention",
+				"invention": "pot_yellow",
+				"x": 3,
 				"y": 5
 			},
 			{
@@ -51,7 +57,7 @@
 				"mix.0"
 			],
 			[
-				"pot",
+				"y",
 				"mix.1"
 			],
 			[

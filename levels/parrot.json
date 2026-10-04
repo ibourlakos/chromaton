@@ -1,0 +1,84 @@
+{
+	"id": "parrot",
+	"name": "Parrot",
+	"goal": "Weave the parrot.",
+	"hint": "Fork the card's paint. Turn one half on the wheel, then mix the halves back: red meets yellow and makes orange.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"split",
+		"invert"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 3,
+		"best": 2
+	},
+	"target": [
+		"WWOOOWWW",
+		"KOKOOOWW",
+		"WWOOGGWW",
+		"WWWGGGGW",
+		"WWWWGGGG",
+		"WWWWWGGW"
+	],
+	"card_rule": "fork",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"WWRRRWWW",
+				"KRKRRRWW",
+				"WWRRYYWW",
+				"WWWYYYYW",
+				"WWWWYYYY",
+				"WWWWWYYW"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "s",
+				"kind": "split",
+				"x": 3,
+				"y": 3
+			},
+			{
+				"id": "h",
+				"kind": "shift",
+				"x": 5,
+				"y": 4
+			},
+			{
+				"id": "m",
+				"kind": "mix",
+				"x": 7,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"s"
+			],
+			[
+				"s.0",
+				"m.0"
+			],
+			[
+				"s.1",
+				"h"
+			],
+			[
+				"h",
+				"m.1"
+			],
+			[
+				"m",
+				"loom"
+			]
+		]
+	}
+}

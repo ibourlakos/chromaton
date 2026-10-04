@@ -1,0 +1,105 @@
+{
+	"id": "back_to_filter",
+	"name": "Back to Filter",
+	"goal": "Weave the black knight.",
+	"hint": "Back to Mix in the looking glass: every Mix becomes a Filter. A paint shows where both cards have it. Ask Missing From Either what one card or the other lacks, then flip its answer with a second one.",
+	"pieces": [
+		"split"
+	],
+	"inventions": [
+		"missing_from_either"
+	],
+	"stars": {
+		"budget": 6,
+		"best": 4
+	},
+	"target": [
+		"BBOOBBOO",
+		"BBOKKBOO",
+		"OOKKKKBB",
+		"OKKYKKKB",
+		"BKOOKKKO",
+		"BBOKKKOO",
+		"OKKKKKKB",
+		"OOBBOOBB"
+	],
+	"card_rule": "filter",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"PPOOBPOO",
+				"BKKKKPOO",
+				"KOKKKKKK",
+				"KKKYKKKG",
+				"BKKOKKKK",
+				"BBKKKKKO",
+				"KKKKKKKB",
+				"OOBBKOBP"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"GGKKPBKK",
+				"GBOKKGKK",
+				"OKKKKKBB",
+				"OKKKKKKP",
+				"KKOKKKKO",
+				"PKOKKKOK",
+				"OKKKKKKK",
+				"KKKKOKPG"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "t1",
+				"kind": "invention",
+				"invention": "missing_from_either",
+				"x": 4,
+				"y": 3
+			},
+			{
+				"id": "s",
+				"kind": "split",
+				"x": 6,
+				"y": 3
+			},
+			{
+				"id": "t2",
+				"kind": "invention",
+				"invention": "missing_from_either",
+				"x": 8,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"t1.0"
+			],
+			[
+				"card1",
+				"t1.1"
+			],
+			[
+				"t1",
+				"s"
+			],
+			[
+				"s.0",
+				"t2.0"
+			],
+			[
+				"s.1",
+				"t2.1"
+			],
+			[
+				"t2",
+				"loom"
+			]
+		]
+	}
+}
