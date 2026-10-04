@@ -390,6 +390,14 @@ func test_keys(level) -> void:
 	key(wb, KEY_KP_2)
 	key(wb, KEY_ESCAPE)
 	check(wb.carrying == -1 and left.is_empty(), "Esc drops a carried piece and stays")
+	key(wb, KEY_2)
+	var nodes: int = wb.machine.nodes.size()
+	var rc := InputEventMouseButton.new()
+	rc.button_index = MOUSE_BUTTON_RIGHT
+	rc.pressed = true
+	rc.position = wb.cell_center(11, 3)
+	wb._gui_input(rc)
+	check(wb.carrying == -1 and wb.machine.nodes.size() == nodes, "a right-click drops a carried piece without placing it")
 	tap(wb, tray_point(wb, wb.tray[1]["kind"]))
 	check(wb.carrying == 1, "tapping a tray piece picks it up")
 	tap(wb, wb.cell_center(7, 3))

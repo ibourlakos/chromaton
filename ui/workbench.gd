@@ -2,7 +2,7 @@
 ## the run controls.
 ##
 ## Everything on the bench is drawn in _draw(). Every gesture is a
-## press-drag-release (no hover, no right-click), so mouse and touch work the
+## press-drag-release (no hover, no right-click-only), so mouse and touch work the
 ## same way:
 ## - drag a piece from the tray onto a free cell to place it, or tap it to
 ##   pick it up and tap a free cell to put it down;
@@ -16,7 +16,8 @@
 ## do what a tap already does: run controls and speed, a tray piece's key
 ## picks it up (it follows the pointer until a click puts it down), Delete
 ## removes only what is selected, Back drops a carried piece, then clears the
-## selection, then leaves the level.
+## selection, then leaves the level. A right-click likewise only speeds up a
+## tap: it drops a carried piece.
 extends Control
 
 const P = preload("res://ui/palette.gd")
@@ -458,6 +459,12 @@ func _gui_input(event: InputEvent) -> void:
 			_press(event.position)
 		else:
 			_release(event.position)
+		accept_event()
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
+		# A right-click puts a carried piece back, like Back does (a tap
+		# anywhere but a free cell does the same on touch).
+		if event.pressed and carrying >= 0:
+			carrying = -1
 		accept_event()
 	elif event is InputEventMouseMotion:
 		hover_pos = event.position
