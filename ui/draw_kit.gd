@@ -478,9 +478,9 @@ static func pot(ci: CanvasItem, c: Vector2, s: float, age: float, t: float, seed
 	shape(ci, rim, P.CLAY_DK, P.INK, 3)
 	fill(ci, ellipse(Vector2(0, -61.5), 23, 4.5, 0, 24), P.WHITE_STITCH if paint == 0 else P.SIG[paint])
 	fill(ci, ellipse(Vector2(-9, -63), 7, 1.5, 0, 12), Color(1, 1, 1, 0.35))
-	if paint != 1:
-		line(ci, Vector2(-27, -52), Vector2(-37, -44), P.INK, 2)
-		swatch(ci, Vector2(-40, -38), 9, paint)
+	# Every pot wears a swatch tag with its paint's glyph dots, the red pot too.
+	line(ci, Vector2(-27, -52), Vector2(-37, -44), P.INK, 2)
+	swatch(ci, Vector2(-40, -38), 9, paint)
 	# Sleepy face: closed eyes, open mouth when it burps.
 	for ex in [-13, 13]:
 		stroke(ci, arc(Vector2(ex, -34), 6, 0.15 * PI, 0.85 * PI, 8), P.INK, 2.5, false)

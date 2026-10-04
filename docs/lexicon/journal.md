@@ -22,6 +22,7 @@ Your journal keeps everything you've learned and made: the paints, how the loom 
   - Rewards and achievements: later, a vibe for now.
 - **Words unlock when their level is solved** (designer, 2026-10-04); each term's "Journal:" line names the level. Every entry exists from the start; ones not found yet stay visibly locked, an empty frame naming the level, so the player sees there's more to find.
 - **New in your journal:** after the success panel, a card shows what the solve brought (its words, and the frames the runs filled): a stepping stone into the rest of the campaign.
+- A piece's page is a level reward: its text unlocks when the level that brings the piece in is solved (designer, 2026-10-04).
 - Each piece's page has a frame per paint, filled the first time the player's own machine does that, in any run; a thread level fills a whole page at once. Mix and Filter's table fills both ways at once. Rebuilding a critter earns a page on what it's made of (not built yet).
 - **Peek** (designer, 2026-10-04: select, then tap): the journal sits by the trash on the [tray](tray.md). Select a piece (or pick one up), tap the journal, and it opens at that piece's page, showing only what the player knows so far. It replaces the long-press idea.
 - **Tool introductions** (the cutscene-like beats the playtest asked for) are kept in the journal; the level list links to them (to try; not built).
@@ -42,4 +43,3 @@ Your journal keeps everything you've learned and made: the paints, how the loom 
 ## Open questions
 
 - Tool introductions: their words, and where the level list's links sit.
-- A piece's text unlocks with its word (when its level is solved); until then its page shows only the critter and the frames found. Keep that, or show the text from the first time the piece is met?
