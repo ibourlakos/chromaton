@@ -36,7 +36,7 @@ static func line(p_level) -> String:
 func _ready() -> void:
 	size = DESIGN
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var h := 272.0 if level.hint != "" else 196.0
+	var h := 272.0 if level.hint != "" else 168.0
 	card = Rect2(DESIGN.x / 2 - 310, DESIGN.y / 2 - h / 2 - 20, 620, h)
 
 
