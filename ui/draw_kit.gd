@@ -647,6 +647,10 @@ static func loom(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: Pack
 	for col in cols:
 		var x := cloth.position.x + (col + 0.5) * cs
 		ci.draw_line(Vector2(x, cloth.position.y), Vector2(x, cloth.end.y), P.WARP, 1.5, true)
+	# weft threads, one per row, crossing the warp
+	for row in ceili(float(target.size()) / cols):
+		var y := cloth.position.y + (row + 0.5) * cs
+		ci.draw_line(Vector2(cloth.position.x, y), Vector2(cloth.end.x, y), P.WARP, 1.5, true)
 	# Unwoven cells are sunken slots, darker than the cloth, so an empty slot
 	# never looks like a woven white stitch (bright, full size). The ghost of
 	# the target shows as a small faint chip inside; white as a pale chip.
@@ -662,6 +666,19 @@ static func loom(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: Pack
 				stroke(ci, chip, Color("#DDD3C1"), 1)
 			else:
 				fill(ci, chip, Color(P.SIG[target[i]], 0.35))
+	# The shuttle threads along the row it weaves, right across the slots, and
+	# slides on to the next one after a stitch lands (glide 0 → 1), coming in
+	# from the left edge for a new row. Its weft trails back to the cloth's
+	# edge, under the stitches it has laid.
+	var threading := not (wrong >= 0 and wrong < woven.size()) and shown < target.size()
+	var at := Vector2.ZERO
+	if threading:
+		var to := cloth.position + Vector2((shown % cols + 0.5) * cs, (shown / cols + 0.5) * cs)
+		var from := to
+		if glide < 1.0 and shown > 0:
+			from = to - Vector2(cs, 0) if shown % cols != 0 else Vector2(cloth.position.x - cs * 0.6, to.y)
+		at = from.lerp(to, 1.0 - pow(1.0 - clampf(glide, 0, 1), 3))
+		ci.draw_line(Vector2(cloth.position.x, at.y), at, Color(P.HOOP, 0.8), maxf(1.5, cs * 0.08), true)
 	for i in mini(shown, woven.size()):
 		var cell := Rect2(cloth.position + Vector2((i % cols) * cs, (i / cols) * cs), Vector2(cs, cs))
 		var c: int = woven[i]
@@ -681,16 +698,7 @@ static func loom(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: Pack
 		var d := cs * 0.32
 		line(ci, wc + Vector2(-d, -d), wc + Vector2(d, d), P.INK, 3)
 		line(ci, wc + Vector2(-d, d), wc + Vector2(d, -d), P.INK, 3)
-	elif shown < target.size():
-		# The shuttle rides under the row it weaves and slides on to the next
-		# slot (glide 0 → 1 after a stitch lands), back to the left for a new row.
-		var to := cloth.position + Vector2((shown % cols + 0.5) * cs, (shown / cols + 0.92) * cs)
-		var from := to
-		if glide < 1.0 and shown > 0:
-			from = to - Vector2(cs, 0) if shown % cols != 0 else Vector2(cloth.position.x - cs * 0.6, to.y)
-		var at := from.lerp(to, 1.0 - pow(1.0 - clampf(glide, 0, 1), 3))
-		# the weft it lays, trailing back to the cloth's edge
-		ci.draw_line(Vector2(cloth.position.x, at.y), at, Color(P.HOOP, 0.6), maxf(1, cs * 0.06), true)
+	elif threading:
 		shuttle(ci, at, cs)
 
 
@@ -723,12 +731,6 @@ static func design(ci: CanvasItem, r: Rect2, cols: int, target: PackedByteArray)
 	for i in target.size():
 		var cell := Rect2(origin + Vector2((i % cols) * cs, (i / cols) * cs), Vector2(cs, cs))
 		ci.draw_rect(cell, P.WHITE_STITCH if target[i] == 0 else P.SIG[target[i]])
-	# Faint weft threads, one per row, as the loom will weave it.
-	for row in rows:
-		var y := origin.y + (row + 0.5) * cs
-		ci.draw_line(Vector2(origin.x, y), Vector2(origin.x + size.x, y), Color(1, 1, 1, 0.15), maxf(1, cs * 0.12), true)
-		if row > 0:
-			ci.draw_line(Vector2(origin.x, origin.y + row * cs), Vector2(origin.x + size.x, origin.y + row * cs), Color(P.INK, 0.1), 1, true)
 	ci.draw_rect(Rect2(origin, size), Color(P.INK, 0.25), false, 1)
 	# pin
 	var pin := Vector2(box.get_center().x, box.position.y + 2)
