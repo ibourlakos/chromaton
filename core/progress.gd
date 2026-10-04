@@ -2,7 +2,7 @@
 ## their inventions. Stored as JSON in user://chromaton_save.json:
 ##
 ##   {
-##     "version": 2,
+##     "version": 3,
 ##     "levels": {                        level id (levels/<id>.json) -> record
 ##       "<level id>": {
 ##         "solved": true,                these four only once solved
@@ -33,7 +33,7 @@
 extends RefCounted
 
 const PATH := "user://chromaton_save.json"
-const VERSION := 2
+const VERSION := 3
 const Machine = preload("res://core/machine.gd")
 const Pieces = preload("res://core/pieces.gd")
 const RECORD_KEYS := ["stars", "best_pieces", "best_ticks"]
@@ -89,13 +89,13 @@ func record_solve(level_id: String, pieces: int, ticks: int, star_count: int) ->
 	return better
 
 
-## Stores a newly packaged invention and returns the one kept. A pot keeps
-## the cheapest price the player has made it for; other inventions take the
-## newest machine.
+## Stores a newly packaged invention and returns the one kept: the cheaper
+## machine wins, so going back for a cheaper solve lowers the price, and a
+## second level that earns the same invention (the Black pot, Same Paint)
+## replaces it only if its machine is cheaper. A tie takes the newest.
 func add_invention(inv: Dictionary) -> Dictionary:
 	var old: Dictionary = inventions.get(inv["id"], {})
-	var is_pot := str(inv.get("check", "")).begins_with("paint:")
-	if is_pot and not old.is_empty() and int(old["cost"]) <= int(inv["cost"]):
+	if not old.is_empty() and int(old["cost"]) < int(inv["cost"]):
 		return old
 	inventions[inv["id"]] = inv
 	return inv
@@ -287,7 +287,7 @@ static func _invention_problems(id, inv, by_id: Dictionary, inventions: Dictiona
 	for k in INVENTION_KEYS:
 		if not inv.has(k):
 			return ["invention %s: missing \"%s\"" % [id, k]]
-	var level = by_id.get(str(inv["from_level"]))
+	var level = by_id.get(str(inv["from_level"]))  # one of the levels that earn it
 	if level == null or level.invention.get("id", "") != id or inv["id"] != id:
 		return ["unknown invention \"%s\"" % id]
 	if not (_is_number(inv["inputs"]) and _is_number(inv["cost"]) and inv["counts"] is Dictionary):
@@ -319,7 +319,7 @@ static func _machine_problems(m, level, inventions: Dictionary) -> Array:
 					out.append("a card the level doesn't have")
 			Pieces.INVENTION:
 				var inv_id := str(n.get("invention", ""))
-				if not inv_id in level.inventions:
+				if not level.offers_invention(inv_id):
 					out.append("invention %s isn't offered" % inv_id)
 				elif not inventions.has(inv_id):
 					out.append("invention %s isn't saved" % inv_id)

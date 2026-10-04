@@ -6,7 +6,9 @@
 ##
 ## JSON fields: id, name, goal, optional hint (guidance shown with the goal
 ## as the level opens and under the title after), pieces (the kinds it
-## offers; the tray also shows earlier levels' pieces, locked), inventions (invention ids allowed in the tray), target (rows), cards
+## offers; the tray also shows earlier levels' pieces, locked), inventions
+## (invention ids allowed in the tray), optional hold_pots (earned pots this
+## level holds back; see _lay_trays), target (rows), cards
 ## ([{name, colors: rows, optional smudges: [stitch indices that carry stray
 ## paint]}]),
 ## stars {budget, best}, optional invention {id, name, check} on invention
@@ -18,6 +20,8 @@ extends RefCounted
 
 const Machine = preload("res://core/machine.gd")
 const Pieces = preload("res://core/pieces.gd")
+const Paint = preload("res://core/paint.gd")
+const Invention = preload("res://core/invention.gd")
 
 const LETTERS := "WRYOBPGK"
 const INDEX_PATH := "res://levels/index.json"
@@ -39,6 +43,9 @@ var smudges: Array = []  # per card, the stitch indices marked as stray paint
 var pieces: Array = []  # the kinds this level offers
 var tray: Array = []  # the tray's piece kinds in order, offered or locked (see _lay_trays)
 var inventions: Array = []
+var pots: Array = []  # the earned pots open in the pot slot's fan (see _lay_trays)
+var held_pots: Array = []  # earned pots this level holds back: in the fan, locked
+var hold_pots: Array = []  # the level file's hold_pots
 var invention := {}
 var budget := 0
 var best := 0
@@ -86,6 +93,14 @@ static func load_all() -> Array:
 ## however far the player has gone since. Pieces sit in the order the
 ## campaign first offers them, so a new piece joins at the right end and no
 ## piece's slot (or number key) ever moves.
+##
+## Pots are pieces too: from chapter 2 on, a level that offers the red pot
+## also offers every pot an earlier level earns (in the pot slot's fan, in
+## paint order), except the ones its hold_pots holds back, which show
+## locked. A level that offers only named pieces (no red pot) offers no pots.
+## Worked out from the campaign, like the tray, so the solver and tests see
+## what a player who got here has; the workbench shows only the pots the
+## player owns.
 static func _lay_trays(levels: Array) -> void:
 	var order := []
 	for level in levels:
@@ -93,10 +108,31 @@ static func _lay_trays(levels: Array) -> void:
 			if not kind in order:
 				order.append(kind)
 	var seen := {}
+	var earned := []  # pot ids, in paint order
 	for level in levels:
 		for kind in level.pieces:
 			seen[kind] = true
 		level.tray = order.filter(func(kind): return seen.has(kind))
+		level.pots = []
+		level.held_pots = []
+		if level.chapter > 0 and "red_pot" in level.pieces:
+			for pot in earned:
+				(level.held_pots if pot in level.hold_pots else level.pots).append(pot)
+		var paint := Invention.paint_of(level.invention)
+		if paint >= 0 and not level.invention["id"] in earned:
+			earned.append(level.invention["id"])
+			earned.sort_custom(func(a, b): return _pot_paint(a) < _pot_paint(b))
+
+
+## The paint of a pot invention id (pot_yellow -> Yellow), from its name.
+static func _pot_paint(pot_id: String) -> int:
+	return Paint.NAMES.map(func(n): return "pot_" + n.to_lower()).find(pot_id)
+
+
+## Whether this level lets the player place this invention: one it lists, or
+## an earned pot (_lay_trays).
+func offers_invention(inv_id: String) -> bool:
+	return inv_id in inventions or inv_id in pots
 
 
 ## A piece the tray shows that this level doesn't offer.
@@ -137,6 +173,7 @@ static func from_dict(d: Dictionary):
 	level.pieces = d.get("pieces", []).duplicate()
 	level.tray = level.pieces.duplicate()  # on its own; load_all adds the locked ones
 	level.inventions = d.get("inventions", []).duplicate()
+	level.hold_pots = d.get("hold_pots", []).duplicate()
 	level.invention = d.get("invention", {}).duplicate()
 	var stars: Dictionary = d.get("stars", {})
 	level.budget = int(stars.get("budget", 0))
