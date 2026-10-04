@@ -47,7 +47,7 @@ func reference_inventions(levels: Array) -> Dictionary:
 
 
 func test_loading(levels: Array) -> void:
-	check(levels.size() == 21, "twenty-one campaign levels (got %d)" % levels.size())
+	check(levels.size() == 22, "twenty-two campaign levels (got %d)" % levels.size())
 	var ids := {}
 	for level in levels:
 		check(level.error == "", "level loads cleanly: %s %s" % [level.id, level.error])

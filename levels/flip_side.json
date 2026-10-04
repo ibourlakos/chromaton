@@ -1,0 +1,56 @@
+{
+	"id": "flip_side",
+	"name": "Flip Side",
+	"goal": "Weave the beach flags.",
+	"hint": "Every mix flips to the one paint it lacks: orange to blue.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"invert",
+		"split"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 2,
+		"best": 1
+	},
+	"target": [
+		"BBBRRRYYY",
+		"WBWWRWWYW",
+		"BBBBBBBBB",
+		"YYYYYYYYY"
+	],
+	"card_rule": "invert",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"OOOGGGPPP",
+				"KOKKGKKPK",
+				"OOOOOOOOO",
+				"PPPPPPPPP"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "inv",
+				"kind": "invert",
+				"x": 5,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"inv"
+			],
+			[
+				"inv",
+				"loom"
+			]
+		]
+	}
+}

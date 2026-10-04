@@ -21,6 +21,7 @@ godot_console --headless --path . --script res://tools/level_solver.gd
 | The Pattern Card | 48 | 1 | 6 | 0 | 49 | 0 | `A` | 0 | 0 |
 | Orange Sun | 24 | 1 | 2 | 2 | 26 | 2 | `Mix(A, Red)` | 3 | 2 |
 | Opposites | 8 | 1 | 8 | 1 | 10 | 1 | `Invert(A)` | 2 | 1 |
+| Flip Side | 36 | 1 | 4 | 1 | 38 | 1 | `Invert(A)` | 2 | 1 |
 | Turn the Wheel | 8 | 1 | 8 | 1 | 10 | 1 | `Shift(A)` | 2 | 1 |
 | Smudges | 48 | 1 | 4 | 2 | 50 | 2 | `Filter(A, Red)` | 3 | 2 |
 | Black Cat | 24 | 1 | 2 | 4 | 76 | 4 | `Mix(Shift(Shift(A)), Mix(A, Shift(A)))` | 6 | 4 |
@@ -34,4 +35,4 @@ godot_console --headless --path . --script res://tools/level_solver.gd
 
 ---
 
-Checks: all passed. Run time 1.3 s.
+Checks: all passed. Run time 1.1 s.

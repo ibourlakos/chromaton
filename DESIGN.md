@@ -241,21 +241,24 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 | 9 | The Pattern Card | A card is paint over time | 8×6 | – | 0 |
 | 10 | Orange Sun | Mix a card with the pot | 6×4 | 3 | 2 `Mix(A, Red)` |
 | 11 | **Opposites** (thread) | Invert on every paint | 8×1 | 2 | 1 `Invert(A)` |
-| 12 | **Turn the Wheel** (thread) | Shift on every paint | 8×1 | 2 | 1 `Shift(A)` |
-| 13 | **Smudges** (a heart) | **Filter arrives**; noisy cards | 8×6 | 3 | 2 `Filter(A, Red)` |
-| 14 | Black Cat | Split and Shift a card | 6×4 | 6 | 4 |
-| 15 | The Third Color (a kite) | Invert(Mix) | 8×6 | 3 | 2 `Invert(Mix(A, B))` |
-| 16 | Wash Out (a fish) | Filter with a card as the mask | 8×6 | 3 | 2 `Filter(A, Invert B)` |
-| 17 | **The Flower**, rule: **two of three** | A primary shows if at least two cards have it | 16×12 | 6 | 4 `Filter(Mix(C, B), Mix(A, Filter(C, B)))` |
+| 12 | **Flip Side** (beach flags) | Invert on a picture: a mix flips to a primary | 9×4 | 2 | 1 `Invert(A)` |
+| 13 | **Turn the Wheel** (thread) | Shift on every paint | 8×1 | 2 | 1 `Shift(A)` |
+| 14 | **Smudges** (a heart) | **Filter arrives**; noisy cards | 8×6 | 3 | 2 `Filter(A, Red)` |
+| 15 | Black Cat | Split and Shift a card | 6×4 | 6 | 4 |
+| 16 | The Third Color (a kite) | Invert(Mix) | 8×6 | 3 | 2 `Invert(Mix(A, B))` |
+| 17 | Wash Out (a fish) | Filter with a card as the mask | 8×6 | 3 | 2 `Filter(A, Invert B)` |
+| 18 | **The Flower**, rule: **two of three** | A primary shows if at least two cards have it | 16×12 | 6 | 4 `Filter(Mix(C, B), Mix(A, Filter(C, B)))` |
+
+🟡 **Flip Side** (playtest, 2026-10-04: Invert needed one more entry level, where a mixed paint flips to a primary). Three flags (blue, red, yellow) over a blue sea and yellow sand; the card (rule `invert`) holds their opposites, so orange turns blue and green turns red within the 6 drops a card shows, purple turns yellow right after, and black turns white in the second row. The cheap wrong machine `Invert(Mix(A, Red))` fails at stitch 4. Hint: "Every mix flips to the one paint it lacks: orange to blue."
 
 *Chapter 3, Invent What You Know* (each tray leaves out one critter):
 
 | # | Level | Rebuild | Tray leaves out | Loom | ★★ budget | ★★★ best |
 |---|---|---|---|---|---|---|
-| 18 | **Missing From Either** (a mushroom) | Stepping stone | Filter | 8×6 | 5 | 3 `Mix(Invert A, Invert B)` |
-| 19 | Keep What They Share (a house) | Filter from Mix and Invert | Filter | 8×6 | 6 | 4 |
-| 20 | **Mix Without Mix** (a tree) | The mirror image | Mix | 8×6 | 6 | 4 `Invert(Filter(Invert A, Invert B))` |
-| 21 | **Either, Not Both** (a butterfly) | A new invention: **Contrast** | – | 8×6 | 6 | 4 `Filter(Mix(A, B), Invert(Filter(A, B)))` |
+| 19 | **Missing From Either** (a mushroom) | Stepping stone | Filter | 8×6 | 5 | 3 `Mix(Invert A, Invert B)` |
+| 20 | Keep What They Share (a house) | Filter from Mix and Invert | Filter | 8×6 | 6 | 4 |
+| 21 | **Mix Without Mix** (a tree) | The mirror image | Mix | 8×6 | 6 | 4 `Invert(Filter(Invert A, Invert B))` |
+| 22 | **Either, Not Both** (a butterfly) | A new invention: **Contrast** | – | 8×6 | 6 | 4 `Filter(Mix(A, B), Invert(Filter(A, B)))` |
 
 - Card rules added to `tools/make_cards.gd`: `smudges`, `two_of_three`, `missing` (two cards sharing exactly the opposite of the target), `mix`, `contrast` (card A random, B = what makes the difference).
 - The Filter sticker is gone from the campaign (it shared a name with the Filter critter); the tests still build one from Keep What They Share as a fixture, so inventions inside inventions stay covered.
