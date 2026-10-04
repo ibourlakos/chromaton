@@ -25,7 +25,7 @@ godot_console --headless --path . --script res://tools/level_solver.gd
 | Turn the Wheel | 8 | 1 | 8 | 1 | 10 | 1 | `Shift(A)` | 2 | 1 |
 | Smudges | 48 | 1 | 4 | 2 | 50 | 2 | `Filter(A, Red)` | 3 | 2 |
 | Black Cat | 24 | 1 | 2 | 4 | 76 | 4 | `Mix(Shift(Shift(A)), Mix(A, Shift(A)))` | 6 | 4 |
-| The Third Color | 48 | 2 | 6 | 2 | 51 | 2 | `Invert(Mix(A, B))` | 3 | 2 |
+| The Third Paint | 48 | 2 | 6 | 2 | 51 | 2 | `Invert(Mix(A, B))` | 3 | 2 |
 | Wash Out | 48 | 2 | 15 | 2 | 51 | 2 | `Filter(A, Invert(B))` | 3 | 2 |
 | The Flower | 192 | 3 | 113 | 4 | 292 | 4 | `Filter(Mix(A, B), Mix(C, Filter(A, B)))` | 6 | 4 |
 | Missing From Either | 48 | 2 | 11 | 3 | 51 | 3 | `Mix(Invert(A), Invert(B))` | 5 | 3 |
@@ -35,4 +35,4 @@ godot_console --headless --path . --script res://tools/level_solver.gd
 
 ---
 
-Checks: all passed. Run time 1.7 s.
+Checks: all passed. Run time 1.6 s.

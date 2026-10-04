@@ -219,7 +219,7 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 - ✅ **The pots collapse into one tray slot** (designer): the tray shows one pot slot instead of up to eight. ✅ Its form: tapping the slot fans out the owned pots above the shelf; drag one out (touch-first, no hover). A dropdown list would look like desktop UI.
 - ✅ A pot's price is the cheapest the player has made it for, so going back for ★★★ makes the pot cheaper. Star thresholds assume the cheapest price.
 - ✅ **Built (2026-09-28):** paint-box levels 2–8 each earn their pot, an invention with no inputs and check `paint:<letter>` (the every-paint check is one stitch). A re-solve keeps the stored pot unless the new machine is cheaper. A pot invention is drawn as the clay pot with its own paint. No level lists pots in its tray yet, so the one-slot fan-out is still to build.
-- ✅ **The Pattern Book's paint shelf** (built): eight pots across the top of the page in Swatch Book order, each with its price; the red pot is always there, unearned pots are dashed outlines with the level that earns them. Invention slots follow below.
+- ✅ **The Pattern Book's paint shelf** (built): eight pots across the top of the page in journal order, each with its price; the red pot is always there, unearned pots are dashed outlines with the level that earns them. Invention slots follow below.
 - 🟡 Pots other than red wear a small swatch tag with the paint's glyph dots (always-on colorblind glyphs); the red pot has none, as the only pot players start with.
 - 🟡 A full paint-box shelf closes the chapter.
 
@@ -231,7 +231,7 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 
 ✅ **Card levels don't write the rule in the goal line.** The cards and the design card carry it; the cloth is evidence to read, not just a check. Measured: many cheap machines match the first stitch (83 on Keep What They Share, 2,925 on The Flower) but only one weaves the whole cloth; most wrong ones fail by stitch 2–4, a few only at stitch 79. `tools/make_cards.gd` should order the card data so the cheap wrong machines fail within the first row.
 - ✅ **Built (2026-09-28):** `tools/make_cards.gd` lists every function the level's pieces build within its ★★ budget (formula trees over every combination of card paints), then picks each first-row stitch's card paints among the rule's options, greedily, to make the most of them fail there. Every card level's cheap wrong machines now fail in the first row, except Wash Out (1 of 144 fails at stitch 12) and The Flower (6,336 of 74,679 get past its all-white first row, where "two of three" has nothing to show; the last fails at stitch 46). The rest of the rows stay seeded random.
-- 🟡 **Aimed at what a card shows (playtest, 2026-10-04):** the greedy pick first works on the stitches a card shows at the start (6, `Level.CARD_SHOWS`), then on the rest of the first row. Smudges, Missing From Either, Keep What They Share and Mix Without Mix now fail every cheap wrong machine within those 6; The Third Color (1 of 144) and Either, Not Both (2 of 9,690) within the first row; Wash Out still has 1 at stitch 12. The Flower couldn't be fixed by its cards: its first 22 stitches were white, and a machine that makes white there passes whatever the cards hold (7,570 of 74,679 got past the first 6, the last failing at stitch 46). 🟡 So its picture was redrawn (2026-10-04) with paint from the first stitch: a red flower with a yellow and orange heart in an orange pot, a blue butterfly with a purple and black body, a small purple flower, grass. Now 5 of 74,679 get past the first 6 stitches and all fail within the first row.
+- 🟡 **Aimed at what a card shows (playtest, 2026-10-04):** the greedy pick first works on the stitches a card shows at the start (6, `Level.CARD_SHOWS`), then on the rest of the first row. Smudges, Missing From Either, Keep What They Share and Mix Without Mix now fail every cheap wrong machine within those 6; The Third Paint (1 of 144) and Either, Not Both (2 of 9,690) within the first row; Wash Out still has 1 at stitch 12. The Flower couldn't be fixed by its cards: its first 22 stitches were white, and a machine that makes white there passes whatever the cards hold (7,570 of 74,679 got past the first 6, the last failing at stitch 46). 🟡 So its picture was redrawn (2026-10-04) with paint from the first stitch: a red flower with a yellow and orange heart in an orange pot, a blue butterfly with a purple and black body, a small purple flower, grass. Now 5 of 74,679 get past the first 6 stitches and all fail within the first row.
 
 ✅ **Keep What They Share (the De Morgan level) was too steep and blocked the campaign.** Resolved by **Filter first, reinvent it later** (§2.5): Filter is a starting critter, and building it moves to the "invent what you know" chapter, opened by a stepping-stone level, **Missing From Either** (`Mix(Invert A, Invert B)`, 3 pieces), so Filter is "the opposite of what you just built". Nothing later needs the invention.
 - ✅ Solving a level opens the next two, so one hard level never walls off the rest.
@@ -252,7 +252,7 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 | 13 | **Turn the Wheel** (thread) | Shift on every paint | 8×1 | 2 | 1 `Shift(A)` |
 | 14 | **Smudges** (a heart) | **Filter arrives**; noisy cards | 8×6 | 3 | 2 `Filter(A, Red)` |
 | 15 | Black Cat | Split and Shift a card | 6×4 | 6 | 4 |
-| 16 | The Third Color (a kite) | Invert(Mix) | 8×6 | 3 | 2 `Invert(Mix(A, B))` |
+| 16 | The Third Paint (a kite) | Invert(Mix) | 8×6 | 3 | 2 `Invert(Mix(A, B))` |
 | 17 | Wash Out (a fish) | Filter with a card as the mask | 8×6 | 3 | 2 `Filter(A, Invert B)` |
 | 18 | **The Flower**, rule: **two of three** | A primary shows if at least two cards have it | 16×12 | 6 | 4 `Filter(Mix(C, B), Mix(A, Filter(C, B)))` |
 
@@ -270,10 +270,10 @@ Level specs are shown as **animated input/output swatch streams**, not truth tab
 - Card rules added to `tools/make_cards.gd`: `smudges`, `two_of_three`, `missing` (two cards sharing exactly the opposite of the target), `mix`, `contrast` (card A random, B = what makes the difference).
 - The Filter sticker is gone from the campaign (it shared a name with the Filter critter); the tests still build one from Keep What They Share as a fixture, so inventions inside inventions stay covered.
 
-- ✅ Rebuilding a critter earns a Swatch Book page on what that critter is made of, plus stars; no sticker (the critter is already in the tray). The chapter ends with a real invention, Contrast, which keeps the invention loop going into chapter 4.
-- ✅ Threads are 8 stitches, every paint once, in the Swatch Book's order, so the cloth reads as a lookup row and fills the piece's Swatch Book page in one run.
+- ✅ Rebuilding a critter earns a journal page on what that critter is made of, plus stars; no sticker (the critter is already in the tray). The chapter ends with a real invention, Contrast, which keeps the invention loop going into chapter 4.
+- ✅ Threads are 8 stitches, every paint once, in journal order, so the cloth reads as a lookup row and fills the piece's journal page in one run.
 
-**Inventions in the prototype** ✅: solving an invention level saves the player's own machine to the Pattern Book (the Swatch Book's Inventions tab, §5.7) as a new piece. Its cards become input ports (in card order), the loom its output port; it is drawn as a sticker with its name and costs the total of its pieces.
+**Inventions in the prototype** ✅: solving an invention level saves the player's own machine to the Pattern Book (the journal's Inventions tab, §5.7) as a new piece. Its cards become input ports (in card order), the loom its output port; it is drawn as a sticker with its name and costs the total of its pieces.
 - ✅ **An invention is one piece that takes one tick** (built 2026-09-28). Before, it ran the machine inside, so a Filter sticker took 3 ticks and hid drops in flight: paint seemed to vanish into it and come out late. The simulator stores the invention's answer for every combination of input paints and looks it up. Pieces still count everything inside; Ticks improve, which rewards inventing. Stateful machines (memory) will need their own rule.
 - ✅ Before an invention is accepted it is run on every combination of input paints (64 for two inputs). A machine that only happens to match the level's cards is refused with a short note. The one-tick lookup depends on this check.
 - 🟡 Re-solving an invention level replaces the invention with the newest machine. The name comes from the level; players don't name inventions yet.
@@ -304,7 +304,7 @@ Customer orders arrive as incoming color streams with deadlines; the player patc
 
 ### 5.7 The Journal ✅
 An in-game book that explains how the game works and keeps what the player has made: the eight paints and how they mix, the loom's timing (ticks, one-drop tubes, when a piece fires or waits), every piece, the player's inventions, cloths and best scores.
-- ✅ **Named the journal** (designer, 2026-10-04), not the Swatch Book or the compendium: it's the player's own record, filled from play, and an easy word for young players.
+- ✅ **Named the journal** (designer, 2026-10-04; its old names are in the lexicon), not the compendium: it's the player's own record, filled from play, and an easy word for young players.
 - ✅ **One book with tabs: Paint · Loom · Pieces · Inventions.** The Pattern Book (the player's inventions) becomes its Inventions tab.
 - ✅ **Plus Cloths, Scores and Words** (2026-10-04):
   - **Cloths** is a picture gallery: one slot per level, empty or greyed for cloths not woven yet. A solved level's cloth is its target picture, so it needs no new save data.
@@ -360,7 +360,7 @@ Chosen after comparing three animated directions in [mockups/style-studies.html]
 
 ### 7.3 Progressive depth (the Bloons lesson) ✅
 1. Early: drag, drop, watch paint flow. No reading needed.
-2. Collecting: the Swatch Book (§5.7) fills like a sticker album.
+2. Collecting: the journal (§5.7) fills like a sticker album.
 3. After each solve: stars first; histograms unlock later.
 4. Late: restoration, constraints, creative loom, commissions.
 
