@@ -69,6 +69,18 @@ const IDLE_AGE := 99.0
 ## Held keys repeat only where repeating helps: stepping and undo.
 const REPEATING := ["step", "step_back", "undo"]
 
+
+## A layer of the bench. It keeps what it drew until show_look() hands it a
+## different look (whatever its drawing depends on), so a layer that holds
+## still costs nothing from frame to frame.
+class Layer extends Control:
+	var look = null
+
+	func show_look(new_look) -> void:
+		if new_look != look:
+			look = new_look
+			queue_redraw()
+
 var level
 var progress
 var has_next := false
@@ -91,8 +103,18 @@ var carrying := -1  # tray index of a picked-up piece that follows the pointer
 var outcome := ""  # "", "solved", "wrong", "stalled", "unused", "not_general"
 var panel: Control
 var note: Control  # the level's note while it is up (see show_note)
-var still: Control  # the still layer (see _draw_still)
-var still_look := []
+# The layers the bench is drawn in, back to front (see Drawing).
+var still: Layer
+var shelf: Layer
+var tray_layer: Layer
+var aim_layer: Layer
+var cards_layer: Layer
+var paints_layer: Layer
+var wiring: Layer
+var loom_layer: Layer
+var critters: Layer
+var ports: Layer
+var bench_gen := 0  # counts rebuilds: the machine or its run started over
 
 var tray := []  # [{"kind": String, "locked": bool, "rect": Rect2}]
 var wiggle_slot := -1  # the locked tray slot last tapped, whose lock wiggles
@@ -100,6 +122,7 @@ var wiggled_at := -9.0
 var loom_cloth := Rect2()
 var loom_cs := 20.0
 var loom_port := Vector2.ZERO
+var tube_paths := {}  # Vector4(from end, to end) -> curve (see _tube_path)
 
 var drag := ""  # "", "new", "move", "tube", "tube_in"
 var drag_kind := ""
@@ -171,14 +194,17 @@ func _fixed_nodes_match() -> bool:
 func _ready() -> void:
 	size = DESIGN
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	still = Control.new()
-	still.size = DESIGN
-	still.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	still.show_behind_parent = true
-	still.draw.connect(_draw_still)
-	still.add_to_group(Keys.GROUP)  # redraws when key caps are toggled
-	add_child(still)
-	still_look = _still_look()
+	still = _layer(_draw_still)
+	shelf = _layer(_draw_shelf)
+	tray_layer = _layer(_draw_tray)
+	tray_layer.add_to_group(Keys.GROUP)  # redraws when key caps are toggled
+	aim_layer = _layer(_draw_aim)
+	cards_layer = _layer(_draw_cards)
+	paints_layer = _layer(_draw_card_paints)
+	wiring = _layer(_draw_wiring)
+	loom_layer = _layer(_draw_loom)
+	critters = _layer(_draw_critters)
+	ports = _layer(_draw_ports)
 	var back = ToyButton.make("back")
 	back.position = Vector2(14, 6)
 	back.key = Keys.label("back")
@@ -209,6 +235,16 @@ func _ready() -> void:
 	btn_paints.key = Keys.label("paints")
 	_set_speed(speed)
 	_show_paints(Keys.paints)
+
+
+func _layer(painter: Callable) -> Layer:
+	var l := Layer.new()
+	l.size = DESIGN
+	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	l.show_behind_parent = true  # under the workbench's own drawing, the top layer
+	l.draw.connect(painter)
+	add_child(l)
+	return l
 
 
 func _control_button(icon: String, x: float, action: Callable, size_px := Vector2(52, 52)):
@@ -309,11 +345,16 @@ func node_center(id: int) -> Vector2:
 		return drag_pos - grab
 	match n["kind"]:
 		Pieces.CARD:
-			var rows: Array = CARD_ROWS.get(level.cards.size(), [3])
-			return Vector2(GRID_ORIGIN.x + CELL.x, GRID_ORIGIN.y + (rows[int(n["card"])] + 0.5) * CELL.y)
+			return _card_center(int(n["card"]))
 		Pieces.LOOM:
 			return loom_port
 	return cell_center(n["x"], n["y"])
+
+
+## A pattern card covers the first two cells of its row.
+func _card_center(card: int) -> Vector2:
+	var rows: Array = CARD_ROWS.get(level.cards.size(), [3])
+	return Vector2(GRID_ORIGIN.x + CELL.x, GRID_ORIGIN.y + (rows[card] + 0.5) * CELL.y)
 
 
 ## Port offsets on one side of a piece (dx < 0: inputs, dx > 0: outputs),
@@ -350,7 +391,19 @@ func out_port(id: int, p: int) -> Vector2:
 
 func tube_points(i: int) -> PackedVector2Array:
 	var t: Dictionary = machine.tubes[i]
-	return K.tube_path(out_port(t["from"], t["fp"]), in_port(t["to"], t["tp"]))
+	return _tube_path(out_port(t["from"], t["fp"]), in_port(t["to"], t["tp"]))
+
+
+## A tube's curve depends only on its two ends, which hardly ever move, and
+## every frame asks for it several times: keep the curves. Shared: don't
+## change one.
+func _tube_path(a: Vector2, b: Vector2) -> PackedVector2Array:
+	var key := Vector4(a.x, a.y, b.x, b.y)
+	if not tube_paths.has(key):
+		if tube_paths.size() >= 256:  # dragged ends leave old curves behind
+			tube_paths.clear()
+		tube_paths[key] = K.tube_path(a, b)
+	return tube_paths[key]
 
 
 # ---------------------------------------------------------------------------
@@ -358,6 +411,7 @@ func tube_points(i: int) -> PackedVector2Array:
 # ---------------------------------------------------------------------------
 
 func _rebuild() -> void:
+	bench_gen += 1
 	running = false
 	sim = Simulator.new(machine, level.cards, level.target, inventions)
 	phase = 1.0
@@ -456,7 +510,7 @@ func _do_step() -> void:
 
 func _process(delta: float) -> void:
 	if frozen:
-		queue_redraw()
+		_refresh_layers()
 		return
 	clock += delta
 	if phase < 1.0:
@@ -467,11 +521,7 @@ func _process(delta: float) -> void:
 			_on_tick_shown()
 	elif running:
 		_do_step()
-	queue_redraw()
-	var look := _still_look()
-	if still != null and look != still_look:
-		still_look = look
-		still.queue_redraw()
+	_refresh_layers()
 
 
 func _on_tick_shown() -> void:
@@ -836,6 +886,23 @@ func _delete_button_pos() -> Vector2:
 # ---------------------------------------------------------------------------
 # Drawing
 # ---------------------------------------------------------------------------
+#
+# The bench is drawn in layers, back to front: children drawn behind the
+# workbench, whose own drawing is the top layer. Most of the bench holds still
+# most of the time, and those layers are drawn again only when what they show
+# changes (_refresh_layers): drawing all of it every frame made busy levels
+# stutter, on the web most of all.
+#   still     top bar, bench and grid, design card
+#   shelf     the tray and its slots (one lit while its piece is carried), trash
+#   tray      the pieces in the tray, their names and keys
+#   aim       the cell a dragged or carried piece would land on
+#   cards     the pattern cards
+#   paints    the colors coming up on them (they slide as a card releases)
+#   wiring    tubes, a selected piece's lit cell, the pipes into pieces
+#   loom      the cloth and its stitches, the status under it
+#   critters  the pieces: they're alive, drawn every frame
+#   ports     ports, the loom's intake
+#   top       drops, shuttle, delete button, hints, a carried or dragged piece
 
 func _age(id: int) -> float:
 	var last: int = sim.node_last_fire(id)
@@ -844,11 +911,31 @@ func _age(id: int) -> float:
 	return (sim.tick - last) + phase
 
 
+## Hands each layer what it shows now; the ones whose look changed redraw.
+func _refresh_layers() -> void:
+	if still == null:
+		return
+	still.show_look(_still_look())
+	shelf.show_look([carrying, _trash_lit()])
+	tray_layer.show_look([level, tray.size()])
+	aim_layer.show_look([_aim_cell(), bench_gen, drag, drag_node])
+	cards_layer.show_look([level])
+	paints_layer.show_look(_card_paints_look())
+	var editing := [bench_gen, drag, drag_node, drag_moved]
+	if drag in ["move", "tube", "tube_in"]:
+		editing.append(drag_pos)
+	wiring.show_look(editing + [selected_tube, selected_piece, drag_port, drag_detach])
+	loom_layer.show_look([bench_gen, sim.tick, outcome, _loom_shown()])
+	ports.show_look(editing)
+	critters.queue_redraw()
+	queue_redraw()
+
+
 func _draw() -> void:
 	_draw_run_halo()
-	_draw_aim()
-	_draw_bench()
-	_draw_loom_area()
+	_draw_drops()
+	_draw_delete_button()
+	_draw_loom_motion()
 	_draw_locks()
 	_draw_hint()
 	if drag == "new":
@@ -882,16 +969,20 @@ func _carried_ghost() -> bool:
 	return carrying >= 0 and drag == "" and BENCH.has_point(hover_pos)
 
 
-## What the still layer shows that can change: redrawn only when this does.
+## What the still layer shows that can change.
 func _still_look() -> Array:
-	return [carrying, drag == "move" and drag_moved and TRAY.has_point(drag_pos), note != null]
+	return [note != null, level]
 
 
-## The still layer: top bar, tray, bench and grid, design card. Drawn behind
-## everything else, and only when its look changes; tray pieces hold still.
+## The trash lights up while a placed piece is dragged over the tray.
+func _trash_lit() -> bool:
+	return drag == "move" and drag_moved and TRAY.has_point(drag_pos)
+
+
+## The still layer: top bar, bench and grid, design card, the cards (their
+## colors are drawn over them, with the pieces).
 func _draw_still() -> void:
 	_draw_frame(still)
-	_draw_tray(still)
 	K.shape(still, K.round_rect(BENCH, 14), Color(P.TAG, 0.35), Color(P.INK, 0.12), 2)
 	if Keys.grid:  # faint cell lines (Options)
 		var span := Vector2(COLS * CELL.x, ROWS * CELL.y)
@@ -922,16 +1013,27 @@ func _draw_frame(ci: CanvasItem) -> void:
 		K.text(ci, P.ui(700), LINE_HOME, LevelNote.line(level), 15, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 
 
-func _draw_tray(ci: CanvasItem) -> void:
-	K.shape(ci, K.round_rect(TRAY, 14), Color(P.PAPER_DK, 0.9), Color(P.INK, 0.35), 2)
+## The tray's shelf: its slots (a picked-up piece's slot is lit until it is
+## put down) and the trash (lit while a piece is dragged over the tray).
+func _draw_shelf() -> void:
+	K.shape(shelf, K.round_rect(TRAY, 14), Color(P.PAPER_DK, 0.9), Color(P.INK, 0.35), 2)
+	for i in tray.size():
+		var r: Rect2 = tray[i]["rect"]
+		if i == carrying:
+			K.shape(shelf, K.round_rect(r, 10), Color(P.HOOP, 0.3), P.INK, 3)
+		else:
+			K.shape(shelf, K.round_rect(r, 10), P.TAG, Color(P.INK, 0.5), 1.5)
+	var lit := _trash_lit()
+	K.shape(shelf, K.round_rect(TRASH, 12), Color(P.HOOP, 0.35) if lit else Color(P.PAPER, 0.8), Color(P.INK, 0.45), 2)
+	K.icon(shelf, "trash", TRASH.get_center(), 1.5 if lit else 1.3, Color(P.INK, 0.9 if lit else 0.5))
+
+
+## The pieces in the tray's slots, with their names and keys. They hold still.
+func _draw_tray() -> void:
+	var ci := tray_layer
 	for i in tray.size():
 		var item: Dictionary = tray[i]
 		var r: Rect2 = item["rect"]
-		# A picked-up piece's slot is lit until it is put down.
-		if i == carrying:
-			K.shape(ci, K.round_rect(r, 10), Color(P.HOOP, 0.3), P.INK, 3)
-		else:
-			K.shape(ci, K.round_rect(r, 10), P.TAG, Color(P.INK, 0.5), 1.5)
 		var label := ""
 		var kind: String = item["kind"]
 		if kind.begins_with("inv:"):
@@ -949,59 +1051,92 @@ func _draw_tray(ci: CanvasItem) -> void:
 		K.text(ci, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, P.INK_SOFT)
 		if i < 9:
 			Keys.cap(ci, r.position + Vector2(16, 16), Keys.label("piece_%d" % (i + 1)))
-	# Trash: lights up while a piece is dragged over the tray.
-	var lit: bool = _still_look()[1]
-	K.shape(ci, K.round_rect(TRASH, 12), Color(P.HOOP, 0.35) if lit else Color(P.PAPER, 0.8), Color(P.INK, 0.45), 2)
-	K.icon(ci, "trash", TRASH.get_center(), 1.5 if lit else 1.3, Color(P.INK, 0.9 if lit else 0.5))
 
 
-## The target cell while dragging or carrying a piece.
-func _draw_aim() -> void:
+## The cell aimed at while dragging or carrying a piece ((-1, -1): none).
+func _aim_cell() -> Vector2i:
 	var aim := Vector2(-1, -1)
 	if drag == "new" or (drag == "move" and drag_moved):
 		aim = drag_pos - (grab if drag == "move" else Vector2.ZERO)
 	elif _carried_ghost():
 		aim = hover_pos
-	if aim.x >= 0:
-		var cell := cell_at(aim)
-		if cell.x >= 0:
-			var ok: bool = not cell_taken(cell) or (drag == "move" and machine.piece_at(cell.x, cell.y) == drag_node)
-			var r := Rect2(GRID_ORIGIN + Vector2(cell) * CELL, CELL).grow(-4)
-			K.fill(self, K.round_rect(r, 10), Color(P.HOOP, 0.22) if ok else Color(P.INK, 0.08))
+	return cell_at(aim)
 
 
-func _draw_bench() -> void:
-	# Cards
+## The aim layer: the cell a dragged or carried piece would land on, lit if
+## it is free.
+func _draw_aim() -> void:
+	var cell := _aim_cell()
+	if cell.x >= 0:
+		var ok: bool = not cell_taken(cell) or (drag == "move" and machine.piece_at(cell.x, cell.y) == drag_node)
+		var r := Rect2(GRID_ORIGIN + Vector2(cell) * CELL, CELL).grow(-4)
+		K.fill(aim_layer, K.round_rect(r, 10), Color(P.HOOP, 0.22) if ok else Color(P.INK, 0.08))
+
+
+func _draw_cards() -> void:
+	for c in level.cards.size():
+		K.card_body(cards_layer, _card_center(c), level.card_names[c])
+
+
+## What the paints layer shows: each card's next colors, and how far they
+## have slid since it released one.
+func _card_paints_look() -> Array:
+	var look := [bench_gen]
+	for id in machine.nodes:
+		if machine.nodes[id]["kind"] == Pieces.CARD:
+			look.append(sim.card_cursor[machine.nodes[id]["card"]])
+			look.append(minf(_age(id), 1.0))
+	return look
+
+
+## The paints layer: the colors coming up on each card.
+func _draw_card_paints() -> void:
 	for id in machine.nodes:
 		var n: Dictionary = machine.nodes[id]
-		if n["kind"] == Pieces.CARD:
-			var c: int = n["card"]
-			var upcoming := []
-			var smudged := []
-			for k in range(sim.card_cursor[c], mini(sim.card_cursor[c] + level.CARD_SHOWS, level.cards[c].size())):
-				upcoming.append(level.cards[c][k])
-				smudged.append(k in level.smudges[c])
-			K.card(self, node_center(id), level.card_names[c], upcoming, _age(id), smudged)
-	# Tubes
+		if n["kind"] != Pieces.CARD:
+			continue
+		var c: int = n["card"]
+		var upcoming := []
+		var smudged := []
+		for k in range(sim.card_cursor[c], mini(sim.card_cursor[c] + level.CARD_SHOWS, level.cards[c].size())):
+			upcoming.append(level.cards[c][k])
+			smudged.append(k in level.smudges[c])
+		K.card_paints(paints_layer, node_center(id), upcoming, _age(id), smudged)
+
+
+## The wiring layer: tubes, a selected piece's lit cell, and the pipes into
+## the pieces.
+func _draw_wiring() -> void:
+	var ci := wiring
 	for i in machine.tubes.size():
 		if drag == "tube" and i == drag_detach and drag_moved:
 			continue
-		K.tube(self, tube_points(i), i == selected_tube)
+		K.tube(ci, tube_points(i), i == selected_tube)
 	if drag == "tube" and drag_moved:
-		K.tube(self, K.tube_path(out_port(drag_node, drag_port), drag_pos), false)
+		K.tube(ci, K.tube_path(out_port(drag_node, drag_port), drag_pos), false)
 	if drag == "tube_in" and drag_moved:
-		K.tube(self, K.tube_path(drag_pos, in_port(drag_node, drag_port)), false)
-	# Pieces, with short pipes from their sides to their ports; a selected
-	# piece sits on a lit cell.
+		K.tube(ci, K.tube_path(drag_pos, in_port(drag_node, drag_port)), false)
 	if selected_piece >= 0 and machine.nodes.has(selected_piece) and drag == "":
 		var r := Rect2(node_center(selected_piece) - CELL / 2, CELL).grow(-3)
-		K.shape(self, K.round_rect(r, 12), Color(P.HOOP, 0.25), Color(P.INK, 0.5), 2)
+		K.shape(ci, K.round_rect(r, 12), Color(P.HOOP, 0.25), Color(P.INK, 0.5), 2)
 	for id in machine.nodes:
 		if machine.is_fixed(id) or (drag == "move" and id == drag_node):
 			continue
-		_draw_stubs(id, node_center(id))
-		_draw_piece(id, node_center(id))
-	# Ports
+		_draw_stubs(ci, id, node_center(id))
+
+
+## The critters layer, every frame: the pieces.
+func _draw_critters() -> void:
+	for id in machine.nodes:
+		if machine.is_fixed(id) or (drag == "move" and id == drag_node):
+			continue
+		_draw_piece(id, node_center(id), critters)
+
+
+## The ports layer: every port over the pieces (lit where a dragged tube
+## can end), and the loom's intake funnel, opening towards the bench.
+func _draw_ports() -> void:
+	var ci := ports
 	for id in machine.nodes:
 		if drag == "move" and id == drag_node:
 			continue
@@ -1009,11 +1144,17 @@ func _draw_bench() -> void:
 		for k in p.x:
 			if machine.nodes[id]["kind"] != Pieces.LOOM:
 				var lit: bool = drag == "tube" and drag_moved and id != drag_node
-				K.port_in(self, in_port(id, k), lit)
+				K.port_in(ci, in_port(id, k), lit)
 		for k in p.y:
 			var lit: bool = drag == "tube_in" and drag_moved and id != drag_node
-			K.port_out(self, out_port(id, k), lit)
-	# Drops travelling down the tubes
+			K.port_out(ci, out_port(id, k), lit)
+	var port := loom_port
+	K.shape(ci, PackedVector2Array([port + Vector2(-6, -16), port + Vector2(18, -6), port + Vector2(18, 6), port + Vector2(-6, 16)]), P.WOOD_LT, P.INK, 2.5)
+	K.port_in(ci, port)
+
+
+## Drops travelling down the tubes.
+func _draw_drops() -> void:
 	var eased := 1.0 - pow(1.0 - phase, 2)
 	for i in machine.tubes.size():
 		var c: int = sim.tube_drop(i)
@@ -1023,28 +1164,32 @@ func _draw_bench() -> void:
 		if sim.tube_filled_at(i) == sim.tick:
 			f = lerpf(0.06, 0.8, eased)
 		K.drop(self, K.along(tube_points(i), f), DROP_R, c)
-	# Delete button for the selected tube or piece
-	if _has_selection():
-		var b := _delete_button_pos()
-		K.fill(self, K.ellipse(b + Vector2(0, 3), 22, 22), P.SHADOW)
-		K.shape(self, K.ellipse(b, 22, 22), P.TAG, P.INK, 2.5)
-		K.icon(self, "trash", b, 1.0, P.INK)
-		Keys.cap(self, b + Vector2(0, 24), Keys.label("delete"))
+
+
+## The delete button for the selected tube or piece.
+func _draw_delete_button() -> void:
+	if not _has_selection():
+		return
+	var b := _delete_button_pos()
+	K.fill(self, K.ellipse(b + Vector2(0, 3), 22, 22), P.SHADOW)
+	K.shape(self, K.ellipse(b, 22, 22), P.TAG, P.INK, 2.5)
+	K.icon(self, "trash", b, 1.0, P.INK)
+	Keys.cap(self, b + Vector2(0, 24), Keys.label("delete"))
 
 
 ## Glass pipes into a piece's left side, wooden spouts out of its right side.
-func _draw_stubs(id: int, c: Vector2) -> void:
+func _draw_stubs(ci: CanvasItem, id: int, c: Vector2) -> void:
 	var n: Dictionary = machine.nodes[id]
 	if n["kind"] == "split":
 		return
 	var p := Pieces.ports(n, inventions)
 	for o in _offsets(p.x, -PORT_DX):
-		K.stub(self, c + o, c + Vector2(-18, o.y * 0.7), false)
+		K.stub(ci, c + o, c + Vector2(-18, o.y * 0.7), false)
 	for o in _offsets(p.y, PORT_DX):
-		K.stub(self, c + o, c + Vector2(18, o.y * 0.7), true)
+		K.stub(ci, c + o, c + Vector2(18, o.y * 0.7), true)
 
 
-func _draw_piece(id: int, c: Vector2) -> void:
+func _draw_piece(id: int, c: Vector2, ci: CanvasItem = null) -> void:
 	var n: Dictionary = machine.nodes[id]
 	var kind: String = n["kind"]
 	if kind == Pieces.INVENTION:
@@ -1053,7 +1198,7 @@ func _draw_piece(id: int, c: Vector2) -> void:
 	var u: float = (clock - placed_at.get(id, -9.0)) / 0.45
 	if u < 1.0:
 		s = 1.0 + 0.22 * sin(u * PI) * (1.0 - u)
-	_draw_piece_kind(kind, c, id, s)
+	_draw_piece_kind(kind, c, id, s, ci)
 
 
 ## Draws a piece. id < 0 draws it idle (tray, drag ghost). It draws on ci
@@ -1102,84 +1247,93 @@ func _draw_piece_kind(kind: String, c: Vector2, id: int, s := 1.0, ci: CanvasIte
 			K.text(ci, P.display(600), c + Vector2(0, 30) * s, Pieces.display_name(kind), 13, P.INK)
 
 
-func _draw_loom_area() -> void:
-	var shown: int = sim.woven.size()
-	var flying: bool = sim.last_weave_tick == sim.tick and sim.tick > 0 and phase < 1.0
-	if flying:
-		shown -= 1
+## Stitches on the cloth: all those woven but one still flying to it.
+func _loom_shown() -> int:
+	return sim.woven.size() - (1 if _stitch_flying() else 0)
+
+
+func _stitch_flying() -> bool:
+	return sim.last_weave_tick == sim.tick and sim.tick > 0 and phase < 1.0
+
+
+## The loom layer: the cloth as woven so far, and the status under it.
+func _draw_loom() -> void:
+	var wrong: int = sim.wrong_index if outcome == "wrong" else -1
+	K.loom(loom_layer, loom_cloth, level.cols, loom_cs, sim.woven, level.target, _loom_shown(), true, wrong)
+	_draw_status(loom_layer)
+
+
+## What moves on the loom: the shuttle (or a wrong stitch's mark), a stitch
+## flying in from the intake, the puff where it lands.
+func _draw_loom_motion() -> void:
 	var wrong: int = sim.wrong_index if outcome == "wrong" else -1
 	# The shuttle slides on to the next slot just after a stitch lands.
 	var glide := clampf((clock - landed_at) / minf(0.3, TICK_SECONDS[speed] * 0.8), 0, 1)
-	K.loom(self, loom_cloth, level.cols, loom_cs, sim.woven, level.target, shown, true, wrong, clock, glide)
-	# The loom's intake funnel, opening towards the bench
-	var port := loom_port
-	K.shape(self, PackedVector2Array([port + Vector2(-6, -16), port + Vector2(18, -6), port + Vector2(18, 6), port + Vector2(-6, 16)]), P.WOOD_LT, P.INK, 2.5)
-	K.port_in(self, port)
-	if flying:
+	K.loom_shuttle(self, loom_cloth, level.cols, loom_cs, sim.woven, level.target, _loom_shown(), wrong, clock, glide)
+	if _stitch_flying():
 		var i: int = sim.woven.size() - 1
 		var cell := loom_cloth.position + Vector2((i % level.cols + 0.5) * loom_cs, (i / level.cols + 0.5) * loom_cs)
 		var eased := 1.0 - pow(1.0 - phase, 2)
-		K.drop(self, port.lerp(cell, eased), DROP_R * lerpf(1.0, 0.7, eased), sim.woven[i])
+		K.drop(self, loom_port.lerp(cell, eased), DROP_R * lerpf(1.0, 0.7, eased), sim.woven[i])
 	_draw_stitch_puff()
-	_draw_status()
 
 
 ## The pieces bar: one slot per piece placed, so it reads as progress, not a
 ## limit. Markers stand after the three-star count (stars to its left) and the
 ## two-star count (stars to its right); they light while the bench is within.
 ## Room for two pieces past two stars; beyond that the bar stays full.
-func _draw_piece_bar(bar: Rect2, pieces: int) -> void:
-	K.icon(self, "pieces", Vector2(bar.position.x - 20, bar.get_center().y), 1.0, P.INK)
+func _draw_piece_bar(ci: CanvasItem, bar: Rect2, pieces: int) -> void:
+	K.icon(ci, "pieces", Vector2(bar.position.x - 20, bar.get_center().y), 1.0, P.INK)
 	var slots: int = level.budget + 2
 	var w := bar.size.x / slots
 	for s in slots:
 		var cell := Rect2(bar.position.x + s * w + 1.5, bar.position.y, w - 3, bar.size.y)
-		K.shape(self, K.round_rect(cell, 5), P.WOOD if s < pieces else P.PAPER_DK, Color(P.INK, 0.6 if s < pieces else 0.3), 1.5)
+		K.shape(ci, K.round_rect(cell, 5), P.WOOD if s < pieces else P.PAPER_DK, Color(P.INK, 0.6 if s < pieces else 0.3), 1.5)
 	var marks := [[3, level.best]]
 	if level.budget != level.best:
 		marks.append([2, level.budget])
 	for m in marks:
 		var x: float = bar.position.x + m[1] * w
-		K.line(self, Vector2(x, bar.position.y - 28), Vector2(x, bar.end.y + 4), P.INK, 2)
+		K.line(ci, Vector2(x, bar.position.y - 28), Vector2(x, bar.end.y + 4), P.INK, 2)
 		var side := -1.0 if m[0] == 3 else 1.0
 		for s in m[0]:
-			K.star(self, Vector2(x + side * (12 + s * 17), bar.position.y - 16), 8, pieces > 0 and pieces <= m[1])
+			K.star(ci, Vector2(x + side * (12 + s * 17), bar.position.y - 16), 8, pieces > 0 and pieces <= m[1])
 
 
-func _draw_status() -> void:
+func _draw_status(ci: CanvasItem) -> void:
 	var box := Rect2(SIDE.position.x, SIDE.position.y + 410, SIDE.size.x, SIDE.end.y - SIDE.position.y - 410)
 	var font := P.ui(700)
 	if _first_open_slot() >= 0:  # nothing to place: no bar
-		_draw_piece_bar(Rect2(box.position + Vector2(38, 36), Vector2(166, 20)), machine.cost(inventions))
-	K.icon(self, "ticks", box.position + Vector2(220, 46), 1.0, P.INK)
-	K.text(self, font, box.position + Vector2(236, 46), str(sim.tick), 18, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+		_draw_piece_bar(ci, Rect2(box.position + Vector2(38, 36), Vector2(166, 20)), machine.cost(inventions))
+	K.icon(ci, "ticks", box.position + Vector2(220, 46), 1.0, P.INK)
+	K.text(ci, font, box.position + Vector2(236, 46), str(sim.tick), 18, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 	var bubble := Rect2(box.position + Vector2(0, 78), Vector2(box.size.x, 52))
 	match outcome:
 		"wrong":
-			K.shape(self, K.round_rect(bubble, 12), P.TAG, P.INK, 2)
+			K.shape(ci, K.round_rect(bubble, 12), P.TAG, P.INK, 2)
 			var i: int = sim.wrong_index
-			K.icon(self, "x", bubble.position + Vector2(24, 26), 1.0, P.INK)
-			K.drop(self, bubble.position + Vector2(62, 28), 11, sim.woven[i])
+			K.icon(ci, "x", bubble.position + Vector2(24, 26), 1.0, P.INK)
+			K.drop(ci, bubble.position + Vector2(62, 28), 11, sim.woven[i])
 			# Nunito, not Fredoka: Fredoka has no "≠"
-			K.text(self, P.ui(800), bubble.position + Vector2(95, 26), "≠", 26, P.INK)
-			K.drop(self, bubble.position + Vector2(128, 28), 11, level.target[i])
-			K.text(self, font, bubble.position + Vector2(158, 26), "stitch %d" % (i + 1), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+			K.text(ci, P.ui(800), bubble.position + Vector2(95, 26), "≠", 26, P.INK)
+			K.drop(ci, bubble.position + Vector2(128, 28), 11, level.target[i])
+			K.text(ci, font, bubble.position + Vector2(158, 26), "stitch %d" % (i + 1), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 		"stalled":
-			K.shape(self, K.round_rect(bubble, 12), P.TAG, P.INK, 2)
-			K.icon(self, "zzz", bubble.position + Vector2(26, 26), 1.0, P.INK)
-			K.text(self, font, bubble.position + Vector2(52, 26), "Stuck: paint can't reach the loom", 15, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+			K.shape(ci, K.round_rect(bubble, 12), P.TAG, P.INK, 2)
+			K.icon(ci, "zzz", bubble.position + Vector2(26, 26), 1.0, P.INK)
+			K.text(ci, font, bubble.position + Vector2(52, 26), "Stuck: paint can't reach the loom", 15, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 		"unused":
 			# Every card must be used: at tick 0 the card has no tube; later it
 			# still held paint when the loom was full.
-			K.shape(self, K.round_rect(bubble, 12), P.TAG, P.INK, 2)
-			K.icon(self, "x", bubble.position + Vector2(24, 26), 1.0, P.INK)
+			K.shape(ci, K.round_rect(bubble, 12), P.TAG, P.INK, 2)
+			K.icon(ci, "x", bubble.position + Vector2(24, 26), 1.0, P.INK)
 			var card: String = level.card_names[sim.unused_card]
 			var why := "Card %s has no tube" % card if sim.tick == 0 else "Card %s still has paint left" % card
-			K.text(self, font, bubble.position + Vector2(48, 26), why, 15, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+			K.text(ci, font, bubble.position + Vector2(48, 26), why, 15, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 		"not_general":
-			K.shape(self, K.round_rect(bubble, 12), P.TAG, P.INK, 2)
-			K.text(self, font, bubble.position + Vector2(14, 16), "Right picture! But a real %s must" % level.invention["name"], 14, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-			K.text(self, font, bubble.position + Vector2(14, 36), "work for every pair of paints.", 14, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+			K.shape(ci, K.round_rect(bubble, 12), P.TAG, P.INK, 2)
+			K.text(ci, font, bubble.position + Vector2(14, 16), "Right picture! But a real %s must" % level.invention["name"], 14, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+			K.text(ci, font, bubble.position + Vector2(14, 36), "work for every pair of paints.", 14, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 
 
 # ---------------------------------------------------------------------------

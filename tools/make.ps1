@@ -251,6 +251,7 @@ Play
 Test
   test [suite ...]     run all test suites, or only these (sim, paint, levels, inventions, workbench)
   check                compile every script and report errors with line numbers
+  bench                time the workbench's drawing on every level, running and dragging
 
 Design tools (rewrite files under docs/ or levels/)
   solve                prove each level's star counts (docs/level-report.md)
@@ -294,6 +295,7 @@ switch ($Task) {
 		$code = Invoke-Godot $a
 	}
 	"check" { $code = Invoke-Tool "check_scripts" }
+	"bench" { $code = Invoke-Godot @("--headless", "--fixed-fps", "60", "--path", $Root, "--script", "res://tools/bench_draw.gd") }
 	"solve" { $code = Invoke-Tool "level_solver" }
 	"cards" { $code = Invoke-Tool "make_cards" }
 	"algebra" { $code = Invoke-Tool "algebra_check" }

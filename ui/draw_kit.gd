@@ -4,11 +4,27 @@
 ## Every function takes the CanvasItem to draw on. Critters are drawn in
 ## their own local coordinates (as in the mockup) and placed with a
 ## transform, so `s` scales the whole critter.
+##
+## Everything is drawn again every frame, so shapes are worked out once and
+## kept: a unit circle per point count, a rounded rectangle per size, a drop
+## per radius, the critters' bodies. Each use only places the kept shape with
+## one transform (done by the engine, not point by point in script). The
+## shapes the public functions hand back are fresh copies, safe to change.
 extends RefCounted
 
 const P = preload("res://ui/palette.gd")
 
 const PIP := [[1, -PI / 2], [2, PI / 6], [4, 5 * PI / 6]]
+
+static var _circles := {}  # point count -> unit circle
+static var _round_rects := {}  # Vector4(w, h, radius, n) -> outline from (0, 0)
+static var _arcs := {}  # Vector4(r, a0, a1, n) -> arc around (0, 0)
+static var _teardrops := {}  # radius -> drop around (0, 0)
+static var _bodies := {}  # name -> a critter body in its own coordinates
+## Sizes that animate (a drop shrinking into the loom, a note popping up)
+## would fill the caches without end: past this many, a shape is worked out
+## each time instead of kept.
+const KEEP_MAX := 512
 
 
 # ---------------------------------------------------------------------------
@@ -16,15 +32,13 @@ const PIP := [[1, -PI / 2], [2, PI / 6], [4, 5 * PI / 6]]
 # ---------------------------------------------------------------------------
 
 static func ellipse(c: Vector2, rx: float, ry: float, rot := 0.0, n := 36) -> PackedVector2Array:
-	var pts := PackedVector2Array()
-	var cr := cos(rot)
-	var sr := sin(rot)
-	for i in n:
-		var a := TAU * i / n
-		var x := cos(a) * rx
-		var y := sin(a) * ry
-		pts.append(c + Vector2(x * cr - y * sr, x * sr + y * cr))
-	return pts
+	if not _circles.has(n):
+		var unit := PackedVector2Array()
+		for i in n:
+			var a := TAU * i / n
+			unit.append(Vector2(cos(a), sin(a)))
+		_circles[n] = unit
+	return Transform2D(rot, Vector2(rx, ry), 0.0, c) * (_circles[n] as PackedVector2Array)
 
 
 ## Points of a quadratic curve, without its start point.
@@ -47,21 +61,35 @@ static func cubic(p0: Vector2, p1: Vector2, p2: Vector2, p3: Vector2, n := 24) -
 
 ## Points on a circular arc from a0 to a1, both ends included.
 static func arc(c: Vector2, r: float, a0: float, a1: float, n := 16) -> PackedVector2Array:
-	var pts := PackedVector2Array()
-	for i in n + 1:
-		var a := lerpf(a0, a1, float(i) / n)
-		pts.append(c + Vector2(cos(a), sin(a)) * r)
-	return pts
+	var key := Vector4(r, a0, a1, n)
+	var pts: PackedVector2Array = _arcs.get(key, PackedVector2Array())
+	if pts.is_empty():
+		for i in n + 1:
+			var a := lerpf(a0, a1, float(i) / n)
+			pts.append(Vector2(cos(a), sin(a)) * r)
+		if _arcs.size() < KEEP_MAX:
+			_arcs[key] = pts
+	return Transform2D(0.0, c) * pts
 
 
 static func round_rect(r: Rect2, rad: float, n := 5) -> PackedVector2Array:
 	rad = minf(rad, minf(r.size.x, r.size.y) / 2)
+	var key := Vector4(r.size.x, r.size.y, rad, n)
+	var pts: PackedVector2Array = _round_rects.get(key, PackedVector2Array())
+	if pts.is_empty():
+		pts = _round_rect_at_origin(r.size, rad, n)
+		if _round_rects.size() < KEEP_MAX:
+			_round_rects[key] = pts
+	return Transform2D(0.0, r.position) * pts
+
+
+static func _round_rect_at_origin(size: Vector2, rad: float, n: int) -> PackedVector2Array:
 	var pts := PackedVector2Array()
 	var corners := [
-		[r.position + Vector2(rad, rad), PI],
-		[Vector2(r.end.x - rad, r.position.y + rad), 1.5 * PI],
-		[r.end - Vector2(rad, rad), 0.0],
-		[Vector2(r.position.x + rad, r.end.y - rad), 0.5 * PI],
+		[Vector2(rad, rad), PI],
+		[Vector2(size.x - rad, rad), 1.5 * PI],
+		[size - Vector2(rad, rad), 0.0],
+		[Vector2(rad, size.y - rad), 0.5 * PI],
 	]
 	# When the radius is half a side, neighbouring corner arcs meet in one
 	# point: skip repeats, or the polygon can fail to triangulate.
@@ -138,15 +166,28 @@ static func line(ci: CanvasItem, a: Vector2, b: Vector2, col: Color, w: float) -
 ## sharply: on a smooth curve (a tube) a disc at every point would be
 ## invisible but costly.
 static func polyline_round(ci: CanvasItem, pts: PackedVector2Array, col: Color, w: float) -> void:
-	ci.draw_polyline(pts, col, w, true)
+	_polyline_joined(ci, pts, round_joints(pts), col, w)
+
+
+## The points of a polyline that need a round cap or joint: both ends, and
+## wherever it turns by more than about 20°.
+static func round_joints(pts: PackedVector2Array) -> PackedVector2Array:
+	var out := PackedVector2Array()
 	var n := pts.size()
 	for i in n:
 		if i > 0 and i < n - 1:
 			var a := pts[i] - pts[i - 1]
 			var b := pts[i + 1] - pts[i]
 			if a.length_squared() > 0 and b.length_squared() > 0 and a.normalized().dot(b.normalized()) > 0.94:
-				continue  # turns less than about 20°
-		ci.draw_circle(pts[i], w / 2, col, true, -1, true)
+				continue
+		out.append(pts[i])
+	return out
+
+
+static func _polyline_joined(ci: CanvasItem, pts: PackedVector2Array, joints: PackedVector2Array, col: Color, w: float) -> void:
+	ci.draw_polyline(pts, col, w, true)
+	for p in joints:
+		ci.draw_circle(p, w / 2, col, true, -1, true)
 
 
 static func disc(ci: CanvasItem, c: Vector2, r: float, col: Color) -> void:
@@ -209,6 +250,15 @@ static func text(ci: CanvasItem, font: Font, pos: Vector2, s: String, size: int,
 # ---------------------------------------------------------------------------
 
 static func teardrop(c: Vector2, r: float) -> PackedVector2Array:
+	var pts: PackedVector2Array = _teardrops.get(r, PackedVector2Array())
+	if pts.is_empty():
+		pts = _teardrop_at(Vector2.ZERO, r)
+		if _teardrops.size() < KEEP_MAX:
+			_teardrops[r] = pts
+	return Transform2D(0.0, c) * pts
+
+
+static func _teardrop_at(c: Vector2, r: float) -> PackedVector2Array:
 	var top := c + Vector2(0, -1.45 * r)
 	var pts := PackedVector2Array([top])
 	var right := c + Vector2(r, 0.05 * r)
@@ -263,10 +313,11 @@ static func swatch(ci: CanvasItem, c: Vector2, r: float, color: int) -> void:
 # ---------------------------------------------------------------------------
 
 static func tube(ci: CanvasItem, pts: PackedVector2Array, selected := false) -> void:
+	var joints := round_joints(pts)
 	if selected:
-		polyline_round(ci, pts, P.HOOP, 20)
-	polyline_round(ci, pts, P.INK, 13)
-	polyline_round(ci, pts, P.GLASS, 8)
+		_polyline_joined(ci, pts, joints, P.HOOP, 20)
+	_polyline_joined(ci, pts, joints, P.INK, 13)
+	_polyline_joined(ci, pts, joints, P.GLASS, 8)
 
 
 ## A tube leaves an output going right and enters an input from the left.
@@ -334,8 +385,7 @@ static func tub(ci: CanvasItem, c: Vector2, s: float, liq: int, age: float, kind
 			shown = 7 ^ liq
 	fill(ci, ellipse(c + Vector2(0, 36) * s, 50 * s * (1 + hop / 60), 7 * s, 0, 24), P.SHADOW)
 	set_xf(ci, c + Vector2(0, 32 + hop) * s, Vector2(s * sx, s * sy))
-	var body := PackedVector2Array([Vector2(-46, -62), Vector2(46, -62), Vector2(38, 0)])
-	body.append_array(quad(Vector2(38, 0), Vector2(0, 6), Vector2(-38, 0), 10))
+	var body := _body("tub")
 	fill(ci, body, P.WOOD)
 	for stave in [-24, 0, 24]:
 		ci.draw_line(Vector2(stave, -60), Vector2(stave * 0.84, -2), P.WOOD_DK, 1.5, true)
@@ -422,8 +472,8 @@ static func pot(ci: CanvasItem, c: Vector2, s: float, age: float, t: float, seed
 	var k := exp(-age * 6.0)
 	fill(ci, ellipse(c + Vector2(0, 36) * s, 44 * s, 7 * s, 0, 24), P.SHADOW)
 	set_xf(ci, c + Vector2(0, 32) * s, Vector2(s * (1 + 0.08 * k), s * (1 - 0.1 * k)))
-	shape(ci, _pot_body(), P.CLAY, P.INK, 3.5)
-	stroke(ci, quad(Vector2(-39, -20), Vector2(0, -10), Vector2(39, -20), 12), P.CLAY_DK, 4, false)
+	shape(ci, _body("pot"), P.CLAY, P.INK, 3.5)
+	stroke(ci, _body("pot_belt"), P.CLAY_DK, 4, false)
 	var rim := ellipse(Vector2(0, -62), 30, 7.5)
 	shape(ci, rim, P.CLAY_DK, P.INK, 3)
 	fill(ci, ellipse(Vector2(0, -61.5), 23, 4.5, 0, 24), P.WHITE_STITCH if paint == 0 else P.SIG[paint])
@@ -451,20 +501,43 @@ static func pot(ci: CanvasItem, c: Vector2, s: float, age: float, t: float, seed
 ## A dashed pot outline: a pot not earned yet.
 static func pot_outline(ci: CanvasItem, c: Vector2, s: float, col: Color) -> void:
 	var pts := PackedVector2Array()
-	for p in _pot_body():
+	for p in _body("pot"):
 		pts.append(c + (p + Vector2(0, 32)) * s)
 	dashed(ci, closed(pts), col, 2, 7, 5)
 	dashed(ci, closed(ellipse(c + Vector2(0, -30) * s, 30 * s, 7.5 * s, 0, 24)), col, 2, 7, 5)
 
 
-## The pot's clay body in its own coordinates (the rim sits at y = -62).
-static func _pot_body() -> PackedVector2Array:
-	var body := PackedVector2Array([Vector2(-26, -62)])
-	body.append_array(quad(Vector2(-26, -62), Vector2(-27, -54), Vector2(-31, -48.3), 5))
+## A critter's body outline in its own coordinates (the rim sits at y = -62),
+## worked out once. Shared, not a copy: don't change it.
+static func _body(part: String) -> PackedVector2Array:
+	if _bodies.has(part):
+		return _bodies[part]
+	var body := PackedVector2Array()
+	match part:
+		"tub":
+			body = PackedVector2Array([Vector2(-46, -62), Vector2(46, -62), Vector2(38, 0)])
+			body.append_array(quad(Vector2(38, 0), Vector2(0, 6), Vector2(-38, 0), 10))
+		"pot":
+			body = _jar(26, 27, 31, 42)
+		"pot_belt":
+			body = quad(Vector2(-39, -20), Vector2(0, -10), Vector2(39, -20), 12)
+		"catch":
+			body = _jar(32, 33, 37, 44)
+		"catch_glaze":
+			body = quad(Vector2(-41, -14), Vector2(0, -4), Vector2(41, -14), 12)
+	_bodies[part] = body
+	return body
+
+
+## A round jar: a neck from the rim (half width `neck`) flaring out to the
+## shoulder, then a belly of half width `belly`.
+static func _jar(neck: float, flare: float, shoulder: float, belly: float) -> PackedVector2Array:
+	var body := PackedVector2Array([Vector2(-neck, -62)])
+	body.append_array(quad(Vector2(-neck, -62), Vector2(-flare, -54), Vector2(-shoulder, -48.3), 5))
 	for i in range(1, 29):
 		var a := lerpf(3.88, -0.74, i / 28.0)
-		body.append(Vector2(42 * cos(a), -26 + 28 * sin(a)))
-	body.append_array(quad(Vector2(31, -48.3), Vector2(27, -54), Vector2(26, -62), 5))
+		body.append(Vector2(belly * cos(a), -26 + 28 * sin(a)))
+	body.append_array(quad(Vector2(shoulder, -48.3), Vector2(flare, -54), Vector2(neck, -62), 5))
 	return body
 
 
@@ -475,14 +548,8 @@ static func catch_pot(ci: CanvasItem, c: Vector2, s: float, caught: Array, age: 
 	var k := exp(-age * 6.0)
 	fill(ci, ellipse(c + Vector2(0, 36) * s, 44 * s, 7 * s, 0, 24), P.SHADOW)
 	set_xf(ci, c + Vector2(0, 32) * s, Vector2(s * (1 - 0.06 * k), s * (1 + 0.08 * k)))
-	var body := PackedVector2Array([Vector2(-32, -62)])
-	body.append_array(quad(Vector2(-32, -62), Vector2(-33, -54), Vector2(-37, -48.3), 5))
-	for i in range(1, 29):
-		var a := lerpf(3.88, -0.74, i / 28.0)
-		body.append(Vector2(44 * cos(a), -26 + 28 * sin(a)))
-	body.append_array(quad(Vector2(37, -48.3), Vector2(33, -54), Vector2(32, -62), 5))
-	shape(ci, body, P.TAG, P.INK, 3.5)
-	stroke(ci, quad(Vector2(-41, -14), Vector2(0, -4), Vector2(41, -14), 12), P.HOOP, 4, false)
+	shape(ci, _body("catch"), P.TAG, P.INK, 3.5)
+	stroke(ci, _body("catch_glaze"), P.HOOP, 4, false)
 	var rim := ellipse(Vector2(0, -62), 36, 8)
 	shape(ci, rim, P.WOOD_LT, P.INK, 3)
 	var last: int = caught[0] if caught.size() > 0 else -1
@@ -606,9 +673,9 @@ static func sticker(ci: CanvasItem, c: Vector2, s: float, name: String, age: flo
 # Level furniture
 # ---------------------------------------------------------------------------
 
-## A punched pattern card showing its next colors. `smudged` marks which of
-## them carry stray paint (an ink smudge behind the swatch).
-static func card(ci: CanvasItem, c: Vector2, name: String, upcoming: Array, age: float, smudged: Array = []) -> void:
+## A punched pattern card, without its colors (card_paints): it never
+## changes, so it can be drawn once.
+static func card_body(ci: CanvasItem, c: Vector2, name: String) -> void:
 	var r := Rect2(c + Vector2(-72, -26), Vector2(144, 52))
 	fill(ci, round_rect(Rect2(r.position + Vector2(3, 4), r.size), 8), P.SHADOW)
 	shape(ci, round_rect(r, 8), P.TAG, P.INK, 2)
@@ -618,6 +685,12 @@ static func card(ci: CanvasItem, c: Vector2, name: String, upcoming: Array, age:
 	var tab := Vector2(r.position.x + 13, r.position.y + 13)
 	shape(ci, ellipse(tab, 9, 9, 0, 20), P.WOOD_LT, P.INK, 2)
 	text(ci, P.display(600), tab + Vector2(0, 0.5), name, 13, P.INK)
+
+
+## A card's next colors, on its body. `smudged` marks which of them carry
+## stray paint (an ink smudge behind the swatch).
+static func card_paints(ci: CanvasItem, c: Vector2, upcoming: Array, age: float, smudged: Array = []) -> void:
+	var r := Rect2(c + Vector2(-72, -26), Vector2(144, 52))
 	# next colors, the next one on the right by the card's port; they slide
 	# right as the card releases
 	var slide := -clampf(1.0 - age, 0, 1) * 18 if age < 1 else 0.0
@@ -640,9 +713,10 @@ static func smudge(ci: CanvasItem, c: Vector2) -> void:
 	disc(ci, c + Vector2(9.5, -12), 1.1, ink)
 
 
-## The loom: cloth with warp threads, wooden frame, woven stitches, shuttle.
-## glide (0 → 1) is how far the shuttle has slid on since the last stitch.
-static func loom(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: PackedByteArray, target: PackedByteArray, shown: int, ghost: bool, wrong: int, t: float, glide := 1.0) -> void:
+## The loom: cloth with warp threads, wooden frame, woven stitches. It holds
+## still between stitches; the shuttle and a wrong stitch's mark move on it
+## (loom_shuttle).
+static func loom(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: PackedByteArray, target: PackedByteArray, shown: int, ghost: bool, wrong: int) -> void:
 	fill(ci, PackedVector2Array([cloth.position, Vector2(cloth.end.x, cloth.position.y), cloth.end, Vector2(cloth.position.x, cloth.end.y)]), P.CLOTH)
 	for col in cols:
 		var x := cloth.position.x + (col + 0.5) * cs
@@ -666,19 +740,11 @@ static func loom(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: Pack
 				stroke(ci, chip, Color("#DDD3C1"), 1)
 			else:
 				fill(ci, chip, Color(P.SIG[target[i]], 0.35))
-	# The shuttle threads along the row it weaves, right across the slots, and
-	# slides on to the next one after a stitch lands (glide 0 → 1), coming in
-	# from the left edge for a new row. Its weft trails back to the cloth's
-	# edge, under the stitches it has laid.
-	var threading := not (wrong >= 0 and wrong < woven.size()) and shown < target.size()
-	var at := Vector2.ZERO
-	if threading:
-		var to := cloth.position + Vector2((shown % cols + 0.5) * cs, (shown / cols + 0.5) * cs)
-		var from := to
-		if glide < 1.0 and shown > 0:
-			from = to - Vector2(cs, 0) if shown % cols != 0 else Vector2(cloth.position.x - cs * 0.6, to.y)
-		at = from.lerp(to, 1.0 - pow(1.0 - clampf(glide, 0, 1), 3))
-		ci.draw_line(Vector2(cloth.position.x, at.y), at, Color(P.HOOP, 0.8), maxf(1.5, cs * 0.08), true)
+	# The shuttle's weft trails back to the cloth's edge, under the stitches it
+	# has laid; loom_shuttle draws the rest of it, past them.
+	if _threading(woven, target, shown, wrong) and shown % cols != 0:
+		var y := cloth.position.y + (shown / cols + 0.5) * cs
+		_weft(ci, Vector2(cloth.position.x, y), Vector2(_laid_edge(cloth, cols, cs, shown), y), cs)
 	for i in mini(shown, woven.size()):
 		var cell := Rect2(cloth.position + Vector2((i % cols) * cs, (i / cols) * cs), Vector2(cs, cs))
 		var c: int = woven[i]
@@ -691,6 +757,13 @@ static func loom(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: Pack
 		shape(ci, round_rect(Rect2(px, cloth.position.y - 20, 14, post_h), 5), P.WOOD, P.INK, 2.5)
 	for py in [cloth.position.y - 22, cloth.end.y + 4]:
 		shape(ci, round_rect(Rect2(cloth.position.x - 34, py, cloth.size.x + 68, 13), 6), P.WOOD_DK, P.INK, 2.5)
+
+
+## What moves on the loom (drawn over it): a wrong stitch's pulsing mark, or
+## else the shuttle. The shuttle threads along the row it weaves, right across
+## the slots, and slides on to the next one after a stitch lands (glide 0 → 1),
+## coming in from the left edge for a new row, its weft trailing behind it.
+static func loom_shuttle(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: PackedByteArray, target: PackedByteArray, shown: int, wrong: int, t: float, glide := 1.0) -> void:
 	if wrong >= 0 and wrong < woven.size():
 		var wc := cloth.position + Vector2((wrong % cols + 0.5) * cs, (wrong / cols + 0.5) * cs)
 		var pulse := 1 + 0.12 * sin(t * 8)
@@ -698,8 +771,34 @@ static func loom(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: Pack
 		var d := cs * 0.32
 		line(ci, wc + Vector2(-d, -d), wc + Vector2(d, d), P.INK, 3)
 		line(ci, wc + Vector2(-d, d), wc + Vector2(d, -d), P.INK, 3)
-	elif threading:
-		shuttle(ci, at, cs)
+		return
+	if not _threading(woven, target, shown, wrong):
+		return
+	var to := cloth.position + Vector2((shown % cols + 0.5) * cs, (shown / cols + 0.5) * cs)
+	var from := to
+	if glide < 1.0 and shown > 0:
+		from = to - Vector2(cs, 0) if shown % cols != 0 else Vector2(cloth.position.x - cs * 0.6, to.y)
+	var at := from.lerp(to, 1.0 - pow(1.0 - clampf(glide, 0, 1), 3))
+	if shown % cols == 0:  # a new row: the weft runs from the cloth's edge
+		_weft(ci, Vector2(cloth.position.x, at.y), at, cs)
+	else:  # past the stitches laid in this row (loom draws it under them)
+		var edge := _laid_edge(cloth, cols, cs, shown)
+		if at.x > edge:
+			_weft(ci, Vector2(edge, at.y), at, cs)
+	shuttle(ci, at, cs)
+
+
+static func _threading(woven: PackedByteArray, target: PackedByteArray, shown: int, wrong: int) -> bool:
+	return not (wrong >= 0 and wrong < woven.size()) and shown < target.size()
+
+
+## Where the stitches laid in the shuttle's row end (the right edge of the last).
+static func _laid_edge(cloth: Rect2, cols: int, cs: float, shown: int) -> float:
+	return cloth.position.x + (shown % cols) * cs - 1
+
+
+static func _weft(ci: CanvasItem, a: Vector2, b: Vector2, cs: float) -> void:
+	ci.draw_line(a, b, Color(P.HOOP, 0.8), maxf(1.5, cs * 0.08), true)
 
 
 ## A loom shuttle: a pointed wooden boat with a bobbin of thread in its hollow.
