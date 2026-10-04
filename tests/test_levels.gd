@@ -47,7 +47,8 @@ func reference_inventions(levels: Array) -> Dictionary:
 
 
 func test_loading(levels: Array) -> void:
-	check(levels.size() == 22, "twenty-two campaign levels (got %d)" % levels.size())
+	check(levels.size() == 33, "thirty-three campaign levels (got %d)" % levels.size())
+	check(Level.chapters().map(func(c): return c["levels"].size()) == [9, 12, 6, 6], "four chapters of 9, 12, 6 and 6 levels, each quilt full")
 	var ids := {}
 	for level in levels:
 		check(level.error == "", "level loads cleanly: %s %s" % [level.id, level.error])
@@ -65,7 +66,7 @@ func test_loading(levels: Array) -> void:
 		check(not level.reference.is_empty(), "%s has a reference solution" % level.id)
 		for p in level.reference.get("pieces", []):
 			check(p["kind"] == Pieces.INVENTION or p["kind"] in level.pieces, "%s reference uses only offered pieces (%s)" % [level.id, p["kind"]])
-			check(p.get("invention", "") == "" or p["invention"] in level.inventions, "%s reference uses an offered invention" % level.id)
+			check(p.get("invention", "") == "" or level.offers_invention(p["invention"]), "%s reference uses an offered invention" % level.id)
 	check(Level.parse_rows(["WRYOBPGK"]) == PackedByteArray([0, 1, 2, 3, 4, 5, 6, 7]), "color letters")
 	check(Level.letters(PackedByteArray([1, 2, 3, 4]), 2) == ["RY", "OB"], "letters round trip")
 	var smudgy = levels.filter(func(l): return l.id == "smudges")[0]
@@ -73,9 +74,10 @@ func test_loading(levels: Array) -> void:
 	check(smudgy.smudges[0] == stray and stray.any(func(i): return i < smudgy.cols), "Smudges marks exactly its stray stitches, some in the first row")
 	var inv_levels := levels.filter(func(l): return not l.invention.is_empty())
 	var pot_ids := inv_levels.filter(func(l): return l.chapter == 0).map(func(l): return l.invention["id"])
-	check(pot_ids == ["pot_yellow", "pot_blue", "pot_orange", "pot_purple", "pot_black", "pot_green", "pot_white"], "paint-box levels 2 to 8 each earn their pot (%s)" % str(pot_ids))
-	var others := inv_levels.filter(func(l): return l.chapter > 0)
-	check(others.size() == 1 and others[0].invention["id"] == "contrast", "one invention level after the paint box, and it makes Contrast")
+	check(pot_ids == ["pot_yellow", "pot_blue", "pot_orange", "pot_purple", "pot_black", "pot_green", "pot_black", "pot_white"], "paint-box levels 2 to 9 each earn a pot, black twice (%s)" % str(pot_ids))
+	var others := inv_levels.filter(func(l): return l.chapter > 0).map(func(l): return l.invention["id"])
+	check(others == ["third_paint", "contrast", "same_paint", "missing_from_either", "same_paint"], "the inventions after the paint box, Same Paint twice (%s)" % str(others))
+	test_pots_in_trays(levels)
 
 
 func test_references(levels: Array, inventions: Dictionary) -> void:
@@ -251,3 +253,26 @@ func test_stale_saves(levels: Array, inventions: Dictionary) -> void:
 	check(Progress.read(path) == null and Progress.load_from(path, levels).levels.is_empty(), "after the backup the game starts fresh")
 	for p in [bak, bak2]:
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(p))
+
+
+## From chapter 2 on, a level that offers the red pot offers every pot an
+## earlier level earns; one that offers only named pieces offers none.
+func test_pots_in_trays(levels: Array) -> void:
+	var by_id := {}
+	for level in levels:
+		by_id[level.id] = level
+	var all := ["pot_white", "pot_yellow", "pot_orange", "pot_blue", "pot_purple", "pot_green", "pot_black"]
+	check(levels.filter(func(l): return l.chapter == 0).all(func(l): return l.pots.is_empty()), "the paint box offers no earned pots")
+	check(by_id["orange_sun"].pots == all, "Orange Sun offers every earned pot, in paint order: %s" % str(by_id["orange_sun"].pots))
+	check(by_id["orange_sun"].offers_invention("pot_yellow") and not by_id["orange_sun"].offers_invention("contrast"), "an earned pot counts as offered")
+	check(by_id["pattern_card"].pots.is_empty() and by_id["neither_twice"].pots.is_empty() and by_id["only_missing"].pots.is_empty(), "levels without the red pot offer no pots")
+	check(by_id["same_paint"].pots == all, "chapter 4's kit levels offer the pots")
+	var raw: Dictionary = by_id["orange_sun"].raw.duplicate(true)
+	raw["hold_pots"] = ["pot_orange"]
+	var copy := levels.duplicate()
+	var held = Level.from_dict(raw)
+	held.chapter = 1
+	copy[copy.find(by_id["orange_sun"])] = held
+	Level._lay_trays(copy)
+	check(not "pot_orange" in held.pots and held.held_pots == ["pot_orange"] and not held.offers_invention("pot_orange"), "a level can hold a pot back")
+	Level._lay_trays(levels)

@@ -42,10 +42,16 @@ func _init() -> void:
 
 
 ## A test fixture: Keep What They Share as an invention level that makes a
-## Filter sticker (the campaign's version earns stars only).
+## Filter sticker (the campaign's version earns stars only), solved the
+## De Morgan way with basic pieces: Invert(Mix(Invert A, Invert B)).
 func filter_level():
 	var raw: Dictionary = by_id["keep_what_they_share"].raw.duplicate(true)
 	raw["invention"] = {"id": "filter", "name": "Filter", "check": "filter"}
+	raw["reference"] = {
+		"pieces": [
+			{"id": "ia", "kind": "invert", "x": 3, "y": 1}, {"id": "ib", "kind": "invert", "x": 3, "y": 5},
+			{"id": "m", "kind": "mix", "x": 6, "y": 3}, {"id": "o", "kind": "invert", "x": 8, "y": 3}],
+		"tubes": [["card0", "ia"], ["card1", "ib"], ["ia", "m.0"], ["ib", "m.1"], ["m", "o"], ["o", "loom"]]}
 	return Level.from_dict(raw)
 
 
@@ -222,4 +228,31 @@ func test_pots(inventions: Dictionary) -> void:
 	p.add_invention(filter)
 	var bigger := filter.duplicate(true)
 	bigger["cost"] = 9
-	check(p.add_invention(bigger)["cost"] == 9, "other inventions take the newest machine")
+	check(p.add_invention(bigger)["cost"] == 4, "every invention keeps its cheaper machine")
+	var same := filter.duplicate(true)
+	same["machine"] = {"nodes": [], "tubes": [], "next_id": 1}
+	check(p.add_invention(same)["machine"] == same["machine"], "a machine as cheap takes its place")
+	test_earned_twice()
+
+
+## Two levels earn Same Paint: Only the Third Paint for 8 pieces (four Third
+## Paints), Same Paint for 4 with the kit. The cheaper machine wins, whichever
+## level is solved first or again.
+func test_earned_twice() -> void:
+	var inventions := {}
+	var p = Progress.new()
+	for id in ["third_color", "only_third_paint", "same_paint"]:
+		var level = by_id[id]
+		var inv := Invention.package(level, level.reference_machine(), p.inventions)
+		check(Invention.works_for_every_paint(level.reference_machine(), level.cards.size(), inv["check"], p.inventions), "%s earns a real %s" % [id, inv["name"]])
+		p.add_invention(inv)
+		inventions[id] = inv
+	check(inventions["only_third_paint"]["id"] == "same_paint" and inventions["only_third_paint"]["cost"] == 8, "Only the Third Paint earns Same Paint for 8 pieces")
+	check(p.inventions["same_paint"]["cost"] == 4 and p.inventions["same_paint"]["from_level"] == "same_paint", "the 4-piece Same Paint replaces it")
+	p.add_invention(inventions["only_third_paint"])
+	check(p.inventions["same_paint"]["cost"] == 4, "solving Only the Third Paint again keeps the cheaper one")
+	var black := [by_id["black"], by_id["black_short_way"]].map(func(l): return Invention.package(l, l.reference_machine(), {}))
+	var q = Progress.new()
+	q.add_invention(black[1])
+	q.add_invention(black[0])
+	check(black[0]["id"] == "pot_black" and q.inventions["pot_black"]["cost"] == 3, "All the Paint's 5-piece black pot doesn't replace the short way's 3")

@@ -12,7 +12,7 @@ The red pot makes red paint: a new drop whenever its tube is free. Every other p
 ## Design
 
 - The one biased source the kit needs: without any pot, nothing can single out one primary (DESIGN.md §2.4). Story beat: "you have one pot of red paint."
-- A sleepy clay pot that burps a drop. The other seven pots are earned as inventions.
+- A sleepy clay pot that burps a drop. The other seven pots are earned as inventions in the paint box; from chapter 2 on they join the red pot in its tray slot, which fans out when tapped ([tray](tray.md)).
 
 ## Implementation
 
