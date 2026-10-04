@@ -2,6 +2,7 @@
 	"id": "black",
 	"name": "All the Paint",
 	"goal": "Weave a black cloth.",
+	"hint": "Black holds every paint: red, yellow and blue together.",
 	"pieces": [
 		"red_pot",
 		"shift",

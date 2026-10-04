@@ -2,6 +2,7 @@
 	"id": "wash_out",
 	"name": "Wash Out",
 	"goal": "Weave the fish.",
+	"hint": "Card A's paint, with card B's washed out.",
 	"pieces": [
 		"red_pot",
 		"shift",

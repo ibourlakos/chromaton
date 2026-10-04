@@ -2,6 +2,7 @@
 	"id": "keep_what_they_share",
 	"name": "Keep What They Share",
 	"goal": "Weave the house.",
+	"hint": "Only the paint both cards share.",
 	"pieces": [
 		"red_pot",
 		"shift",

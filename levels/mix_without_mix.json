@@ -2,6 +2,7 @@
 	"id": "mix_without_mix",
 	"name": "Mix Without Mix",
 	"goal": "Weave the tree.",
+	"hint": "Mix the two cards, with no mix in the tray.",
 	"pieces": [
 		"red_pot",
 		"shift",

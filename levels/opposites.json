@@ -2,6 +2,7 @@
 	"id": "opposites",
 	"name": "Opposites",
 	"goal": "Weave the thread.",
+	"hint": "Every paint on the card, flipped to its opposite.",
 	"pieces": [
 		"red_pot",
 		"shift",

@@ -2,6 +2,7 @@
 	"id": "black_cat",
 	"name": "Black Cat",
 	"goal": "Weave the black cat.",
+	"hint": "Wherever the card has paint, the cat is black.",
 	"pieces": [
 		"red_pot",
 		"shift",

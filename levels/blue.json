@@ -2,6 +2,7 @@
 	"id": "blue",
 	"name": "Blue",
 	"goal": "Weave a blue cloth.",
+	"hint": "Blue is two turns past red.",
 	"pieces": [
 		"red_pot",
 		"shift"

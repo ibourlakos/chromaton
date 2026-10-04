@@ -2,6 +2,7 @@
 	"id": "the_flower",
 	"name": "The Flower",
 	"goal": "Weave the flower.",
+	"hint": "Each paint shows where at least two cards have it.",
 	"pieces": [
 		"red_pot",
 		"shift",

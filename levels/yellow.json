@@ -2,6 +2,7 @@
 	"id": "yellow",
 	"name": "Yellow",
 	"goal": "Weave a yellow cloth from red paint.",
+	"hint": "Red turns to yellow on the wheel.",
 	"pieces": [
 		"red_pot",
 		"shift"

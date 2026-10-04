@@ -2,6 +2,7 @@
 	"id": "missing_from_either",
 	"name": "Missing From Either",
 	"goal": "Weave the mushroom.",
+	"hint": "The paint missing from either card.",
 	"pieces": [
 		"red_pot",
 		"shift",

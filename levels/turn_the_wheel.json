@@ -2,6 +2,7 @@
 	"id": "turn_the_wheel",
 	"name": "Turn the Wheel",
 	"goal": "Weave the thread.",
+	"hint": "Every paint on the card, one turn on.",
 	"pieces": [
 		"red_pot",
 		"shift",

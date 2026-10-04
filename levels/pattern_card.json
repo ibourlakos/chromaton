@@ -2,6 +2,7 @@
 	"id": "pattern_card",
 	"name": "The Pattern Card",
 	"goal": "Tube the card to the loom.",
+	"hint": "A card holds paint for every stitch and lets it out one drop at a time.",
 	"hints": true,
 	"pieces": [],
 	"inventions": [],

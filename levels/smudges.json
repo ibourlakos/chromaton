@@ -2,6 +2,7 @@
 	"id": "smudges",
 	"name": "Smudges",
 	"goal": "Weave the heart. Mind the smudges.",
+	"hint": "Keep only the card's red; the smudges wash out.",
 	"pieces": [
 		"red_pot",
 		"shift",

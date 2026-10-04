@@ -2,6 +2,7 @@
 	"id": "orange_sun",
 	"name": "Orange Sun",
 	"goal": "Weave the orange sun.",
+	"hint": "Mix red into the card's paint.",
 	"pieces": [
 		"red_pot",
 		"mix"
