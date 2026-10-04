@@ -46,4 +46,4 @@ godot_console --headless --path . --script res://tools/level_solver.gd
 
 ---
 
-Checks: all passed. Run time 4.9 s.
+Checks: all passed. Run time 3.9 s.
