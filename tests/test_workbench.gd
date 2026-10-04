@@ -14,6 +14,7 @@ const K = preload("res://ui/draw_kit.gd")
 const Keys = preload("res://ui/keys.gd")
 const Options = preload("res://ui/options.gd")
 const Intro = preload("res://ui/intro.gd")
+const PaintCard = preload("res://ui/paint_card.gd")
 const SETTINGS := "user://chromaton_settings_test.json"
 
 var failures := 0
@@ -36,6 +37,7 @@ func _initialize() -> void:
 	var progress = Progress.new()
 	test_editing(by_id["third_color"], Progress.new())
 	test_keys(by_id["third_color"])
+	test_paint_card(by_id["third_color"])
 	test_bindings()
 	test_card_hint(by_id["pattern_card"])
 	test_left_edge(by_id["orange"])
@@ -500,6 +502,65 @@ func test_keys(level) -> void:
 	key(s, KEY_RIGHT)
 	check(chosen == [0] and s.page == 1, "the level select takes Enter and arrows")
 	s.queue_free()
+
+
+## The paint card: the Paints button or P puts it up and away, a tap on the
+## card puts it away, it stays up from level to level, the bench works around
+## it, and Back puts it away only after a carried piece and a selection.
+func test_paint_card(level) -> void:
+	Keys.reset()
+	Keys.paints = false
+	# The triangle tells the rules: primaries where their glyph dots sit, each
+	# mix halfway between its two paints, black in the middle, opposites
+	# straight across it.
+	var at: Dictionary = PaintCard.spots()
+	var mid: Vector2 = at[7]
+	var dots := {1: -PI / 2, 2: PI / 6, 4: 5 * PI / 6}
+	for c in dots:
+		check(absf(angle_difference((at[c] - mid).angle(), dots[c])) < 0.01, "paint %d sits where its glyph dot sits" % c)
+	for c in [3, 5, 6]:
+		var parents := [1, 2, 4].filter(func(p): return (c & p) != 0)
+		check(at[c].distance_to((at[parents[0]] + at[parents[1]]) / 2) < 0.01, "mix %d sits halfway between its paints" % c)
+	for c in range(1, 7):
+		check(absf(angle_difference((at[c] - mid).angle(), (at[7 - c] - mid).angle() + PI)) < 0.01, "paint %d faces its opposite across black" % c)
+	var wb = open(level, Progress.new())
+	wb._ready()  # its buttons (headless tests never run _ready on their own)
+	check(wb.paint_card == null and not wb.btn_paints.toggled_on, "the paint card starts away")
+	key(wb, KEY_P)
+	check(wb.paint_card != null and wb.btn_paints.toggled_on, "P puts the paint card up")
+	var card: Rect2 = wb.paint_card.get_rect()
+	check(wb.BENCH.encloses(card), "the card hangs over the bench")
+	check(card.end.y <= wb.cell_center(0, 3).y - wb.CELL.y / 2, "and clears the middle row, where a single card's machine sits")
+	Keys.paints = false
+	Keys.load_settings()
+	check(Keys.paints, "the card being up is kept in the settings file")
+	var next = open(level, Progress.new())
+	next._ready()
+	check(next.paint_card != null, "the card stays up in the next level")
+	next.show_note()
+	check(next.note.get_index() > next.paint_card.get_index(), "the level's note covers the card")
+	next.free()  # now, before a frame would run its _ready again
+	tap(wb, tray_point(wb, wb.tray[0]["kind"]))
+	tap(wb, wb.cell_center(5, 5))
+	check(wb.machine.piece_at(5, 5) >= 0 and wb.paint_card != null, "the bench works around the card")
+	var e := InputEventMouseButton.new()
+	e.button_index = MOUSE_BUTTON_LEFT
+	e.pressed = true
+	wb.paint_card._gui_input(e)
+	check(wb.paint_card == null and not Keys.paints, "a tap on the card puts it away")
+	wb.btn_paints.pressed.emit()
+	check(wb.paint_card != null, "the Paints button puts it up")
+	var left := []
+	wb.exit_requested.connect(func(): left.append(true))
+	tap(wb, wb.cell_center(5, 5))
+	key(wb, KEY_ESCAPE)
+	check(wb.selected_piece == -1 and wb.paint_card != null, "Esc clears a selection before the card")
+	key(wb, KEY_ESCAPE)
+	check(wb.paint_card == null and left.is_empty(), "then puts the card away and stays")
+	key(wb, KEY_ESCAPE)
+	check(left.size() == 1, "then leaves")
+	wb.free()
+	Keys.paints = false
 
 
 ## Binding: a key moves off actions it clashes with (same screen, or

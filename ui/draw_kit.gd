@@ -833,6 +833,10 @@ static func icon(ci: CanvasItem, kind: String, c: Vector2, s: float, col: Color)
 		"x":
 			line(ci, c + Vector2(-7, -7) * s, c + Vector2(7, 7) * s, col, w)
 			line(ci, c + Vector2(-7, 7) * s, c + Vector2(7, -7) * s, col, w)
+		"paints":
+			# Three overlapping rings where the glyph dots sit: the paints mixing.
+			for pip in PIP:
+				ring(ci, c + Vector2(cos(pip[1]), sin(pip[1])) * 4.6 * s, 6.4 * s, col, w * 0.55)
 		"zzz":
 			for i in 2:
 				var o := c + Vector2(-5 + i * 9, 3 - i * 8) * s

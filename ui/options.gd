@@ -15,7 +15,7 @@ const Keys = preload("res://ui/keys.gd")
 signal back
 
 const DESIGN := Vector2(1280, 800)
-const ROW := 42.0
+const ROW := 40.0
 const SLOT := Vector2(104, 34)
 const PIECE_SLOT := Vector2(52, 34)
 const GROUP_NAMES := {"Everywhere": "Everywhere", "Workbench": "Workbench", "Woven": "After weaving", "Levels": "Level select"}
@@ -67,7 +67,7 @@ func _toggle(icon: String, at: Vector2, text: String, action: Callable):
 ## as one row of single slots), After weaving and Level select on the right.
 func _layout() -> void:
 	var columns := {"Everywhere": 0, "Workbench": 0, "Woven": 1, "Levels": 1}
-	var y := [150.0, 150.0]
+	var y := [140.0, 140.0]
 	for g in Keys.GROUPS:
 		var col: int = columns[g]
 		var x := 70.0 + col * 630

@@ -8,8 +8,8 @@
 ## screen hides them, pressing a key brings them back, and the hints key (H or
 ## ?) or Options turns them on and off for good.
 ##
-## The settings file also keeps the run speed (so it carries across levels)
-## and whether the bench shows a grid.
+## The settings file also keeps the run speed (so it carries across levels),
+## whether the bench shows a grid and whether the paint card is up.
 extends RefCounted
 
 const P = preload("res://ui/palette.gd")
@@ -34,6 +34,7 @@ const ACTIONS := [
 	["faster", "Workbench", "Faster", [KEY_EQUAL]],
 	["speed", "Workbench", "Next speed", [KEY_TAB]],
 	["delete", "Workbench", "Delete selected", [KEY_DELETE, KEY_BACKSPACE]],
+	["paints", "Workbench", "Paints", [KEY_P]],
 	["piece_1", "Workbench", "Tray piece 1", [KEY_1]],
 	["piece_2", "Workbench", "Tray piece 2", [KEY_2]],
 	["piece_3", "Workbench", "Tray piece 3", [KEY_3]],
@@ -76,6 +77,7 @@ static var shown := not DisplayServer.is_touchscreen_available()
 static var _choice = null  # true/false once chosen for good (hints key, Options)
 static var speed := 1  # the workbench's run speed: 0 slow, 1 normal, 2 fast
 static var grid := false  # a faint grid on the bench (Options)
+static var paints := false  # the workbench's paint card is up (kept across levels)
 ## Whether a keyboard is likely (not phone builds): Options shows the keys
 ## only then. Screenshots and tests may turn it off.
 static var keyboard := not (OS.has_feature("mobile") or OS.has_feature("web_android") or OS.has_feature("web_ios"))
@@ -175,7 +177,7 @@ static func save_settings(path := "") -> void:
 	var keys := {}
 	for act in bindings:
 		keys[act] = bindings[act]
-	var d := {"keys": keys, "speed": speed, "grid": grid}
+	var d := {"keys": keys, "speed": speed, "grid": grid, "paints": paints}
 	if _choice != null:
 		d["hints"] = _choice
 	var f := FileAccess.open(path, FileAccess.WRITE)
@@ -203,11 +205,19 @@ static func load_settings(path := "") -> void:
 		shown = _choice
 	speed = clampi(int(d.get("speed", 1)), 0, 2)
 	grid = bool(d.get("grid", false))
+	paints = bool(d.get("paints", false))
 
 
 static func set_grid(on: bool) -> void:
 	grid = on
 	save_settings()
+
+
+## Keeps the paint card up (or away) for every level.
+static func set_paints(on: bool) -> void:
+	if on != paints:
+		paints = on
+		save_settings()
 
 
 ## Keeps a new run speed for every level.

@@ -15,9 +15,14 @@
 ## Keys (see keys.gd for the defaults; they can be changed in Options) only
 ## do what a tap already does: run controls and speed, a tray piece's key
 ## picks it up (it follows the pointer until a click puts it down), Delete
-## removes only what is selected, Back drops a carried piece, then clears the
-## selection, then leaves the level. A right-click likewise only speeds up a
-## tap: it drops a carried piece.
+## removes only what is selected, P puts the paint card up or away, Back drops
+## a carried piece, then clears the selection, then puts the paint card away,
+## then leaves the level. A right-click likewise only speeds up a tap: it
+## drops a carried piece.
+##
+## The Paints button in the top bar hangs a card of the eight paints over the
+## bench (ui/paint_card.gd). It isn't modal: the bench works around it, and a
+## tap on the card puts it away.
 extends Control
 
 const P = preload("res://ui/palette.gd")
@@ -26,6 +31,7 @@ const ToyButton = preload("res://ui/toy_button.gd")
 const Keys = preload("res://ui/keys.gd")
 const SuccessPanel = preload("res://ui/success_panel.gd")
 const LevelNote = preload("res://ui/level_note.gd")
+const PaintCard = preload("res://ui/paint_card.gd")
 const Pieces = preload("res://core/pieces.gd")
 const Machine = preload("res://core/machine.gd")
 const Simulator = preload("res://core/simulator.gd")
@@ -109,6 +115,8 @@ var btn_back
 var btn_reset
 var btn_undo
 var btn_speed := []
+var btn_paints
+var paint_card: Control  # the paints, pinned under their button while up
 
 
 func setup(p_level, p_progress, p_has_next: bool) -> void:
@@ -194,7 +202,10 @@ func _ready() -> void:
 	btn_back.key = Keys.label("step_back")
 	btn_reset.key = Keys.label("reset")
 	btn_undo.key = Keys.label("undo")
+	btn_paints = _control_button("paints", btn_undo.position.x - 64, _toggle_paints)
+	btn_paints.key = Keys.label("paints")
 	_set_speed(speed)
+	_show_paints(Keys.paints)
 
 
 func _control_button(icon: String, x: float, action: Callable, size_px := Vector2(52, 52)):
@@ -203,6 +214,32 @@ func _control_button(icon: String, x: float, action: Callable, size_px := Vector
 	b.pressed.connect(action)
 	add_child(b)
 	return b
+
+
+## The Paints button (or its key): puts the paint card up or away, for every
+## level (kept in the settings file).
+func _toggle_paints() -> void:
+	_show_paints(paint_card == null)
+
+
+func _show_paints(on: bool) -> void:
+	Keys.set_paints(on)
+	btn_paints.toggled_on = on
+	btn_paints.queue_redraw()
+	if on == (paint_card != null):
+		return
+	if not on:
+		paint_card.queue_free()
+		paint_card = null
+		return
+	paint_card = PaintCard.new()
+	# Hung from its button, over the bench, under the level's note and the
+	# success panel.
+	var c: Vector2 = btn_paints.position + btn_paints.size / 2
+	paint_card.position = Vector2(minf(c.x - PaintCard.SIZE.x / 2, BENCH.end.x - PaintCard.SIZE.x - 8), BENCH.position.y)
+	paint_card.tapped.connect(_show_paints.bind(false))
+	add_child(paint_card)
+	move_child(paint_card, btn_paints.get_index() + 1)
 
 
 # ---------------------------------------------------------------------------
@@ -538,12 +575,16 @@ func _key(act: String, event: InputEventKey) -> bool:
 		"delete":
 			if editing:
 				_delete_selected()
+		"paints":
+			_toggle_paints()
 		"back":
 			if carrying >= 0:
 				carrying = -1
 			elif _has_selection():
 				selected_tube = -1
 				selected_piece = -1
+			elif paint_card != null:
+				_show_paints(false)
 			elif editing:
 				exit_requested.emit()
 		_:

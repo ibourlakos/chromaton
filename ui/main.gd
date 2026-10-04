@@ -17,6 +17,7 @@
 ##   --page=<n>                  the level select's chapter page (from 0)
 ##   --stale                     the intro as it reads for a stale save
 ##   --grid                      the bench grid on (Options)
+##   --paints                    the paint card up on the workbench
 ##   --touch                     as on a phone build: no keys in Options, no
 ##                               key labels
 extends Control
@@ -221,6 +222,7 @@ func _screenshot(args: Dictionary) -> void:
 	progress = Progress.new()
 	progress.unlock_all = args.has("unlock-all")
 	Keys.grid = args.has("grid")
+	Keys.paints = args.has("paints")
 	if args.has("touch"):  # as on a phone: no keyboard, no key labels
 		Keys.keyboard = false
 		Keys.shown = false
