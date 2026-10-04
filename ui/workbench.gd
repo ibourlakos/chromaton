@@ -1031,7 +1031,8 @@ func _draw_status() -> void:
 			var i: int = sim.wrong_index
 			K.icon(self, "x", bubble.position + Vector2(24, 26), 1.0, P.INK)
 			K.drop(self, bubble.position + Vector2(62, 28), 11, sim.woven[i])
-			K.text(self, P.display(600), bubble.position + Vector2(95, 26), "≠", 26, P.INK)
+			# Nunito, not Fredoka: Fredoka has no "≠"
+			K.text(self, P.ui(800), bubble.position + Vector2(95, 26), "≠", 26, P.INK)
 			K.drop(self, bubble.position + Vector2(128, 28), 11, level.target[i])
 			K.text(self, font, bubble.position + Vector2(158, 26), "stitch %d" % (i + 1), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 		"stalled":
