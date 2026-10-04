@@ -44,6 +44,7 @@ func _initialize() -> void:
 	test_tray_lists_only_the_level(by_id["green"], progress)
 	test_not_general(by_id["either_not_both"])
 	test_unused_card(by_id["third_color"])
+	test_note(by_id["green"])
 	test_round_rect()
 	test_level_select(levels)
 	test_intro()
@@ -297,6 +298,30 @@ func test_not_general(inv_level) -> void:
 		frames += 1
 	check(wb.outcome == "not_general", "a machine that only fits the cards is not accepted (%s)" % wb.outcome)
 	check(not progress.is_solved(level.id) and progress.inventions.is_empty(), "nothing is recorded")
+	wb.queue_free()
+
+
+## The level's note pops up, any key (or a tap) lands it under the title
+## without doing what the key means, and tapping the title brings it back.
+func test_note(level) -> void:
+	var wb = open(level, Progress.new())
+	wb.show_note()
+	var note = wb.note
+	check(note != null and wb._still_look()[2], "the level's note pops up")
+	key(wb, KEY_SPACE)
+	check(not wb.running, "a key doesn't reach the bench while the note is up")
+	key(note, KEY_SPACE)
+	for n in 10:
+		note._process(0.1)
+	check(wb.note == null and not wb.running, "a key lands the note without running the machine")
+	tap(wb, wb.TITLE_HIT.get_center())
+	check(wb.note != null, "tapping the title brings the note back")
+	var e := InputEventMouseButton.new()
+	e.button_index = MOUSE_BUTTON_LEFT
+	e.pressed = true
+	wb.note._gui_input(e)
+	wb.note._process(1.0)
+	check(wb.note == null, "a tap lands it")
 	wb.queue_free()
 
 

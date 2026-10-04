@@ -4,9 +4,11 @@
 ##   W R Y O B P G K = White, Red, Yellow, Orange, Blue, Purple, Green, Black.
 ## Cards are read and the loom is woven row by row, left to right.
 ##
-## JSON fields: id, name, goal, pieces (tray kinds), inventions (invention ids
-## allowed in the tray), target (rows), cards ([{name, colors: rows, optional
-## smudges: [stitch indices that carry stray paint]}]),
+## JSON fields: id, name, goal, optional hint (guidance shown with the goal
+## as the level opens and under the title after), pieces (tray kinds),
+## inventions (invention ids allowed in the tray), target (rows), cards
+## ([{name, colors: rows, optional smudges: [stitch indices that carry stray
+## paint]}]),
 ## stars {budget, best}, optional invention {id, name, check} on invention
 ## levels, reference (a solution: {pieces: [{id, kind, x, y}], tubes:
 ## [[from, to]]}, endpoints written "name" or "name.port", with "card0",
@@ -27,6 +29,7 @@ var chapter := 0  # index into Level.chapters()
 var chapter_name := ""
 var name := ""
 var goal := ""
+var hint := ""
 var cols := 0
 var rows := 0
 var target := PackedByteArray()
@@ -91,6 +94,7 @@ static func from_dict(d: Dictionary):
 	level.id = str(d.get("id", ""))
 	level.name = str(d.get("name", ""))
 	level.goal = str(d.get("goal", ""))
+	level.hint = str(d.get("hint", ""))
 	var rows_in: Array = d.get("target", [])
 	level.rows = rows_in.size()
 	level.cols = str(rows_in[0]).length() if rows_in.size() > 0 else 0

@@ -25,6 +25,7 @@ const K = preload("res://ui/draw_kit.gd")
 const ToyButton = preload("res://ui/toy_button.gd")
 const Keys = preload("res://ui/keys.gd")
 const SuccessPanel = preload("res://ui/success_panel.gd")
+const LevelNote = preload("res://ui/level_note.gd")
 const Pieces = preload("res://core/pieces.gd")
 const Machine = preload("res://core/machine.gd")
 const Simulator = preload("res://core/simulator.gd")
@@ -48,6 +49,8 @@ const COLS := 11
 const ROWS := 7
 const CARD_ROWS := {1: [3], 2: [1, 5], 3: [0, 3, 6]}
 const SIDE := Rect2(980, 74, 288, 578)  # design card, loom and status
+const TITLE_HIT := Rect2(76, 2, 710, 60)  # tapping the title brings the level's note back
+const LINE_HOME := Vector2(80, 47)  # left middle of the line under the title
 const PORT_DX := 34.0
 const PORT_DY := 17.0
 const PORT_HIT := 20.0
@@ -80,6 +83,7 @@ var hover_pos := Vector2(-1, -1)  # last pointer position over the bench (for ke
 var carrying := -1  # tray index of a picked-up piece that follows the pointer
 var outcome := ""  # "", "solved", "wrong", "stalled", "unused", "not_general"
 var panel: Control
+var note: Control  # the level's note while it is up (see show_note)
 var still: Control  # the still layer (see _draw_still)
 var still_look := []
 
@@ -127,6 +131,17 @@ func load_machine(m) -> void:
 	machine = m
 	undo_stack.clear()
 	_rebuild()
+
+
+## Pops up the level's note (title, goal, hint); a tap or any key lands it
+## under the title. Tapping the title brings it back.
+func show_note() -> void:
+	if note != null:
+		return
+	note = LevelNote.new()
+	note.setup(level, LINE_HOME)
+	note.landed.connect(func(): note = null)
+	add_child(note)
 
 
 func _fixed_nodes_match() -> bool:
@@ -486,7 +501,7 @@ func _notification(what: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed) or panel != null:
+	if not (event is InputEventKey and event.pressed) or panel != null or note != null:
 		return
 	var act := Keys.action(event, "Workbench")
 	if event.echo and not act in REPEATING:
@@ -567,6 +582,9 @@ func _press(pos: Vector2) -> void:
 	drag_pos = pos
 	drag_moved = false
 	drag = ""
+	if TITLE_HIT.has_point(pos):
+		show_note()
+		return
 	if _has_selection() and pos.distance_to(_delete_button_pos()) < 26:
 		_delete_selected()
 		return
@@ -784,7 +802,7 @@ func _carried_ghost() -> bool:
 
 ## What the still layer shows that can change: redrawn only when this does.
 func _still_look() -> Array:
-	return [carrying, drag == "move" and drag_moved and TRAY.has_point(drag_pos)]
+	return [carrying, drag == "move" and drag_moved and TRAY.has_point(drag_pos), note != null]
 
 
 ## The still layer: top bar, tray, bench and grid, design card. Drawn behind
@@ -812,8 +830,14 @@ func _draw_frame(ci: CanvasItem) -> void:
 	K.fill(ci, PackedVector2Array([Vector2(0, 0), Vector2(DESIGN.x, 0), Vector2(DESIGN.x, TOP_H), Vector2(0, TOP_H)]), Color(P.PAPER_DK, 0.6))
 	ci.draw_line(Vector2(0, TOP_H), Vector2(DESIGN.x, TOP_H), Color(P.INK, 0.15), 2)
 	var index := str(level.number)
-	K.text(ci, P.display(600), Vector2(80, 22), "%s · %s" % [index, level.name], 24, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-	K.text(ci, P.ui(600), Vector2(80, 47), level.goal, 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+	var title := "%s · %s" % [index, level.name]
+	K.text(ci, P.display(600), Vector2(80, 22), title, 24, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+	# A "?" by the title: tapping the title brings the level's note back.
+	var badge := Vector2(80 + P.display(600).get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x + 18, 22)
+	K.shape(ci, K.ellipse(badge, 10, 10, 0, 20), P.TAG, Color(P.INK, 0.6), 1.5)
+	K.text(ci, P.ui(800), badge + Vector2(0, 0.5), "?", 14, P.INK)
+	if note == null:  # while the note is up, its line is on it
+		K.text(ci, P.ui(700), LINE_HOME, LevelNote.line(level), 15, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 
 
 func _draw_tray(ci: CanvasItem) -> void:

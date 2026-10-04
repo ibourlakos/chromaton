@@ -2,6 +2,7 @@
 	"id": "white",
 	"name": "Nothing at All",
 	"goal": "Weave a white cloth.",
+	"hint": "White is the opposite of black. Build black first, then flip it.",
 	"pieces": [
 		"red_pot",
 		"shift",

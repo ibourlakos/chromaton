@@ -13,6 +13,7 @@
 ##   --wrong                     tube card A straight to the loom instead (other
 ##                               cards are then unused, which fails the run)
 ##   --empty                     leave the bench empty
+##   --note                      show the level's note (title, goal, hint) up
 ##   --page=<n>                  the level select's chapter page (from 0)
 ##   --stale                     the intro as it reads for a stale save
 ##   --grid                      the bench grid on (Options)
@@ -188,7 +189,8 @@ func show_options() -> void:
 	_set_screen(o)
 
 
-func open_level(i: int) -> void:
+## Opens a level; its note pops up until the level is solved.
+func open_level(i: int, with_note := true) -> void:
 	select_page = levels[i].chapter
 	var w = Workbench.new()
 	w.setup(levels[i], progress, i + 1 < levels.size())
@@ -200,6 +202,8 @@ func open_level(i: int) -> void:
 		open_level(i + 1))
 	w.progress_changed.connect(func(): _save())
 	_set_screen(w)
+	if with_note and not progress.is_solved(levels[i].id):
+		w.show_note()
 
 
 # ---------------------------------------------------------------------------
@@ -244,7 +248,10 @@ func _screenshot(args: Dictionary) -> void:
 				printerr("unknown level: " + what)
 				get_tree().quit(1)
 				return
-			open_level(i)
+			open_level(i, false)
+			if args.has("note"):
+				screen.show_note()
+				screen.note.t = 1.0  # fully popped up
 			if args.has("empty"):
 				screen.load_machine(levels[i].new_machine())
 			elif args.has("wrong"):
