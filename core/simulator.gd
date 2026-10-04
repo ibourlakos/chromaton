@@ -11,7 +11,10 @@
 ## - the loom takes one drop per tick and weaves the next stitch; a catch pot
 ##   takes one drop per tick and keeps it;
 ## - every node decides from the state at the start of the tick, so the result
-##   never depends on the order nodes are visited.
+##   never depends on the order nodes are visited;
+## - every card must be used: a card with no tube out of it fails the run
+##   before it starts, and a card still holding paint when the loom is full
+##   fails it at the end.
 ##
 ## An invention is one piece that takes one tick (DESIGN.md 5.1): it looks its
 ## answer up in a table of what the machine inside makes from every
@@ -21,7 +24,7 @@ extends RefCounted
 const Pieces = preload("res://core/pieces.gd")
 const Machine = preload("res://core/machine.gd")
 
-enum Status { RUNNING, SOLVED, WRONG, STALLED }
+enum Status { RUNNING, SOLVED, WRONG, STALLED, UNUSED }
 
 const MAX_TICKS := 20000
 const MAX_DEPTH := 16
@@ -31,6 +34,7 @@ var tick := 0
 var status := Status.RUNNING
 var woven := PackedByteArray()
 var wrong_index := -1
+var unused_card := -1  # the card an UNUSED run left out
 var last_weave_tick := 0
 var target := PackedByteArray()
 var cards: Array = []
@@ -114,6 +118,16 @@ func _init(machine, level_cards: Array, level_target: PackedByteArray, invention
 	last_fire.fill(0)
 	last_color.fill(-1)
 	fire_count.fill(0)
+	var wired := []
+	wired.resize(cards.size())
+	wired.fill(false)
+	for i in node_kind.size():
+		var c: int = node_card[i]
+		if node_kind[i] == "card" and c >= 0 and c < cards.size() and not node_outs[i].has(-1):
+			wired[c] = true
+	unused_card = wired.find(false)
+	if unused_card >= 0:
+		status = Status.UNUSED
 
 
 # ---------------------------------------------------------------------------
@@ -307,7 +321,11 @@ func step() -> void:
 	if wrong:
 		status = Status.WRONG
 	elif woven.size() == target.size():
-		status = Status.SOLVED
+		for c in cards.size():
+			if card_remaining(c) > 0:
+				unused_card = c
+				break
+		status = Status.UNUSED if unused_card >= 0 else Status.SOLVED
 
 
 ## Runs until the loom is full, a stitch is wrong or nothing can move.

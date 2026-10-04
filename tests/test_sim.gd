@@ -51,6 +51,7 @@ func _init() -> void:
 	test_unconnected()
 	test_wrong_stitch()
 	test_stall_and_run_out()
+	test_unused_cards()
 	test_order_independence()
 	test_determinism()
 	test_machine_edits()
@@ -227,6 +228,25 @@ func test_stall_and_run_out() -> void:
 	var empty := bench(0)
 	sim = run(empty[0], [], "R")
 	check(sim.status == S.STALLED and sim.tick == 0, "an empty bench stalls at once")
+
+
+func test_unused_cards() -> void:
+	# A card with no tube out of it fails the run before it starts.
+	var b := bench(2)
+	b[0].connect_ports(b[1][0], 0, b[2], 0)
+	var sim := run(b[0], [seq("RR"), seq("YY")], "RR")
+	check(sim.status == S.UNUSED and sim.unused_card == 1 and sim.tick == 0, "a card with no tube fails at once (card %d, tick %d)" % [sim.unused_card, sim.tick])
+
+	# A card still holding paint when the loom is full fails it at the end.
+	var mix: int = b[0].add_node("mix", 0, 0)
+	b[0].connect_ports(b[1][1], 0, mix, 0)
+	sim = run(b[0], [seq("RR"), seq("YY")], "RR")
+	check(sim.status == S.UNUSED and sim.unused_card == 1 and sim.woven.size() == 2, "a card with paint left when the loom is full fails (card %d)" % sim.unused_card)
+
+	b[0].remove_node(mix)
+	b[0].connect_ports(b[1][1], 0, b[0].add_node("catch_pot", 0, 1), 0)
+	sim = run(b[0], [seq("RR"), seq("YY")], "RR")
+	check(sim.status == S.SOLVED, "a card poured into a catch pot counts as used")
 
 
 ## Builds Invert(Mix(A, B)) with its nodes added in the given order.

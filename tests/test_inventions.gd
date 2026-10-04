@@ -181,8 +181,10 @@ func test_edges() -> void:
 	check(sim.status == S.SOLVED and sim.tick == 6, "a pass-through invention takes one tick like any piece (%d)" % sim.tick)
 	check(sim.tube_drop(0) == -1 and sim.tube_drop(1) == -1, "its tubes are empty once the cloth is woven")
 
-	# An invention with an unconnected input never fires.
+	# An invention with an unconnected input never fires (its card pours into
+	# a catch pot, so the card still counts as used).
 	outer.remove_tube(outer.tube_from(a, 0))
+	outer.connect_ports(a, 0, outer.add_node("catch_pot", 0, 1), 0)
 	sim = Simulator.new(outer, [seq], seq, inventions)
 	sim.run()
 	check(sim.status == S.STALLED and sim.woven.size() == 0, "an unfed invention stays still")

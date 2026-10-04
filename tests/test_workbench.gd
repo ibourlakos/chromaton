@@ -43,6 +43,7 @@ func _initialize() -> void:
 		play_level(levels[i], progress, i)
 	test_tray_lists_only_the_level(by_id["green"], progress)
 	test_not_general(by_id["either_not_both"])
+	test_unused_card(by_id["third_color"])
 	test_round_rect()
 	test_level_select(levels)
 	test_intro()
@@ -296,6 +297,20 @@ func test_not_general(inv_level) -> void:
 		frames += 1
 	check(wb.outcome == "not_general", "a machine that only fits the cards is not accepted (%s)" % wb.outcome)
 	check(not progress.is_solved(level.id) and progress.inventions.is_empty(), "nothing is recorded")
+	wb.queue_free()
+
+
+## A card with no tube out of it fails the run as soon as it starts.
+func test_unused_card(level) -> void:
+	var wb = open(level, Progress.new())
+	wb.load_machine(level.reference_machine())
+	var card: int = wb.machine.find_kind(Pieces.CARD, 1)
+	wb.machine.remove_tube(wb.machine.tube_from(card, 0))
+	wb._edited()
+	wb._toggle_run()
+	for n in 10:
+		wb._process(0.25)
+	check(wb.outcome == "unused" and wb.sim.unused_card == 1 and wb.sim.tick == 0, "a card with no tube fails the run at once (%s)" % wb.outcome)
 	wb.queue_free()
 
 

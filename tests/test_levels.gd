@@ -121,7 +121,7 @@ func test_wrong_solutions(levels: Array) -> void:
 		["orange_sun", {"pieces": [], "tubes": [["card0", "loom"]]}, "A"],
 		["green", {"pieces": [{"id": "p", "kind": "red_pot", "x": 0, "y": 0}, {"id": "h", "kind": "shift", "x": 0, "y": 1}], "tubes": [["p", "h"], ["h", "loom"]]}, "red_shift"],
 		["third_color", {"pieces": [{"id": "m", "kind": "mix", "x": 0, "y": 0}], "tubes": [["card0", "m.0"], ["card1", "m.1"], ["m", "loom"]]}, "mix_ab"],
-		["keep_what_they_share", {"pieces": [], "tubes": [["card1", "loom"]]}, "B"],
+		["keep_what_they_share", {"pieces": [{"id": "c", "kind": "catch_pot", "x": 0, "y": 0}], "tubes": [["card1", "loom"], ["card0", "c"]]}, "B"],
 		["wash_out", {"pieces": [
 			{"id": "ia", "kind": "invert", "x": 0, "y": 0}, {"id": "m", "kind": "mix", "x": 0, "y": 1}, {"id": "o", "kind": "invert", "x": 0, "y": 2}],
 			"tubes": [["card1", "ia"], ["ia", "m.0"], ["card0", "m.1"], ["m", "o"], ["o", "loom"]]}, "bleach_swapped"],

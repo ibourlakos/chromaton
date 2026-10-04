@@ -10,7 +10,8 @@
 ##                               (default: one per stitch)
 ##   --phase=<0..1>              how far drops are along their tubes
 ##   --finish                    run to the end and show the result
-##   --wrong                     tube card A straight to the loom instead
+##   --wrong                     tube card A straight to the loom instead (other
+##                               cards are then unused, which fails the run)
 ##   --empty                     leave the bench empty
 ##   --page=<n>                  the level select's chapter page (from 0)
 ##   --stale                     the intro as it reads for a stale save

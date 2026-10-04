@@ -78,7 +78,7 @@ var selected_tube := -1
 var selected_piece := -1  # a placed piece (only one of the two is selected)
 var hover_pos := Vector2(-1, -1)  # last pointer position over the bench (for keys)
 var carrying := -1  # tray index of a picked-up piece that follows the pointer
-var outcome := ""  # "", "solved", "wrong", "stalled", "not_general"
+var outcome := ""  # "", "solved", "wrong", "stalled", "unused", "not_general"
 var panel: Control
 var still: Control  # the still layer (see _draw_still)
 var still_look := []
@@ -373,6 +373,8 @@ func _sync_buttons() -> void:
 func _do_step() -> void:
 	if sim.status != Simulator.Status.RUNNING:
 		running = false
+		if sim.status == Simulator.Status.UNUSED and outcome == "":
+			outcome = "unused"  # a card with no tube: the run fails before it starts
 		return
 	var before: int = sim.tick
 	sim.step()
@@ -414,6 +416,8 @@ func _on_tick_shown() -> void:
 		_finish_solve()
 	elif sim.status == Simulator.Status.WRONG:
 		outcome = "wrong"
+	elif sim.status == Simulator.Status.UNUSED:
+		outcome = "unused"
 
 
 ## Runs to a tick without animation (for screenshots).
@@ -1039,6 +1043,14 @@ func _draw_status() -> void:
 			K.shape(self, K.round_rect(bubble, 12), P.TAG, P.INK, 2)
 			K.icon(self, "zzz", bubble.position + Vector2(26, 26), 1.0, P.INK)
 			K.text(self, font, bubble.position + Vector2(52, 26), "Stuck: paint can't reach the loom", 15, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+		"unused":
+			# Every card must be used: at tick 0 the card has no tube; later it
+			# still held paint when the loom was full.
+			K.shape(self, K.round_rect(bubble, 12), P.TAG, P.INK, 2)
+			K.icon(self, "x", bubble.position + Vector2(24, 26), 1.0, P.INK)
+			var card: String = level.card_names[sim.unused_card]
+			var why := "Card %s has no tube" % card if sim.tick == 0 else "Card %s still has paint left" % card
+			K.text(self, font, bubble.position + Vector2(48, 26), why, 15, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 		"not_general":
 			K.shape(self, K.round_rect(bubble, 12), P.TAG, P.INK, 2)
 			K.text(self, font, bubble.position + Vector2(14, 16), "Right picture! But a real %s must" % level.invention["name"], 14, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
