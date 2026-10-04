@@ -6,6 +6,7 @@
 extends SceneTree
 
 const Level = preload("res://core/level.gd")
+const Invention = preload("res://core/invention.gd")
 const Progress = preload("res://core/progress.gd")
 const Pieces = preload("res://core/pieces.gd")
 const Workbench = preload("res://ui/workbench.gd")
@@ -45,6 +46,7 @@ func _initialize() -> void:
 		play_level(levels[i], progress, i)
 	test_tray_lists_only_the_level(by_id["green"], progress)
 	test_locked_tray(levels, by_id)
+	test_pot_fan(levels, by_id)
 	test_not_general(by_id["either_not_both"])
 	test_unused_card(by_id["third_color"])
 	test_note(by_id["green"])
@@ -130,14 +132,18 @@ func play_level(level, progress, index: int) -> void:
 	for inv_id in level.inventions:
 		if progress.inventions.has(inv_id):
 			shown.append("inv:" + inv_id)
-	check(wb.tray.map(func(item): return item["kind"]) == shown, "%s: the tray holds the level's pieces and earlier levels' pieces" % level.id)
-	var open_kinds: Array = wb.tray.filter(func(item): return not item["locked"]).map(func(item): return item["kind"])
+	var shelf: Array = wb.tray.slice(0, wb.shelf_size)
+	check(shelf.map(func(item): return item["kind"]) == shown, "%s: the tray holds the level's pieces and earlier levels' pieces" % level.id)
+	var open_kinds: Array = shelf.filter(func(item): return not item["locked"]).map(func(item): return item["kind"])
 	check(open_kinds.filter(func(k): return not k.begins_with("inv:")).size() == level.pieces.size() and level.pieces.all(func(k): return k in open_kinds), "%s: exactly the level's own pieces are open" % level.id)
 	var names := {}
 	for p in level.reference["pieces"]:
 		var kind: String = p["kind"]
 		if kind == Pieces.INVENTION:
 			kind = "inv:" + p["invention"]
+		if kind.begins_with("inv:pot_"):  # earned pots wait in the pot slot's fan
+			tap(wb, tray_point(wb, "red_pot"))
+			check(wb.fan_open, "%s: tapping the pot slot fans out the pots" % level.id)
 		var from := tray_point(wb, kind)
 		check(from.x >= 0, "%s: tray offers %s" % [level.id, kind])
 		drag(wb, from, wb.cell_center(int(p["x"]), int(p["y"])))
@@ -166,7 +172,7 @@ func play_level(level, progress, index: int) -> void:
 	check(rec.get("best_pieces", -1) == level.best and rec.get("best_ticks", 0) == wb.sim.tick, "%s: pieces and ticks recorded" % level.id)
 	if not level.invention.is_empty():
 		var inv: Dictionary = progress.inventions.get(level.invention["id"], {})
-		check(not inv.is_empty() and inv["cost"] == level.best, "%s: the player's machine joins the Pattern Book" % level.id)
+		check(not inv.is_empty() and inv["cost"] == level.best, "%s: the player's machine joins the journal's inventions" % level.id)
 	wb.queue_free()
 
 
@@ -198,29 +204,31 @@ func test_locked_tray(levels: Array, by_id: Dictionary) -> void:
 			check(slot.get(kind, i) == i, "%s: %s keeps slot %d" % [level.id, kind, slot.get(kind, i) + 1])
 			slot[kind] = i
 	check(locked_kinds(by_id["pattern_card"]) == ["red_pot", "shift", "mix", "split", "invert"], "The Pattern Card shows every known piece locked")
-	check(locked_kinds(by_id["orange_sun"]) == ["shift", "split", "invert"], "Orange Sun locks Shift, Split and Invert")
-	for id in ["opposites", "flip_side", "turn_the_wheel", "smudges", "either_not_both"]:
+	check(locked_kinds(by_id["orange_sun"]) == ["split", "invert"], "Orange Sun locks Split and Invert")
+	for id in ["opposites", "flip_side", "turn_the_wheel", "smudges", "either_not_both", "missing_from_either", "same_paint"]:
 		check(locked_kinds(by_id[id]).is_empty(), "%s has no locks" % id)
-	check(locked_kinds(by_id["missing_from_either"]) == ["filter"] and locked_kinds(by_id["keep_what_they_share"]) == ["filter"], "chapter 3 locks Filter where it rebuilds it")
+	check(locked_kinds(by_id["keep_what_they_share"]) == ["filter"], "Keep What They Share locks Filter, which it rebuilds")
 	check(locked_kinds(by_id["mix_without_mix"]) == ["mix"], "Mix Without Mix locks Mix")
-	check(Level.load_file("res://levels/orange_sun.json").tray == ["red_pot", "mix"], "a level loaded on its own has no locks")
+	for id in ["neither_twice", "back_to_mix", "only_third_paint", "missing_twice", "back_to_filter", "only_missing"]:
+		check(locked_kinds(by_id[id]) == ["red_pot", "shift", "mix", "invert", "filter"], "%s offers only Split of the critters" % id)
+	check(Level.load_file("res://levels/orange_sun.json").tray == ["red_pot", "shift", "mix"], "a level loaded on its own has no locks")
 	# A locked piece places nothing, by tap, drag or key; its lock wiggles.
 	var level = by_id["orange_sun"]
 	var wb = Workbench.new()
 	wb.setup(level, Progress.new(), true)
 	root.add_child(wb)
 	wb._ready()
-	var shift := tray_point(wb, "shift")
-	check(wb.tray[1]["locked"] and not wb.tray[0]["locked"], "Orange Sun's Shift slot is locked, the pot's isn't")
+	var split := tray_point(wb, "split")
+	check(wb.tray[3]["locked"] and not wb.tray[0]["locked"], "Orange Sun's Split slot is locked, the pot's isn't")
 	var start: int = wb.machine.nodes.size()
-	tap(wb, shift)
-	check(wb.carrying == -1 and wb.wiggle_slot == 1, "tapping a locked piece picks nothing up; its lock wiggles")
-	drag(wb, shift, wb.cell_center(5, 3))
+	tap(wb, split)
+	check(wb.carrying == -1 and wb.wiggle_slot == 3, "tapping a locked piece picks nothing up; its lock wiggles")
+	drag(wb, split, wb.cell_center(5, 3))
 	check(wb.machine.nodes.size() == start, "dragging a locked piece places nothing")
 	key(wb, KEY_1)
 	check(wb.carrying == 0, "1 still picks up the pot")
-	key(wb, KEY_5)
-	check(wb.carrying == -1 and wb.wiggle_slot == 4, "a locked piece's key wiggles its lock and empties the hand")
+	key(wb, KEY_4)
+	check(wb.carrying == -1 and wb.wiggle_slot == 3, "a locked piece's key wiggles its lock and empties the hand")
 	tap(wb, wb.cell_center(5, 3))
 	check(wb.machine.nodes.size() == start, "and nothing lands on the bench")
 	wb.free()
@@ -683,3 +691,71 @@ func test_bindings() -> void:
 	o.queue_free()
 	Keys.reset()
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
+## From chapter 2 on the red pot's slot is the pot slot: a tap fans out the
+## owned pots above the shelf (touch-first, no hover), a tap or drag takes one
+## out, keys pick from the fan while it's open, Back folds it, and a pot the
+## level holds back sits in the fan locked.
+func test_pot_fan(levels: Array, by_id: Dictionary) -> void:
+	var p = Progress.new()
+	for id in ["yellow", "blue", "black_short_way"]:
+		var l = by_id[id]
+		p.add_invention(Invention.package(l, l.reference_machine(), p.inventions))
+	var plain = open(by_id["black_short_way"], p)
+	check(not plain.tray[0].get("pots", false) and plain.shelf_size == plain.tray.size(), "the paint box keeps a plain red pot")
+	plain.queue_free()
+	var wb = open(by_id["orange_sun"], p)
+	wb._ready()
+	var slot := tray_point(wb, "red_pot")
+	check(wb.tray[0].get("pots", false) and not wb.fan_open, "Orange Sun's first slot is the pot slot, folded")
+	var fan: Array = wb.tray.slice(wb.shelf_size).map(func(e): return e["kind"])
+	check(fan == ["red_pot", "inv:pot_yellow", "inv:pot_blue", "inv:pot_black"], "the fan holds the red pot and the owned pots in paint order: %s" % str(fan))
+	var yellow: Vector2 = wb.tray[wb.shelf_size + 1]["rect"].get_center()
+	tap(wb, yellow)
+	check(wb.carrying == -1, "a folded fan takes no taps")
+	tap(wb, slot)
+	check(wb.fan_open and wb.carrying == -1, "tapping the pot slot fans the pots out")
+	check(wb.tray.slice(wb.shelf_size).all(func(e): return e["rect"].end.y < wb.TRAY.position.y and wb.BENCH.encloses(e["rect"])), "the fan sits above the shelf, on the bench")
+	tap(wb, yellow)
+	check(wb.carrying == wb.shelf_size + 1 and not wb.fan_open, "tapping a fanned-out pot picks it up and folds the fan")
+	tap(wb, wb.cell_center(5, 5))
+	var placed: int = wb.machine.piece_at(5, 5)
+	check(placed >= 0 and wb.machine.nodes[placed].get("invention", "") == "pot_yellow", "a click puts the yellow pot down")
+	tap(wb, slot)
+	drag(wb, wb.tray[wb.shelf_size + 2]["rect"].get_center(), wb.cell_center(6, 5))
+	check(wb.machine.piece_at(6, 5) >= 0 and wb.machine.nodes[wb.machine.piece_at(6, 5)].get("invention", "") == "pot_blue" and not wb.fan_open, "a pot drags straight out of the fan")
+	drag(wb, slot, wb.cell_center(7, 5))
+	check(wb.machine.piece_at(7, 5) >= 0 and wb.machine.nodes[wb.machine.piece_at(7, 5)]["kind"] == "red_pot", "dragging the pot slot itself places the red pot")
+	key(wb, KEY_1)
+	check(wb.fan_open, "the pot slot's key fans the pots out")
+	key(wb, KEY_4)
+	check(wb.carrying == wb.shelf_size + 3 and not wb.fan_open, "with the fan open, a number key picks that pot")
+	key(wb, KEY_ESCAPE)
+	key(wb, KEY_1)
+	key(wb, KEY_ESCAPE)
+	check(not wb.fan_open and wb.carrying == -1, "Back folds the fan")
+	tap(wb, slot)
+	tap(wb, wb.cell_center(8, 0))
+	check(not wb.fan_open, "a tap anywhere else folds it")
+	wb.free()
+	# A held-back pot shows in the fan, locked.
+	var raw: Dictionary = by_id["orange_sun"].raw.duplicate(true)
+	raw["hold_pots"] = ["pot_blue"]
+	var held = Level.from_dict(raw)
+	held.chapter = 1
+	var copy := levels.duplicate()
+	copy[copy.find(by_id["orange_sun"])] = held
+	Level._lay_trays(copy)
+	wb = open(held, p)
+	wb._ready()
+	tap(wb, tray_point(wb, "red_pot"))
+	var blue: Dictionary = wb.tray[wb.shelf_size + 2]
+	check(blue["kind"] == "inv:pot_blue" and blue["locked"], "a held-back pot is locked in the fan")
+	tap(wb, blue["rect"].get_center())
+	check(wb.carrying == -1 and wb.wiggle_slot == wb.shelf_size + 2, "tapping it only wiggles its lock")
+	wb.free()
+	Level._lay_trays(levels)
+	var lone = open(by_id["neither_twice"], p)
+	check(not lone.tray.any(func(e): return e.get("pots", false) or e.get("fan", false)), "a level of named pieces offers no pots")
+	lone.queue_free()
