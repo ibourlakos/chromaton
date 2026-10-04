@@ -6,8 +6,10 @@
 ## machine weaves the target, and rewrites the level's "cards". Choices are
 ## pseudo-random but fixed by the level id, so reruns give the same cards.
 ## The first row is then chosen, among the rule's options, so that every
-## cheap wrong machine (within the level's two-star budget) fails in it if it
-## can; each level's line in the output says how many get further.
+## cheap wrong machine (within the level's two-star budget) fails within the
+## drops a card shows at the start (Level.CARD_SHOWS) if it can, or else
+## within the first row; each level's line in the output says how many get
+## further.
 ##
 ## Rules (t = target stitch):
 ##   copy         one card: t itself (the card tubed straight to the loom weaves t)
@@ -84,7 +86,8 @@ func _init() -> void:
 
 
 # ---------------------------------------------------------------------------
-# First-row ordering: cheap wrong machines should fail within the first row
+# First-row ordering: cheap wrong machines should fail within the drops a card
+# shows, or else within the first row
 # ---------------------------------------------------------------------------
 
 const LANES := 20  # paints packed per int (3 flags each)
@@ -98,7 +101,8 @@ var high_mask := PackedInt64Array()
 
 ## Rerolls the rule for each stitch of the first row and keeps, stitch by
 ## stitch, the card paints that make the most cheap wrong machines fail
-## there (greedy). Rows below stay as derived. A cheap machine is any the
+## there (greedy): first among the stitches a card shows, then the rest of
+## the row. Rows below stay as derived. A cheap machine is any the
 ## level's pieces build within its two-star budget. Returns a report note.
 func order_first_row(rule: String, d: Dictionary, target: PackedByteArray, width: int, salt: int, cols: Array) -> String:
 	var n: int = cols.size()
@@ -137,11 +141,14 @@ func order_first_row(rule: String, d: Dictionary, target: PackedByteArray, width
 			alive.append(f)
 	var total := alive.size()
 	var assigned := {}
+	var shown := mini(Level.CARD_SHOWS, width)
+	var past_shown := -1  # how many survive the shown stitches
 	while assigned.size() < width and not alive.is_empty():
 		var best_kill := 0
 		var best_p := -1
 		var best_x := -1
-		for p in width:
+		var span := shown if past_shown < 0 else width
+		for p in span:
 			if assigned.has(p):
 				continue
 			for x in options[p]:
@@ -154,15 +161,22 @@ func order_first_row(rule: String, d: Dictionary, target: PackedByteArray, width
 					best_p = p
 					best_x = x
 		if best_kill == 0:
-			break
+			if past_shown >= 0:
+				break
+			past_shown = alive.size()
+			continue
 		assigned[best_p] = best_x
 		alive = alive.filter(func(f): return at(f, best_x) == target[best_p])
 	for p in assigned:
 		var x: int = assigned[p]
 		for k in n:
 			cols[k][p] = (x >> (3 * k)) & 7
+	if past_shown < 0:  # never left the shown stitches
+		past_shown = alive.size()
+	if alive.is_empty() and past_shown == 0:
+		return " (%d cheap wrong machines, all fail in the first %d stitches)" % [total, shown]
 	if alive.is_empty():
-		return " (%d cheap wrong machines, all fail in the first row)" % total
+		return " (%d cheap wrong machines; %d get past the first %d stitches, all fail in the first row)" % [total, past_shown, shown]
 	# Where the rest fail (some may fit these cards after all: other answers).
 	var last := 0
 	var fitting := 0
@@ -175,7 +189,7 @@ func order_first_row(rule: String, d: Dictionary, target: PackedByteArray, width
 		if fails < 0:
 			fitting += 1
 		last = maxi(last, fails)
-	return " (%d cheap wrong machines; %d get past the first row, the last fails at stitch %d; %d fit these cards)" % [total, alive.size(), last + 1, fitting]
+	return " (%d cheap wrong machines; %d get past the first %d stitches, %d past the first row, the last fails at stitch %d; %d fit these cards)" % [total, past_shown, shown, alive.size(), last + 1, fitting]
 
 
 ## Combination index of one paint per card: card k's paint counts 8^k.

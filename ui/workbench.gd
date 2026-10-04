@@ -866,7 +866,7 @@ func _draw_bench() -> void:
 			var c: int = n["card"]
 			var upcoming := []
 			var smudged := []
-			for k in range(sim.card_cursor[c], mini(sim.card_cursor[c] + 6, level.cards[c].size())):
+			for k in range(sim.card_cursor[c], mini(sim.card_cursor[c] + level.CARD_SHOWS, level.cards[c].size())):
 				upcoming.append(level.cards[c][k])
 				smudged.append(k in level.smudges[c])
 			K.card(self, node_center(id), level.card_names[c], upcoming, _age(id), smudged)

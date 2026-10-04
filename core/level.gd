@@ -19,6 +19,7 @@ const Pieces = preload("res://core/pieces.gd")
 
 const LETTERS := "WRYOBPGK"
 const INDEX_PATH := "res://levels/index.json"
+const CARD_SHOWS := 6  # how many coming drops a pattern card shows
 
 var id := ""
 var number := 0  # position in the campaign, from 1 (0 when loaded on its own)

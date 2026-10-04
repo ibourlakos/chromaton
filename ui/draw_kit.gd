@@ -621,7 +621,7 @@ static func card(ci: CanvasItem, c: Vector2, name: String, upcoming: Array, age:
 	# next colors, the next one on the right by the card's port; they slide
 	# right as the card releases
 	var slide := -clampf(1.0 - age, 0, 1) * 18 if age < 1 else 0.0
-	for i in mini(upcoming.size(), 6):
+	for i in upcoming.size():
 		var p := Vector2(r.end.x - 20 - i * 18 + slide, r.position.y + 21)
 		if i < smudged.size() and smudged[i]:
 			smudge(ci, p)
