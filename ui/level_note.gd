@@ -13,7 +13,6 @@ const DESIGN := Vector2(1280, 800)
 const POP := 0.25  # seconds to pop up
 const LAND := 0.45  # seconds to fly home under the title
 const HINT_WIDTH := 520.0
-const HINT_LINE := 22.0  # the hint's line height on the note
 ## How wide the line under the title may run before the run controls; a
 ## longer one wraps onto a second, smaller line (line_size).
 const LINE_WIDTH := 640.0
@@ -55,7 +54,7 @@ static func hint_lines(p_level) -> int:
 func _ready() -> void:
 	size = DESIGN
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var h := 206.0 + HINT_LINE * maxi(3, hint_lines(level)) if level.hint != "" else 168.0
+	var h := 212.0 + P.ui(700).get_height(22) * maxi(2, hint_lines(level)) if level.hint != "" else 168.0
 	card = Rect2(DESIGN.x / 2 - 310, DESIGN.y / 2 - h / 2 - 20, 620, h)
 
 
