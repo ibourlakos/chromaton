@@ -158,29 +158,84 @@ function Serve-Web([int]$Port) {
 	return 0
 }
 
-# Pushes build/web to itch.io with butler. The target (user/game:channel)
-# comes from the argument or the ITCH_TARGET environment variable.
-function Deploy-Web([string]$Target) {
-	if (-not (Get-Command butler -ErrorAction SilentlyContinue)) {
-		Write-Host "butler is not on PATH. Install it from https://itch.io/docs/butler/ and run 'butler login' once."
-		return 1
+# Finds itch.io's butler by the BUTLER environment variable, then butler on
+# PATH, then %LOCALAPPDATA%\butler (where it can be unpacked without admin).
+function Find-Butler {
+	if ($env:BUTLER -and (Test-Path $env:BUTLER)) { return (Resolve-Path $env:BUTLER).Path }
+	$cmd = Get-Command butler -ErrorAction SilentlyContinue
+	if ($cmd) { return $cmd.Source }
+	$local = Join-Path $env:LOCALAPPDATA "butler\butler.exe"
+	if (Test-Path $local) { return $local }
+	return $null
+}
+
+# The version a build is published under: the date and commit, e.g.
+# 2026.10.04-127c7bd, with -dirty when the tree has uncommitted changes.
+function Get-BuildVersion {
+	$hash = (& git -C $Root rev-parse --short HEAD).Trim()
+	$v = "$(Get-Date -Format 'yyyy.MM.dd')-$hash"
+	if (& git -C $Root status --porcelain) { $v += "-dirty" }
+	return $v
+}
+
+# Checks what a push to itch.io needs, so a release stops before the slow
+# steps: butler, a login, and a target (user/game:channel, from the argument
+# or the ITCH_TARGET environment variable). Returns the target, or $null.
+function Get-ItchTarget([string]$Target) {
+	if (-not (Find-Butler)) {
+		Write-Host "butler not found. Unpack it into $(Join-Path $env:LOCALAPPDATA 'butler') (https://itch.io/docs/butler/), or put it on PATH."
+		return $null
+	}
+	if (-not (Test-Path (Join-Path $env:APPDATA "itch\butler_creds")) -and -not $env:BUTLER_API_KEY) {
+		Write-Host "butler isn't logged in. Run once: .\make butler login"
+		return $null
 	}
 	if (-not $Target) { $Target = $env:ITCH_TARGET }
 	if (-not $Target) {
-		Write-Host "usage: .\make deploy <user/game:channel>   (or set ITCH_TARGET)"
-		return 1
+		Write-Host "No itch target: pass user/game:channel, or set ITCH_TARGET."
+		return $null
 	}
 	if ($Target -notmatch '^[^/:\s]+/[^/:\s]+:[^/:\s]+$') {
 		Write-Host "The itch target must look like user/game:channel, e.g. someone/chromaton:web (got '$Target')."
-		return 1
+		return $null
 	}
+	return $Target
+}
+
+# Pushes build/web to itch.io with butler, as it is (.\make deploy).
+function Deploy-Web([string]$Target) {
+	$Target = Get-ItchTarget $Target
+	if (-not $Target) { return 1 }
 	$web = Join-Path $Root "build\web"
 	if (-not (Test-Path (Join-Path $web "index.html"))) {
 		Write-Host "No web build yet. Run: .\make export web"
 		return 1
 	}
-	& butler push $web $Target | Out-Host
+	$version = Get-BuildVersion
+	Write-Host "Pushing build/web to $Target as $version..."
+	& (Find-Butler) push $web $Target --userversion $version --if-changed | Out-Host
 	return $LASTEXITCODE
+}
+
+# The whole release to itch.io (.\make release itch): from a committed tree
+# only, so the published version names a commit; then every test, a fresh
+# web export, and the push.
+function Release-Itch([string]$Target) {
+	$Target = Get-ItchTarget $Target
+	if (-not $Target) { return 1 }
+	if (& git -C $Root status --porcelain) {
+		Write-Host "Uncommitted changes: commit them first, so the release matches a commit."
+		return 1
+	}
+	Write-Host "Releasing $(Get-BuildVersion) to $Target"
+	$code = Invoke-Godot @("--headless", "--path", $Root, "--script", "res://tests/test_all.gd")
+	if ($code -ne 0) {
+		Write-Host "Tests failed; nothing was released."
+		return $code
+	}
+	$code = Export-Web
+	if ($code -ne 0) { return $code }
+	return Deploy-Web $Target
 }
 
 function Show-Help {
@@ -205,8 +260,12 @@ Share
   export <platform>    build the game for a platform; only web for now:
                        export web writes build/web and build/chromaton-web.zip (for itch.io)
   serve [port]         play the web build at http://localhost:8060/ (after export web)
-  deploy [target]      push build/web to itch.io with butler; target is user/game:channel,
+  release <store> [target]
+                       publish from a committed tree: tests, a fresh build, the upload; only itch
+                       for now: release itch pushes the web build (target as for deploy)
+  deploy [target]      push build/web to itch.io as it is; target is user/game:channel,
                        or set ITCH_TARGET (after export web)
+  butler [args]        run itch.io's butler (e.g. butler login, once); bare, print which one
   templates [tpz]      install Godot's export templates (downloads about 1.3 GB unless given a .tpz)
 
 Other
@@ -256,6 +315,28 @@ switch ($Task) {
 	}
 	"serve" { $code = Serve-Web ($(if ($Rest.Count -gt 0) { [int]$Rest[0] } else { 8060 })) }
 	"deploy" { $code = Deploy-Web ($Rest | Select-Object -First 1) }
+	"release" {
+		switch ($(if ($Rest.Count -gt 0) { $Rest[0] } else { "" })) {
+			"itch" { $code = Release-Itch ($Rest | Select-Object -Skip 1 -First 1) }
+			default {
+				Write-Host "usage: .\make release <store> [target]   (stores: itch)"
+				$code = 1
+			}
+		}
+	}
+	"butler" {
+		$b = Find-Butler
+		if (-not $b) {
+			Write-Host "butler not found. Unpack it into $(Join-Path $env:LOCALAPPDATA 'butler') (https://itch.io/docs/butler/), or put it on PATH."
+			$code = 1
+		} elseif ($Rest.Count -eq 0) {
+			Write-Host "butler: $b"
+			& $b -V | Out-Host
+		} else {
+			& $b @Rest | Out-Host
+			$code = $LASTEXITCODE
+		}
+	}
 	"templates" { $code = Install-Templates ($Rest | Select-Object -First 1) }
 	"import" { $code = Invoke-Godot @("--headless", "--path", $Root, "--import") }
 	"godot" {
