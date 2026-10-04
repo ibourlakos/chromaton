@@ -51,11 +51,16 @@ func _initialize() -> void:
 	test_round_rect()
 	test_level_select(levels)
 	test_intro()
-	DirAccess.remove_absolute(ProjectSettings.globalize_path(SETTINGS))
-	Keys.settings_path = Keys.PATH
 	if failures == 0:
 		print("test_workbench: all %d checks passed" % checks)
 	quit(1 if failures > 0 else 0)
+
+
+## Nodes added while _initialize runs only get _ready after it returns, and a
+## workbench's _ready saves the speed: the settings stay pointed at the test's
+## file until the very end, so the real settings are never written.
+func _finalize() -> void:
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(SETTINGS))
 
 
 # --- gestures ---------------------------------------------------------------
@@ -366,7 +371,7 @@ func test_note(level) -> void:
 	var wb = open(level, Progress.new())
 	wb.show_note()
 	var note = wb.note
-	check(note != null and wb._still_look()[2], "the level's note pops up")
+	check(note != null and wb._still_look()[0], "the level's note pops up")
 	key(wb, KEY_SPACE)
 	check(not wb.running, "a key doesn't reach the bench while the note is up")
 	key(note, KEY_SPACE)
