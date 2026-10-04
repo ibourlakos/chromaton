@@ -1,0 +1,160 @@
+{
+	"id": "only_third_paint",
+	"name": "Only the Third Paint",
+	"goal": "Weave the king. Your machine becomes a new piece.",
+	"hint": "A paint shows where both cards have it or both lack it. Ask what neither card has, ask each card with that answer, then ask of the two answers.",
+	"pieces": [
+		"split"
+	],
+	"inventions": [
+		"third_paint"
+	],
+	"invention": {
+		"id": "same_paint",
+		"name": "Same Paint",
+		"check": "same_paint"
+	},
+	"stars": {
+		"budget": 10,
+		"best": 8
+	},
+	"target": [
+		"OOBWWOBB",
+		"OOWWWWBB",
+		"BBOWWBOO",
+		"BWWWWWWO",
+		"OOWPPWBB",
+		"OOWWWWBB",
+		"BWWWWWWO",
+		"BBOOBBOO"
+	],
+	"card_rule": "same",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"GRRBOGWR",
+				"GOYGBWPK",
+				"BRPBGGYK",
+				"PPYYWPBR",
+				"KWOGOBRW",
+				"KPBGGBYG",
+				"BWRRWOOB",
+				"BPBBYGWR"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"YPYOBYOY",
+				"YKPROKGB",
+				"KYRORPGO",
+				"GYPPKYOP",
+				"OBBBROYO",
+				"ORORRORP",
+				"KKGGKBBW",
+				"KGWWRPBP"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "sa",
+				"kind": "split",
+				"x": 2,
+				"y": 1
+			},
+			{
+				"id": "sb",
+				"kind": "split",
+				"x": 2,
+				"y": 5
+			},
+			{
+				"id": "n",
+				"kind": "invention",
+				"invention": "third_paint",
+				"x": 4,
+				"y": 3
+			},
+			{
+				"id": "sn",
+				"kind": "split",
+				"x": 5,
+				"y": 3
+			},
+			{
+				"id": "x",
+				"kind": "invention",
+				"invention": "third_paint",
+				"x": 7,
+				"y": 1
+			},
+			{
+				"id": "y",
+				"kind": "invention",
+				"invention": "third_paint",
+				"x": 7,
+				"y": 5
+			},
+			{
+				"id": "o",
+				"kind": "invention",
+				"invention": "third_paint",
+				"x": 9,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"sa"
+			],
+			[
+				"card1",
+				"sb"
+			],
+			[
+				"sa.0",
+				"n.0"
+			],
+			[
+				"sb.0",
+				"n.1"
+			],
+			[
+				"n",
+				"sn"
+			],
+			[
+				"sa.1",
+				"x.0"
+			],
+			[
+				"sn.0",
+				"x.1"
+			],
+			[
+				"sb.1",
+				"y.0"
+			],
+			[
+				"sn.1",
+				"y.1"
+			],
+			[
+				"x",
+				"o.0"
+			],
+			[
+				"y",
+				"o.1"
+			],
+			[
+				"o",
+				"loom"
+			]
+		]
+	}
+}

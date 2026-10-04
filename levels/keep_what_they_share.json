@@ -1,8 +1,8 @@
 {
 	"id": "keep_what_they_share",
 	"name": "Keep What They Share",
-	"goal": "Weave the house.",
-	"hint": "Only the paint both cards share.",
+	"goal": "Weave the bishop.",
+	"hint": "Flip both cards to their opposites, then ask the Third Paint for what neither has.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -10,41 +10,49 @@
 		"invert",
 		"split"
 	],
-	"inventions": [],
+	"inventions": [
+		"third_paint"
+	],
 	"stars": {
 		"budget": 6,
 		"best": 4
 	},
 	"target": [
-		"BBBRRBBB",
-		"BBRRRRBB",
-		"BRRRRRRB",
-		"BOOYOOOB",
-		"BOOOOKOB",
-		"GGGGGGGG"
+		"OOBWWOBB",
+		"OOWYWWBB",
+		"BBWWWWOO",
+		"BBOWWBOO",
+		"OOBWWOBB",
+		"OOWWWWBB",
+		"BWWWWWWO",
+		"BBOOBBOO"
 	],
 	"card_rule": "filter",
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"GPBOOBPP",
-				"KPKPKOGB",
-				"BRRRORRG",
-				"BOKKKKKB",
-				"GOKOKKKP",
-				"GGGKKGGK"
+				"OOPYPOPP",
+				"KKOGKPGB",
+				"BBWWPWOK",
+				"BBKKYPKO",
+				"OOPYYOBP",
+				"OOBOBBBG",
+				"BWWGOWOO",
+				"GPKOKPOK"
 			]
 		},
 		{
 			"name": "B",
 			"colors": [
-				"PGGPRKGB",
-				"BGRORRPK",
-				"PPPORKPB",
-				"PKOYOOOP",
-				"PKOKOKOG",
-				"KKKGGKKG"
+				"KKGRWKGB",
+				"OOWOWWPK",
+				"PGYRWKKO",
+				"PKOWWBOK",
+				"KKBPWKGG",
+				"KKOBWOPB",
+				"KBKWWKBK",
+				"BBOKBGKO"
 			]
 		}
 	],
@@ -53,25 +61,20 @@
 			{
 				"id": "ia",
 				"kind": "invert",
-				"x": 4,
+				"x": 3,
 				"y": 1
 			},
 			{
 				"id": "ib",
 				"kind": "invert",
-				"x": 4,
+				"x": 3,
 				"y": 5
 			},
 			{
-				"id": "mix",
-				"kind": "mix",
+				"id": "t",
+				"kind": "invention",
+				"invention": "third_paint",
 				"x": 6,
-				"y": 3
-			},
-			{
-				"id": "out",
-				"kind": "invert",
-				"x": 8,
 				"y": 3
 			}
 		],
@@ -86,18 +89,14 @@
 			],
 			[
 				"ia",
-				"mix.0"
+				"t.0"
 			],
 			[
 				"ib",
-				"mix.1"
+				"t.1"
 			],
 			[
-				"mix",
-				"out"
-			],
-			[
-				"out",
+				"t",
 				"loom"
 			]
 		]

@@ -1,8 +1,8 @@
 {
 	"id": "opposites",
 	"name": "Opposites",
-	"goal": "Weave the thread.",
-	"hint": "Every paint on the card, flipped to its opposite.",
+	"goal": "Weave the swatch.",
+	"hint": "Every paint on the card, flipped. Tube the card through Invert: each paint flips to the one across the paint card.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -16,14 +16,24 @@
 		"best": 1
 	},
 	"target": [
-		"KGPBOYRW"
+		"KGPBOYRW",
+		"GPBOYRWK",
+		"PBOYRWKG",
+		"BOYRWKGP",
+		"OYRWKGPB",
+		"YRWKGPBO"
 	],
 	"card_rule": "invert",
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"WRYOBPGK"
+				"WRYOBPGK",
+				"RYOBPGKW",
+				"YOBPGKWR",
+				"OBPGKWRY",
+				"BPGKWRYO",
+				"PGKWRYOB"
 			]
 		}
 	],

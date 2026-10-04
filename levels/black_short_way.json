@@ -1,26 +1,27 @@
 {
-	"id": "purple",
-	"name": "Purple",
-	"goal": "Weave a purple cloth.",
-	"hint": "Purple is red and blue together. Split the pot's red: Mix one half with the other turned twice to blue.",
+	"id": "black_short_way",
+	"name": "Black, the Short Way",
+	"goal": "Weave a black cloth.",
+	"hint": "A paint and its opposite hold every paint between them. Mix red with its own opposite.",
 	"pieces": [
 		"red_pot",
 		"shift",
 		"mix",
-		"split"
+		"split",
+		"invert"
 	],
 	"inventions": [],
 	"invention": {
-		"id": "pot_purple",
-		"name": "Purple pot",
-		"check": "paint:P"
+		"id": "pot_black",
+		"name": "Black pot",
+		"check": "paint:K"
 	},
 	"stars": {
-		"budget": 5,
-		"best": 4
+		"budget": 4,
+		"best": 3
 	},
 	"target": [
-		"PPPPPPPP"
+		"KKKKKKKK"
 	],
 	"card_rule": "",
 	"cards": [],
@@ -39,21 +40,15 @@
 				"y": 3
 			},
 			{
-				"id": "h1",
-				"kind": "shift",
+				"id": "i",
+				"kind": "invert",
 				"x": 6,
-				"y": 4
-			},
-			{
-				"id": "h2",
-				"kind": "shift",
-				"x": 8,
 				"y": 4
 			},
 			{
 				"id": "m",
 				"kind": "mix",
-				"x": 10,
+				"x": 8,
 				"y": 3
 			}
 		],
@@ -68,14 +63,10 @@
 			],
 			[
 				"s.1",
-				"h1"
+				"i"
 			],
 			[
-				"h1",
-				"h2"
-			],
-			[
-				"h2",
+				"i",
 				"m.1"
 			],
 			[

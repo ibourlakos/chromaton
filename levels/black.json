@@ -2,7 +2,7 @@
 	"id": "black",
 	"name": "All the Paint",
 	"goal": "Weave a black cloth.",
-	"hint": "Black holds every paint: red, yellow and blue together.",
+	"hint": "Black holds red, yellow and blue together. Split the pot's red, turn some to yellow and some to blue, and Mix all three.",
 	"pieces": [
 		"red_pot",
 		"shift",

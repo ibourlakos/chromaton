@@ -1,8 +1,8 @@
 {
 	"id": "mix_without_mix",
 	"name": "Mix Without Mix",
-	"goal": "Weave the tree.",
-	"hint": "Mix the two cards, with no mix in the tray.",
+	"goal": "Weave the black bishop.",
+	"hint": "Keep What They Share in the looking glass: build a Mix. Flip both cards, then ask Missing From Either what they lack.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -10,41 +10,49 @@
 		"invert",
 		"split"
 	],
-	"inventions": [],
+	"inventions": [
+		"missing_from_either"
+	],
 	"stars": {
 		"budget": 6,
 		"best": 4
 	},
 	"target": [
-		"WWGGGGWW",
-		"WGGRGGGW",
-		"GGGGGGRG",
-		"WGGGGGGW",
-		"WWWOOWWW",
-		"WWWOOWWW"
+		"BBOKKBOO",
+		"BBKPKKOO",
+		"OOKKKKBB",
+		"OOBKKOBB",
+		"BBOKKBOO",
+		"BBKKKKOO",
+		"OKKKKKKB",
+		"OOBBOOBB"
 	],
 	"card_rule": "mix",
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"WWBGYYWW",
-				"WBGRYBYW",
-				"YYBBYBWB",
-				"WBWBBGGW",
-				"WWWOYWWW",
-				"WWWOYWWW"
+				"BWYRPBRR",
+				"WWOPPYRY",
+				"RRYYRGWW",
+				"YYWGGOBB",
+				"BBWOGWYO",
+				"WWRKYKWR",
+				"YPRGKROB",
+				"RRWBOYWW"
 			]
 		},
 		{
 			"name": "B",
 			"colors": [
-				"WWYBBGWW",
-				"WGYWGYGW",
-				"GBYYBGRG",
-				"WGGYGGYW",
-				"WWWROWWW",
-				"WWWWRWWW"
+				"WBRKYBOO",
+				"BBPBOPOO",
+				"OYPPGOBB",
+				"ROBRKOBB",
+				"BBOPOBRY",
+				"BBGBPGOO",
+				"OKGOOKPB",
+				"YOBWROBB"
 			]
 		}
 	],
@@ -53,25 +61,20 @@
 			{
 				"id": "ia",
 				"kind": "invert",
-				"x": 4,
+				"x": 3,
 				"y": 1
 			},
 			{
 				"id": "ib",
 				"kind": "invert",
-				"x": 4,
+				"x": 3,
 				"y": 5
 			},
 			{
-				"id": "f",
-				"kind": "filter",
+				"id": "t",
+				"kind": "invention",
+				"invention": "missing_from_either",
 				"x": 6,
-				"y": 3
-			},
-			{
-				"id": "out",
-				"kind": "invert",
-				"x": 8,
 				"y": 3
 			}
 		],
@@ -86,18 +89,14 @@
 			],
 			[
 				"ia",
-				"f.0"
+				"t.0"
 			],
 			[
 				"ib",
-				"f.1"
+				"t.1"
 			],
 			[
-				"f",
-				"out"
-			],
-			[
-				"out",
+				"t",
 				"loom"
 			]
 		]

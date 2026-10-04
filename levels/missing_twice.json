@@ -1,0 +1,77 @@
+{
+	"id": "missing_twice",
+	"name": "Missing, Twice",
+	"goal": "Weave the black rook.",
+	"hint": "Neither, Twice in the looking glass. Every paint flips to its opposite: give Missing From Either the same paint twice.",
+	"pieces": [
+		"split"
+	],
+	"inventions": [
+		"missing_from_either"
+	],
+	"stars": {
+		"budget": 3,
+		"best": 2
+	},
+	"target": [
+		"BBOOBBOO",
+		"BKOKKBKO",
+		"OKKKKKKB",
+		"OOKKKKBB",
+		"BBKRRKOO",
+		"BBKKKKOO",
+		"OKKKKKKB",
+		"OOBBOOBB"
+	],
+	"card_rule": "invert",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"OOBBOOBB",
+				"OWBWWOWB",
+				"BWWWWWWO",
+				"BBWWWWOO",
+				"OOWGGWBB",
+				"OOWWWWBB",
+				"BWWWWWWO",
+				"BBOOBBOO"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "s",
+				"kind": "split",
+				"x": 3,
+				"y": 3
+			},
+			{
+				"id": "t",
+				"kind": "invention",
+				"invention": "missing_from_either",
+				"x": 6,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"s"
+			],
+			[
+				"s.0",
+				"t.0"
+			],
+			[
+				"s.1",
+				"t.1"
+			],
+			[
+				"t",
+				"loom"
+			]
+		]
+	}
+}

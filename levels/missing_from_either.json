@@ -1,70 +1,71 @@
 {
 	"id": "missing_from_either",
 	"name": "Missing From Either",
-	"goal": "Weave the mushroom.",
-	"hint": "The paint missing from either card.",
+	"goal": "Weave the black pawn. Your machine becomes a new piece.",
+	"hint": "The Third Paint in the looking glass: Mix becomes Filter, black becomes white. Filter the two cards, then Invert what they share.",
 	"pieces": [
 		"red_pot",
 		"shift",
 		"mix",
+		"filter",
 		"invert",
 		"split"
 	],
 	"inventions": [],
 	"stars": {
-		"budget": 5,
-		"best": 3
+		"budget": 3,
+		"best": 2
 	},
 	"target": [
-		"WRRRRRRW",
-		"RRWRRRWR",
-		"RRRRRRRR",
-		"WWWYYWWW",
-		"WWWYYWWW",
-		"GGGGGGGG"
+		"BBOOBBOO",
+		"BBOKKBOO",
+		"OOKGGKBB",
+		"OOBKKOBB",
+		"BBOKKBOO",
+		"BBKKKKOO",
+		"OKKKKKKB",
+		"OOBBOOBB"
 	],
 	"card_rule": "missing",
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"KGKGKKGK",
-				"GKKGGKKG",
-				"GGGGGKGG",
-				"KKKPKKKK",
-				"KKKKKKKK",
-				"ORPKPORO"
+				"OOGBKKBP",
+				"OKGBWKPG",
+				"BGWRRROO",
+				"GBOWKGOK",
+				"OKKRKOBK",
+				"KOYOGRBP",
+				"GWBKRGRO",
+				"PGOOPBOO"
 			]
 		},
 		{
 			"name": "B",
 			"colors": [
-				"KKGKGGKK",
-				"KGKKKGKK",
-				"KKKKKGKK",
-				"KKKKPKKK",
-				"KKKPPKKK",
-				"POORORKP"
+				"KKBGOOKB",
+				"KOPYKOGB",
+				"PPGKKWKK",
+				"BKKKWBKO",
+				"KOBYWKGB",
+				"OKRBRBKG",
+				"PBRWWRYK",
+				"BPKKGKKK"
 			]
 		}
 	],
 	"reference": {
 		"pieces": [
 			{
-				"id": "ia",
-				"kind": "invert",
+				"id": "f",
+				"kind": "filter",
 				"x": 4,
-				"y": 1
+				"y": 3
 			},
 			{
-				"id": "ib",
+				"id": "i",
 				"kind": "invert",
-				"x": 4,
-				"y": 5
-			},
-			{
-				"id": "mix",
-				"kind": "mix",
 				"x": 7,
 				"y": 3
 			}
@@ -72,24 +73,25 @@
 		"tubes": [
 			[
 				"card0",
-				"ia"
+				"f.0"
 			],
 			[
 				"card1",
-				"ib"
+				"f.1"
 			],
 			[
-				"ia",
-				"mix.0"
+				"f",
+				"i"
 			],
 			[
-				"ib",
-				"mix.1"
-			],
-			[
-				"mix",
+				"i",
 				"loom"
 			]
 		]
+	},
+	"invention": {
+		"id": "missing_from_either",
+		"name": "Missing From Either",
+		"check": "missing_from_either"
 	}
 }

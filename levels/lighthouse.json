@@ -1,0 +1,76 @@
+{
+	"id": "lighthouse",
+	"name": "Lighthouse",
+	"goal": "Weave the lighthouse.",
+	"hint": "Each card holds part of the picture. Mix them, drop by drop.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"filter",
+		"invert",
+		"split"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 2,
+		"best": 1
+	},
+	"target": [
+		"PPPKKPPP",
+		"YYPYYPYY",
+		"PPPRRPPP",
+		"PPPWWPPP",
+		"PPPRRPPP",
+		"BBKKKKBB"
+	],
+	"card_rule": "mix",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"BRBRBRWP",
+				"WWBWYPWY",
+				"BPBRRWBB",
+				"RPBWWBRP",
+				"PRBRWRPR",
+				"WBKGKBBW"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"RBRKOBPW",
+				"YYRYYWYY",
+				"RPPRRPPP",
+				"BBPWWRBP",
+				"RPRRRPRP",
+				"BBGPOKBB"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "m",
+				"kind": "mix",
+				"x": 5,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"m.0"
+			],
+			[
+				"card1",
+				"m.1"
+			],
+			[
+				"m",
+				"loom"
+			]
+		]
+	}
+}

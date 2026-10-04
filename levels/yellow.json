@@ -1,8 +1,8 @@
 {
 	"id": "yellow",
 	"name": "Yellow",
-	"goal": "Weave a yellow cloth from red paint.",
-	"hint": "Red turns to yellow on the wheel.",
+	"goal": "Weave a yellow cloth.",
+	"hint": "Red turns to yellow on the wheel. Tube the red pot through Shift.",
 	"pieces": [
 		"red_pot",
 		"shift"

@@ -13,7 +13,8 @@ Solve some levels and the machine you built becomes an invention: one piece you 
 
 - Solve a level, earn the construct, use it later (DESIGN.md §5.1). An invention costs the pieces inside it, so rankings stay honest.
 - Before it's accepted, an invention is run on every combination of input paints; one that only matches the level's cards is refused.
-- Earned pots are inventions with no inputs; a pot keeps the cheapest price the player made it for, other inventions the newest machine.
+- Earned pots are inventions with no inputs. Every invention keeps the cheapest machine the player made it with, so going back for ★★★ makes it cheaper; where two levels earn the same one (the Black pot in All the Paint and Black, the Short Way; Same Paint in Only the Third Paint and Same Paint), the cheaper machine wins (designer, 2026-10-05).
+- From chapter 2 on, every earned pot is in every tray that has the red pot, in the pot slot's fan ([tray](tray.md)).
 - The journal's Inventions tab (once the Pattern Book) shows the paint shelf and the invention slots.
 
 ## Implementation

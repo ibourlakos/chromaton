@@ -13,11 +13,13 @@
 ##
 ## Rules (t = target stitch):
 ##   copy         one card: t itself (the card tubed straight to the loom weaves t)
-##   remove_red  one card: t without its red (a Mix with the red pot weaves t)
+##   remove_yellow one card: t without its yellow (a Mix with the yellow pot weaves t)
+##   fork         one card whose paint mixed with its own Shift is t (red for
+##                orange, yellow for green, blue for purple; black stays black)
 ##   unshift      one card: t turned back one step (a Shift weaves t)
 ##   any_red      one card: Red where t is Black, White elsewhere
 ##   invert       one card: the opposite of t
-##   third_color  two cards: the two primaries t is not, in random order
+##   third_paint  two cards whose mix is the opposite of t (the Third Paint weaves t)
 ##   filter       two cards that share exactly t
 ##   bleach       two cards: the first minus the second's paint is t
 ##   smudges      one card: t with stray yellow on about a third of the stitches
@@ -27,22 +29,30 @@
 ##   mix          two cards whose mix is t
 ##   contrast     two cards: the first random, the second holding the primaries
 ##                in exactly one of t and the first
+##   same         two cards: the first random, the second holding the primaries
+##                where the first and t disagree (Same Paint weaves t)
 ##   two_of_three three cards: a primary is in t exactly when two or more cards have it
 extends SceneTree
 
 const Paint = preload("res://core/paint.gd")
 const Level = preload("res://core/level.gd")
+const Solver = preload("res://tools/level_solver.gd")
 
 const CARD_COUNT := {
-	"copy": 1, "remove_red": 1, "unshift": 1, "any_red": 1, "invert": 1,
-	"smudges": 1, "third_color": 2, "filter": 2, "bleach": 2, "missing": 2,
-	"mix": 2, "contrast": 2, "two_of_three": 3,
+	"copy": 1, "remove_yellow": 1, "fork": 1, "unshift": 1, "any_red": 1,
+	"invert": 1, "smudges": 1, "third_paint": 2, "filter": 2, "bleach": 2,
+	"missing": 2, "mix": 2, "contrast": 2, "same": 2, "two_of_three": 3,
 }
 const NAMES := ["A", "B", "C"]
 
 
 func _init() -> void:
 	var ids := Level.index_ids()
+	var levels := Level.load_all()
+	var inventions := Solver._reference_inventions(levels)
+	var ops_of := {}  # level id -> the pieces it offers, as search operations
+	for level in levels:
+		ops_of[level.id] = Solver.level_ops(level, inventions)
 	var failures := 0
 	for level_id in ids:
 		var path := "res://levels/%s.json" % level_id
@@ -66,7 +76,7 @@ func _init() -> void:
 					picked.append(0)
 			for k in picked.size():
 				cols[k].append(picked[k])
-		var note := order_first_row(rule, d, target, width, salt, cols)
+		var note := order_first_row(rule, d, ops_of[level_id], target, width, salt, cols)
 		if rule == "smudges":
 			# The first row always shows a smudge, so the lesson starts at once.
 			var first := range(width).filter(func(i): return cols[0][i] != target[i])
@@ -104,7 +114,7 @@ var high_mask := PackedInt64Array()
 ## there (greedy): first among the stitches a card shows, then the rest of
 ## the row. Rows below stay as derived. A cheap machine is any the
 ## level's pieces build within its two-star budget. Returns a report note.
-func order_first_row(rule: String, d: Dictionary, target: PackedByteArray, width: int, salt: int, cols: Array) -> String:
+func order_first_row(rule: String, d: Dictionary, ops: Array, target: PackedByteArray, width: int, salt: int, cols: Array) -> String:
 	var n: int = cols.size()
 	# The paints each first-row stitch may take (the derived one first).
 	var options := []
@@ -122,7 +132,7 @@ func order_first_row(rule: String, d: Dictionary, target: PackedByteArray, width
 		choices += opts.size() - 1
 	if choices == 0:
 		return ""
-	var funcs := cheap_functions(d.get("pieces", []), n, int(d["stars"]["budget"]))
+	var funcs := cheap_functions(ops, n, int(d["stars"]["budget"]))
 	# Wrong machines: wrong on some stitch below the first row, or on some option.
 	var below := []
 	for i in range(width, target.size()):
@@ -207,8 +217,10 @@ static func at(f: PackedInt64Array, x: int) -> int:
 
 ## Every function of n cards the pieces build for at most `budget` pieces,
 ## as packed tables over all combinations of card paints. Formula trees with
-## cards and the red pot free to reuse: close to what Split allows.
-func cheap_functions(pieces: Array, n: int, budget: int) -> Array:
+## cards and pots free to reuse: close to what Split allows. The pieces are
+## the level's search operations (Solver.level_ops: basic pieces, earned
+## pots, inventions, each at its price).
+func cheap_functions(ops: Array, n: int, budget: int) -> Array:
 	var size := int(pow(8, n))
 	chunks = int(ceil(size / float(LANES)))
 	full_mask = _const_vec(size, Paint.BLACK)
@@ -229,23 +241,28 @@ func cheap_functions(pieces: Array, n: int, budget: int) -> Array:
 			if not seen.has(v):
 				seen[v] = true
 				made.append(v)
-		if cost == 1 and "red_pot" in pieces:
-			add.call(_const_vec(size, Paint.RED))
-		for f in by_cost[cost - 1]:
-			if "invert" in pieces:
-				add.call(_unary("invert", f))
-			if "shift" in pieces:
-				add.call(_unary("shift", f))
-		for a in cost:
-			var b := cost - 1 - a
-			if b < a:
-				break
-			for i in by_cost[a].size():
-				for j in range(i if a == b else 0, by_cost[b].size()):
-					if "mix" in pieces:
-						add.call(_binary("mix", by_cost[a][i], by_cost[b][j]))
-					if "filter" in pieces:
-						add.call(_binary("filter", by_cost[a][i], by_cost[b][j]))
+		for o in ops:
+			var k: int = o["cost"]
+			if k > cost:
+				continue
+			match o["op"]:
+				"red_pot":
+					if k == cost:
+						add.call(_const_vec(size, Paint.RED))
+				"paint":
+					if k == cost:
+						add.call(_const_vec(size, o["paint"]))
+				"invert", "shift":
+					for f in by_cost[cost - k]:
+						add.call(_unary(o["op"], f))
+				_:
+					for a in cost - k + 1:
+						var b := cost - k - a
+						if b < a:
+							break
+						for i in by_cost[a].size():
+							for j in range(i if a == b else 0, by_cost[b].size()):
+								add.call(_binary(o["op"], by_cost[a][i], by_cost[b][j]))
 		by_cost.append(made)
 	var out := []
 	for fs in by_cost:
@@ -268,7 +285,19 @@ func _binary(op: String, a: PackedInt64Array, b: PackedInt64Array) -> PackedInt6
 	var out := PackedInt64Array()
 	out.resize(chunks)
 	for c in chunks:
-		out[c] = (a[c] | b[c]) if op == "mix" else (a[c] & b[c])
+		match op:
+			"mix":
+				out[c] = a[c] | b[c]
+			"filter":
+				out[c] = a[c] & b[c]
+			"contrast":
+				out[c] = a[c] ^ b[c]
+			"third_paint":
+				out[c] = (a[c] | b[c]) ^ full_mask[c]
+			"missing_from_either":
+				out[c] = (a[c] & b[c]) ^ full_mask[c]
+			"same_paint":
+				out[c] = (a[c] ^ b[c]) ^ full_mask[c]
 	return out
 
 
@@ -322,8 +351,15 @@ static func derive(rule: String, t: int, i: int, salt: int) -> Array:
 	match rule:
 		"copy":
 			return [t]
-		"remove_red":
-			return [t & ~Paint.RED] if t & Paint.RED else []
+		"remove_yellow":
+			return [t & ~Paint.YELLOW] if t & Paint.YELLOW else []
+		"fork":
+			if t == Paint.BLACK:
+				return [Paint.BLACK]
+			for p in Paint.ALL:
+				if Paint.mix(p, Paint.shift(p)) == t:
+					return [p]
+			return []
 		"unshift":
 			return [Paint.shift(Paint.shift(t))]
 		"any_red":
@@ -332,13 +368,8 @@ static func derive(rule: String, t: int, i: int, salt: int) -> Array:
 			return [Paint.WHITE] if t == Paint.WHITE else []
 		"invert":
 			return [Paint.invert(t)]
-		"third_color":
-			if not t in Paint.PRIMARIES:
-				return []
-			var others := Paint.PRIMARIES.filter(func(p): return p != t)
-			if rnd(i, salt, 0) & 1:
-				others.reverse()
-			return others
+		"third_paint":
+			return derive("mix", Paint.invert(t), i, salt)
 		"filter":
 			return share(t, i, salt, 0)
 		"bleach":
@@ -356,6 +387,9 @@ static func derive(rule: String, t: int, i: int, salt: int) -> Array:
 		"contrast":
 			var any := rnd(i, salt, 1) % 8
 			return [any, Paint.contrast(any, t)]
+		"same":
+			var any := rnd(i, salt, 1) % 8
+			return [any, Paint.contrast(any, Paint.invert(t))]
 		"two_of_three":
 			var out := [0, 0, 0]
 			for p in Paint.PRIMARIES:

@@ -1,0 +1,76 @@
+{
+	"id": "where_they_meet",
+	"name": "Where They Meet",
+	"goal": "Weave the rock pool.",
+	"hint": "Lay one card over the other and keep only the paint they have in common.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"filter",
+		"invert",
+		"split"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 2,
+		"best": 1
+	},
+	"target": [
+		"KKBBBBKK",
+		"KBBBOBBK",
+		"BBBOOOBB",
+		"BGBBOBBB",
+		"KGBBBBRK",
+		"KKKKKKKK"
+	],
+	"card_rule": "filter",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"KKBPGPKK",
+				"KBGGOBBK",
+				"BPBKOOBP",
+				"GGBBKBPB",
+				"KGPPBGRK",
+				"KKKKKKKK"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"KKPGBBKK",
+				"KKBBKPKK",
+				"GGPOKKGB",
+				"BKPKOGGG",
+				"KKGGKBKK",
+				"KKKKKKKK"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "f",
+				"kind": "filter",
+				"x": 5,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"f.0"
+			],
+			[
+				"card1",
+				"f.1"
+			],
+			[
+				"f",
+				"loom"
+			]
+		]
+	}
+}

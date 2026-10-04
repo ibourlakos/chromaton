@@ -282,6 +282,12 @@ func _first_unfinished_chapter() -> int:
 	return 0
 
 
+## A level's number in the campaign, or fallback if it isn't one.
+func _number_of(id: String, fallback: int) -> int:
+	var level = _level_by_id(id)
+	return level.number if level != null else fallback
+
+
 func _level_by_id(id: String):
 	for level in levels:
 		if level.id == id:
@@ -512,8 +518,15 @@ func _draw_inventions() -> void:
 	_draw_shelf(page)
 	var slots := _invention_slots()
 	var origin := page.position + Vector2(64, 236)
-	for k in maxi(slots.size(), 3):
-		var r := Rect2(origin + Vector2(k % 3, k / 3) * (SLOT + Vector2(46, 16)), SLOT)
+	# Three slots to a row, or all in one row of narrower slots when there
+	# are more (one row is all the page has room for).
+	var across := maxi(3, slots.size())
+	var gap := 46.0 if across == 3 else 16.0
+	var span := 3 * SLOT.x + 2 * 46.0
+	var size := Vector2((span - (across - 1) * gap) / across, SLOT.y)
+	var s := size.x / SLOT.x  # how much smaller than a slot of three
+	for k in across:
+		var r := Rect2(origin + Vector2(k * (size.x + gap), 0), size)
 		if k >= slots.size():
 			K.dashed(self, K.closed(K.round_rect(r.grow(-20), 16)), Color(P.INK, 0.18), 2, 8, 6)
 			continue
@@ -524,25 +537,30 @@ func _draw_inventions() -> void:
 			K.text(self, P.display(600), r.get_center() + Vector2(0, -10), "?", 48, Color(P.INK, 0.35))
 			K.text(self, P.ui(700), r.get_center() + Vector2(0, 40), "Level %d" % (slot[0] + 1), 16, Color(P.INK, 0.45))
 			continue
-		K.sticker(self, r.position + Vector2(r.size.x / 2, 66), 1.5, inv["name"], 99, t, k * 0.7)
+		K.sticker(self, r.position + Vector2(r.size.x / 2, 66), 1.5 * s, inv["name"], 99, t, k * 0.7)
 		var y := r.position.y + 142
 		K.icon(self, "pieces", Vector2(r.position.x + 40, y), 1.2, P.INK)
 		K.text(self, P.ui(800), Vector2(r.position.x + 58, y), "%d pieces" % int(inv["cost"]), 20, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 		var x := r.position.x + 40
 		var counts: Dictionary = inv.get("counts", {})
 		for kind in counts:
-			critter(self, kind, Vector2(x + 18, y + 56), 0.6, t)
-			K.text(self, P.ui(800), Vector2(x + 40, y + 60), "× %d" % int(counts[kind]), 17, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-			x += 96
-		K.text(self, P.ui(700), Vector2(r.position.x + r.size.x / 2, r.end.y - 6), "%d inputs · from level %d" % [int(inv["inputs"]), slot[0] + 1], 14, P.INK_SOFT)
+			critter(self, kind, Vector2(x + 18, y + 56), 0.6 * s, t)
+			K.text(self, P.ui(800), Vector2(x + 40 * s, y + 60), "× %d" % int(counts[kind]), 17, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+			x += 96 * s
+		K.text(self, P.ui(700), Vector2(r.position.x + r.size.x / 2, r.end.y - 6), "%d inputs · from level %d" % [int(inv["inputs"]), _number_of(str(inv.get("from_level", "")), slot[0] + 1)], 14, P.INK_SOFT)
 
 
-## Invention slots in campaign order, pots aside: [level index, invention id, name].
+## Invention slots in campaign order, pots aside: [level index, invention id,
+## name]. An invention two levels earn (Same Paint) has one slot, at the
+## first; the slot tells which level made the one kept.
 func _invention_slots() -> Array:
 	var out := []
+	var ids := {}
 	for i in levels.size():
-		if not levels[i].invention.is_empty() and Invention.paint_of(levels[i].invention) < 0:
-			out.append([i, levels[i].invention["id"], levels[i].invention["name"]])
+		var inv: Dictionary = levels[i].invention
+		if not inv.is_empty() and Invention.paint_of(inv) < 0 and not ids.has(inv["id"]):
+			ids[inv["id"]] = true
+			out.append([i, inv["id"], inv["name"]])
 	return out
 
 
@@ -554,7 +572,7 @@ func _pots() -> Array:
 		out.append([paint, -1, ""])
 	for i in levels.size():
 		var paint := Invention.paint_of(levels[i].invention)
-		if paint >= 0:
+		if paint >= 0 and out[paint][1] < 0:  # the first level that earns it
 			out[paint] = [paint, i, levels[i].invention["id"]]
 	return out
 
@@ -598,7 +616,7 @@ func _draw_cloths() -> void:
 	_draw_chapter_header()
 	var list := _chapter_levels(chapter)
 	var gallery := Rect2(PAGE.position.x + 30, PAGE.position.y + 66, 790, 524)
-	var cols := 4 if list.size() <= 8 else 5
+	var cols: int = list[0].quilt_across if list[0].quilt_across > 0 else (4 if list.size() <= 8 else 5)
 	var rows := ceili(float(list.size()) / cols)
 	var gap := 16.0
 	var w := (gallery.size.x - (cols - 1) * gap) / cols
@@ -629,7 +647,11 @@ func _draw_cloths() -> void:
 	# The chapter's quilt
 	var side := Rect2(PAGE.position.x + 846, PAGE.position.y + 66, PAGE.size.x - 876, 524)
 	K.text(self, P.display(600), Vector2(side.get_center().x, side.position.y + 10), "Quilt", 24, P.INK)
-	K.quilt(self, Rect2(side.position + Vector2(0, 36), Vector2(side.size.x, side.size.y - 96)), patches, list[0].cols if threads else 0)
+	# Patches share the cloths' shape when every cloth in the chapter has it.
+	var aspect: float = float(list[0].cols) / list[0].rows
+	if not list.all(func(l): return is_equal_approx(float(l.cols) / l.rows, aspect)):
+		aspect = 1.0
+	K.quilt(self, Rect2(side.position + Vector2(0, 36), Vector2(side.size.x, side.size.y - 96)), patches, list[0].cols if threads else 0, list[0].quilt_across, aspect)
 	var done := patches.filter(func(p): return not p.is_empty()).size()
 	var line := "Every cloth sewn in!" if done == list.size() else "%d of %d cloths woven" % [done, list.size()]
 	K.text(self, P.ui(700), Vector2(side.get_center().x, side.end.y - 30), line, 16, P.INK_SOFT)

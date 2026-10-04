@@ -1,8 +1,8 @@
 {
 	"id": "turn_the_wheel",
 	"name": "Turn the Wheel",
-	"goal": "Weave the thread.",
-	"hint": "Every paint on the card, one turn on.",
+	"goal": "Weave the swatch.",
+	"hint": "Every paint on the card, one turn on. Tube the card through Shift and watch what one turn does to every paint.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -16,14 +16,24 @@
 		"best": 1
 	},
 	"target": [
-		"WYBGROPK"
+		"WYBGROPK",
+		"YBGROPKW",
+		"BGROPKWY",
+		"GROPKWYB",
+		"ROPKWYBG",
+		"OPKWYBGR"
 	],
 	"card_rule": "unshift",
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"WRYOBPGK"
+				"WRYOBPGK",
+				"RYOBPGKW",
+				"YOBPGKWR",
+				"OBPGKWRY",
+				"BPGKWRYO",
+				"PGKWRYOB"
 			]
 		}
 	],

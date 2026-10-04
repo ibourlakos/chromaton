@@ -1,8 +1,8 @@
 {
 	"id": "smudges",
-	"name": "Smudges",
-	"goal": "Weave the heart. Mind the smudges.",
-	"hint": "Keep only the card's red; the smudges wash out.",
+	"name": "Sandy Crab",
+	"goal": "Weave the crab.",
+	"hint": "Keep only the card's red; the sand washes out.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -17,28 +17,28 @@
 		"best": 2
 	},
 	"target": [
-		"WRRWWRRW",
-		"RRRRRRRR",
-		"RRRRRRRR",
+		"RWRWWRWR",
+		"RRRWWRRR",
+		"WRWWWWRW",
 		"WRRRRRRW",
-		"WWRRRRWW",
-		"WWWRRWWW"
+		"RRRRRRRR",
+		"RWRWWRWR"
 	],
 	"card_rule": "smudges",
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"YORYYORW",
-				"RRORRRRR",
-				"RRRRORRO",
+				"RYOYYOWR",
+				"RROWWRRR",
+				"WRWWYWRY",
 				"WRRRORRY",
-				"WYROORWW",
-				"YYYRRYWW"
+				"ROROORRR",
+				"OYOWWOWR"
 			],
 			"smudges": [
-				0,
 				1,
+				2,
 				3,
 				4,
 				5,

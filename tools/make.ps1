@@ -275,7 +275,7 @@ Other
   shot <level> <png> [options]
                        save a screenshot and quit; level can also be 'levels',
                        'journal' (or 'book'), 'options' or 'intro'; options: --ticks=N --phase=0.5 --finish --wrong --empty --page=N --stale
-                       --tab=T --solved=N --piece=K --word=N (journal) --peek[=K] --news (a level)
+                       --tab=T --solved=N --piece=K --word=N (journal) --peek[=K] --news --fan (a level)
                        --grid --paints --touch
   import               import new fonts or other assets
   godot                print which Godot this script uses

@@ -64,6 +64,13 @@
 			"word": "Stitch"
 		},
 		{
+			"id": "thread",
+			"level": "one_pot",
+			"tab": "loom",
+			"text": "A thread is one line of stitches in a cloth: a row across, or a column down. The paint box's cloths are single threads.",
+			"word": "Thread"
+		},
+		{
 			"id": "tick",
 			"level": "one_pot",
 			"tab": "loom",
@@ -74,7 +81,7 @@
 			"id": "tray",
 			"level": "one_pot",
 			"tab": "",
-			"text": "The tray along the bottom holds the pieces you can use. Drag one onto the workbench, or tap it to pick it up. A piece with a lock is one this level does without. To put a piece away, drag it back onto the tray.",
+			"text": "The tray along the bottom holds the pieces you can use. Drag one onto the workbench, or tap it to pick it up. A piece with a lock is one this level does without. Your pots share one slot: tap it and they fan out above the shelf, then drag one out. To put a piece away, drag it back onto the tray.",
 			"word": "Tray"
 		},
 		{
@@ -139,13 +146,6 @@
 			"tab": "cloths",
 			"text": "Weave every cloth in a chapter and they're sewn together into a quilt. Your quilts hang beside your cloths in the journal.",
 			"word": "Quilt"
-		},
-		{
-			"id": "thread",
-			"level": "opposites",
-			"tab": "loom",
-			"text": "A thread is one line of stitches in a cloth: a row across, or a column down. Some levels weave a single thread instead of a whole picture.",
-			"word": "Thread"
 		},
 		{
 			"id": "filter",

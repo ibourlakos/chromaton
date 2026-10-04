@@ -1,0 +1,77 @@
+{
+	"id": "neither_twice",
+	"name": "Neither, Twice",
+	"goal": "Weave the rook.",
+	"hint": "Every paint flips to its opposite. Split the card and give the Third Paint the same paint twice: what neither has is the opposite.",
+	"pieces": [
+		"split"
+	],
+	"inventions": [
+		"third_paint"
+	],
+	"stars": {
+		"budget": 3,
+		"best": 2
+	},
+	"target": [
+		"OOBBOOBB",
+		"OWBWWOWB",
+		"BWWWWWWO",
+		"BBWWWWOO",
+		"OOWGGWBB",
+		"OOWWWWBB",
+		"BWWWWWWO",
+		"BBOOBBOO"
+	],
+	"card_rule": "invert",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"BBOOBBOO",
+				"BKOKKBKO",
+				"OKKKKKKB",
+				"OOKKKKBB",
+				"BBKRRKOO",
+				"BBKKKKOO",
+				"OKKKKKKB",
+				"OOBBOOBB"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "s",
+				"kind": "split",
+				"x": 3,
+				"y": 3
+			},
+			{
+				"id": "t",
+				"kind": "invention",
+				"invention": "third_paint",
+				"x": 6,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"s"
+			],
+			[
+				"s.0",
+				"t.0"
+			],
+			[
+				"s.1",
+				"t.1"
+			],
+			[
+				"t",
+				"loom"
+			]
+		]
+	}
+}

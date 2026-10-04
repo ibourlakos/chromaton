@@ -56,6 +56,12 @@ static func expected(check: String, ins: Array) -> int:
 			return Paint.contrast(ins[0], ins[1])
 		"invert":
 			return Paint.invert(ins[0])
+		"third_paint":  # what neither paint has
+			return Paint.invert(Paint.mix(ins[0], ins[1]))
+		"missing_from_either":  # what one paint or the other lacks
+			return Paint.invert(Paint.filter(ins[0], ins[1]))
+		"same_paint":  # what both paints have or both lack
+			return Paint.invert(Paint.contrast(ins[0], ins[1]))
 		"shift":
 			return Paint.shift(ins[0])
 	push_error("unknown invention check: " + check)

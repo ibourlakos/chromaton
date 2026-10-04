@@ -1,8 +1,8 @@
 {
 	"id": "black_cat",
-	"name": "Black Cat",
-	"goal": "Weave the black cat.",
-	"hint": "Wherever the card has paint, the cat is black.",
+	"name": "Harbour Cat",
+	"goal": "Weave the cat.",
+	"hint": "Wherever the card has paint, the cat is black. Turn the card's paint around the wheel and mix every turn together.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -17,20 +17,24 @@
 		"best": 4
 	},
 	"target": [
-		"KWWWWK",
-		"KKKKKK",
-		"KWKKWK",
-		"WKKKKW"
+		"KWKWWWWW",
+		"KKKWWWWK",
+		"KKKKKKWK",
+		"WKKKKKKW",
+		"WKKKKKKW",
+		"WKWWWWKW"
 	],
 	"card_rule": "any_red",
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"RWWWWR",
-				"RRRRRR",
-				"RWRRWR",
-				"WRRRRW"
+				"RWRWWWWW",
+				"RRRWWWWR",
+				"RRRRRRWR",
+				"WRRRRRRW",
+				"WRRRRRRW",
+				"WRWWWWRW"
 			]
 		}
 	],

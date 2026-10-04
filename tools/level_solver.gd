@@ -21,6 +21,8 @@ const Simulator = preload("res://core/simulator.gd")
 const Invention = preload("res://core/invention.gd")
 
 const LANES := 20  # colors packed per int (3 flags each)
+## The two-input operations the search knows, by piece or invention check.
+const BINARY := ["mix", "filter", "contrast", "third_paint", "missing_from_either", "same_paint"]
 
 var problems := 0
 var chunks := 0
@@ -28,6 +30,8 @@ var full_mask := PackedInt64Array()
 var low_mask := PackedInt64Array()
 var high_mask := PackedInt64Array()
 var red_vec := PackedInt64Array()
+var combo_count := 0
+var has_split := false
 var target_key := ""
 var ops: Array = []
 var visited := {}
@@ -90,13 +94,17 @@ func _fail(msg: String) -> void:
 	printerr("PROBLEM: " + msg)
 
 
-## The inventions the reference solutions use: each invention level's own reference.
+## The inventions the reference solutions use: each invention level's own
+## reference, the cheaper machine winning where two levels earn the same one
+## (as a player's save keeps it). So a pot costs its cheapest price.
 static func _reference_inventions(levels: Array) -> Dictionary:
 	var inventions := {}
 	for level in levels:
 		if not level.invention.is_empty():
-			var m = level.reference_machine()
-			inventions[level.invention["id"]] = Invention.package(level, m, inventions)
+			var inv := Invention.package(level, level.reference_machine(), inventions)
+			var old: Dictionary = inventions.get(inv["id"], {})
+			if old.is_empty() or int(inv["cost"]) <= int(old["cost"]):
+				inventions[inv["id"]] = inv
 	return inventions
 
 
@@ -127,14 +135,13 @@ func solve(level, inventions: Dictionary, max_cost: int) -> Dictionary:
 	low_mask = _const_vec(combos.size(), Paint.RED | Paint.YELLOW)
 	high_mask = _const_vec(combos.size(), Paint.BLUE)
 	red_vec = _const_vec(combos.size(), Paint.RED)
+	combo_count = combos.size()
+	has_split = "split" in level.pieces
 	target_key = str(_pack(want))
-	ops = []
-	for kind in level.pieces:
-		if kind in ["red_pot", "mix", "filter", "invert", "shift"]:
-			ops.append({"op": kind, "cost": 1})
-	for inv_id in level.inventions:
-		if inv_id == "filter" and inventions.has("filter"):
-			ops.append({"op": "filter", "cost": int(inventions["filter"]["cost"])})
+	ops = level_ops(level, inventions)
+	for o in ops:
+		if o["op"] == "paint":
+			o["v"] = _const_vec(combos.size(), o["paint"])
 	var signals := []
 	var names := ["A", "B", "C", "D"]
 	for k in level.cards.size():
@@ -211,6 +218,26 @@ func _dfs_tree(signals: Array, used: int, limit: int) -> bool:
 	return false
 
 
+## The pieces a level offers, as search operations: its basic pieces, the
+## earned pots it opens (a paint at the pot's price) and its inventions (at
+## their price, by what they compute).
+static func level_ops(level, inventions: Dictionary) -> Array:
+	var out := []
+	for kind in level.pieces:
+		if kind in ["red_pot", "mix", "filter", "invert", "shift"]:
+			out.append({"op": kind, "cost": 1, "name": kind.capitalize()})
+	for pot_id in level.pots:
+		if inventions.has(pot_id):
+			var inv: Dictionary = inventions[pot_id]
+			out.append({"op": "paint", "paint": Invention.paint_of(inv), "cost": int(inv["cost"]), "name": inv["name"].replace(" pot", "")})
+	for inv_id in level.inventions:
+		if inventions.has(inv_id):
+			var inv: Dictionary = inventions[inv_id]
+			if inv["check"] in BINARY or inv["check"] in ["invert", "shift"]:
+				out.append({"op": inv["check"], "cost": int(inv["cost"]), "name": inv["name"].replace(" ", "")})
+	return out
+
+
 ## Every piece that can be added to the current signals within the budget.
 func _gates(signals: Array, budget: int) -> Array:
 	var out := []
@@ -221,16 +248,19 @@ func _gates(signals: Array, budget: int) -> Array:
 		match o["op"]:
 			"red_pot":
 				out.append({"v": red_vec, "key": str(red_vec), "desc": "Red", "cost": o["cost"], "ins": []})
+			"paint":
+				var pv: PackedInt64Array = o["v"]
+				out.append({"v": pv, "key": str(pv), "desc": o["name"] + "Pot", "cost": o["cost"], "ins": []})
 			"invert", "shift":
 				for k in n:
 					var s: Dictionary = signals[k]
 					var v := _unary(o["op"], s["v"])
-					out.append({"v": v, "key": str(v), "desc": "%s(%s)" % [o["op"].capitalize(), s["desc"]], "cost": o["cost"], "ins": [k]})
-			"mix", "filter":
+					out.append({"v": v, "key": str(v), "desc": "%s(%s)" % [o["name"], s["desc"]], "cost": o["cost"], "ins": [k]})
+			_:  # two inputs; every one of them is the same either way round
 				for i in n:
-					for j in range(i + 1, n):
+					for j in range(i if has_split else i + 1, n):  # one paint into both takes a Split
 						var v := _binary(o["op"], signals[i]["v"], signals[j]["v"])
-						out.append({"v": v, "key": str(v), "desc": "%s(%s, %s)" % [o["op"].capitalize(), signals[i]["desc"], signals[j]["desc"]], "cost": o["cost"], "ins": [i, j]})
+						out.append({"v": v, "key": str(v), "desc": "%s(%s, %s)" % [o["name"], signals[i]["desc"], signals[j]["desc"]], "cost": o["cost"], "ins": [i, j] if i != j else [i]})
 	return out
 
 
@@ -249,7 +279,19 @@ func _binary(op: String, a: PackedInt64Array, b: PackedInt64Array) -> PackedInt6
 	var out := PackedInt64Array()
 	out.resize(chunks)
 	for c in chunks:
-		out[c] = (a[c] | b[c]) if op == "mix" else (a[c] & b[c])
+		match op:
+			"mix":
+				out[c] = a[c] | b[c]
+			"filter":
+				out[c] = a[c] & b[c]
+			"contrast":
+				out[c] = a[c] ^ b[c]
+			"third_paint":
+				out[c] = (a[c] | b[c]) ^ full_mask[c]
+			"missing_from_either":
+				out[c] = (a[c] & b[c]) ^ full_mask[c]
+			"same_paint":
+				out[c] = (a[c] ^ b[c]) ^ full_mask[c]
 	return out
 
 
