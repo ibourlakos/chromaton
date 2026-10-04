@@ -1,7 +1,8 @@
 ## The workbench: parts tray, bench grid, pattern cards, tubes, the loom and
 ## the run controls.
 ##
-## Everything on the bench is drawn in _draw(). Every gesture is a
+## The bench is drawn in code, in layers that redraw only when what they show
+## changes (see Drawing). Every gesture is a
 ## press-drag-release (no hover, no right-click-only), so mouse and touch work the
 ## same way:
 ## - drag a piece from the tray onto a free cell to place it, or tap it to
@@ -901,8 +902,9 @@ func _delete_button_pos() -> Vector2:
 #   wiring    tubes, a selected piece's lit cell, the pipes into pieces
 #   loom      the cloth and its stitches, the status under it
 #   critters  the pieces: they're alive, drawn every frame
-#   ports     ports, the loom's intake
-#   top       drops, shuttle, delete button, hints, a carried or dragged piece
+#   ports     ports
+#   top       drops, delete button, shuttle, the loom's intake, hints, a
+#             carried or dragged piece
 
 func _age(id: int) -> float:
 	var last: int = sim.node_last_fire(id)
@@ -921,12 +923,14 @@ func _refresh_layers() -> void:
 	aim_layer.show_look([_aim_cell(), bench_gen, drag, drag_node])
 	cards_layer.show_look([level])
 	paints_layer.show_look(_card_paints_look())
+	# Ports stay put while a piece or tube is dragged (the dragged piece's go
+	# with it); tubes follow the pointer.
 	var editing := [bench_gen, drag, drag_node, drag_moved]
+	ports.show_look(editing)
 	if drag in ["move", "tube", "tube_in"]:
 		editing.append(drag_pos)
 	wiring.show_look(editing + [selected_tube, selected_piece, drag_port, drag_detach])
 	loom_layer.show_look([bench_gen, sim.tick, outcome, _loom_shown()])
-	ports.show_look(editing)
 	critters.queue_redraw()
 	queue_redraw()
 
@@ -979,8 +983,7 @@ func _trash_lit() -> bool:
 	return drag == "move" and drag_moved and TRAY.has_point(drag_pos)
 
 
-## The still layer: top bar, bench and grid, design card, the cards (their
-## colors are drawn over them, with the pieces).
+## The still layer: top bar, bench and grid, design card.
 func _draw_still() -> void:
 	_draw_frame(still)
 	K.shape(still, K.round_rect(BENCH, 14), Color(P.TAG, 0.35), Color(P.INK, 0.12), 2)
@@ -1134,7 +1137,7 @@ func _draw_critters() -> void:
 
 
 ## The ports layer: every port over the pieces (lit where a dragged tube
-## can end), and the loom's intake funnel, opening towards the bench.
+## can end). The loom's intake is drawn with what moves on the loom.
 func _draw_ports() -> void:
 	var ci := ports
 	for id in machine.nodes:
@@ -1148,9 +1151,6 @@ func _draw_ports() -> void:
 		for k in p.y:
 			var lit: bool = drag == "tube_in" and drag_moved and id != drag_node
 			K.port_out(ci, out_port(id, k), lit)
-	var port := loom_port
-	K.shape(ci, PackedVector2Array([port + Vector2(-6, -16), port + Vector2(18, -6), port + Vector2(18, 6), port + Vector2(-6, 16)]), P.WOOD_LT, P.INK, 2.5)
-	K.port_in(ci, port)
 
 
 ## Drops travelling down the tubes.
@@ -1264,12 +1264,18 @@ func _draw_loom() -> void:
 
 
 ## What moves on the loom: the shuttle (or a wrong stitch's mark), a stitch
-## flying in from the intake, the puff where it lands.
+## flying in from the intake, the puff where it lands. The intake funnel sits
+## between them: over the shuttle and a drop resting at the end of a short
+## tube, under the stitch flying out of it.
 func _draw_loom_motion() -> void:
 	var wrong: int = sim.wrong_index if outcome == "wrong" else -1
 	# The shuttle slides on to the next slot just after a stitch lands.
 	var glide := clampf((clock - landed_at) / minf(0.3, TICK_SECONDS[speed] * 0.8), 0, 1)
 	K.loom_shuttle(self, loom_cloth, level.cols, loom_cs, sim.woven, level.target, _loom_shown(), wrong, clock, glide)
+	# The loom's intake funnel, opening towards the bench
+	var port := loom_port
+	K.shape(self, PackedVector2Array([port + Vector2(-6, -16), port + Vector2(18, -6), port + Vector2(18, 6), port + Vector2(-6, 16)]), P.WOOD_LT, P.INK, 2.5)
+	K.port_in(self, port)
 	if _stitch_flying():
 		var i: int = sim.woven.size() - 1
 		var cell := loom_cloth.position + Vector2((i % level.cols + 0.5) * loom_cs, (i / level.cols + 0.5) * loom_cs)

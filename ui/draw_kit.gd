@@ -5,7 +5,7 @@
 ## their own local coordinates (as in the mockup) and placed with a
 ## transform, so `s` scales the whole critter.
 ##
-## Everything is drawn again every frame, so shapes are worked out once and
+## Living things are drawn again every frame, so shapes are worked out once and
 ## kept: a unit circle per point count, a rounded rectangle per size, a drop
 ## per radius, the critters' bodies. Each use only places the kept shape with
 ## one transform (done by the engine, not point by point in script). The
