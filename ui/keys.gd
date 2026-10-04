@@ -18,7 +18,7 @@ const K = preload("res://ui/draw_kit.gd")
 const GROUP := "key_hints"  # nodes that draw caps and must redraw on a toggle
 const PATH := "user://chromaton_settings.json"
 const EVERYWHERE := "Everywhere"
-const GROUPS := [EVERYWHERE, "Workbench", "Woven", "Levels"]
+const GROUPS := [EVERYWHERE, "Workbench", "Woven", "Levels", "Journal"]
 
 ## [action, group, name shown in Options, default keys]. Keys only clash
 ## within a group, or with a group and Everywhere.
@@ -35,6 +35,7 @@ const ACTIONS := [
 	["speed", "Workbench", "Next speed", [KEY_TAB]],
 	["delete", "Workbench", "Delete selected", [KEY_DELETE, KEY_BACKSPACE]],
 	["paints", "Workbench", "Paints", [KEY_P]],
+	["peek", "Workbench", "Journal page", [KEY_J]],
 	["piece_1", "Workbench", "Tray piece 1", [KEY_1]],
 	["piece_2", "Workbench", "Tray piece 2", [KEY_2]],
 	["piece_3", "Workbench", "Tray piece 3", [KEY_3]],
@@ -49,8 +50,20 @@ const ACTIONS := [
 	["prev_page", "Levels", "Page back", [KEY_LEFT, KEY_A]],
 	["next_page", "Levels", "Page forward", [KEY_RIGHT, KEY_D]],
 	["continue", "Levels", "Next unsolved level", [KEY_ENTER]],
-	["book", "Levels", "Pattern Book", [KEY_B]],
+	["book", "Levels", "Journal", [KEY_B]],
 	["options", "Levels", "Options", [KEY_O]],
+	["page_back", "Journal", "Page back", [KEY_LEFT, KEY_A]],
+	["page_forward", "Journal", "Page forward", [KEY_RIGHT, KEY_D]],
+	["next_tab", "Journal", "Next tab", [KEY_TAB]],
+	["open_page", "Journal", "Open its page", [KEY_ENTER]],
+	["close_journal", "Journal", "Close", [KEY_B, KEY_J]],
+	["tab_1", "Journal", "Paint", [KEY_1]],
+	["tab_2", "Journal", "Loom", [KEY_2]],
+	["tab_3", "Journal", "Pieces", [KEY_3]],
+	["tab_4", "Journal", "Inventions", [KEY_4]],
+	["tab_5", "Journal", "Cloths", [KEY_5]],
+	["tab_6", "Journal", "Scores", [KEY_6]],
+	["tab_7", "Journal", "Words", [KEY_7]],
 ]
 const SLOTS := 2
 ## Keys that only modify others; they can't be bound.

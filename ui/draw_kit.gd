@@ -837,6 +837,74 @@ static func design(ci: CanvasItem, r: Rect2, cols: int, target: PackedByteArray)
 	disc(ci, pin + Vector2(-1.5, -1.5), 1.6, Color(1, 1, 1, 0.6))
 
 
+## A woven cloth hung from a wooden rod, as big as fits in r (centred).
+## Returns the cloth's own rectangle.
+static func cloth(ci: CanvasItem, r: Rect2, cols: int, target: PackedByteArray) -> Rect2:
+	var rows := target.size() / cols
+	var cs := minf(r.size.x / cols, (r.size.y - 10) / rows)
+	if cs >= 4:
+		cs = floorf(cs)
+	var size := Vector2(cols, rows) * cs
+	var o := (r.position + Vector2(0, 10) + (r.size - Vector2(0, 10) - size) / 2).floor()
+	fill(ci, round_rect(Rect2(o + Vector2(3, 4), size), 3), P.SHADOW)
+	ci.draw_rect(Rect2(o, size), P.CLOTH)
+	_stitches(ci, o, cols, cs, target)
+	ci.draw_rect(Rect2(o, size), Color(P.INK, 0.35), false, 1.5)
+	shape(ci, round_rect(Rect2(o.x - 8, o.y - 9, size.x + 16, 7), 3.5), P.WOOD, P.INK, 1.8)
+	return Rect2(o, size)
+
+
+## Woven stitches from o, cs across, in rows of cols.
+static func _stitches(ci: CanvasItem, o: Vector2, cols: int, cs: float, target: PackedByteArray) -> void:
+	for i in target.size():
+		var cell := Rect2(o + Vector2(i % cols, i / cols) * cs, Vector2(cs, cs))
+		var c: int = target[i]
+		if cs >= 6:
+			fill(ci, round_rect(cell.grow(-0.5), cs * 0.25, 2), P.WHITE_STITCH if c == 0 else P.SIG[c])
+		else:
+			ci.draw_rect(cell, P.WHITE_STITCH if c == 0 else P.SIG[c])
+
+
+## A chapter's quilt: its cloths sewn together, as big as fits in r. patches
+## holds one entry per level in the chapter: [cols, target] once woven, []
+## while not. stack_cols > 0 stacks them row on row, each a thread that many
+## stitches wide (the paint box's eight threads make a square); otherwise each
+## cloth is sewn into an equal square patch. Unwoven places stay bare,
+## stitched round.
+static func quilt(ci: CanvasItem, r: Rect2, patches: Array, stack_cols := 0) -> void:
+	var stacked := stack_cols > 0
+	var n := patches.size()
+	var grid := Vector2i(1, n)
+	if not stacked:  # the most columns-by-rows that makes the biggest patches
+		var best := 0.0
+		for c in range(1, n + 1):
+			var rows := ceili(float(n) / c)
+			var b := minf(r.size.x / c, r.size.y / rows) - (c * rows - n) * 0.01
+			if b > best:
+				best = b
+				grid = Vector2i(c, rows)
+	var unit := Vector2(stack_cols, 1) if stacked else Vector2.ONE
+	var block := minf((r.size.x - 24) / (grid.x * unit.x), (r.size.y - 24) / (grid.y * unit.y))
+	var bsize := unit * block
+	var size := Vector2(grid) * bsize
+	var o := r.get_center() - size / 2
+	var edge := Rect2(o - Vector2(10, 10), size + Vector2(20, 20))
+	fill(ci, round_rect(Rect2(edge.position + Vector2(4, 5), edge.size), 8), P.SHADOW)
+	shape(ci, round_rect(edge, 8), P.WARP, P.INK, 2)
+	dashed(ci, closed(round_rect(edge.grow(-5), 5)), Color(P.HOOP, 0.9), 1.5, 5, 4)
+	for k in patches.size():
+		var b := Rect2(o + Vector2(k % grid.x, k / grid.x) * bsize, bsize)
+		ci.draw_rect(b, P.PAPER_DK if patches[k].is_empty() else P.CLOTH)
+		if not patches[k].is_empty():
+			var cols: int = patches[k][0]
+			var target: PackedByteArray = patches[k][1]
+			var rows := target.size() / cols
+			var cs := minf((b.size.x - (0 if stacked else 6)) / cols, (b.size.y - (0 if stacked else 6)) / rows)
+			_stitches(ci, b.get_center() - Vector2(cols, rows) * cs / 2, cols, cs, target)
+		dashed(ci, closed(round_rect(b.grow(-1.5), 2)), Color(P.HOOP, 0.8), 1.2, 4, 3)
+	ci.draw_rect(Rect2(o, size), Color(P.INK, 0.45), false, 1.5)
+
+
 # ---------------------------------------------------------------------------
 # Stars and icons
 # ---------------------------------------------------------------------------

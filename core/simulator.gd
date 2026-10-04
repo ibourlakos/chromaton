@@ -55,6 +55,9 @@ var last_fire := PackedInt32Array()   # per node: tick it last fired (0 = never)
 var last_color := PackedInt32Array()  # per node: color it last made or wove
 var fire_count := PackedInt32Array()
 var caught := {}  # per catch-pot node: the colors it swallowed, oldest first
+## The last tick's pieces at work: [operation, input colors] for each piece
+## that fired (the journal learns from these, Progress.learn).
+var fired := []
 
 const CAUGHT_KEPT := 8
 
@@ -280,6 +283,7 @@ func step() -> void:
 	tick += 1
 	var results := []
 	var wrong := false
+	fired.clear()
 	for i in firing:
 		var colors := _colors_in(i)
 		match node_kind[i]:
@@ -299,6 +303,7 @@ func step() -> void:
 				results.append([int(node_table[i][_index_of(colors)])])
 			_:
 				results.append(Pieces.apply(node_kind[i], colors))
+				fired.append([node_kind[i], colors])
 	for i in firing:
 		for t in node_ins[i]:
 			drops[t] = -1

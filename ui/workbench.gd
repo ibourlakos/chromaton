@@ -11,7 +11,10 @@
 ## - drag a placed piece to move it, or onto the tray to throw it away;
 ## - drag from an output port to an input port to lay a tube (or the other
 ##   way round); drag a tube's end off an input port to re-route or remove it;
-## - tap a tube or a placed piece to select it, then tap its delete button.
+## - tap a tube or a placed piece to select it, then tap its delete button;
+## - select a piece (or pick one up from the tray), then tap the journal by
+##   the trash to read its page (peek); with nothing selected it opens the
+##   journal at Pieces, with a tube selected at Loom.
 ## Any edit stops the run and rewinds it to the start.
 ##
 ## Keys (see keys.gd for the defaults; they can be changed in Options) only
@@ -32,12 +35,16 @@ const K = preload("res://ui/draw_kit.gd")
 const ToyButton = preload("res://ui/toy_button.gd")
 const Keys = preload("res://ui/keys.gd")
 const SuccessPanel = preload("res://ui/success_panel.gd")
+const Journal = preload("res://ui/journal.gd")
+const JournalNews = preload("res://ui/journal_news.gd")
+const Words = preload("res://core/words.gd")
 const LevelNote = preload("res://ui/level_note.gd")
 const PaintCard = preload("res://ui/paint_card.gd")
 const Pieces = preload("res://core/pieces.gd")
 const Machine = preload("res://core/machine.gd")
 const Simulator = preload("res://core/simulator.gd")
 const Invention = preload("res://core/invention.gd")
+const Level = preload("res://core/level.gd")
 
 signal exit_requested
 signal next_requested
@@ -50,6 +57,7 @@ const TOP_H := 64.0
 # tray is a shelf along the bottom.
 const TRAY := Rect2(12, 662, 1256, 128)
 const TRASH := Rect2(1150, 670, 110, 112)
+const PEEK := Rect2(1034, 670, 108, 112)  # the journal: tap it to read a piece's page
 const BENCH := Rect2(12, 74, 956, 578)
 const GRID_ORIGIN := Vector2(24, 84)
 const CELL := Vector2(84, 80)
@@ -104,6 +112,11 @@ var carrying := -1  # tray index of a picked-up piece that follows the pointer
 var outcome := ""  # "", "solved", "wrong", "stalled", "unused", "not_general"
 var panel: Control
 var note: Control  # the level's note while it is up (see show_note)
+var journal: Control  # the journal, open over the bench (peek)
+var news: Control  # "New in your journal", after the success panel
+var levels: Array = []  # the campaign, for the journal
+var fresh := []  # [piece kind, input colors] first seen here, not yet in the news
+var new_words := []  # words the last solve unlocked, not yet in the news
 # The layers the bench is drawn in, back to front (see Drawing).
 var still: Layer
 var shelf: Layer
@@ -146,10 +159,11 @@ var btn_paints
 var paint_card: Control  # the paints, pinned under their button while up
 
 
-func setup(p_level, p_progress, p_has_next: bool) -> void:
+func setup(p_level, p_progress, p_has_next: bool, p_levels := []) -> void:
 	level = p_level
 	progress = p_progress
 	has_next = p_has_next
+	levels = p_levels
 	inventions = progress.inventions
 	var saved: Dictionary = progress.stored_machine(level.id)
 	machine = Machine.from_dict(saved) if not saved.is_empty() else level.new_machine()
@@ -295,7 +309,7 @@ func _build_tray() -> void:
 			kinds.append("inv:" + inv_id)
 	tray.clear()
 	var left := TRAY.position.x + 8
-	var w := minf(118.0, (TRASH.position.x - 8 - left) / maxf(1, kinds.size()))
+	var w := minf(118.0, (PEEK.position.x - 8 - left) / maxf(1, kinds.size()))
 	for i in kinds.size():
 		tray.append({"kind": kinds[i], "locked": level.is_locked(kinds[i]), "rect": Rect2(left + i * w, TRAY.position.y + 8, w - 8, TRAY.size.y - 16)})
 
@@ -498,6 +512,7 @@ func _do_step() -> void:
 		return
 	var before: int = sim.tick
 	sim.step()
+	_learn()
 	if sim.tick == before:
 		running = false
 		outcome = "stalled"
@@ -542,8 +557,17 @@ func fast_forward(ticks: int, at_phase := 0.5) -> void:
 		if sim.status != Simulator.Status.RUNNING:
 			break
 		sim.step()
+		_learn()
 	phase = at_phase
 	_sync_buttons()
+
+
+## The journal learns what the pieces just did (Progress.learn): every first
+## is a frame filled on a piece's page, and news after the next solve.
+func _learn() -> void:
+	for f in sim.fired:
+		if progress.learn(f[0], f[1]):
+			fresh.append(f)
 
 
 func _finish_solve() -> void:
@@ -555,6 +579,8 @@ func _finish_solve() -> void:
 			return
 	outcome = "solved"
 	var stars: int = level.stars_for(pieces)
+	if not progress.is_solved(level.id):  # a first solve unlocks the level's words
+		new_words = Words.unlocked_by(level.id)
 	var better: Dictionary = progress.record_solve(level.id, pieces, ticks, stars)
 	var invention := {}
 	if not level.invention.is_empty():
@@ -563,10 +589,69 @@ func _finish_solve() -> void:
 	progress_changed.emit()
 	panel = SuccessPanel.new()
 	panel.setup(level, pieces, ticks, stars, better, invention, has_next)
-	panel.replay.connect(_rebuild)
-	panel.levels.connect(func(): exit_requested.emit())
-	panel.next.connect(func(): next_requested.emit())
+	panel.replay.connect(func(): show_news(_rebuild))
+	panel.levels.connect(func(): show_news(exit_requested.emit))
+	panel.next.connect(func(): show_news(next_requested.emit))
 	add_child(panel)
+
+
+## After the success panel: "New in your journal" when the solve brought new
+## words or the runs filled frames, then on to where the panel was going.
+func show_news(then: Callable) -> void:
+	if panel != null:
+		panel.queue_free()
+		panel = null
+	if new_words.is_empty() and fresh.is_empty():
+		then.call()
+		return
+	news = JournalNews.new()
+	news.setup(new_words, fresh, func(ci, id, c, s): Journal.picture(ci, id, c, s, clock, _levels()))
+	new_words = []
+	fresh = []
+	news.done.connect(func():
+		news.queue_free()
+		news = null
+		then.call())
+	news.open_journal.connect(func(): open_journal("", "words"))
+	add_child(news)
+
+
+func _levels() -> Array:
+	if levels.is_empty():
+		levels = Level.load_all()
+	return levels
+
+
+## Opens the journal over the bench (peek): at a piece's page, a tube's tab,
+## or the tab asked for. The run pauses; closing it comes back to the bench
+## as it was.
+func open_journal(focus := "", tab := "") -> void:
+	if journal != null:
+		return
+	running = false
+	carrying = -1
+	_sync_buttons()
+	journal = Journal.new()
+	journal.overlay = true
+	journal.here = level
+	journal.setup(_levels(), progress, tab if tab != "" else ("pieces" if focus == "" else ""), focus)
+	journal.back.connect(func():
+		journal.queue_free()
+		journal = null)
+	add_child(journal)
+
+
+## The journal by the trash: the page of what is selected or picked up.
+func _peek() -> void:
+	var focus := ""
+	if carrying >= 0:
+		focus = tray[carrying]["kind"]
+	elif selected_piece >= 0 and machine.nodes.has(selected_piece):
+		var n: Dictionary = machine.nodes[selected_piece]
+		focus = "inv:" + str(n.get("invention", "")) if n["kind"] == Pieces.INVENTION else n["kind"]
+	elif selected_tube >= 0 and selected_tube < machine.tubes.size():
+		focus = "tube"
+	open_journal(focus)
 
 
 # ---------------------------------------------------------------------------
@@ -602,7 +687,7 @@ func _notification(what: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed) or panel != null or note != null:
+	if not (event is InputEventKey and event.pressed) or panel != null or note != null or journal != null or news != null:
 		return
 	var act := Keys.action(event, "Workbench")
 	if event.echo and not act in REPEATING:
@@ -641,6 +726,9 @@ func _key(act: String, event: InputEventKey) -> bool:
 				_delete_selected()
 		"paints":
 			_toggle_paints()
+		"peek":
+			if editing:
+				_peek()
 		"back":
 			if carrying >= 0:
 				carrying = -1
@@ -697,6 +785,9 @@ func _press(pos: Vector2) -> void:
 		return
 	if _has_selection() and pos.distance_to(_delete_button_pos()) < 26:
 		_delete_selected()
+		return
+	if PEEK.has_point(pos):
+		_peek()
 		return
 	selected_piece = -1
 	for i in tray.size():
@@ -809,6 +900,8 @@ func _finish_move(pos: Vector2) -> void:
 		selected_piece = id  # a tap selects the piece
 		selected_tube = -1
 		return
+	if PEEK.has_point(pos):  # the journal isn't a bin: the piece stays put
+		return
 	if TRAY.has_point(pos):
 		_push_undo()
 		machine.remove_node(id)
@@ -918,7 +1011,7 @@ func _refresh_layers() -> void:
 	if still == null:
 		return
 	still.show_look(_still_look())
-	shelf.show_look([carrying, _trash_lit()])
+	shelf.show_look([carrying, _trash_lit(), _peek_lit()])
 	tray_layer.show_look([level, tray.size()])
 	aim_layer.show_look([_aim_cell(), bench_gen, drag, drag_node])
 	cards_layer.show_look([level])
@@ -980,7 +1073,13 @@ func _still_look() -> Array:
 
 ## The trash lights up while a placed piece is dragged over the tray.
 func _trash_lit() -> bool:
-	return drag == "move" and drag_moved and TRAY.has_point(drag_pos)
+	return drag == "move" and drag_moved and TRAY.has_point(drag_pos) and not PEEK.has_point(drag_pos)
+
+
+## The journal lights up while there's something to read about: a selected
+## piece or tube, or a piece picked up from the tray.
+func _peek_lit() -> bool:
+	return carrying >= 0 or _has_selection()
 
 
 ## The still layer: top bar, bench and grid, design card.
@@ -1029,6 +1128,10 @@ func _draw_shelf() -> void:
 	var lit := _trash_lit()
 	K.shape(shelf, K.round_rect(TRASH, 12), Color(P.HOOP, 0.35) if lit else Color(P.PAPER, 0.8), Color(P.INK, 0.45), 2)
 	K.icon(shelf, "trash", TRASH.get_center(), 1.5 if lit else 1.3, Color(P.INK, 0.9 if lit else 0.5))
+	var peek := _peek_lit()
+	K.shape(shelf, K.round_rect(PEEK, 12), Color(P.HOOP, 0.3) if peek else Color(P.PAPER, 0.8), Color(P.INK, 0.6 if peek else 0.45), 2.5 if peek else 2)
+	K.icon(shelf, "book", PEEK.get_center() + Vector2(0, -10), 1.6 if peek else 1.4, Color(P.INK, 0.9 if peek else 0.55))
+	K.text(shelf, P.ui(700), Vector2(PEEK.get_center().x, PEEK.end.y - 18), "Journal", 13, Color(P.INK_SOFT, 1.0 if peek else 0.7))
 
 
 ## The pieces in the tray's slots, with their names and keys. They hold still.
@@ -1054,6 +1157,7 @@ func _draw_tray() -> void:
 		K.text(ci, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, P.INK_SOFT)
 		if i < 9:
 			Keys.cap(ci, r.position + Vector2(16, 16), Keys.label("piece_%d" % (i + 1)))
+	Keys.cap(ci, PEEK.position + Vector2(16, 16), Keys.label("peek"))
 
 
 ## The cell aimed at while dragging or carrying a piece ((-1, -1): none).

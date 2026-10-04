@@ -5,7 +5,15 @@
 ##   --unlock-all                open every level
 ##   --screenshot=<id>:<path>    load a level's reference solution, run it,
 ##                               save a PNG and quit. <id> may also be
-##                               "levels", "book", "options" or "intro".
+##                               "levels", "journal" (or "book"), "options"
+##                               or "intro".
+##   --tab=<id>                  the journal's tab (paint, loom, pieces,
+##                               inventions, cloths, scores, words)
+##   --solved=<n>                the journal after the first n levels, woven
+##                               by their reference machines (default 12)
+##   --piece=<kind>, --word=<n>  the journal's piece page, or picked word
+##   --peek[=<kind>]             a level with the journal open over it
+##   --news                      with --finish: "New in your journal" next
 ##   --ticks=<n>                 ticks to run before the screenshot
 ##                               (default: one per stitch)
 ##   --phase=<0..1>              how far drops are along their tubes
@@ -28,7 +36,8 @@ const Progress = preload("res://core/progress.gd")
 const Invention = preload("res://core/invention.gd")
 const Workbench = preload("res://ui/workbench.gd")
 const LevelSelect = preload("res://ui/level_select.gd")
-const PatternBook = preload("res://ui/pattern_book.gd")
+const Journal = preload("res://ui/journal.gd")
+const Simulator = preload("res://core/simulator.gd")
 const Options = preload("res://ui/options.gd")
 const Intro = preload("res://ui/intro.gd")
 const Keys = preload("res://ui/keys.gd")
@@ -177,9 +186,9 @@ func show_level_select() -> void:
 	_set_screen(s)
 
 
-func show_book() -> void:
-	var b = PatternBook.new()
-	b.setup(levels, progress)
+func show_book(tab := "", focus := "") -> void:
+	var b = Journal.new()
+	b.setup(levels, progress, tab, focus)
 	b.back.connect(show_level_select)
 	_set_screen(b)
 
@@ -194,7 +203,7 @@ func show_options() -> void:
 func open_level(i: int, with_note := true) -> void:
 	select_page = levels[i].chapter
 	var w = Workbench.new()
-	w.setup(levels[i], progress, i + 1 < levels.size())
+	w.setup(levels[i], progress, i + 1 < levels.size(), levels)
 	w.exit_requested.connect(func():
 		_save()
 		show_level_select())
@@ -235,10 +244,17 @@ func _screenshot(args: Dictionary) -> void:
 				progress.record_solve(levels[k].id, levels[k].best + (k % 2), 40 + k, 3 - (k % 2))
 			select_page = int(args.get("page", 0))
 			show_level_select()
-		"book":
-			if args.has("empty"):
-				progress.inventions = {}
-			show_book()
+		"journal", "book":
+			# The first --solved levels woven (default 12) with their reference
+			# machines, which also fill the piece pages; --empty: nothing yet.
+			var solved := 0 if args.has("empty") else int(args.get("solved", 12))
+			_play_references(solved)
+			show_book(str(args.get("tab", "")), str(args.get("piece", "")))
+			if args.has("page"):
+				screen.chapter = int(args["page"])
+				screen.turn(0)
+			if args.has("word"):
+				screen.word = int(args["word"])
 		"intro":
 			stale = args.has("stale")
 			show_intro()
@@ -267,8 +283,34 @@ func _screenshot(args: Dictionary) -> void:
 				screen._on_tick_shown()
 				if screen.panel != null:
 					screen.panel.t = 3.0
+					if args.has("news"):  # past the panel: what's new in the journal
+						screen.show_news(func(): pass)
 			else:
 				screen.fast_forward(int(args.get("ticks", levels[i].size())), float(args.get("phase", 0.5)))
+			if args.has("peek"):  # the journal over the bench, at a piece's page
+				screen.open_journal(str(args["peek"]) if str(args["peek"]) != "true" else "")
+	await _snap(path, what)
+
+
+## Weaves the first n levels with their reference machines, as a player would:
+## records the solves and inventions, and the piece pages fill as they run.
+func _play_references(n: int) -> void:
+	progress.inventions = {}
+	for k in mini(n, levels.size()):
+		var level = levels[k]
+		var m = level.reference_machine()
+		var sim = Simulator.new(m, level.cards, level.target, progress.inventions)
+		while sim.status == Simulator.Status.RUNNING:
+			sim.step()
+			for f in sim.fired:
+				progress.learn(f[0], f[1])
+		var cost: int = m.cost(progress.inventions)
+		progress.record_solve(level.id, cost, sim.tick, level.stars_for(cost))
+		if not level.invention.is_empty():
+			progress.add_invention(Invention.package(level, m, progress.inventions))
+
+
+func _snap(path: String, what: String) -> void:
 	for n in 4:
 		await get_tree().process_frame
 	await RenderingServer.frame_post_draw

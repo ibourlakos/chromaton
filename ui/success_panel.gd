@@ -123,7 +123,7 @@ func _draw() -> void:
 			K.sticker(self, Vector2(cx - 60, sy), 1.1, invention["name"], clampf(t - 1.2, 0, 99), t, 0.3)
 		K.icon(self, "next", Vector2(cx + 20, sy), 1.0, P.INK)
 		K.icon(self, "book", Vector2(cx + 64, sy), 1.6, P.INK)
-		var note: String = "%s for your Pattern Book" % invention["name"] if paint >= 0 else "New piece for your Pattern Book"
+		var note: String = "%s for your journal" % invention["name"] if paint >= 0 else "New piece for your journal"
 		K.text(self, P.ui(700), Vector2(cx, sy + 46), note, 16, P.INK_SOFT)
 
 

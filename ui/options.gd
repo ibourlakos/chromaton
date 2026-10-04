@@ -15,10 +15,14 @@ const Keys = preload("res://ui/keys.gd")
 signal back
 
 const DESIGN := Vector2(1280, 800)
-const ROW := 40.0
-const SLOT := Vector2(104, 34)
-const PIECE_SLOT := Vector2(52, 34)
-const GROUP_NAMES := {"Everywhere": "Everywhere", "Workbench": "Workbench", "Woven": "After weaving", "Levels": "Level select"}
+const ROW := 36.0
+const TOP := 128.0
+const LEFT := 40.0
+const COLUMN := 410.0
+const LABEL_W := 172.0
+const SLOT := Vector2(88, 30)
+const PIECE_SLOT := Vector2(38, 30)
+const GROUP_NAMES := {"Everywhere": "Everywhere", "Workbench": "Workbench", "Woven": "After weaving", "Levels": "Level select", "Journal": "Journal"}
 
 var slots := []  # [{"rect": Rect2, "action": String, "slot": int}]
 var labels := []  # [position, text, header?]
@@ -40,9 +44,9 @@ func _ready() -> void:
 	b.key = Keys.label("back")
 	b.pressed.connect(func(): back.emit())
 	add_child(b)
-	# With keys, the round buttons sit under the right-hand column of keys;
+	# With keys, the round buttons stand in a third column beside the keys;
 	# without, the grid toggle is all there is.
-	var at := Vector2(700, 556) if with_keys else Vector2(DESIGN.x / 2 - 170, 170)
+	var at := Vector2(LEFT + 2 * COLUMN, TOP + 36) if with_keys else Vector2(DESIGN.x / 2 - 170, 170)
 	grid_button = _toggle("check", at, "Show a grid on the bench", _toggle_grid)
 	grid_button.toggled_on = Keys.grid
 	if not with_keys:
@@ -63,35 +67,37 @@ func _toggle(icon: String, at: Vector2, text: String, action: Callable):
 	return b
 
 
-## Lays out the key slots: Everywhere and Workbench on the left (tray pieces
-## as one row of single slots), After weaving and Level select on the right.
+## Lays out the key slots in three columns: Everywhere and Workbench (tray
+## pieces as one row of single slots), then After weaving, Level select and
+## Journal (its tabs as one row), then the round buttons.
 func _layout() -> void:
-	var columns := {"Everywhere": 0, "Workbench": 0, "Woven": 1, "Levels": 1}
-	var y := [140.0, 140.0]
+	var columns := {"Everywhere": 0, "Workbench": 0, "Woven": 1, "Levels": 1, "Journal": 1}
+	var y := [TOP, TOP]
 	for g in Keys.GROUPS:
 		var col: int = columns[g]
-		var x := 70.0 + col * 630
+		var x := LEFT + col * COLUMN
 		labels.append([Vector2(x, y[col]), GROUP_NAMES[g], true])
-		y[col] += 38
-		var pieces := []
+		y[col] += 36
+		var row := []  # single slots in one row: tray pieces, journal tabs
 		for a in Keys.ACTIONS:
 			if a[1] != g:
 				continue
-			if str(a[0]).begins_with("piece_"):
-				pieces.append(a[0])
+			if str(a[0]).begins_with("piece_") or str(a[0]).begins_with("tab_"):
+				row.append(a[0])
 				continue
 			labels.append([Vector2(x, y[col] + SLOT.y / 2), a[2], false])
 			for s in Keys.SLOTS:
-				slots.append({"rect": Rect2(Vector2(x + 250 + s * (SLOT.x + 10), y[col]), SLOT), "action": a[0], "slot": s})
+				slots.append({"rect": Rect2(Vector2(x + LABEL_W + s * (SLOT.x + 8), y[col]), SLOT), "action": a[0], "slot": s})
 			y[col] += ROW
-		if not pieces.is_empty():
-			labels.append([Vector2(x, y[col] + PIECE_SLOT.y / 2), "Tray pieces", false])
+		if not row.is_empty():
+			var what := "Tray pieces" if str(row[0]).begins_with("piece_") else "Tabs, left to right"
+			labels.append([Vector2(x, y[col] + PIECE_SLOT.y / 2), what, false])
 			y[col] += ROW
-			for i in pieces.size():
-				var r := Rect2(Vector2(x + i * (PIECE_SLOT.x + 6), y[col]), PIECE_SLOT)
-				slots.append({"rect": r, "action": pieces[i], "slot": 0})
+			for i in row.size():
+				var r := Rect2(Vector2(x + i * (PIECE_SLOT.x + 4), y[col]), PIECE_SLOT)
+				slots.append({"rect": r, "action": row[i], "slot": 0})
 			y[col] += ROW
-		y[col] += 14
+		y[col] += 12
 
 
 func _toggle_grid() -> void:

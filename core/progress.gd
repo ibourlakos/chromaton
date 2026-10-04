@@ -2,7 +2,7 @@
 ## their inventions. Stored as JSON in user://chromaton_save.json:
 ##
 ##   {
-##     "version": 1,
+##     "version": 2,
 ##     "levels": {                        level id (levels/<id>.json) -> record
 ##       "<level id>": {
 ##         "solved": true,                these four only once solved
@@ -16,6 +16,10 @@
 ##       "<invention id>": {"id", "name", "check", "inputs", "cost",
 ##                          "counts": {piece kind: n}, "machine": {...},
 ##                          "from_level": level id}   (core/invention.gd)
+##     },
+##     "seen": {                          piece kind -> what the player's own
+##       "invert": [0, 1, ...],           machines have shown it doing: the
+##       "mix": [9, ...]                  journal's Pieces frames (seen_key)
 ##     }
 ##   }
 ##
@@ -29,16 +33,21 @@
 extends RefCounted
 
 const PATH := "user://chromaton_save.json"
-const VERSION := 1
+const VERSION := 2
 const Machine = preload("res://core/machine.gd")
 const Pieces = preload("res://core/pieces.gd")
 const RECORD_KEYS := ["stars", "best_pieces", "best_ticks"]
 const INVENTION_KEYS := ["id", "name", "check", "inputs", "cost", "counts", "machine", "from_level"]
+## The pieces whose every-paint behaviour the journal collects, frame by frame.
+const LEARNABLE := ["shift", "invert", "mix", "filter"]
 
 ## level id -> {"solved": bool, "stars": int, "best_pieces": int, "best_ticks": int, "machine": Dictionary}
 var levels := {}
 ## invention id -> invention (see core/invention.gd)
 var inventions := {}
+## piece kind -> {seen_key: true}: what the player's machines have shown each
+## learnable piece doing, in any run (the journal's Pieces frames)
+var seen := {}
 var unlock_all := false
 
 
@@ -92,6 +101,33 @@ func add_invention(inv: Dictionary) -> Dictionary:
 	return inv
 
 
+## The frame a piece firing on these input paints fills: the paint itself for
+## a one-input piece; for Mix and Filter, which don't care about order, the
+## pair as smaller + 8 × larger.
+static func seen_key(colors: Array) -> int:
+	if colors.size() == 1:
+		return colors[0]
+	return mini(colors[0], colors[1]) + 8 * maxi(colors[0], colors[1])
+
+
+## Records a piece firing on these input paints; true if the player hadn't
+## seen it do that before.
+func learn(kind: String, colors: Array) -> bool:
+	if not kind in LEARNABLE:
+		return false
+	var key := seen_key(colors)
+	var known: Dictionary = seen.get(kind, {})
+	if known.has(key):
+		return false
+	known[key] = true
+	seen[kind] = known
+	return true
+
+
+func knows(kind: String, colors: Array) -> bool:
+	return seen.get(kind, {}).has(seen_key(colors))
+
+
 func store_machine(level_id: String, machine_dict: Dictionary) -> void:
 	var rec: Dictionary = levels.get(level_id, {})
 	rec["machine"] = machine_dict
@@ -103,7 +139,12 @@ func stored_machine(level_id: String) -> Dictionary:
 
 
 func to_dict() -> Dictionary:
-	return {"version": VERSION, "levels": levels, "inventions": inventions}
+	var seen_lists := {}
+	for kind in seen:
+		var keys: Array = seen[kind].keys()
+		keys.sort()
+		seen_lists[kind] = keys
+	return {"version": VERSION, "levels": levels, "inventions": inventions, "seen": seen_lists}
 
 
 ## Builds progress from saved data. Given the levels, it keeps only the
@@ -144,6 +185,14 @@ static func from_dict(d: Dictionary, levels := []):
 		e["counts"] = counts
 		e["machine"] = Machine.from_dict(e.get("machine", {})).to_dict()
 		p.inventions[str(id)] = e
+	var seen_in: Dictionary = _dict(d.get("seen"))
+	for kind in seen_in:
+		if kind in LEARNABLE and seen_in[kind] is Array:
+			var known := {}
+			for k in seen_in[kind]:
+				if _is_number(k) and int(k) >= 0 and int(k) < 64:
+					known[int(k)] = true
+			p.seen[str(kind)] = known
 	return p
 
 
@@ -198,12 +247,12 @@ static func problems(d, levels: Array) -> Array:
 	if not d is Dictionary:
 		return ["the file is not a save"]
 	var out := []
-	for k in ["version", "levels", "inventions"]:
+	for k in ["version", "levels", "inventions", "seen"]:
 		if not d.has(k):
 			out.append("missing \"%s\"" % k)
 	if d.has("version") and not (_is_number(d["version"]) and int(d["version"]) == VERSION):
 		out.append("version %s, this build writes %d" % [str(d["version"]), VERSION])
-	for k in ["levels", "inventions"]:
+	for k in ["levels", "inventions", "seen"]:
 		if d.has(k) and not d[k] is Dictionary:
 			out.append("\"%s\" is not a table" % k)
 	var by_id := _by_id(levels)

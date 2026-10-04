@@ -249,7 +249,7 @@ Play
   unlock               start with every level open
 
 Test
-  test [suite ...]     run all test suites, or only these (sim, paint, levels, inventions, workbench)
+  test [suite ...]     run all test suites, or only these (sim, paint, levels, inventions, workbench, journal)
   check                compile every script and report errors with line numbers
   bench                time the workbench's drawing on every level, running and dragging
 
@@ -274,7 +274,8 @@ Share
 Other
   shot <level> <png> [options]
                        save a screenshot and quit; level can also be 'levels',
-                       'book', 'options' or 'intro'; options: --ticks=N --phase=0.5 --finish --wrong --empty --page=N --stale
+                       'journal' (or 'book'), 'options' or 'intro'; options: --ticks=N --phase=0.5 --finish --wrong --empty --page=N --stale
+                       --tab=T --solved=N --piece=K --word=N (journal) --peek[=K] --news (a level)
                        --grid --paints --touch
   import               import new fonts or other assets
   godot                print which Godot this script uses
