@@ -5,7 +5,8 @@
 ## press-drag-release (no hover, no right-click-only), so mouse and touch work the
 ## same way:
 ## - drag a piece from the tray onto a free cell to place it, or tap it to
-##   pick it up and tap a free cell to put it down;
+##   pick it up and tap a free cell to put it down (a locked tray piece, one an
+##   earlier level offered but this one holds back, places nothing);
 ## - drag a placed piece to move it, or onto the tray to throw it away;
 ## - drag from an output port to an input port to lay a tube (or the other
 ##   way round); drag a tube's end off an input port to re-route or remove it;
@@ -93,7 +94,9 @@ var note: Control  # the level's note while it is up (see show_note)
 var still: Control  # the still layer (see _draw_still)
 var still_look := []
 
-var tray := []  # [{"kind": String, "rect": Rect2}]
+var tray := []  # [{"kind": String, "locked": bool, "rect": Rect2}]
+var wiggle_slot := -1  # the locked tray slot last tapped, whose lock wiggles
+var wiggled_at := -9.0
 var loom_cloth := Rect2()
 var loom_cs := 20.0
 var loom_port := Vector2.ZERO
@@ -246,8 +249,10 @@ func _show_paints(on: bool) -> void:
 # Layout
 # ---------------------------------------------------------------------------
 
+## The level's tray (Level._lay_trays): what it offers, and earlier levels'
+## pieces locked in their usual slots, then the owned inventions it lists.
 func _build_tray() -> void:
-	var kinds: Array = level.pieces.duplicate()
+	var kinds: Array = level.tray.duplicate()
 	for inv_id in level.inventions:
 		if inventions.has(inv_id):
 			kinds.append("inv:" + inv_id)
@@ -255,7 +260,15 @@ func _build_tray() -> void:
 	var left := TRAY.position.x + 8
 	var w := minf(118.0, (TRASH.position.x - 8 - left) / maxf(1, kinds.size()))
 	for i in kinds.size():
-		tray.append({"kind": kinds[i], "rect": Rect2(left + i * w, TRAY.position.y + 8, w - 8, TRAY.size.y - 16)})
+		tray.append({"kind": kinds[i], "locked": level.is_locked(kinds[i]), "rect": Rect2(left + i * w, TRAY.position.y + 8, w - 8, TRAY.size.y - 16)})
+
+
+## The first tray slot that isn't locked, or -1 when there's nothing to place.
+func _first_open_slot() -> int:
+	for i in tray.size():
+		if not tray[i]["locked"]:
+			return i
+	return -1
 
 
 ## The loom sits in the side column, its intake on the left facing the bench.
@@ -594,8 +607,13 @@ func _key(act: String, event: InputEventKey) -> bool:
 
 ## Picks up a tray piece (a tap on it or its key): it follows the pointer
 ## until a click on a free cell puts it down. Picking it again puts it back.
+## A locked piece places nothing: its lock wiggles and the hand empties.
 func _pick(i: int) -> void:
 	if i >= tray.size():
+		return
+	if tray[i]["locked"]:
+		_wiggle(i)
+		carrying = -1
 		return
 	carrying = -1 if carrying == i else i
 	selected_tube = -1
@@ -632,6 +650,10 @@ func _press(pos: Vector2) -> void:
 	selected_piece = -1
 	for i in tray.size():
 		if tray[i]["rect"].has_point(pos):
+			if tray[i]["locked"]:  # no drag either
+				_pick(i)
+				selected_tube = -1
+				return
 			drag = "new"
 			drag_kind = tray[i]["kind"]
 			drag_index = i
@@ -827,6 +849,7 @@ func _draw() -> void:
 	_draw_aim()
 	_draw_bench()
 	_draw_loom_area()
+	_draw_locks()
 	_draw_hint()
 	if drag == "new":
 		_draw_piece_kind(drag_kind, drag_pos, -1)
@@ -834,6 +857,24 @@ func _draw() -> void:
 		_draw_piece_kind(tray[carrying]["kind"], hover_pos, -1)
 	if drag == "move":
 		_draw_piece(drag_node, node_center(drag_node))
+
+
+## Locked tray slots wear a lock where the key cap would sit; a tapped one
+## wiggles for a moment.
+func _draw_locks() -> void:
+	for i in tray.size():
+		if not tray[i]["locked"]:
+			continue
+		var c: Vector2 = tray[i]["rect"].position + Vector2(18, 18)
+		var u := (clock - wiggled_at) / 0.45 if i == wiggle_slot else 1.0
+		if u < 1.0:
+			c.x += sin(u * TAU * 3.0) * 4.0 * (1.0 - u)
+		K.icon(self, "lock", c, 0.9, Color(P.INK, 0.55))
+
+
+func _wiggle(i: int) -> void:
+	wiggle_slot = i
+	wiggled_at = clock
 
 
 ## A picked-up piece follows the pointer while it is over the bench.
@@ -899,6 +940,12 @@ func _draw_tray(ci: CanvasItem) -> void:
 		else:
 			label = Pieces.display_name(kind) + ("  free" if Pieces.TABLE[kind]["cost"] == 0 else "")
 		_draw_piece_kind(kind, r.get_center() + Vector2(0, -8), -1, 0.82, ci, 0.0)
+		if item["locked"]:
+			# Under a paper veil, its lock (drawn live, so it can wiggle)
+			# where the key cap sits.
+			K.fill(ci, K.round_rect(r.grow(-2), 9), Color(P.TAG, 0.72))
+			K.text(ci, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, Color(P.INK_SOFT, 0.45))
+			continue
 		K.text(ci, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, P.INK_SOFT)
 		if i < 9:
 			Keys.cap(ci, r.position + Vector2(16, 16), Keys.label("piece_%d" % (i + 1)))
@@ -1102,7 +1149,7 @@ func _draw_piece_bar(bar: Rect2, pieces: int) -> void:
 func _draw_status() -> void:
 	var box := Rect2(SIDE.position.x, SIDE.position.y + 410, SIDE.size.x, SIDE.end.y - SIDE.position.y - 410)
 	var font := P.ui(700)
-	if tray.size() > 0:  # nothing to place: no bar
+	if _first_open_slot() >= 0:  # nothing to place: no bar
 		_draw_piece_bar(Rect2(box.position + Vector2(38, 36), Vector2(166, 20)), machine.cost(inventions))
 	K.icon(self, "ticks", box.position + Vector2(220, 46), 1.0, P.INK)
 	K.text(self, font, box.position + Vector2(236, 46), str(sim.tick), 18, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
@@ -1161,8 +1208,9 @@ func _hint_path() -> Array:
 	for id in machine.nodes:
 		if not machine.is_fixed(id):
 			placed.append(id)
-	if placed.is_empty() and tray.size() > 0:
-		return [tray[0]["rect"].get_center(), cell_center(4, 3)]
+	var slot := _first_open_slot()
+	if placed.is_empty() and slot >= 0:
+		return [tray[slot]["rect"].get_center(), cell_center(4, 3)]
 	if placed.is_empty():
 		# Nothing to place: the card itself feeds the loom.
 		var card: int = machine.find_kind(Pieces.CARD, 0)

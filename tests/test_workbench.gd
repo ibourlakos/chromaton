@@ -44,6 +44,7 @@ func _initialize() -> void:
 	for i in levels.size():
 		play_level(levels[i], progress, i)
 	test_tray_lists_only_the_level(by_id["green"], progress)
+	test_locked_tray(levels, by_id)
 	test_not_general(by_id["either_not_both"])
 	test_unused_card(by_id["third_color"])
 	test_note(by_id["green"])
@@ -120,11 +121,13 @@ func node_named(wb, level, names: Dictionary, name: String) -> int:
 ## Builds the level's reference machine by hand, runs it, and checks the score.
 func play_level(level, progress, index: int) -> void:
 	var wb = open(level, progress)
-	var offered: Array = level.pieces.duplicate()
+	var shown: Array = level.tray.duplicate()
 	for inv_id in level.inventions:
 		if progress.inventions.has(inv_id):
-			offered.append("inv:" + inv_id)
-	check(wb.tray.map(func(item): return item["kind"]) == offered, "%s: the tray holds exactly the level's pieces" % level.id)
+			shown.append("inv:" + inv_id)
+	check(wb.tray.map(func(item): return item["kind"]) == shown, "%s: the tray holds the level's pieces and earlier levels' pieces" % level.id)
+	var open_kinds: Array = wb.tray.filter(func(item): return not item["locked"]).map(func(item): return item["kind"])
+	check(open_kinds.filter(func(k): return not k.begins_with("inv:")).size() == level.pieces.size() and level.pieces.all(func(k): return k in open_kinds), "%s: exactly the level's own pieces are open" % level.id)
 	var names := {}
 	for p in level.reference["pieces"]:
 		var kind: String = p["kind"]
@@ -168,6 +171,60 @@ func test_tray_lists_only_the_level(level, progress) -> void:
 	var wb = open(level, progress)
 	check(tray_point(wb, "inv:contrast").x < 0, "%s: an unlisted invention is not in the tray" % level.id)
 	wb.queue_free()
+
+
+func locked_kinds(level) -> Array:
+	return level.tray.filter(func(k): return level.is_locked(k))
+
+
+## A tray shows earlier levels' pieces locked, in the order the campaign
+## first offers them, so a piece keeps its slot (and number key) everywhere.
+func test_locked_tray(levels: Array, by_id: Dictionary) -> void:
+	var order := ["red_pot", "shift", "mix", "split", "invert", "filter"]
+	check(by_id["smudges"].tray == order, "the full tray is in the order pieces arrive: %s" % str(by_id["smudges"].tray))
+	var slot := {}
+	var seen := {}
+	for level in levels:
+		for kind in level.pieces:
+			seen[kind] = true
+		check(level.tray == order.filter(func(k): return seen.has(k)), "%s: the tray shows every piece offered so far" % level.id)
+		for i in level.tray.size():
+			var kind: String = level.tray[i]
+			check(slot.get(kind, i) == i, "%s: %s keeps slot %d" % [level.id, kind, slot.get(kind, i) + 1])
+			slot[kind] = i
+	check(locked_kinds(by_id["pattern_card"]) == ["red_pot", "shift", "mix", "split", "invert"], "The Pattern Card shows every known piece locked")
+	check(locked_kinds(by_id["orange_sun"]) == ["shift", "split", "invert"], "Orange Sun locks Shift, Split and Invert")
+	for id in ["opposites", "flip_side", "turn_the_wheel", "smudges", "either_not_both"]:
+		check(locked_kinds(by_id[id]).is_empty(), "%s has no locks" % id)
+	check(locked_kinds(by_id["missing_from_either"]) == ["filter"] and locked_kinds(by_id["keep_what_they_share"]) == ["filter"], "chapter 3 locks Filter where it rebuilds it")
+	check(locked_kinds(by_id["mix_without_mix"]) == ["mix"], "Mix Without Mix locks Mix")
+	check(Level.load_file("res://levels/orange_sun.json").tray == ["red_pot", "mix"], "a level loaded on its own has no locks")
+	# A locked piece places nothing, by tap, drag or key; its lock wiggles.
+	var level = by_id["orange_sun"]
+	var wb = Workbench.new()
+	wb.setup(level, Progress.new(), true)
+	root.add_child(wb)
+	wb._ready()
+	var shift := tray_point(wb, "shift")
+	check(wb.tray[1]["locked"] and not wb.tray[0]["locked"], "Orange Sun's Shift slot is locked, the pot's isn't")
+	var start: int = wb.machine.nodes.size()
+	tap(wb, shift)
+	check(wb.carrying == -1 and wb.wiggle_slot == 1, "tapping a locked piece picks nothing up; its lock wiggles")
+	drag(wb, shift, wb.cell_center(5, 3))
+	check(wb.machine.nodes.size() == start, "dragging a locked piece places nothing")
+	key(wb, KEY_1)
+	check(wb.carrying == 0, "1 still picks up the pot")
+	key(wb, KEY_5)
+	check(wb.carrying == -1 and wb.wiggle_slot == 4, "a locked piece's key wiggles its lock and empties the hand")
+	tap(wb, wb.cell_center(5, 3))
+	check(wb.machine.nodes.size() == start, "and nothing lands on the bench")
+	wb.free()
+	var card_wb = Workbench.new()
+	card_wb.setup(by_id["pattern_card"], Progress.new(), true)
+	root.add_child(card_wb)
+	card_wb._ready()
+	check(card_wb._first_open_slot() == -1, "The Pattern Card has nothing to place")
+	card_wb.free()
 
 
 ## Without cards, the whole bench takes pieces, right up to its left edge.

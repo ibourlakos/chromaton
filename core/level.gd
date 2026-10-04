@@ -5,8 +5,8 @@
 ## Cards are read and the loom is woven row by row, left to right.
 ##
 ## JSON fields: id, name, goal, optional hint (guidance shown with the goal
-## as the level opens and under the title after), pieces (tray kinds),
-## inventions (invention ids allowed in the tray), target (rows), cards
+## as the level opens and under the title after), pieces (the kinds it
+## offers; the tray also shows earlier levels' pieces, locked), inventions (invention ids allowed in the tray), target (rows), cards
 ## ([{name, colors: rows, optional smudges: [stitch indices that carry stray
 ## paint]}]),
 ## stars {budget, best}, optional invention {id, name, check} on invention
@@ -36,7 +36,8 @@ var target := PackedByteArray()
 var cards: Array = []
 var card_names: Array = []
 var smudges: Array = []  # per card, the stitch indices marked as stray paint
-var pieces: Array = []
+var pieces: Array = []  # the kinds this level offers
+var tray: Array = []  # the tray's piece kinds in order, offered or locked (see _lay_trays)
 var inventions: Array = []
 var invention := {}
 var budget := 0
@@ -76,7 +77,31 @@ static func load_all() -> Array:
 			level.chapter = c
 			level.chapter_name = str(index[c]["name"])
 			out.append(level)
+	_lay_trays(out)
 	return out
+
+
+## Every level's tray shows what it offers plus, locked, every piece an
+## earlier level offered: the tray as it was when the campaign got there,
+## however far the player has gone since. Pieces sit in the order the
+## campaign first offers them, so a new piece joins at the right end and no
+## piece's slot (or number key) ever moves.
+static func _lay_trays(levels: Array) -> void:
+	var order := []
+	for level in levels:
+		for kind in level.pieces:
+			if not kind in order:
+				order.append(kind)
+	var seen := {}
+	for level in levels:
+		for kind in level.pieces:
+			seen[kind] = true
+		level.tray = order.filter(func(kind): return seen.has(kind))
+
+
+## A piece the tray shows that this level doesn't offer.
+func is_locked(kind: String) -> bool:
+	return kind in tray and not kind in pieces
 
 
 static func load_file(path: String):
@@ -110,6 +135,7 @@ static func from_dict(d: Dictionary):
 		level.cards.append(seq)
 		level.smudges.append(card.get("smudges", []).map(func(i): return int(i)))
 	level.pieces = d.get("pieces", []).duplicate()
+	level.tray = level.pieces.duplicate()  # on its own; load_all adds the locked ones
 	level.inventions = d.get("inventions", []).duplicate()
 	level.invention = d.get("invention", {}).duplicate()
 	var stars: Dictionary = d.get("stars", {})
