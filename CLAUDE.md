@@ -26,7 +26,7 @@ Run everything through `.\make <task>` (`make.cmd` → `tools/make.ps1`; works f
 
 - Play: `.\make play` (game args pass through), `.\make level <id>` to jump into one, `.\make unlock` to open every level.
 - Tests: `.\make test` runs every `tests/test_*.gd` in its own process; `.\make test sim paint` runs only those suites (`sim`, `paint`, `levels`, `inventions`, `workbench`). A suite also fails if it prints a GDScript error, and each runs with `--quit-after 2` so a runtime error can't hang it.
-- Color-algebra checker (rewrites docs/algebra-report.md; rerun after changing pieces or recipes): `.\make algebra`
+- Color-algebra checker (rewrites docs/algebra-report.md, the algebra notes: every piece's every-paint table and laws, kit completeness, recipe prices proven by search, future-work candidates; rerun after changing pieces or recipes; takes about a minute): `.\make algebra`. A piece added to `core/pieces.gd` needs a line in `PIECE_NOTES` in `tools/algebra_check.gd`, or the check fails.
 - Level solver (rewrites docs/level-report.md; proves each level's three-star count; rerun after changing levels or pieces): `.\make solve`
 - Derive pattern cards from target pictures (rewrites the `cards` of levels with a `card_rule`, choosing the first row so cheap wrong machines fail within the 6 drops a card shows, or else in the first row; takes about half a minute): `.\make cards`
 - Compile check with line numbers (when Godot only says a dependency failed): `.\make check`

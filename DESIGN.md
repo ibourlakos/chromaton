@@ -66,6 +66,8 @@ Enumerating everything is impossible, so the design job is: **a small primitive 
 | **Routing** (the most naturally ternary family) | A control primary (R/Y/B) chooses one of three paths | 3-way switch (1 in, 3 out), 3-way selector (3 in, 1 out) |
 | **Stateful** | Machines, not functions | Cell (holds a color), Buffer (queue), Counter |
 
+🟡 Candidates for every family (questions, counting, wheel, paint-like, choosing, several outputs), each verified on every paint and priced in the game's kit, plus what memory, branching, register-like cards and multi-output inventions would change in the rules: [report §7](docs/algebra-report.md#7-future-work). Not decided.
+
 Nice facts to exploit in puzzles:
 - Invert matches art-class **complementary colors** (red↔green, blue↔orange, yellow↔purple).
 - *"Given two different primaries, output the third"* = `Invert(Mix(a, b))`, the SET card-game rule, discovered through paint.
@@ -107,10 +109,11 @@ Findings:
 - **Filter becomes the first invention** (Act 2): "keep only what both share" = invert both, mix, invert back. It takes 4 pieces and is a real "aha" moment.
 - Every other pot is an invention earned in the paint box (§5.1), priced at the machine that made it. Levels may still provide pots as givens.
 - **Prototype v0.1 ships the lean kit** (Red pot, Mix, Invert, Shift, free Split). Pieces are one data table (`core/pieces.gd`), so adding Filter as a piece is a one-line change (plus its critter).
-- Trade-off: in the lean kit, routing machines cost more (Three-way Switch 35 pieces vs 21 with Filter as a piece; see report §4). Fewer critters to design and animate outweighs this (see §7.2 risk). Placed recipes appear as one block anyway, so the price only shows on the optimizer's scoreboard.
+- Trade-off: in the lean kit, routing machines cost more (Three-way Switch 35 pieces vs 21 with Filter as a piece; see report §6). Fewer critters to design and animate outweighs this (see §7.2 risk). Placed recipes appear as one block anyway, so the price only shows on the optimizer's scoreboard.
 - Alternative (full kit): Mix, Filter, Invert, Shift + 3 pots. Cheaper machines, but 5 critters and 3 pot variants, and the De Morgan discovery is lost.
 
-**Early inventions and their price in the lean kit** (verified; from report §4): Yellow pot 2 · Third Color 2 · Bleach 3 · Filter 4 · Black pot 5 · Contrast 7 · Any Red? 9 · Consensus 11 · Same Color? 12 · Prism 13 · Three-way Switch 35 · Three-way Selector 39.
+**Early inventions and their price in the game's kit** (report §6; proven cheapest by search unless marked ≤): Yellow pot 2 · Third Color 2 · Bleach 2 · Black pot 3 · Contrast 4 · Consensus 4 · Prism 6 · Any Red? 6 · Same Color? ≤ 8 · Three-way Switch ≤ 21 · Three-way Selector ≤ 23. Without Filter (chapter 3's trays): Filter 4 · Bleach 3 · Contrast 7. *(The old lean-kit list here had Black pot 5 and Consensus 11; the search found Mix(Red, Invert(Red)) and The Flower's 4-piece rule.)*
+- ❓ The Black pot is earned in All the Paint (level 6), whose tray has no Invert, so it costs 5 there and can never reach its real cheapest, 3 (`Mix(Red, Invert(Red))`, the inside of Nothing at All). Either accept it, or let a later level re-earn the pot.
 
 What the player invents and keeps: **recipes** (stateless) and **machines** (stateful).
 
