@@ -253,10 +253,11 @@ Test
   check                compile every script and report errors with line numbers
   bench                time the workbench's drawing on every level, running and dragging
 
-Design tools (rewrite files under docs/ or levels/)
+Design tools (rewrite files under docs/, levels/ or data/)
   solve                prove each level's star counts (docs/level-report.md)
   cards                derive pattern cards from target pictures
   algebra              check the color algebra (docs/algebra-report.md)
+  words                the journal's Words from the lexicon (data/words.json)
 
 Share
   export <platform>    build the game for a platform; only web for now:
@@ -299,6 +300,7 @@ switch ($Task) {
 	"solve" { $code = Invoke-Tool "level_solver" }
 	"cards" { $code = Invoke-Tool "make_cards" }
 	"algebra" { $code = Invoke-Tool "algebra_check" }
+	"words" { $code = Invoke-Tool "make_words" }
 	"shot" {
 		if ($Rest.Count -lt 2) { throw "usage: .\make shot <level> <png> [options]" }
 		$png = $Rest[1]

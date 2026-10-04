@@ -4,7 +4,7 @@ The game's vocabulary, one file per term; this page is the index. One catch-all 
 
 ## Tags
 
-- **gameplay**: the player meets the word. Its **Gameplay** section is the text the journal shows, so it's written for players: short, in paint, never bits or numbers for colors, readable by an 8-year-old.
+- **gameplay**: the player meets the word. Its **Gameplay** section is the text the journal shows, so it's written for players: short, in paint, never bits or numbers for colors, readable by an 8-year-old. After editing one, run `.\make words` (it rewrites `data/words.json`, which the game ships; a test fails if they drift apart).
 - **design**: a word of the design (DESIGN.md, playtest notes, design talk).
 - **implementation**: a word of the code. Its **Implementation** section is a reminder for us and never appears in the game.
 - **temporary**: a placeholder name we keep on purpose for now. Use it, but expect it to change (the noun names for Mix, Filter, Invert and Shift; the tray).
@@ -18,7 +18,7 @@ A small header, then sections in this order, any left out when there's nothing t
 - **Tags**, as above.
 - **Status**, with DESIGN.md's markers: ✅ decided, 🟡 working (in use, not confirmed), ❓ no settled word yet. A decision made here goes into DESIGN.md too.
 - **Player word** (gameplay terms): the word as the player sees it, when it differs from the term.
-- **Journal** (gameplay terms): the level whose play unlocks the word on the Words tab, and the tab with its fuller page, if any.
+- **Journal** (gameplay terms): "unlocks in <Level name>", the level whose solve unlocks the word on the Words tab (matched by name, so a renamed level needs this line updated), then "page on the <Tab> tab" if it has a fuller page.
 - **Also called**: other words for it, including old ones, so older notes still lead somewhere.
 - **Gameplay**: what the player is told (the journal's Words entry).
 - **Design**: how we think about it.
@@ -35,12 +35,18 @@ Files are named after the term in lower-case kebab-case (`paint-card.md`) and li
 | [Critter](critter.md) | gameplay, design, implementation | 🟡 | A piece drawn as a character that does one thing to paint. |
 | [Filter](filter.md) | gameplay, design, implementation, temporary | 🟡 | The critter that keeps only what two paints share. |
 | [Invert](invert.md) | gameplay, design, implementation, temporary | 🟡 | The critter that turns a paint into its opposite. |
-| [Journal](journal.md) | gameplay, design | ✅ | The player's book of everything learned, made and woven. |
+| [Invention](invention.md) | gameplay, design, implementation | ✅ | A machine the player built, kept as one piece to use again. |
+| [Journal](journal.md) | gameplay, design, implementation | ✅ | The player's book of everything learned, made and woven. |
+| [Loom](loom.md) | gameplay, design, implementation | 🟡 | Weaves the machine's paint into the cloth, one stitch per tick. |
 | [Mix](mix.md) | gameplay, design, implementation, temporary | 🟡 | The critter that gives everything in either of two paints. |
 | [Paint](paint.md) | gameplay, design, implementation | ✅ | One of the eight paints, from white (none) to black (all three primaries). |
 | [Paint card](paint-card.md) | gameplay, design, implementation | ✅ | The cheat sheet of the eight paints, up over the workbench. |
 | [Piece](piece.md) | gameplay, design, implementation | 🟡 | Anything put on the workbench from the tray; its price counts toward the Pieces score. |
+| [Quilt](quilt.md) | gameplay, design, implementation | ✅ | A chapter's cloths sewn together. |
+| [Red pot](red-pot.md) | gameplay, design, implementation | ✅ | The one pot of red paint every other paint starts from. |
 | [Shift](shift.md) | gameplay, design, implementation, temporary | 🟡 | The critter that turns the paint wheel one step. |
+| [Split](split.md) | gameplay, design, implementation | 🟡 | Copies one drop into two; free. |
+| [Stars](stars.md) | gameplay, design, implementation | ✅ | One to three per level: woven, few pieces, fewest pieces. |
 | [Stitch](stitch.md) | gameplay, design, implementation | 🟡 | One square of a cloth, woven from one drop. |
 | [Thread](thread.md) | gameplay, design | ✅ | A line of stitches in a cloth: a row across or a column down. |
 | [Tick](tick.md) | gameplay, design, implementation | 🟡 | One beat of the workshop clock. |
@@ -50,4 +56,4 @@ Files are named after the term in lower-case kebab-case (`paint-card.md`) and li
 
 ## Still to write
 
-Red pot, Split, Catch pot, drop, loom, pattern card, design card, smudge, opposite, primary, glyph dots, invention, machine, stars, chapter, level.
+Catch pot, drop, pattern card, design card, smudge, opposite, primary, glyph dots, machine, chapter, level, tool introduction, peek.

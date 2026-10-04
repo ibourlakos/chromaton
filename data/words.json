@@ -1,0 +1,158 @@
+{
+	"words": [
+		{
+			"id": "cloth",
+			"level": "one_pot",
+			"tab": "cloths",
+			"text": "A cloth is the picture your machine weaves on the loom, stitch by stitch. Every cloth you finish goes into your journal.",
+			"word": "Cloth"
+		},
+		{
+			"id": "journal",
+			"level": "one_pot",
+			"tab": "",
+			"text": "Your journal keeps everything you've learned and made: the paints, how the loom keeps time, what every piece does, your inventions, the cloths you've woven and your best scores. Its pages fill as you play.",
+			"word": "Journal"
+		},
+		{
+			"id": "loom",
+			"level": "one_pot",
+			"tab": "loom",
+			"text": "The loom weaves your cloth. Every tick it takes one drop from its tube and weaves it into the next stitch, row by row, left to right. If a stitch doesn't match the picture, the loom stops and shows where.",
+			"word": "Loom"
+		},
+		{
+			"id": "paint",
+			"level": "one_pot",
+			"tab": "paint",
+			"text": "There are eight paints. Red, yellow and blue mix into all the others: red and yellow make orange, and all three together make black. No paint at all is white, the bare cloth. More of the same paint changes nothing.",
+			"word": "Paint"
+		},
+		{
+			"id": "paint-card",
+			"level": "one_pot",
+			"tab": "paint",
+			"text": "The paint card shows all eight paints at a glance. Red, yellow and blue sit at the corners, each mix sits between the two paints it's made of, black is in the middle and white sits apart. Opposites face each other across black. Tap Paints to put it up or away.",
+			"word": "Paint card"
+		},
+		{
+			"id": "piece",
+			"level": "one_pot",
+			"tab": "pieces",
+			"text": "A piece is anything you take from the tray and put on the workbench to build your machine. Every piece has a price, and the fewer pieces your machine uses, the more stars it earns. Machines you invent become pieces you can use again.",
+			"word": "Piece"
+		},
+		{
+			"id": "red-pot",
+			"level": "one_pot",
+			"tab": "pieces",
+			"text": "The red pot makes red paint: a new drop whenever its tube is free. Every other paint in the box starts from this one pot.",
+			"word": "Red pot"
+		},
+		{
+			"id": "stars",
+			"level": "one_pot",
+			"tab": "scores",
+			"text": "Every cloth you weave earns stars: one for weaving it, two for using few pieces, three for using as few as anyone can. Your journal keeps your best stars, your fewest pieces and your fewest ticks for every level.",
+			"word": "Stars"
+		},
+		{
+			"id": "stitch",
+			"level": "one_pot",
+			"tab": "loom",
+			"text": "A stitch is one square of a cloth. The loom weaves one stitch from each drop it takes, row by row, left to right. If a stitch comes out wrong, the loom stops and shows you which one.",
+			"word": "Stitch"
+		},
+		{
+			"id": "tick",
+			"level": "one_pot",
+			"tab": "loom",
+			"text": "A tick is one beat of the workshop clock. On every tick, each piece that has paint waiting at every input, and room to send its paint on, does its job once. A pattern card lets out its next drop and the loom weaves one stitch. The clock counts the ticks until your cloth is done: fewer ticks, faster machine.",
+			"word": "Tick"
+		},
+		{
+			"id": "tray",
+			"level": "one_pot",
+			"tab": "",
+			"text": "The tray along the bottom holds the pieces you can use. Drag one onto the workbench, or tap it to pick it up. A piece with a lock is one this level does without. To put a piece away, drag it back onto the tray.",
+			"word": "Tray"
+		},
+		{
+			"id": "tube",
+			"level": "one_pot",
+			"tab": "loom",
+			"text": "A glass tube carries paint from one piece to the next: from the spout on a piece's right to the pipe on another's left. A tube holds one drop at a time, so the next drop waits until it's free.",
+			"word": "Tube"
+		},
+		{
+			"id": "workbench",
+			"level": "one_pot",
+			"tab": "",
+			"text": "The workbench is where you build. Put pieces on it from the tray and join them with tubes. Paint comes in from the pattern cards on the left, flows to the right, and the loom on the right weaves it into a cloth.",
+			"word": "Workbench"
+		},
+		{
+			"id": "critter",
+			"level": "yellow",
+			"tab": "pieces",
+			"text": "Critters are the workshop's little helpers. Each one does one job to paint: paint drips in on its left, it does its job, and the new paint comes out on its right. A critter always does the same thing to the same paint, so once you know it, you can count on it.",
+			"word": "Critter"
+		},
+		{
+			"id": "invention",
+			"level": "yellow",
+			"tab": "inventions",
+			"text": "Solve some levels and the machine you built becomes an invention: one piece you can use again, priced at all the pieces inside it. Every paint-box level earns a pot of its paint.",
+			"word": "Invention"
+		},
+		{
+			"id": "shift",
+			"level": "yellow",
+			"tab": "pieces",
+			"text": "Shift turns the paint wheel one step: red becomes yellow, yellow becomes blue, and blue becomes red again. Mixed paints turn too: orange becomes green. White and black stay as they are.",
+			"word": "Shift"
+		},
+		{
+			"id": "mix",
+			"level": "orange",
+			"tab": "pieces",
+			"text": "Mix takes two paints and gives back everything in either one. Red and yellow make orange; orange and blue make black. Mixing in a paint that's already there changes nothing.",
+			"word": "Mix"
+		},
+		{
+			"id": "split",
+			"level": "purple",
+			"tab": "pieces",
+			"text": "Split copies paint: one drop goes in, and the same paint comes out of both spouts. It's free, so it never counts toward your pieces.",
+			"word": "Split"
+		},
+		{
+			"id": "invert",
+			"level": "green",
+			"tab": "pieces",
+			"text": "Invert turns a paint into its opposite. Red becomes green, yellow becomes purple, blue becomes orange, and white becomes black. Invert it again and you're back where you started.",
+			"word": "Invert"
+		},
+		{
+			"id": "quilt",
+			"level": "white",
+			"tab": "cloths",
+			"text": "Weave every cloth in a chapter and they're sewn together into a quilt. Your quilts hang beside your cloths in the journal.",
+			"word": "Quilt"
+		},
+		{
+			"id": "thread",
+			"level": "opposites",
+			"tab": "loom",
+			"text": "A thread is one line of stitches in a cloth: a row across, or a column down. Some levels weave a single thread instead of a whole picture.",
+			"word": "Thread"
+		},
+		{
+			"id": "filter",
+			"level": "smudges",
+			"tab": "pieces",
+			"text": "Filter takes two paints and keeps only what they share. Orange and purple share red, so out comes red. Two paints that share nothing give white.",
+			"word": "Filter"
+		}
+	]
+}

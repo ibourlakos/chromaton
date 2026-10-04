@@ -11,7 +11,7 @@ The tray along the bottom holds the pieces you can use. Drag one onto the workbe
 
 ## Design
 
-- A shelf along the bottom of the workbench, room for about 9 pieces, with the trash at its right end.
+- A shelf along the bottom of the workbench, room for about 9 pieces, with the [journal](journal.md) (peek: select a piece, then tap it to read its page) and the trash at its right end.
 - A level offers its own list of pieces. The tray also shows every piece an earlier level offered, locked, so a revisit looks like the first visit; pieces sit in the order the campaign first offers them, so no slot or number key ever moves (DESIGN.md §5.1).
 - Keys 1–9 pick up that tray piece. A locked piece only wiggles its lock.
 - Planned: the earned pots share one slot that fans out when tapped. Playtest: highlight a new piece in the tray when a level introduces it.

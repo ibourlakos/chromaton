@@ -3,7 +3,7 @@
 - **Tags:** gameplay, design, implementation
 - **Status:** 🟡
 - **Journal:** unlocks in One Pot of Red; every finished cloth hangs on the Cloths tab
-- **Also called:** tapestry, quilt (for bigger joined cloths; not settled)
+- **Also called:** tapestry (kept for the finale)
 
 ## Gameplay
 
@@ -15,16 +15,13 @@ A cloth is the picture your machine weaves on the loom, stitch by stitch. Every 
 - Time is the cloth's vertical axis: rows are woven one after another, top to bottom (DESIGN.md §4).
 - A level's design card shows the cloth to weave; a run that weaves it all, with no wrong stitch, solves the level.
 - Journal: the Cloths tab is a picture gallery, one slot per level, with empty or greyed slots for cloths not woven yet.
-- Chapter payoff idea: a chapter's cloths join into a quilt (🟡).
+- Chapter payoff: a chapter's cloths join into a [quilt](quilt.md) (✅ 2026-10-04), hung beside them on the Cloths tab.
 
 ## Implementation
 
-A solved level's cloth is always its target picture (`target` rows in the level JSON), so the gallery comes from the solved levels with no new save data.
+A solved level's cloth is always its target picture (`target` rows in the level JSON), so the gallery comes from the solved levels with no new save data. Drawn by `DrawKit.cloth` (hung from a rod) on the journal's Cloths tab.
 
 ## Related
 
-[Stitch](stitch.md) · [Thread](thread.md) · [Journal](journal.md)
+[Stitch](stitch.md) · [Thread](thread.md) · [Quilt](quilt.md) · [Journal](journal.md)
 
-## Open questions
-
-- Cloth, tapestry or quilt for the joined chapter pieces and the finale?

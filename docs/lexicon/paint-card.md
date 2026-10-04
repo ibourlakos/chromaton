@@ -2,7 +2,7 @@
 
 - **Tags:** gameplay, design, implementation
 - **Status:** ✅ (the name, 2026-10-04); the card itself 🟡 (DESIGN.md §9.1)
-- **Journal:** unlocks the first time the player puts it up
+- **Journal:** unlocks in One Pot of Red, where the Paints button is from the start (designer, 2026-10-04); page on the Paint tab
 - **Also called:** color card
 
 ## Gameplay
