@@ -868,14 +868,17 @@ static func _stitches(ci: CanvasItem, o: Vector2, cols: int, cs: float, target: 
 ## A chapter's quilt: its cloths sewn together, as big as fits in r. patches
 ## holds one entry per level in the chapter: [cols, target] once woven, []
 ## while not. stack_cols > 0 stacks them row on row, each a thread that many
-## stitches wide (the paint box's eight threads make a square); otherwise each
-## cloth is sewn into an equal square patch. Unwoven places stay bare,
-## stitched round.
-static func quilt(ci: CanvasItem, r: Rect2, patches: Array, stack_cols := 0) -> void:
+## stitches wide (the paint box's nine threads); otherwise each cloth is sewn
+## into an equal patch, aspect wide to 1 high (the chapter's pictures share a
+## shape), across of them to a row (0: whatever grid makes them biggest).
+## Unwoven places stay bare, stitched round.
+static func quilt(ci: CanvasItem, r: Rect2, patches: Array, stack_cols := 0, across := 0, aspect := 1.0) -> void:
 	var stacked := stack_cols > 0
 	var n := patches.size()
 	var grid := Vector2i(1, n)
-	if not stacked:  # the most columns-by-rows that makes the biggest patches
+	if not stacked and across > 0:  # the chapter pins its patches across
+		grid = Vector2i(across, ceili(float(n) / across))
+	elif not stacked:  # the most columns-by-rows that makes the biggest patches
 		var best := 0.0
 		for c in range(1, n + 1):
 			var rows := ceili(float(n) / c)
@@ -883,7 +886,7 @@ static func quilt(ci: CanvasItem, r: Rect2, patches: Array, stack_cols := 0) -> 
 			if b > best:
 				best = b
 				grid = Vector2i(c, rows)
-	var unit := Vector2(stack_cols, 1) if stacked else Vector2.ONE
+	var unit := Vector2(stack_cols, 1) if stacked else Vector2(aspect, 1)
 	var block := minf((r.size.x - 24) / (grid.x * unit.x), (r.size.y - 24) / (grid.y * unit.y))
 	var bsize := unit * block
 	var size := Vector2(grid) * bsize

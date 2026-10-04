@@ -31,6 +31,7 @@ var id := ""
 var number := 0  # position in the campaign, from 1 (0 when loaded on its own)
 var chapter := 0  # index into Level.chapters()
 var chapter_name := ""
+var quilt_across := 0  # the chapter's patches across in its quilt (index.json; 0: as fits)
 var name := ""
 var goal := ""
 var hint := ""
@@ -55,7 +56,9 @@ var error := ""
 
 
 ## The campaign's chapters from levels/index.json, in order:
-## [{"name": String, "levels": [level ids]}].
+## [{"name": String, "levels": [level ids], optional "quilt_across": int}]
+## (how many patches across the chapter's quilt is; every chapter but the
+## paint box, whose threads stack, has a multiple of it so the quilt fills).
 static func chapters() -> Array:
 	var index = _read_json(INDEX_PATH)
 	if not index is Array:
@@ -83,6 +86,7 @@ static func load_all() -> Array:
 			level.number = out.size() + 1
 			level.chapter = c
 			level.chapter_name = str(index[c]["name"])
+			level.quilt_across = int(index[c].get("quilt_across", 0))
 			out.append(level)
 	_lay_trays(out)
 	return out
