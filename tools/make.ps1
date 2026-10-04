@@ -186,7 +186,8 @@ function Get-ItchTarget([string]$Target) {
 		Write-Host "butler not found. Unpack it into $(Join-Path $env:LOCALAPPDATA 'butler') (https://itch.io/docs/butler/), or put it on PATH."
 		return $null
 	}
-	if (-not (Test-Path (Join-Path $env:APPDATA "itch\butler_creds")) -and -not $env:BUTLER_API_KEY) {
+	# butler login saves its key in %USERPROFILE%\.config\itch on Windows too.
+	if (-not (Test-Path (Join-Path $env:USERPROFILE ".config\itch\butler_creds")) -and -not $env:BUTLER_API_KEY) {
 		Write-Host "butler isn't logged in. Run once: .\make butler login"
 		return $null
 	}
