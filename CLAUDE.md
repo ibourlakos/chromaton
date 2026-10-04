@@ -43,7 +43,7 @@ Run everything through `.\make <task>` (`make.cmd` → `tools/make.ps1`; works f
 - `levels/`: `index.json` (campaign order; a level's number is its place there) and one JSON per level, named by its stable id: name, goal and optional hint, target picture, pattern cards, pieces offered (the tray shows this list open, earlier levels' pieces locked, then listed, owned inventions), star thresholds, reference solution. Format documented at the top of `core/level.gd`.
 - `tests/`: headless test scripts (extend SceneTree, exit code 1 on failure).
 - `tools/`: design tools, not shipped with the game, and `make.ps1` (the tasks behind `make.cmd`).
-- `docs/`: generated reports.
+- `docs/`: generated reports, and `docs/lexicon/`, the game's vocabulary, hand-written: `lexicon.md` is the index (and its conventions); one file per term (`color.md`, `critter.md`, ...) holds the term's details. Add a term there when one is named or settled.
 - `fonts/`: Fredoka and Nunito (SIL OFL, licenses alongside).
 - `mockups/`: HTML mockups (the art-style reference; the game's layout supersedes theirs).
 
