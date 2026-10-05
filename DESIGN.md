@@ -590,6 +590,26 @@ Kids can stop at chapter 2 + creative loom happily; experts keep digging. Never 
 3. ✅ ~~Specify ~10 campaign levels~~: fifteen prototype levels, now 33 in four chapters (§5.1, the chapter plan of 2026-10-05): the paint box, pattern cards at the seaside, inventing what you know, and its looking-glass twin.
 4. ✅ ~~Godot vertical slice~~: **prototype v0.1** with workbench, loom, 15 levels, stars, Pieces and Ticks, inventions, saved progress.
 5. Play it, show friends, decide the 🟡 items below; then a web build (needs `levels/*.json` in the export filter) on itch.io; iterate.
+6. ✅ **The round 2 build: four work packages, one itch.io release each** (designer, 2026-10-05). Everything playtest round 2 decided as "not built", in an order where each package rests only on the ones before it. The one save break comes first; every later package keeps saves valid (new fields with defaults).
+
+   **WP1, The new campaign, in the players' words** (the save break; release 1)
+   - The invention discount, for inventions and pots (§5.1, §6).
+   - Locks and loans: a level waits for an invention it can't do without (the solver proves which), its locked tag ("Earn the Third Paint in 25. The Pawn."), force unlock lends every invention and pot (§5.1).
+   - What a card shows decodes the level: 4 to 10 drops per level, `.\make cards` picks the shortest, `.\make solve` fails a level that breaks it, the bench's cards fit 10 (§5.1).
+   - Smudges dropped (§5.1).
+   - The new chapters 1 and 2 with their ids, pots open from Blue on, Purple's held pots, the Mix and Sieve tables, two inventions a chapter (Same Paint invented in The Black Queen), Flip Side and The Harbour moved to Lost Levels: kept, out of the campaign, not shown yet (how it's found is ❓) (§5.1).
+   - Two names: player words in every player-facing text (Mixing Tub, Sieve, Flip Pan, Shift Wheel, Split, red pot, workshop, Extreme Mix), the lexicon's Player word and Gameplay sections switched, `.\make words` (§3).
+   - The level-text rule in the UI: two title phrases in the top bar with the sticker mark, goal and hint in the hint panel (scrolling if needed), the "?" glowing after a failed run, primary titles on tags, Cloths and Scores, references as "2. The Yellow Pot" (§5.1). Options' gear beside Back, which is redone with the top bar (§9.1).
+   - The text of [levels/level-text.md](levels/level-text.md) into `levels/*.json` (steps wait for WP3), the lexicon's "unlocks in" lines, the pattern card's word and page.
+   - Save version 4; Keep what fits forgets an invention level whose invention it dropped (§9).
+
+   **WP2, The bench** (release 2): half-cell snapping; pattern cards selectable and sliding along the left edge; the book button beside a selection's delete button; the loom's inlet on the middle row; tray cost chips; the card's look-back after a wrong stitch; wider speeds; the key changes (§9.1). Before WP3 because the guide points at bench positions.
+
+   **WP3, Teaching** (release 3): guided levels with their step lines, on all ten (§5.7); rebuilt-critter journal pages; "New in your journal" with icons, its order, scrolling, and the cheaper, new-chapter and opens entries; journal articles that fit their text and scroll; the paint card's Shift arrows and each piece page's paint-card line (§5.7, §9.1).
+
+   **WP4, Art and players** (release 4): the critter redraw (Flip Pan included) and glassier tubes under the clean-seam rule (§7.2), with `.\make bench` and the bake rule (§9.1); local profiles (§9); new store screenshots in `build/itch/` for the designer to upload.
+
+   Not in it: the success splashes, a themes engine, pre-rendering (unless the bench asks), the cheat engine, the lab, Lost Levels' way in.
 
 ---
 
