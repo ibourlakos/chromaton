@@ -43,6 +43,7 @@ func _initialize() -> void:
 	test_journal_tabs()
 	test_word_pages()
 	test_peek()
+	test_articles()
 	test_news()
 	test_options_fit()
 	if failures == 0:
@@ -312,3 +313,50 @@ func test_options_fit() -> void:
 			if o.slots[a]["rect"].intersects(o.slots[b]["rect"]):
 				check(false, "slots %s and %s overlap" % [o.slots[a]["action"], o.slots[b]["action"]])
 	o.free()
+
+
+## An article fits each word's text and scrolls when it runs past its page:
+## the scroll keys, the "more below" chip, and a peek on a tube or a card
+## opening Loom at that word.
+func test_articles() -> void:
+	var p = Progress.new()
+	p.unlock_all = true
+	var j = Journal.new()
+	j.setup(levels, p, "loom")
+	j._ready()
+	check(j._article_max() > 0 and j._rows_below() > 0 and j._more_rect().size.x > 0, "Loom runs past its page, with a \"more below\" chip")
+	var rows: Array = j._article_rows()
+	check(rows.all(func(r): return r["h"] >= 80) and rows[3]["h"] > rows[2]["h"], "rows are as tall as their text (Tick is longer than Thread)")
+	key(j, KEY_DOWN)
+	check(is_equal_approx(j.article_scroll, minf(j.ARTICLE_STEP, j._article_max())), "the down key scrolls down")
+	key(j, KEY_W)
+	check(j.article_scroll == 0.0, "W scrolls back up")
+	j._gui_input(_click(j._more_rect().get_center(), true))
+	j._gui_input(_click(j._more_rect().get_center(), false))
+	check(j.article_scroll > 0.0, "the chip scrolls on")
+	j.scroll_article(9999)
+	check(is_equal_approx(j.article_scroll, j._article_max()) and j._rows_below() == 0 and j._more_rect().size.x == 0, "at the bottom the chip goes")
+	j.free()
+	for focus in ["tube", "card"]:
+		var k = Journal.new()
+		k.setup(levels, p, "", focus)
+		k._ready()
+		var want := "tube" if focus == "tube" else "pattern-card"
+		var row: Dictionary = k._article_rows().filter(func(r): return r["w"]["id"] == want)[0]
+		check(k.tab == "loom" and is_equal_approx(k.article_scroll, minf(row["y"], k._article_max())), "a peek on a %s opens Loom at its word" % focus)
+		k.free()
+
+
+func _click(pos: Vector2, down: bool) -> InputEventMouseButton:
+	var e := InputEventMouseButton.new()
+	e.button_index = MOUSE_BUTTON_LEFT
+	e.pressed = down
+	e.position = pos
+	return e
+
+
+func _key_event(code: Key) -> InputEventKey:
+	var e := InputEventKey.new()
+	e.keycode = code
+	e.pressed = true
+	return e

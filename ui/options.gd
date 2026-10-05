@@ -71,11 +71,11 @@ func _toggle(icon: String, at: Vector2, text: String, action: Callable):
 
 
 ## Lays out the key slots in three columns: Everywhere and Workbench (tray
-## pieces as one row of single slots), then After weaving, Level select and
-## Journal (its tabs as one row), then the round buttons.
+## pieces as one row of single slots), then After weaving and Level select,
+## then the round buttons with the Journal under them (its tabs as one row).
 func _layout() -> void:
-	var columns := {"Everywhere": 0, "Workbench": 0, "Woven": 1, "Levels": 1, "Journal": 1}
-	var y := [TOP, TOP]
+	var columns := {"Everywhere": 0, "Workbench": 0, "Woven": 1, "Levels": 1, "Journal": 2}
+	var y := [TOP, TOP, TOP + 240]  # the third column under the round buttons
 	for g in Keys.GROUPS:
 		var col: int = columns[g]
 		var x := LEFT + col * COLUMN

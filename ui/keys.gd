@@ -59,6 +59,8 @@ const ACTIONS := [
 	["options", "Levels", "Options", [KEY_O]],
 	["page_back", "Journal", "Page back", [KEY_LEFT, KEY_A]],
 	["page_forward", "Journal", "Page forward", [KEY_RIGHT, KEY_D]],
+	["scroll_up", "Journal", "Scroll up", [KEY_UP, KEY_W]],
+	["scroll_down", "Journal", "Scroll down", [KEY_DOWN, KEY_S]],
 	["next_tab", "Journal", "Next tab", [KEY_TAB]],
 	["open_page", "Journal", "Open its page", [KEY_ENTER]],
 	["close_journal", "Journal", "Close", [KEY_B, KEY_J]],
