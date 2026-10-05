@@ -82,7 +82,7 @@ func _draw() -> void:
 	K.fill(self, K.round_rect(Rect2(card.position + Vector2(5, 8), card.size), 22), P.SHADOW)
 	K.shape(self, K.round_rect(card, 22), P.TAG, P.INK, 3)
 	# An empty mix tub peeks over the card's corner, stirring now and then.
-	K.tub(self, card.position + Vector2(72, -10), 0.7, -1, fmod(t, 2.4), "mix", t, 0.4)
+	K.piece(self, "mix", card.position + Vector2(72, -10), 0.7, -1, fmod(t, 2.4), t, 0.4)
 	var cx := card.get_center().x
 	var title := "Welcome to an early build!"
 	var lines := [

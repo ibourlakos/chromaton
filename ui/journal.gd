@@ -722,17 +722,9 @@ func _unknown_drop(c: Vector2, r: float) -> void:
 
 
 static func critter(ci: CanvasItem, kind: String, c: Vector2, s: float, t: float) -> void:
-	match kind:
-		"red_pot":
-			K.pot(ci, c + Vector2(0, -2) * s, 0.6 * s, 99, t, 0.2)
-		"shift":
-			K.hamster(ci, c, 0.66 * s, -1, 99, 0, t, 0.3)
-		"split":
-			K.split(ci, c, [c + Vector2(-30, 0) * s], [c + Vector2(30, -16) * s, c + Vector2(30, 16) * s], -1, 99)
-		"mix", "invert", "filter":
-			K.tub(ci, c, 0.6 * s, -1, 99, kind, t, 0.4)
-		_:
-			K.tub(ci, c, 0.6 * s, -1, 99, "tub", t, 0.4)
+	var look: String = Pieces.TABLE[kind]["look"] if Pieces.TABLE.has(kind) else "tub"
+	var more := {"ins": [c + Vector2(-30, 0) * s], "outs": [c + Vector2(30, -16) * s, c + Vector2(30, 16) * s]}
+	K.piece(ci, look, c, 0.6 * s, -1, 99, t, 0.4, more)
 
 
 # --- Inventions (the old Pattern Book) ----------------------------------------
@@ -1000,7 +992,7 @@ static func picture(ci: CanvasItem, id: String, c: Vector2, s: float, t: float, 
 				if color != 0:
 					K.drop(ci, c + (at[color] - mid) * 0.3 * s + Vector2(0, 6) * s, 7.5 * s, color)
 		"critter":
-			K.tub(ci, c, 0.6 * s, -1, 99, "tub", t, 0.4)
+			K.piece(ci, "mix", c, 0.6 * s, -1, 99, t, 0.4)  # a critter: the jolly Mixing Tub
 		"mix", "invert", "filter", "shift", "red-pot", "split":
 			critter(ci, id.replace("-", "_"), c, s, t)
 		"piece":
@@ -1032,7 +1024,7 @@ static func picture(ci: CanvasItem, id: String, c: Vector2, s: float, t: float, 
 			K.cloth(ci, Rect2(cloth.position - Vector2(0, 10), cloth.size + Vector2(0, 10)), 8, PackedByteArray([1, 3, 2, 6, 4, 5, 7, 0, 0, 1, 1, 3, 2, 2, 6, 4]))
 		"stitch":
 			var r := Rect2(c - Vector2(16, 16) * s, Vector2(32, 32) * s)
-			K.shape(ci, K.round_rect(r, 8 * s), P.SIG[Paint.ORANGE], Color(0.16, 0.12, 0.1, 0.4), 1.5)
+			K.shape(ci, K.round_rect(r, 8 * s), P.SIG[Paint.ORANGE], P.STITCH_EDGE_DARK, 1.5)
 		"thread":
 			var cs := 10.0 * s
 			var row := PackedByteArray([0, 1, 2, 3, 4, 5, 6, 7])
