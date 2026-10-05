@@ -328,7 +328,7 @@ func test_catch_pot() -> void:
 	var sim := Simulator.new(m, level.cards, level.target)
 	sim.run()
 	check(sim.status == S.SOLVED, "a machine with a catch pot on a branch still solves (status %d)" % sim.status)
-	var caught: Array = sim.node_caught(m.piece_at(2, 1))
+	var caught: Array = sim.node_caught(m.piece_at(4, 2))  # spec cells are spots twice over
 	check(caught.size() == Simulator.CAUGHT_KEPT and caught.all(func(c): return c == Paint.RED), "the catch pot keeps the last %d reds (%s)" % [Simulator.CAUGHT_KEPT, str(caught)])
 	check(Pieces.cost({"kind": "catch_pot"}, {}) == 0, "a catch pot is free")
 	spec["tubes"].pop_back()

@@ -247,7 +247,7 @@ func test_peek() -> void:
 	# A placed piece, selected by a tap
 	tap(wb, wb.tray[slot_of(wb, "shift")]["rect"].get_center())
 	tap(wb, wb.cell_center(5, 3))
-	var id: int = wb.machine.piece_at(5, 3)
+	var id: int = wb.piece_in_cell(5, 3)
 	check(id >= 0, "Shift is placed")
 	tap(wb, wb.cell_center(5, 3))
 	check(wb.selected_piece == id, "a tap selects it")

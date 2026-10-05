@@ -3,13 +3,18 @@
 ## Plain data so it saves as JSON and copies cheaply. A node is a Dictionary:
 ##   {"id": int, "kind": String, "x": int, "y": int}
 ## plus "card": int for pattern cards and "invention": String for inventions.
-## Pieces sit on grid cells (x, y); cards and the loom are placed by the level.
+## Pieces sit on spots (x, y), every half cell of the bench (GRID spots a
+## cell; a piece still covers a whole cell); cards and the loom are placed by
+## the level, a card on the row in its "row" (whole rows; without one the
+## workbench puts it on its default row).
 ## A tube joins one output port to one input port:
 ##   {"from": id, "fp": port, "to": id, "tp": port}
 ## Every port holds at most one tube.
 extends RefCounted
 
 const Pieces = preload("res://core/pieces.gd")
+
+const GRID := 2  # spots per cell, each way (DESIGN.md 9.1, half-cell snapping)
 
 var nodes := {}
 var tubes: Array = []
@@ -40,7 +45,7 @@ func is_fixed(id: int) -> bool:
 	return kind == Pieces.CARD or kind == Pieces.LOOM
 
 
-## The placed piece on grid cell (x, y), or -1.
+## The placed piece on spot (x, y), or -1.
 func piece_at(x: int, y: int) -> int:
 	for id in nodes:
 		if not is_fixed(id) and nodes[id]["x"] == x and nodes[id]["y"] == y:
@@ -125,19 +130,24 @@ func to_dict() -> Dictionary:
 	ids.sort()
 	for id in ids:
 		list.append(nodes[id].duplicate())
-	return {"nodes": list, "tubes": tubes.duplicate(true), "next_id": next_id}
+	return {"nodes": list, "tubes": tubes.duplicate(true), "next_id": next_id, "grid": GRID}
 
 
-## Builds a machine from saved data (JSON numbers arrive as floats).
+## Builds a machine from saved data (JSON numbers arrive as floats). A
+## machine saved without "grid" was laid on whole cells: its pieces move to
+## the matching spots, so old saves stay valid.
 static func from_dict(d: Dictionary):
 	var m = load("res://core/machine.gd").new()
+	var scale: int = GRID / maxi(1, int(d.get("grid", 1)))
 	for raw in d.get("nodes", []):
 		var n: Dictionary = raw.duplicate()
 		n["id"] = int(n["id"])
-		n["x"] = int(n.get("x", 0))
-		n["y"] = int(n.get("y", 0))
+		n["x"] = int(n.get("x", 0)) * scale
+		n["y"] = int(n.get("y", 0)) * scale
 		if n.has("card"):
 			n["card"] = int(n["card"])
+		if n.has("row"):
+			n["row"] = int(n["row"])
 		m.nodes[n["id"]] = n
 		m.next_id = maxi(m.next_id, n["id"] + 1)
 	for t in d.get("tubes", []):

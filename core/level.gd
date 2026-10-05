@@ -301,9 +301,11 @@ func new_machine():
 	return m
 
 
-## Builds a machine from a compact spec (the "reference" format above).
+## Builds a machine from a compact spec (the "reference" format above),
+## its pieces on whole cells (or on spots when the spec says "grid": 2).
 func machine_from_spec(spec: Dictionary):
 	var m = new_machine()
+	var scale: int = Machine.GRID / maxi(1, int(spec.get("grid", 1)))
 	var names := {"loom": m.find_kind(Pieces.LOOM)}
 	for i in cards.size():
 		names["card%d" % i] = m.find_kind(Pieces.CARD, i)
@@ -311,7 +313,7 @@ func machine_from_spec(spec: Dictionary):
 		var extra := {}
 		if p.has("invention"):
 			extra["invention"] = p["invention"]
-		names[p["id"]] = m.add_node(p["kind"], int(p["x"]), int(p["y"]), extra)
+		names[p["id"]] = m.add_node(p["kind"], int(p["x"]) * scale, int(p["y"]) * scale, extra)
 	for t in spec.get("tubes", []):
 		var a := _endpoint(t[0])
 		var b := _endpoint(t[1])
