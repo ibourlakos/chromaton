@@ -69,7 +69,8 @@ var next_button
 var _pressed := ""
 
 
-## focus: a piece kind ("mix", "inv:<id>"), "tube" or "card", for a peek; tab_id ""
+## focus: a piece kind ("mix", "inv:<id>"), "tube" or "card", for a peek, or
+## "word:<id>" for a word; tab_id ""
 ## for the tab last open.
 func setup(p_levels: Array, p_progress, tab_id := "", focus := "") -> void:
 	levels = p_levels if not p_levels.is_empty() else Level.load_all()
@@ -81,6 +82,11 @@ func setup(p_levels: Array, p_progress, tab_id := "", focus := "") -> void:
 	tab = last_tab
 	if focus.begins_with("inv:"):
 		tab = "inventions"
+	elif focus.begins_with("word:"):  # "New in your journal": its first new word
+		tab = "words"
+		for i in words.size():
+			if str(words[i]["id"]) == focus.substr(5):
+				word = i
 	elif focus in ["tube", "card"]:  # a tube or a pattern card: the Loom article at its word
 		tab = "loom"
 		article_focus = "tube" if focus == "tube" else "pattern-card"

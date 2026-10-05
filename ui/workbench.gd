@@ -130,6 +130,7 @@ var news: Control  # "New in your journal", after the success panel
 var levels: Array = []  # the campaign, for the journal
 var fresh := []  # [piece kind, input colors] first seen here, not yet in the news
 var new_words := []  # words the last solve unlocked, not yet in the news
+var news_extra := {}  # what else the last solve brought: a new chapter, levels opened, cheaper (journal_news.gd)
 # The layers the bench is drawn in, back to front (see Drawing).
 var still: Layer
 var shelf: Layer
@@ -727,11 +728,16 @@ func _finish_solve() -> void:
 	var stars: int = level.stars_for(pieces)
 	if not progress.is_solved(level.id):  # a first solve unlocks the level's words
 		new_words = Words.unlocked_by(level.id)
+	var opened_before := _open_levels()
+	var owned_before: Dictionary = progress.inventions.get(level.invention.get("id", ""), {})
 	var better: Dictionary = progress.record_solve(level.id, pieces, ticks, stars)
 	var invention := {}
 	if not level.invention.is_empty():
 		invention = progress.add_invention(Invention.package(level, machine, inventions))
 		inventions = progress.usable()  # earning one replaces a loan
+		if not owned_before.is_empty() and int(invention["cost"]) < int(owned_before["cost"]):
+			news_extra["cheaper"] = [{"inv": invention, "old": int(owned_before["cost"]), "new": int(invention["cost"])}]
+	_note_openings(opened_before, owned_before.is_empty())
 	progress.store_machine(level.id, machine.to_dict())
 	progress_changed.emit()
 	panel = SuccessPanel.new()
@@ -748,19 +754,45 @@ func show_news(then: Callable) -> void:
 	if panel != null:
 		panel.queue_free()
 		panel = null
-	if new_words.is_empty() and fresh.is_empty():
+	if new_words.is_empty() and fresh.is_empty() and news_extra.is_empty():
 		then.call()
 		return
 	news = JournalNews.new()
-	news.setup(new_words, fresh, func(ci, id, c, s): Journal.picture(ci, id, c, s, clock, _levels()))
+	news.setup(new_words, fresh, func(ci, id, c, s): Journal.picture(ci, id, c, s, clock, _levels()), news_extra)
 	new_words = []
 	fresh = []
+	news_extra = {}
 	news.done.connect(func():
 		news.queue_free()
 		news = null
 		then.call())
-	news.open_journal.connect(func(): open_journal("", "words"))
+	news.open_journal.connect(func(tab, focus): open_journal(focus, tab))
 	add_child(news)
+
+
+## The campaign levels open now (their indexes).
+func _open_levels() -> Array:
+	var all := _levels()
+	var ids := all.map(func(l): return l.id)
+	return range(all.size()).filter(func(i): return progress.is_unlocked(ids, i))
+
+
+## What a solve opened that the level select wouldn't make plain, for "New in
+## your journal": a new chapter, and the levels the invention just earned
+## opens (they waited for it).
+func _note_openings(before: Array, first_earn: bool) -> void:
+	var all := _levels()
+	var now := _open_levels().filter(func(i): return not i in before)
+	var chapters_before := before.map(func(i): return all[i].chapter)
+	for i in now:
+		if not all[i].chapter in chapters_before:
+			news_extra["chapter"] = {"name": all[i].chapter_name, "level": all[i]}
+			break
+	var inv_id: String = level.invention.get("id", "")
+	if first_earn and inv_id != "":
+		var opened := now.filter(func(i): return inv_id in all[i].waits_for).map(func(i): return all[i])
+		if not opened.is_empty():
+			news_extra["opens"] = {"what": level.invention.get("in_text", level.invention["name"]), "levels": opened}
 
 
 func _levels() -> Array:
