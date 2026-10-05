@@ -22,7 +22,7 @@ const COLUMN := 410.0
 const LABEL_W := 172.0
 const SLOT := Vector2(88, 30)
 const PIECE_SLOT := Vector2(38, 30)
-const GROUP_NAMES := {"Everywhere": "Everywhere", "Workbench": "Workbench", "Woven": "After weaving", "Levels": "Level select", "Journal": "Journal"}
+const GROUP_NAMES := {"Everywhere": "Everywhere", "Workbench": "Workshop", "Woven": "After weaving", "Levels": "Level select", "Journal": "Journal"}
 
 var slots := []  # [{"rect": Rect2, "action": String, "slot": int}]
 var labels := []  # [position, text, header?]

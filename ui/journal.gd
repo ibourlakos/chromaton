@@ -375,7 +375,7 @@ func _locked(r: Rect2, w: Dictionary) -> void:
 	var level = _level_by_id(str(w["level"]))
 	K.text(self, P.display(600), Vector2(r.position.x + 40, r.get_center().y), "?", 34, Color(P.INK, 0.3))
 	if level != null:
-		K.text(self, P.ui(700), Vector2(r.position.x + 74, r.get_center().y), "Weave level %d, %s, to read this." % [level.number, level.name], 16, Color(P.INK, 0.45), HORIZONTAL_ALIGNMENT_LEFT)
+		K.text(self, P.ui(700), Vector2(r.position.x + 74, r.get_center().y), "Weave %s to read this." % level.ref_name(), 16, Color(P.INK, 0.45), HORIZONTAL_ALIGNMENT_LEFT)
 
 
 ## Words one under another: picture, word, Gameplay text.
@@ -420,7 +420,7 @@ func _draw_pieces() -> void:
 		_para(Vector2(area.position.x + 150, area.position.y + 50), area.size.x - 160, w["text"], 17)
 	elif not w.is_empty():
 		var level = _level_by_id(str(w["level"]))
-		K.text(self, P.ui(700), Vector2(area.position.x + 150, area.position.y + 66), "Weave level %d, %s, to read about it. Till then, watch it work." % [level.number, level.name], 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+		K.text(self, P.ui(700), Vector2(area.position.x + 150, area.position.y + 66), "Weave %s to read about it. Till then, watch it work." % level.ref_name(), 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	var top := area.position.y + 170
 	match kind:
 		"shift", "invert":
@@ -731,8 +731,8 @@ func _draw_words() -> void:
 	if not Words.is_unlocked(w, progress):
 		var level = _level_by_id(str(w["level"]))
 		K.text(self, P.display(600), panel.get_center() + Vector2(0, -40), "?", 64, Color(P.INK, 0.25))
-		K.text(self, P.ui(700), panel.get_center() + Vector2(0, 30), "Weave level %d," % level.number, 18, P.INK_SOFT)
-		K.text(self, P.ui(700), panel.get_center() + Vector2(0, 56), "%s, to find this word." % level.name, 18, P.INK_SOFT)
+		K.text(self, P.ui(700), panel.get_center() + Vector2(0, 30), "Weave %s" % level.ref_name(), 18, P.INK_SOFT)
+		K.text(self, P.ui(700), panel.get_center() + Vector2(0, 56), "to find this word.", 18, P.INK_SOFT)
 		return
 	picture(self, str(w["id"]), Vector2(panel.get_center().x, panel.position.y + 86), 1.4, t, levels)
 	K.text(self, P.display(600), Vector2(panel.get_center().x, panel.position.y + 182), w["word"], 32, P.INK)
@@ -759,6 +759,11 @@ func _tab_name(id: String) -> String:
 ## A word's small picture, centred on c (about 90 across at s = 1).
 static func picture(ci: CanvasItem, id: String, c: Vector2, s: float, t: float, levels: Array) -> void:
 	match id:
+		"pattern-card":
+			K.set_xf(ci, c, Vector2(0.6, 0.6) * s, -0.06)
+			K.card_body(ci, Vector2.ZERO, "A")
+			K.card_paints(ci, Vector2.ZERO, [Paint.RED, Paint.ORANGE, Paint.WHITE, Paint.BLUE, Paint.GREEN], 1.0, 5)
+			K.reset_xf(ci)
 		"paint":
 			for k in 3:
 				var a := -PI / 2 + k * TAU / 3
@@ -821,6 +826,6 @@ static func picture(ci: CanvasItem, id: String, c: Vector2, s: float, t: float, 
 			for k in 3:
 				K.star(ci, c + Vector2((k - 1) * 26, -6 if k == 1 else 2) * s, 12 * s, true)
 		"invention":
-			K.sticker(ci, c, 0.62 * s, "Contrast", 99, t, 0.4)
+			K.sticker(ci, c, 0.62 * s, "Extreme Mix", 99, t, 0.4)
 		_:
 			K.icon(ci, "book", c, 2.4 * s, P.INK)

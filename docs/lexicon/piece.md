@@ -7,7 +7,7 @@
 
 ## Gameplay
 
-A piece is anything you take from the tray and put on the workbench to build your machine. Every piece has a price, and the fewer pieces your machine uses, the more stars it earns. Machines you invent become pieces you can use again.
+A piece is anything you take from the tray and put in the workshop to build your machine. Every piece has a price, and the fewer pieces your machine uses, the more stars it earns. Machines you invent become pieces you can use again.
 
 ## Design
 

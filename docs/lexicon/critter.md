@@ -2,7 +2,7 @@
 
 - **Tags:** gameplay, design, implementation
 - **Status:** 🟡 (the art direction is decided, DESIGN.md §7.2; "critter" as a player word, 2026-10-04)
-- **Journal:** unlocks in Yellow, with the first critter (Shift); each critter's page is on the Pieces tab
+- **Journal:** unlocks in The Yellow Pot, with the first critter (the Shift Wheel); each critter's page is on the Pieces tab
 - **Also called:** vat (DESIGN.md §3 working vocabulary)
 
 ## Gameplay

@@ -1,8 +1,9 @@
 ## The placeable pieces, as one data table.
 ##
-## Each entry gives the display name, the number of input and output ports,
-## the operation the piece performs, its piece cost, and how it is drawn
-## ("look"). Adding a piece is one new entry: the generic "tub" look draws any
+## Each entry gives the display name (the critter's name, the only one the
+## player sees; the kind and op keep the operation's name, DESIGN.md 3), the
+## number of input and output ports, the operation the piece performs, its
+## piece cost, and how it is drawn ("look"). Adding a piece is one new entry: the generic "tub" look draws any
 ## vat, so a new two-input vat is one line.
 ##
 ## Pattern cards, the loom and inventions are not in the table: cards and the
@@ -14,11 +15,11 @@ const Paint = preload("res://core/paint.gd")
 
 const TABLE := {
 	"red_pot": {"name": "Red pot", "inputs": 0, "outputs": 1, "op": "red", "cost": 1, "look": "pot"},
-	"mix": {"name": "Mix", "inputs": 2, "outputs": 1, "op": "mix", "cost": 1, "look": "mix"},
+	"mix": {"name": "Mixing Tub", "inputs": 2, "outputs": 1, "op": "mix", "cost": 1, "look": "mix"},
 	# Keeps only the paint both inputs share (DESIGN.md 2.5, the middle kit).
-	"filter": {"name": "Filter", "inputs": 2, "outputs": 1, "op": "filter", "cost": 1, "look": "filter"},
-	"invert": {"name": "Invert", "inputs": 1, "outputs": 1, "op": "invert", "cost": 1, "look": "invert"},
-	"shift": {"name": "Shift", "inputs": 1, "outputs": 1, "op": "shift", "cost": 1, "look": "shift"},
+	"filter": {"name": "Sieve", "inputs": 2, "outputs": 1, "op": "filter", "cost": 1, "look": "filter"},
+	"invert": {"name": "Flip Pan", "inputs": 1, "outputs": 1, "op": "invert", "cost": 1, "look": "invert"},
+	"shift": {"name": "Shift Wheel", "inputs": 1, "outputs": 1, "op": "shift", "cost": 1, "look": "shift"},
 	"split": {"name": "Split", "inputs": 1, "outputs": 2, "op": "copy", "cost": 0, "look": "split"},
 	# Swallows every drop it is given and remembers the last few (for looking
 	# at what flows through a machine). Free, like Split.

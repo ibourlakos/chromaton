@@ -69,6 +69,11 @@ func know_levels(campaign: Array) -> void:
 	for level in campaign:
 		if not level.waits_for.is_empty():
 			waits[level.id] = level.waits_for
+		# An invention's name comes from its level (players don't name them),
+		# so a renamed one (Contrast, now Extreme Mix) reads as the level says.
+		var inv_id: String = level.invention.get("id", "")
+		if inventions.has(inv_id):
+			inventions[inv_id]["name"] = level.invention["name"]
 	loans = Invention.reference_inventions(campaign) if unlock_all else {}
 
 

@@ -7,7 +7,7 @@
 
 ## Gameplay
 
-The tray along the bottom holds the pieces you can use. Drag one onto the workbench, or tap it to pick it up. A piece with a lock is one this level does without. Your pots share one slot: tap it and they fan out above the shelf, then drag one out. To put a piece away, drag it back onto the tray.
+The tray along the bottom holds the pieces you can use. Drag one into the workshop, or tap it to pick it up. A piece with a lock is one this level does without. Your pots share one slot: tap it and they fan out above the shelf, then drag one out. To put a piece away, drag it back onto the tray.
 
 ## Design
 

@@ -1,13 +1,13 @@
 # Filter
 
 - **Tags:** gameplay, design, implementation
-- **Status:** ✅ two names (designer, 2026-10-05): the term is the algebra's and the code's name; the player sees the critter's name
-- **Player word (decided 2026-10-05, not built):** Sieve. It becomes the Player word, and the Gameplay text uses it, when the rename is built (then `.\make words`).
+- **Status:** ✅ two names (designer, 2026-10-05): the term is the algebra's and the code's name; the player sees the critter's name; the player word built 2026-10-05
+- **Player word:** Sieve
 - **Journal:** unlocks in Sandy Crab; page on the Pieces tab
 
 ## Gameplay
 
-Filter takes two paints and keeps only what they share. Orange and purple share red, so out comes red. Two paints that share nothing give white.
+The Sieve takes two paints and keeps only what they share. Orange and purple share red, so out comes red. Two paints that share nothing give white.
 
 ## Design
 

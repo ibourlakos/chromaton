@@ -2,7 +2,7 @@
 
 - **Tags:** gameplay, design, implementation
 - **Status:** ✅ (designer, 2026-10-04: a chapter's cloths join into a quilt)
-- **Journal:** unlocks in Nothing at All, the paint box's last level; page on the Cloths tab
+- **Journal:** unlocks in The White Pot, the paint box's last level; page on the Cloths tab
 - **Also called:** tapestry (kept for the finale), patchwork
 
 ## Gameplay
