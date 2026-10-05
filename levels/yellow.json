@@ -1,8 +1,10 @@
 {
 	"id": "yellow",
-	"name": "Yellow",
+	"name": "The Yellow Pot",
+	"cloth": "Yellow",
+	"machine": "The Yellow Pot",
 	"goal": "Weave a yellow cloth.",
-	"hint": "Red turns to yellow on the wheel. Tube the red pot through Shift.",
+	"hint": "The hamster runs, and its wheel turns red into yellow. Tube the red pot through the Shift Wheel.",
 	"pieces": [
 		"red_pot",
 		"shift"

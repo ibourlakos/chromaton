@@ -1,8 +1,10 @@
 {
 	"id": "black",
-	"name": "All the Paint",
+	"name": "The Black Pot",
+	"cloth": "Black",
+	"machine": "The Black Pot",
 	"goal": "Weave a black cloth.",
-	"hint": "Black holds red, yellow and blue together. Split the pot's red, turn some to yellow and some to blue, and Mix all three.",
+	"hint": "Pour every paint into one tub and it turns black. Mix a pot that holds red and yellow with your blue pot.",
 	"pieces": [
 		"red_pot",
 		"shift",

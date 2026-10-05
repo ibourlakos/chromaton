@@ -1,8 +1,10 @@
 {
 	"id": "back_to_filter",
-	"name": "Back to Filter",
-	"goal": "Weave the black knight.",
-	"hint": "Back to Mix in the looking glass: build a Filter. Ask Missing From Either what the cards lack, then flip its answer with another.",
+	"name": "The Black Knight",
+	"cloth": "The Black Knight",
+	"machine": "A Sieve, Rebuilt",
+	"goal": "Weave the black knight, and build a Sieve from Missing From Either.",
+	"hint": "Flip what the cards don't both have and you get what they share. Ask Missing From Either, then flip its answer with a second one.",
 	"pieces": [
 		"split"
 	],

@@ -1,8 +1,10 @@
 {
 	"id": "mix_without_mix",
-	"name": "Mix Without Mix",
-	"goal": "Weave the black bishop.",
-	"hint": "Keep What They Share in the looking glass: build a Mix. Flip both cards, then ask Missing From Either what they lack.",
+	"name": "The Black Bishop",
+	"cloth": "The Black Bishop",
+	"machine": "A Mixing Tub, Rebuilt",
+	"goal": "Weave the black bishop, and build a Mixing Tub.",
+	"hint": "What either paint has is what their opposites don't both have. Flip both cards, then ask Missing From Either.",
 	"pieces": [
 		"red_pot",
 		"shift",

@@ -1,8 +1,10 @@
 {
 	"id": "neither_twice",
-	"name": "Neither, Twice",
-	"goal": "Weave the rook.",
-	"hint": "Every paint flips to its opposite. Split the card and give the Third Paint the same paint twice: what neither has is the opposite.",
+	"name": "The Rook",
+	"cloth": "The Rook",
+	"machine": "A Flip Pan, Rebuilt",
+	"goal": "Weave the rook, and build a Flip Pan from Third Paints.",
+	"hint": "What neither of two same paints has is that paint's opposite. Split the card and give the Third Paint the same paint twice.",
 	"pieces": [
 		"split"
 	],

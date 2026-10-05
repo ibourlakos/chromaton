@@ -1,8 +1,10 @@
 {
 	"id": "lighthouse",
-	"name": "Lighthouse",
+	"name": "The Lighthouse",
+	"cloth": "The Lighthouse",
+	"machine": "Two Cards Mixed",
 	"goal": "Weave the lighthouse.",
-	"hint": "Each card holds part of the picture. Mix them, drop by drop.",
+	"hint": "At dusk the tower and its lamp are painted on two cards. Mix them, drop by drop.",
 	"pieces": [
 		"red_pot",
 		"shift",

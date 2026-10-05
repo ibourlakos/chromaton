@@ -1,6 +1,8 @@
 {
 	"id": "one_pot",
 	"name": "One Pot of Red",
+	"cloth": "Red",
+	"machine": "One Pot of Red",
 	"goal": "Weave a red cloth.",
 	"hint": "Every paint in the box starts from this one pot of red. Tube it straight to the loom.",
 	"hints": true,

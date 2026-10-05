@@ -1,6 +1,8 @@
 {
 	"id": "orange_sun",
-	"name": "Orange Sun",
+	"name": "The Orange Sun",
+	"cloth": "The Orange Sun",
+	"machine": "",
 	"goal": "Weave the orange sun.",
 	"hint": "The card holds the sun's red. Mix in yellow from your yellow pot.",
 	"pieces": [

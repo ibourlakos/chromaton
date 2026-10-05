@@ -1,8 +1,10 @@
 {
 	"id": "either_not_both",
-	"name": "Either, Not Both",
-	"goal": "Weave the queen. Your machine becomes a new piece.",
-	"hint": "Paint from one card or the other, never both. Mix the cards, then Filter the mix with the opposite of what they share.",
+	"name": "The Queen",
+	"cloth": "The Queen",
+	"machine": "Extreme Mix",
+	"goal": "Weave the queen.",
+	"hint": "The queen wears only the paint that comes from one card alone. Mix the cards, then sieve the mix with the opposite of what they share.",
 	"pieces": [
 		"red_pot",
 		"shift",

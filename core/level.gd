@@ -4,8 +4,13 @@
 ##   W R Y O B P G K = White, Red, Yellow, Orange, Blue, Purple, Green, Black.
 ## Cards are read and the loom is woven row by row, left to right.
 ##
-## JSON fields: id, name, goal, optional hint (guidance shown with the goal
-## as the level opens and under the title after), pieces (the kinds it
+## JSON fields: id, name (the level's primary title: what tags, Cloths and
+## Scores show, and what text refers to it by, "2. The Yellow Pot"), cloth
+## and machine (the two title phrases the top bar shows, "The Queen · Extreme
+## Mix": what the cloth is, then what the machine does; machine "" for the
+## cloth alone; name is the cloth phrase, or in the paint box the machine
+## phrase), goal (what to weave) and hint (the rule in paint, then how),
+## both shown in the hint panel (ui/level_note.gd), pieces (the kinds it
 ## offers; the tray also shows earlier levels' pieces, locked), inventions
 ## (invention ids allowed in the tray), optional hold_pots (earned pots this
 ## level holds back; see _lay_trays), optional waits_for (invention ids the
@@ -43,7 +48,9 @@ var number := 0  # position in the campaign, from 1 (0 when loaded on its own)
 var chapter := 0  # index into Level.chapters()
 var chapter_name := ""
 var quilt_across := 0  # the chapter's patches across in its quilt (index.json; 0: as fits)
-var name := ""
+var name := ""  # the primary title
+var cloth_phrase := ""
+var machine_phrase := ""
 var goal := ""
 var hint := ""
 var cols := 0
@@ -160,6 +167,12 @@ static func _pot_paint(pot_id: String) -> int:
 	return Paint.NAMES.map(func(n): return "pot_" + n.to_lower()).find(pot_id)
 
 
+## The whole title, both phrases: "The Queen · Extreme Mix", or the cloth
+## alone.
+func title() -> String:
+	return cloth_phrase if machine_phrase == "" else "%s · %s" % [cloth_phrase, machine_phrase]
+
+
 ## How text refers to a level: its number and primary title, "2. The Yellow
 ## Pot" (DESIGN.md 5.1).
 func ref_name() -> String:
@@ -216,6 +229,8 @@ static func from_dict(d: Dictionary):
 	level.raw = d
 	level.id = str(d.get("id", ""))
 	level.name = str(d.get("name", ""))
+	level.cloth_phrase = str(d.get("cloth", level.name))
+	level.machine_phrase = str(d.get("machine", ""))
 	level.goal = str(d.get("goal", ""))
 	level.hint = str(d.get("hint", ""))
 	var rows_in: Array = d.get("target", [])

@@ -1,8 +1,10 @@
 {
 	"id": "purple_opposite",
-	"name": "Purple",
+	"name": "A Cheaper Purple Pot",
+	"cloth": "Purple",
+	"machine": "A Cheaper Purple Pot",
 	"goal": "Weave a purple cloth.",
-	"hint": "",
+	"hint": "Purple lacks only yellow, so it sits across from yellow. Flip your yellow pot.",
 	"pieces": [
 		"red_pot",
 		"shift",

@@ -1,8 +1,10 @@
 {
 	"id": "black_cat",
-	"name": "Harbour Cat",
+	"name": "The Harbour Cat",
+	"cloth": "The Harbour Cat",
+	"machine": "Convert to Black and White",
 	"goal": "Weave the cat.",
-	"hint": "Wherever the card has paint, the cat is black. Turn the card's paint around the wheel and mix every turn together.",
+	"hint": "Wherever the card has any paint at all, the cat is black. Split the card three ways, turn one copy once and another twice on the Shift Wheel, and mix all three.",
 	"pieces": [
 		"red_pot",
 		"shift",

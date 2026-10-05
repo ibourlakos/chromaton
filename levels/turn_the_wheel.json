@@ -1,8 +1,10 @@
 {
 	"id": "turn_the_wheel",
-	"name": "Turn the Wheel",
+	"name": "The Wheel Swatch",
+	"cloth": "The Wheel Swatch",
+	"machine": "Turn the Wheel",
 	"goal": "Weave the swatch.",
-	"hint": "Every paint on the card, one turn on. Tube the card through Shift and watch what one turn does to every paint.",
+	"hint": "Tube the card through the Shift Wheel and watch what one turn does to every paint.",
 	"pieces": [
 		"red_pot",
 		"shift",

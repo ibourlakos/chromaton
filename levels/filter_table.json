@@ -1,8 +1,10 @@
 {
 	"id": "filter_table",
 	"name": "The Sieve Table",
+	"cloth": "The Sieve Table",
+	"machine": "What Every Pair Shares",
 	"goal": "Weave the table.",
-	"hint": "",
+	"hint": "The Sieve keeps only the paint both drops share. Sieve card A with card B, and the cloth becomes the table of every share.",
 	"pieces": [
 		"red_pot",
 		"shift",

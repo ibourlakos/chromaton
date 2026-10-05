@@ -1,8 +1,10 @@
 {
 	"id": "mix_table",
 	"name": "The Mixing Table",
+	"cloth": "The Mixing Table",
+	"machine": "Every Pair Mixed",
 	"goal": "Weave the table.",
-	"hint": "",
+	"hint": "Card A holds one paint a row, card B every paint. Mix them drop by drop, and the cloth becomes the table of every mix.",
 	"pieces": [
 		"red_pot",
 		"shift",

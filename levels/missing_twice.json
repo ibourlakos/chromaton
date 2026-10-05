@@ -1,8 +1,10 @@
 {
 	"id": "missing_twice",
-	"name": "Missing, Twice",
-	"goal": "Weave the black rook.",
-	"hint": "Neither, Twice in the looking glass. Every paint flips to its opposite: give Missing From Either the same paint twice.",
+	"name": "The Black Rook",
+	"cloth": "The Black Rook",
+	"machine": "A Flip Pan, Rebuilt",
+	"goal": "Weave the black rook, and build a Flip Pan from Missing From Either.",
+	"hint": "The rook's twin, in the looking glass. Split the card and give Missing From Either the same paint twice.",
 	"pieces": [
 		"split"
 	],

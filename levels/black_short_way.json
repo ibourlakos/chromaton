@@ -1,8 +1,10 @@
 {
 	"id": "black_short_way",
-	"name": "Black, the Short Way",
+	"name": "A Cheaper Black Pot",
+	"cloth": "Black",
+	"machine": "A Cheaper Black Pot",
 	"goal": "Weave a black cloth.",
-	"hint": "A paint and its opposite hold every paint between them. Mix red with its own opposite.",
+	"hint": "A paint and its opposite hold every paint between them. Mix red with your green pot.",
 	"pieces": [
 		"red_pot",
 		"shift",

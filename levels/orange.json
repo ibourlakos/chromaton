@@ -1,8 +1,10 @@
 {
 	"id": "orange",
-	"name": "Orange",
+	"name": "The Orange Pot",
+	"cloth": "Orange",
+	"machine": "The Orange Pot",
 	"goal": "Weave an orange cloth.",
-	"hint": "Orange is red and yellow together. Shift one pot's red to yellow, then Mix it with red from a second pot.",
+	"hint": "Paint on paint makes a darker paint: red and yellow make orange. Mix the red pot with your yellow pot.",
 	"pieces": [
 		"red_pot",
 		"shift",

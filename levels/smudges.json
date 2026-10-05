@@ -1,8 +1,10 @@
 {
 	"id": "smudges",
 	"name": "Sandy Crab",
+	"cloth": "Sandy Crab",
+	"machine": "Keep the Red",
 	"goal": "Weave the crab.",
-	"hint": "Keep only the card's red; the sand washes out.",
+	"hint": "The sand washes out. Sieve the card down to its red.",
 	"pieces": [
 		"red_pot",
 		"shift",

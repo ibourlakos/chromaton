@@ -1,8 +1,10 @@
 {
 	"id": "only_third_paint",
-	"name": "Only the Third Paint",
-	"goal": "Weave the king. Your machine becomes a new piece.",
-	"hint": "A paint shows where both cards have it or both lack it. Ask what neither card has, ask each card with that answer, then ask of the two answers.",
+	"name": "The King",
+	"cloth": "The King",
+	"machine": "Same Paint",
+	"goal": "Weave the king using only Third Paints.",
+	"hint": "The king wears paint where the cards agree: both have it, or both lack it. Find what only card A has and what only card B has, then ask a Third Paint what neither of those has. (To find what only B has: ask a Third Paint of card A and of what neither card has.)",
 	"pieces": [
 		"split"
 	],

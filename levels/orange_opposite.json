@@ -1,8 +1,10 @@
 {
 	"id": "orange_opposite",
-	"name": "Orange",
-	"goal": "Weave a orange cloth.",
-	"hint": "",
+	"name": "A Cheaper Orange Pot",
+	"cloth": "Orange",
+	"machine": "A Cheaper Orange Pot",
+	"goal": "Weave an orange cloth.",
+	"hint": "A mix is the opposite of the one paint it lacks, and orange lacks only blue. Flip your blue pot.",
 	"pieces": [
 		"red_pot",
 		"shift",

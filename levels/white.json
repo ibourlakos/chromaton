@@ -1,8 +1,10 @@
 {
 	"id": "white",
-	"name": "Nothing at All",
+	"name": "The White Pot",
+	"cloth": "White",
+	"machine": "The White Pot",
 	"goal": "Weave a white cloth.",
-	"hint": "White is the opposite of black. Flip your black.",
+	"hint": "White is the empty cloth, the opposite of black. Flip your black pot.",
 	"pieces": [
 		"red_pot",
 		"shift",

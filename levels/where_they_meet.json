@@ -1,8 +1,10 @@
 {
 	"id": "where_they_meet",
-	"name": "Where They Meet",
+	"name": "The Rock Pool",
+	"cloth": "The Rock Pool",
+	"machine": "Where They Meet",
 	"goal": "Weave the rock pool.",
-	"hint": "Lay one card over the other and keep only the paint they have in common.",
+	"hint": "In the rock pool, only what both cards hold stays. Sieve one card with the other.",
 	"pieces": [
 		"red_pot",
 		"shift",

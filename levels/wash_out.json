@@ -1,8 +1,10 @@
 {
 	"id": "wash_out",
-	"name": "Wash Out",
+	"name": "The Fish",
+	"cloth": "The Fish",
+	"machine": "One Has Something the Other Hasn't",
 	"goal": "Weave the fish.",
-	"hint": "Flip card B to its opposite, then keep only what it shares with card A.",
+	"hint": "The tide washes card B's paint out of card A. Flip card B to its opposite, then sieve it with card A.",
 	"pieces": [
 		"red_pot",
 		"shift",

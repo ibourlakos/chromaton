@@ -1,8 +1,10 @@
 {
 	"id": "green",
-	"name": "Green",
+	"name": "A Cheaper Green Pot",
+	"cloth": "Green",
+	"machine": "A Cheaper Green Pot",
 	"goal": "Weave a green cloth.",
-	"hint": "Green is the opposite of red. Invert flips any paint to its opposite: tube the red pot through it.",
+	"hint": "Every paint has an opposite across the paint card, and green is red's. Tube the red pot through the Flip Pan.",
 	"pieces": [
 		"red_pot",
 		"shift",

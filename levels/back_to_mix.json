@@ -1,8 +1,10 @@
 {
 	"id": "back_to_mix",
-	"name": "Back to Mix",
-	"goal": "Weave the knight.",
-	"hint": "A paint shows where either card has it. Ask a Third Paint what neither card has, then flip its answer with a second Third Paint.",
+	"name": "The Knight",
+	"cloth": "The Knight",
+	"machine": "A Mixing Tub, Rebuilt",
+	"goal": "Weave the knight, and build a Mixing Tub from Third Paints.",
+	"hint": "Flip what neither card has and you get what either has. Ask a Third Paint what neither card has, then flip its answer with a second Third Paint.",
 	"pieces": [
 		"split"
 	],
