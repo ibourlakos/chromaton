@@ -1793,30 +1793,16 @@ func _draw_piece_kind(kind: String, c: Vector2, id: int, s := 1.0, ci: CanvasIte
 		return
 	if not Pieces.TABLE.has(kind):
 		return
+	var more := {}
 	match Pieces.TABLE[kind]["look"]:
-		"pot":
-			K.pot(ci, c + Vector2(0, -2) * s, PIECE_SCALE * s, age, t, seed)
 		"catch":
-			K.catch_pot(ci, c + Vector2(0, -4) * s, PIECE_SCALE * s, [] if id < 0 else sim.node_caught(id), age, t, seed)
-		"mix":
-			K.tub(ci, c, PIECE_SCALE * s, liq, age, "mix", t, seed)
-		"invert":
-			K.tub(ci, c, PIECE_SCALE * s, liq, age, "invert", t, seed)
-		"filter":
-			K.tub(ci, c, PIECE_SCALE * s, liq, age, "filter", t, seed)
+			more["caught"] = [] if id < 0 else sim.node_caught(id)
 		"shift":
-			K.hamster(ci, c + Vector2(0, -2) * s, 0.66 * s, liq, age, 0 if id < 0 else sim.node_fire_count(id), t, seed)
+			more["turns"] = 0 if id < 0 else sim.node_fire_count(id)
 		"split":
-			var ins := []
-			var outs := []
-			for o in _offsets(1, -PORT_DX):
-				ins.append(c + o * s)
-			for o in _offsets(2, PORT_DX):
-				outs.append(c + o * s)
-			K.split(ci, c, ins, outs, liq, age)
-		_:
-			K.tub(ci, c, PIECE_SCALE * s, liq, age, "tub", t, seed)
-			K.text(ci, P.display(600), c + Vector2(0, 30) * s, Pieces.display_name(kind), 13, P.INK)
+			more["ins"] = _offsets(1, -PORT_DX).map(func(o): return c + o * s)
+			more["outs"] = _offsets(2, PORT_DX).map(func(o): return c + o * s)
+	K.piece(ci, Pieces.TABLE[kind]["look"], c, PIECE_SCALE * s, liq, age, t, seed, more)
 
 
 ## Stitches on the cloth: all those woven but one still flying to it.

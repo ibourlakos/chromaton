@@ -9,6 +9,7 @@ const Level = preload("res://core/level.gd")
 const Simulator = preload("res://core/simulator.gd")
 const Invention = preload("res://core/invention.gd")
 const Progress = preload("res://core/progress.gd")
+const Profiles = preload("res://core/profiles.gd")
 
 const S = Simulator.Status
 
@@ -34,6 +35,7 @@ func _init() -> void:
 	test_progress(levels, inventions)
 	test_stale_saves(levels, inventions)
 	test_locks_and_loans(levels, inventions)
+	test_profiles()
 	if failures == 0:
 		print("test_levels: all %d checks passed" % checks)
 	quit(1 if failures > 0 else 0)
@@ -329,3 +331,21 @@ func test_locks_and_loans(levels: Array, inventions: Dictionary) -> void:
 	r.store_machine("yellow", by_id["yellow"].reference_machine().to_dict())
 	var kept = Progress.from_dict(JSON.parse_string(JSON.stringify(r.to_dict())), levels)
 	check(not kept.is_solved("yellow") and kept.levels["yellow"].has("machine") and kept.is_solved("one_pot"), "a solved invention level without its invention reads unsolved, its bench kept")
+
+
+## Local profiles: without a roster there's one, the first, whose save is
+## the one from before profiles, untouched; each new one gets its own file;
+## a name defaults to its critter's.
+func test_profiles() -> void:
+	var path := "user://test_profiles.json"
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	var p = Profiles.load_from(path)
+	check(p.list.size() == 1 and p.current == 1 and Profiles.save_path(1) == Progress.PATH, "one profile at first, playing the save from before profiles")
+	var id: int = p.add("shift", "  andrew ")
+	check(id == 2 and Profiles.save_path(2) == "user://chromaton_save_2.json", "a new profile gets its own save file")
+	check(Profiles.display_name(p.find(2)) == "andrew" and Profiles.display_name(p.find(1)) == "Mixing Tub", "a name, or the critter's")
+	p.current = 2
+	p.save(path)
+	var q = Profiles.load_from(path)
+	check(q.list.size() == 2 and q.current == 2 and q.find(2)["badge"] == "shift", "the roster survives a save")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))

@@ -283,7 +283,7 @@ static func drop(ci: CanvasItem, c: Vector2, r: float, color: int) -> void:
 	else:
 		fill(ci, pts, P.SIG[color])
 		stroke(ci, pts, P.INK, maxf(1.4, r * 0.22))
-		fill(ci, ellipse(c + Vector2(-0.45, -0.35) * r, r * 0.14, r * 0.26, -0.5, 12), Color(1, 1, 1, 0.55))
+		fill(ci, ellipse(c + Vector2(-0.45, -0.35) * r, r * 0.14, r * 0.26, -0.5, 12), P.SHINE)
 	pips(ci, c + Vector2(0, 0.12 * r), r, color)
 
 
@@ -312,12 +312,33 @@ static func swatch(ci: CanvasItem, c: Vector2, r: float, color: int) -> void:
 # Tubes and ports
 # ---------------------------------------------------------------------------
 
+## A glass tube: an ink outline, the glass, a thin glint along its upper
+## inner edge and a faint shade along its lower one, so a drop sits inside.
 static func tube(ci: CanvasItem, pts: PackedVector2Array, selected := false) -> void:
 	var joints := round_joints(pts)
 	if selected:
 		_polyline_joined(ci, pts, joints, P.HOOP, 20)
-	_polyline_joined(ci, pts, joints, P.INK, 13)
-	_polyline_joined(ci, pts, joints, P.GLASS, 8)
+	_polyline_joined(ci, pts, joints, P.INK, 12)
+	_polyline_joined(ci, pts, joints, P.GLASS, 7)
+	_glass_edges(ci, pts)
+
+
+## The glint (paper white, above) and shade (hoop grey, below) along the
+## inside of a glass tube or stub, following its curve.
+static func _glass_edges(ci: CanvasItem, pts: PackedVector2Array) -> void:
+	if pts.size() < 2:
+		return
+	var up := PackedVector2Array()
+	var down := PackedVector2Array()
+	for i in pts.size():
+		var d := (pts[mini(i + 1, pts.size() - 1)] - pts[maxi(i - 1, 0)]).normalized()
+		var n := Vector2(d.y, -d.x)
+		if n.y > 0 or (n.y == 0 and n.x > 0):
+			n = -n  # the upper side, whichever way the tube runs
+		up.append(pts[i] + n * 1.9)
+		down.append(pts[i] - n * 2.1)
+	ci.draw_polyline(down, P.TUBE_SHADE, 2.2, true)
+	ci.draw_polyline(up, P.TUBE_GLINT, 1.6, true)
 
 
 ## A tube leaves an output going right and enters an input from the left.
@@ -332,8 +353,13 @@ static func tube_path(a: Vector2, b: Vector2) -> PackedVector2Array:
 ## a wooden spout coming out.
 static func stub(ci: CanvasItem, port: Vector2, body: Vector2, spout: bool) -> void:
 	var pts := PackedVector2Array([body, port])
-	polyline_round(ci, pts, P.INK, 12 if spout else 13)
-	polyline_round(ci, pts, P.WOOD_DK if spout else P.GLASS, 7 if spout else 8)
+	polyline_round(ci, pts, P.INK, 12)
+	polyline_round(ci, pts, P.WOOD_DK if spout else P.GLASS, 7)
+	if spout:  # an ink collar where the glass tube slips over the spout
+		var d := (port - body).normalized()
+		line(ci, port - d * 4 + Vector2(-d.y, d.x) * 6, port - d * 4 - Vector2(-d.y, d.x) * 6, P.INK, 3)
+	else:
+		_glass_edges(ci, pts)
 
 
 static func port_in(ci: CanvasItem, p: Vector2, lit := false) -> void:
@@ -341,6 +367,7 @@ static func port_in(ci: CanvasItem, p: Vector2, lit := false) -> void:
 		disc(ci, p, 13, Color(P.HOOP, 0.35))
 	disc(ci, p, 7, P.GLASS)
 	ring(ci, p, 7, P.INK, 2.5)
+	ci.draw_arc(p, 4.4, PI * 1.05, PI * 1.6, 6, P.TUBE_GLINT, 1.6, true)  # the glass ring's highlight
 
 
 static func port_out(ci: CanvasItem, p: Vector2, lit := false) -> void:
@@ -359,13 +386,211 @@ static func _eyes(ci: CanvasItem, y: float, dx: float, blink: bool, look := Vect
 		if blink:
 			line(ci, Vector2(ex - 6, y), Vector2(ex + 6, y), P.INK, 2.5)
 			continue
-		shape(ci, ellipse(Vector2(ex, y - 1), 7, 8, 0, 20), Color.WHITE, P.INK, 2)
+		shape(ci, ellipse(Vector2(ex, y - 1), 7, 8, 0, 20), P.EYE_WHITE, P.INK, 2)
 		disc(ci, Vector2(ex, y - 1) + look, 3.6, P.INK)
 
 
 static func _blush(ci: CanvasItem, y: float, dx: float) -> void:
 	for bx in [-dx, dx]:
 		fill(ci, ellipse(Vector2(bx, y), 6, 3.5, 0, 16), P.BLUSH)
+
+
+## Any piece, drawn through its look (core/pieces.gd): the one way a piece
+## is drawn, on the bench, in the tray and in the journal, so a look can be
+## swapped (a theme) without touching who draws it. `more` gives what some
+## looks need: "turns" (the Shift Wheel's notches), "caught" (the catch pot's
+## drops), "ins" and "outs" (Split's ports).
+static func piece(ci: CanvasItem, look: String, c: Vector2, s: float, liq: int, age: float, t: float, seed := 0.0, more := {}) -> void:
+	match look:
+		"pot":
+			pot(ci, c + Vector2(0, -2) * s, s, age, t, seed)
+		"catch":
+			catch_pot(ci, c + Vector2(0, -4) * s, s, more.get("caught", []), age, t, seed)
+		"mix":
+			mixing_tub(ci, c, s, liq, age, t, seed)
+		"filter":
+			sieve(ci, c, s, liq, age, t, seed)
+		"invert":
+			flip_pan(ci, c, s, liq, age, t, seed)
+		"shift":
+			hamster(ci, c + Vector2(0, -2) * s, s * 1.1, liq, age, int(more.get("turns", 0)), t, seed)
+		"split":
+			split(ci, c, more.get("ins", [c + Vector2(-34, 0)]), more.get("outs", [c + Vector2(34, -17), c + Vector2(34, 17)]), liq, age)
+		_:
+			tub(ci, c, s, liq, age, "tub", t, seed)
+
+
+## The Mixing Tub: wide, round and jolly. Stubby arms stir a spoon round the
+## paint; its cheeks puff as the swirl turns into the new paint.
+static func mixing_tub(ci: CanvasItem, c: Vector2, s: float, liq: int, age: float, t: float, seed := 0.0) -> void:
+	var k := exp(-age * 6.0)
+	fill(ci, ellipse(c + Vector2(0, 36) * s, 54 * s, 7 * s, 0, 24), P.SHADOW)
+	set_xf(ci, c + Vector2(0, 32) * s, Vector2(s * (1 + 0.05 * k), s * (1 - 0.06 * k)))
+	var body := _body("bowl")
+	fill(ci, body, P.WOOD)
+	for stave in [-30, -10, 10, 30]:
+		ci.draw_polyline(quad(Vector2(stave, -55), Vector2(stave * 1.25, -24), Vector2(stave * 0.7, 2), 6), P.WOOD_DK, 1.5, true)
+	for hy in [-46.0, -14.0]:
+		var hw := 50.0 if hy < -30 else 46.0
+		ci.draw_polyline(quad(Vector2(-hw, hy), Vector2(0, hy + 7), Vector2(hw, hy), 10), P.HOOP, 5, true)
+	stroke(ci, body, P.INK, 3.5)
+	# Stubby arms out of its sides, reaching up to the spoon.
+	var a := t * (1.2 + 5 * k)
+	var grip := Vector2(cos(a) * 14 + 4, -66 + sin(a) * 3)
+	for side in [-1, 1]:  # stubby arms: short and thick, from the rim's ends
+		var shoulder := Vector2(side * 44, -50)
+		var hand := grip + Vector2(side * 9, 2)
+		var elbow := (shoulder + hand) / 2 + Vector2(side * 4, -5)
+		var arm := quad(shoulder, elbow, hand, 6)
+		arm.insert(0, shoulder)
+		ci.draw_polyline(arm, P.INK, 12, true)
+		ci.draw_polyline(arm, P.WOOD, 7.5, true)
+	var blink := fmod(t * 0.31 + seed, 1.0) < 0.035
+	_eyes(ci, -33, 16, blink)
+	var puff := 1.0 + 0.7 * k
+	for bx in [-31, 31]:
+		fill(ci, ellipse(Vector2(bx, -22), 7 * puff, 4.5 * puff, 0, 16), P.BLUSH)
+	# A wide smile that opens as it stirs.
+	var smile := arc(Vector2(0, -27), 10, 0.12 * PI, 0.88 * PI, 12)
+	if k > 0.15:
+		fill(ci, smile, P.INK)
+	ci.draw_polyline(smile, P.INK, 2.6, true)
+	var surface := ellipse(Vector2(0, -56), 47, 10)
+	fill(ci, surface, P.EMPTY_PAINT if liq < 0 else P.SIG[liq])
+	stroke(ci, surface, P.INK, 3.5)
+	if liq >= 0:
+		fill(ci, ellipse(Vector2(-18, -58), 12, 2.5, 0, 16), P.SHINE_SOFT)
+		var swirl := PackedVector2Array()
+		for i in 9:
+			var aa := a + i * 0.22
+			swirl.append(Vector2(cos(aa) * 30, -56 + sin(aa) * 6))
+		ci.draw_polyline(swirl, P.SWIRL if not P.is_dark(liq) else P.SWIRL_DARK, 2.5, true)
+		if liq == 0:
+			dashed(ci, closed(ellipse(Vector2(0, -56), 40, 6.5, 0, 30)), P.INK_SOFT, 1.5, 5, 4)
+		_surface_pips(ci, Vector2(0, -56), liq)
+	# The spoon: in the paint, its handle held by both hands.
+	var bowl := Vector2(cos(a) * 24, -56 + sin(a) * 5)
+	var knob := grip + Vector2(6, -22)
+	line(ci, bowl, knob, P.INK, 8)
+	line(ci, bowl, knob, P.WOOD_LT, 4)
+	shape(ci, ellipse(knob, 4.5, 4.5, 0, 12), P.WOOD_LT, P.INK, 2)
+	for side in [-1, 1]:
+		shape(ci, ellipse(grip + Vector2(side * 9, 2), 7, 6.5, 0, 14), P.WOOD, P.INK, 2.4)
+	reset_xf(ci)
+
+
+## The Sieve: an actual sieve, a round mesh in a wooden hoop on little feet,
+## with a fussy face on its hoop. It shakes when it fires and the grains it
+## held back hop on the mesh (in neutrals: only paint wears the signal hues).
+static func sieve(ci: CanvasItem, c: Vector2, s: float, liq: int, age: float, t: float, seed := 0.0) -> void:
+	var shake := sin(age * 38.0) * 5.0 * exp(-age * 4.0) if age < 1.0 else 0.0
+	fill(ci, ellipse(c + Vector2(0, 36) * s, 46 * s, 6 * s, 0, 24), P.SHADOW)
+	set_xf(ci, c + Vector2(shake * s, 32 * s), Vector2(s, s))
+	# Little feet under the mesh.
+	for fx in [-24, 0, 24]:
+		shape(ci, round_rect(Rect2(fx - 6, -6, 12, 10), 4), P.WOOD_DK, P.INK, 2.2)
+	# The mesh, a shallow dome below the hoop, then the hoop's band.
+	var dome := PackedVector2Array([Vector2(-42, -30)])
+	dome.append_array(quad(Vector2(-42, -30), Vector2(0, 12), Vector2(42, -30), 12))
+	fill(ci, dome, P.GLASS)
+	var mesh := Color(P.INK, 0.28)
+	for x in range(-36, 37, 8):
+		var depth := -30.0 + 21.0 * (1.0 - pow(x / 42.0, 2))
+		ci.draw_line(Vector2(x, -30), Vector2(x, depth), mesh, 1.2, true)
+	for yy in [-22.0, -14.0, -7.0]:
+		var w := 42.0 * sqrt(clampf(1.0 - (yy + 30.0) / 21.0, 0, 1))
+		ci.draw_line(Vector2(-w, yy), Vector2(w, yy), mesh, 1.2, true)
+	stroke(ci, dome, P.INK, 3)
+	var band := PackedVector2Array([Vector2(-48, -52), Vector2(48, -52), Vector2(46, -30)])
+	band.append_array(quad(Vector2(46, -30), Vector2(0, -24), Vector2(-46, -30), 10))
+	shape(ci, band, P.WOOD, P.INK, 3.5)
+	ci.draw_polyline(quad(Vector2(-47, -41), Vector2(0, -35), Vector2(47, -41), 10), P.WOOD_DK, 1.5, true)
+	# A fussy face on the band: heavy lids, a pursed mouth.
+	var blink := fmod(t * 0.31 + seed, 1.0) < 0.035
+	for ex in [-14, 14]:
+		if blink:
+			line(ci, Vector2(ex - 5, -40), Vector2(ex + 5, -40), P.INK, 2.2)
+			continue
+		shape(ci, ellipse(Vector2(ex, -40), 5.5, 5.5, 0, 16), P.EYE_WHITE, P.INK, 1.8)
+		disc(ci, Vector2(ex, -38.5), 2.6, P.INK)
+		fill(ci, arc(Vector2(ex, -40), 5.8, PI, TAU, 10), P.WOOD_LT)
+		line(ci, Vector2(ex - 6, -40), Vector2(ex + 6, -40), P.INK, 2)
+	stroke(ci, PackedVector2Array([Vector2(-5, -31), Vector2(-1.5, -32.5), Vector2(1.5, -31), Vector2(5, -32.5)]), P.INK, 2.2, false)
+	# The hoop's rim, the paint on the mesh inside it.
+	var rim := ellipse(Vector2(0, -52), 48, 11)
+	fill(ci, rim, P.EMPTY_PAINT if liq < 0 else P.SIG[liq])
+	for x in range(-36, 37, 9):
+		var h := 10.0 * sqrt(1.0 - pow(x / 48.0, 2))
+		ci.draw_line(Vector2(x, -52 - h), Vector2(x, -52 + h), mesh, 1.1, true)
+	stroke(ci, rim, P.INK, 3.5)
+	stroke(ci, ellipse(Vector2(0, -52), 44, 9), P.WOOD_DK, 1.5)
+	if liq >= 0:
+		if liq == 0:
+			dashed(ci, closed(ellipse(Vector2(0, -52), 38, 6, 0, 30)), P.INK_SOFT, 1.5, 5, 4)
+		_surface_pips(ci, Vector2(0, -52), liq)
+	if age < 0.8:
+		var fade := 1.0 - age / 0.8
+		for i in 3:
+			var gx: float = [-22.0, 2.0, 24.0][i] + shake * 1.4
+			var gy := -absf(sin(age * 24.0 + i * 1.7)) * 8.0 * fade
+			shape(ci, ellipse(Vector2(gx, gy - 62), 3.2, 2.4, 0.4 * i, 10), Color(P.HOOP, fade), Color(P.INK, fade), 1.4)
+	reset_xf(ci)
+
+
+## The Flip Pan: a dark iron frying pan with a wooden handle and a face. Its
+## paint sits in it like an omelette; when it fires it tosses it, the paint
+## it got showing in the air, and the omelette lands on its other side: the
+## opposite paint.
+static func flip_pan(ci: CanvasItem, c: Vector2, s: float, liq: int, age: float, t: float, seed := 0.0) -> void:
+	var tossing := age < 0.55
+	var u := age / 0.55 if tossing else 1.0
+	var tilt := -sin(u * PI) * 0.12 if tossing else 0.0
+	fill(ci, ellipse(c + Vector2(0, 36) * s, 48 * s, 6 * s, 0, 24), P.SHADOW)
+	set_xf(ci, c + Vector2(0, 32) * s, Vector2(s, s), tilt)
+	# The handle, behind the pan, out to the lower left.
+	line(ci, Vector2(-30, -24), Vector2(-66, -2), P.INK, 13)
+	line(ci, Vector2(-30, -24), Vector2(-66, -2), P.WOOD, 8)
+	disc(ci, Vector2(-62, -4.5), 2.2, P.WOOD_DK)
+	shape(ci, ellipse(Vector2(-34, -22), 6, 5, 0.5, 12), P.IRON_DK, P.INK, 2)
+	# The pan: its wall with a face, then the cooking face on top.
+	var wall := PackedVector2Array([Vector2(-48, -40), Vector2(48, -40), Vector2(42, -14)])
+	wall.append_array(quad(Vector2(42, -14), Vector2(0, -4), Vector2(-42, -14), 10))
+	shape(ci, wall, P.IRON, P.INK, 3.5)
+	ci.draw_polyline(quad(Vector2(-46, -33), Vector2(0, -26), Vector2(46, -33), 10), P.IRON_LT, 2, true)
+	var blink := fmod(t * 0.31 + seed, 1.0) < 0.035
+	for ex in [-15, 15]:
+		fill(ci, ellipse(Vector2(ex * 1.75, -17), 5, 3, 0, 12), P.BLUSH)
+		if blink:
+			line(ci, Vector2(ex - 6, -25), Vector2(ex + 6, -25), P.TAG, 2.4)
+			continue
+		shape(ci, ellipse(Vector2(ex, -25), 7, 7.5, 0, 16), P.EYE_WHITE, P.INK, 2)
+		disc(ci, Vector2(ex + 1, -23.5), 3.4, P.INK)
+	if tossing:  # an "o" while it tosses
+		stroke(ci, ellipse(Vector2(0, -14.5), 3, 3.5, 0, 12), P.TAG, 2)
+	else:
+		ci.draw_polyline(arc(Vector2(0, -18), 5, 0.2 * PI, 0.8 * PI, 8), P.TAG, 2, true)
+	var top := ellipse(Vector2(0, -40), 48, 11)
+	shape(ci, top, P.IRON_DK, P.INK, 3.5)
+	stroke(ci, ellipse(Vector2(0, -40), 43, 8.5), P.IRON_LT, 1.5)
+	# The omelette of paint: in the pan, or in the air, flipping.
+	if liq >= 0:
+		var shown := liq
+		var lift := 0.0
+		var flat := 1.0
+		if tossing:
+			lift = -sin(u * PI) * 46
+			flat = cos(u * TAU)
+			if u < 0.5:
+				shown = 7 ^ liq
+		var o := Vector2(0, -41 + lift)
+		var cake := ellipse(o, 30, maxf(0.8, 7 * absf(flat)), 0, 24)
+		fill(ci, cake, P.SIG[shown])
+		stroke(ci, cake, P.INK, 2.2)
+		if absf(flat) > 0.5:
+			if shown == 0:
+				dashed(ci, closed(ellipse(o, 24, 4.5, 0, 24)), P.INK_SOFT, 1.3, 4, 3)
+			_surface_pips(ci, o, shown)
+	reset_xf(ci)
 
 
 ## Wooden vat with a face. kind: "mix" (spoon, stirs), "invert" (flips like
@@ -415,14 +640,14 @@ static func tub(ci: CanvasItem, c: Vector2, s: float, liq: int, age: float, kind
 	if kind == "filter":
 		_sieve(ci, age)
 	if shown >= 0:
-		fill(ci, ellipse(Vector2(-16, -64), 12, 2.5, 0, 16), Color(1, 1, 1, 0.35))
+		fill(ci, ellipse(Vector2(-16, -64), 12, 2.5, 0, 16), P.SHINE_SOFT)
 		if kind == "mix":
 			var a := t * (1.5 + 5 * k)
 			var swirl := PackedVector2Array()
 			for i in 9:
 				var aa := a + i * 0.22
 				swirl.append(Vector2(cos(aa) * 28, -62 + sin(aa) * 5.5))
-			ci.draw_polyline(swirl, Color(1, 1, 1, 0.45) if not P.is_dark(shown) else Color(1, 1, 1, 0.3), 2.5, true)
+			ci.draw_polyline(swirl, P.SWIRL if not P.is_dark(shown) else P.SWIRL_DARK, 2.5, true)
 		if shown == 0:
 			dashed(ci, closed(ellipse(Vector2(0, -62), 38, 6, 0, 30)), P.INK_SOFT, 1.5, 5, 4)
 		_surface_pips(ci, Vector2(0, -62), shown)
@@ -477,7 +702,7 @@ static func pot(ci: CanvasItem, c: Vector2, s: float, age: float, t: float, seed
 	var rim := ellipse(Vector2(0, -62), 30, 7.5)
 	shape(ci, rim, P.CLAY_DK, P.INK, 3)
 	fill(ci, ellipse(Vector2(0, -61.5), 23, 4.5, 0, 24), P.WHITE_STITCH if paint == 0 else P.SIG[paint])
-	fill(ci, ellipse(Vector2(-9, -63), 7, 1.5, 0, 12), Color(1, 1, 1, 0.35))
+	fill(ci, ellipse(Vector2(-9, -63), 7, 1.5, 0, 12), P.SHINE_SOFT)
 	# Every pot wears a swatch tag with its paint's glyph dots, the red pot too.
 	line(ci, Vector2(-27, -52), Vector2(-37, -44), P.INK, 2)
 	swatch(ci, Vector2(-40, -38), 9, paint)
@@ -517,6 +742,10 @@ static func _body(part: String) -> PackedVector2Array:
 		"tub":
 			body = PackedVector2Array([Vector2(-46, -62), Vector2(46, -62), Vector2(38, 0)])
 			body.append_array(quad(Vector2(38, 0), Vector2(0, 6), Vector2(-38, 0), 10))
+		"bowl":  # the Mixing Tub: wide and round
+			body = PackedVector2Array([Vector2(-50, -56)])
+			body.append_array(cubic(Vector2(-50, -56), Vector2(-60, -22), Vector2(-40, 6), Vector2(0, 6), 14))
+			body.append_array(cubic(Vector2(0, 6), Vector2(40, 6), Vector2(60, -22), Vector2(50, -56), 14))
 		"pot":
 			body = _jar(26, 27, 31, 42)
 		"pot_belt":
@@ -601,22 +830,28 @@ static func hamster(ci: CanvasItem, c: Vector2, s: float, liq: int, age: float, 
 	for i in 3:
 		var a := angle - PI / 2 + PI / 3 + i * TAU / 3
 		ci.draw_line(hub, hub + Vector2(cos(a), sin(a)) * 26, P.HOOP, 2, true)
-	# Hamster running at the bottom of the wheel
+	# The hamster, running at the bottom of the wheel: a bigger one with
+	# ears, its four legs in a real run cycle while the wheel turns.
 	var run := age < 1.0
-	var bob := sin(t * 30) * 1.2 if run else sin(t * 3 + seed) * 0.5
-	var hb := Vector2(0, -16 + bob)
-	for leg in 2:
-		var ph := t * 30 + leg * PI
-		var dx: float = sin(ph) * 5 if run else (-4.0 + leg * 8)
-		line(ci, hb + Vector2(-3 + leg * 7, 5), hb + Vector2(-3 + leg * 7 + dx, 9), P.INK, 2.5)
-	shape(ci, ellipse(hb, 13, 8.5, 0, 24), P.FUR, P.INK, 2.2)
-	fill(ci, ellipse(hb + Vector2(-2, 3), 8, 4, 0, 16), Color(1, 1, 1, 0.5))
-	var head := hb + Vector2(10, -4)
-	shape(ci, ellipse(head, 7, 6.5, 0, 20), P.FUR, P.INK, 2.2)
-	shape(ci, ellipse(head + Vector2(-2, -6.5), 3, 3, 0, 12), P.FUR_DK, P.INK, 1.6)
-	disc(ci, head + Vector2(2.5, -1), 1.6, P.INK)
-	fill(ci, ellipse(head + Vector2(3, 2.5), 2.5, 1.5, 0, 10), P.BLUSH)
-	disc(ci, head + Vector2(6.8, 0.8), 1.2, P.INK)
+	var ph := t * 26.0
+	var bob := absf(sin(ph)) * -1.8 if run else sin(t * 3 + seed) * 0.5
+	var hb := Vector2(-1, -17 + bob)
+	for leg in 4:
+		var front := leg >= 2
+		var base := hb + Vector2((7.0 if front else -7.0) + (leg % 2) * 3.0, 7)
+		var swing: float = sin(ph + (0.0 if leg % 2 == 0 else PI) + (PI / 2 if front else 0.0)) * 5.0 if run else 0.0
+		line(ci, base, base + Vector2(swing, 5 - absf(swing) * 0.3), P.INK, 2.6)
+	shape(ci, ellipse(hb, 15.5, 10, 0, 24), P.FUR, P.INK, 2.2)
+	fill(ci, ellipse(hb + Vector2(-3, 4), 9, 4, 0, 16), P.SHINE_MID)
+	shape(ci, ellipse(hb + Vector2(-15, -1), 3, 2.5, 0, 10), P.FUR_DK, P.INK, 1.4)  # a stub of a tail
+	var head := hb + Vector2(13, -4)
+	for ear in [Vector2(-4, -7.5), Vector2(1.5, -8.5)]:
+		shape(ci, ellipse(head + ear, 3.4, 3.8, 0, 12), P.FUR_DK, P.INK, 1.6)
+		fill(ci, ellipse(head + ear + Vector2(0, 0.6), 1.6, 2, 0, 10), P.BLUSH)
+	shape(ci, ellipse(head, 8.5, 7.5, 0, 20), P.FUR, P.INK, 2.2)
+	disc(ci, head + Vector2(3, -1.5), 1.8, P.INK)
+	fill(ci, ellipse(head + Vector2(3.5, 2.8), 2.8, 1.6, 0, 10), P.BLUSH)
+	disc(ci, head + Vector2(8.2, 0.6), 1.4, P.INK)
 	# Hub cap shows the paint it just turned
 	if liq >= 0:
 		drop(ci, hub + Vector2(0, 2), 7, liq)
@@ -625,18 +860,23 @@ static func hamster(ci: CanvasItem, c: Vector2, s: float, liq: int, age: float, 
 	reset_xf(ci)
 
 
-## Plumbing junction: copies a drop into both of its tubes.
+## Split: plumbing, on purpose not a critter (it's free): a glass and brass
+## fitting matching the tubes, that copies a drop into both of its tubes.
 static func split(ci: CanvasItem, c: Vector2, ins: Array, outs: Array, liq: int, age: float) -> void:
 	for p in ins + outs:
-		polyline_round(ci, PackedVector2Array([c, p]), P.INK, 13)
+		polyline_round(ci, PackedVector2Array([c, p]), P.INK, 12)
 	for p in ins + outs:
-		polyline_round(ci, PackedVector2Array([c, p]), P.GLASS, 8)
+		polyline_round(ci, PackedVector2Array([c, p]), P.GLASS, 7)
+		_glass_edges(ci, PackedVector2Array([c, p]))
+		var d: Vector2 = (p - c).normalized()  # a brass ferrule where each tube meets the fitting
+		line(ci, c + d * 13 + Vector2(-d.y, d.x) * 6.5, c + d * 13 - Vector2(-d.y, d.x) * 6.5, P.BRASS_DK, 4)
 	var k := exp(-age * 6.0)
 	var r := 12.0 * (1 + 0.12 * k)
-	shape(ci, ellipse(c, r, r, 0, 24), P.HOOP, P.INK, 3)
+	shape(ci, ellipse(c, r, r, 0, 24), P.BRASS, P.INK, 3)
+	ci.draw_arc(c, r - 3, PI * 1.05, PI * 1.55, 8, P.TUBE_GLINT, 1.6, true)
 	for i in 6:
 		var a := i * TAU / 6
-		disc(ci, c + Vector2(cos(a), sin(a)) * (r - 3), 1.3, P.INK)
+		disc(ci, c + Vector2(cos(a), sin(a)) * (r - 3), 1.3, P.BRASS_DK)
 	if liq >= 0 and age < 1:
 		disc(ci, c, 5.5, P.SIG[liq])
 		ring(ci, c, 5.5, P.INK, 1.5)
@@ -652,7 +892,7 @@ static func split(ci: CanvasItem, c: Vector2, ins: Array, outs: Array, liq: int,
 static func sticker_mark(ci: CanvasItem, c: Vector2) -> void:
 	fill(ci, round_rect(Rect2(c + Vector2(-11, -7), Vector2(26, 18)), 5), P.SHADOW)
 	set_xf(ci, c, Vector2.ONE, -0.12)
-	shape(ci, round_rect(Rect2(-13, -9, 26, 18), 5), Color.WHITE, P.INK, 1.8)
+	shape(ci, round_rect(Rect2(-13, -9, 26, 18), 5), P.STICKER, P.INK, 1.8)
 	fill(ci, round_rect(Rect2(-10, -6, 20, 12), 3), P.TAG)
 	for i in 6:
 		var a := i * TAU / 6
@@ -682,7 +922,7 @@ static func sticker(ci: CanvasItem, c: Vector2, s: float, name: String, age: flo
 	fill(ci, round_rect(Rect2(c + Vector2(-w / 2 + 3, -26 + 5) * s, Vector2(w, 52) * s), 12 * s), P.SHADOW)
 	set_xf(ci, c, Vector2(s * (1 + 0.04 * k), s * (1 - 0.04 * k)), rot)
 	var outer := round_rect(Rect2(-w / 2, -26, w, 52), 12)
-	shape(ci, outer, Color.WHITE, P.INK, 2.5)
+	shape(ci, outer, P.STICKER, P.INK, 2.5)
 	var inner := round_rect(Rect2(-w / 2 + 5, -21, w - 10, 42), 8)
 	fill(ci, inner, P.TAG)
 	stroke(ci, inner, P.WARP, 1.5)
@@ -776,7 +1016,7 @@ static func loom(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: Pack
 			var chip := round_rect(cell.grow(-cs * 0.3), cs * 0.12, 2)
 			if target[i] == 0:
 				fill(ci, chip, Color(P.WHITE_STITCH, 0.85))
-				stroke(ci, chip, Color("#DDD3C1"), 1)
+				stroke(ci, chip, P.CHIP_EDGE, 1)
 			else:
 				fill(ci, chip, Color(P.SIG[target[i]], 0.35))
 	# The shuttle's weft trails back to the cloth's edge, under the stitches it
@@ -789,8 +1029,8 @@ static func loom(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: Pack
 		var c: int = woven[i]
 		var sq := round_rect(cell.grow(-1), cs * 0.25, 3)
 		fill(ci, sq, P.WHITE_STITCH if c == 0 else P.SIG[c])
-		stroke(ci, sq, Color("#DDD3C1") if c == 0 else Color(0.16, 0.12, 0.1, 0.22), 1)
-		ci.draw_line(cell.position + Vector2(cs * 0.25, cs * 0.3), cell.position + Vector2(cs * 0.5, cs * 0.25), Color(1, 1, 1, 0.35), maxf(1, cs * 0.075), true)
+		stroke(ci, sq, P.CHIP_EDGE if c == 0 else P.STITCH_EDGE, 1)
+		ci.draw_line(cell.position + Vector2(cs * 0.25, cs * 0.3), cell.position + Vector2(cs * 0.5, cs * 0.25), P.SHINE_SOFT, maxf(1, cs * 0.075), true)
 	var post_h := cloth.size.y + 32
 	for px in [cloth.position.x - 26, cloth.end.x + 12]:
 		shape(ci, round_rect(Rect2(px, cloth.position.y - 20, 14, post_h), 5), P.WOOD, P.INK, 2.5)
@@ -873,7 +1113,7 @@ static func design(ci: CanvasItem, r: Rect2, cols: int, target: PackedByteArray)
 	# pin
 	var pin := Vector2(box.get_center().x, box.position.y + 2)
 	shape(ci, ellipse(pin, 6, 6, 0, 16), P.HOOP, P.INK, 2)
-	disc(ci, pin + Vector2(-1.5, -1.5), 1.6, Color(1, 1, 1, 0.6))
+	disc(ci, pin + Vector2(-1.5, -1.5), 1.6, P.PIN_GLINT)
 
 
 ## A woven cloth hung from a wooden rod, as big as fits in r (centred).
@@ -964,7 +1204,7 @@ static func star(ci: CanvasItem, c: Vector2, r: float, filled: bool) -> void:
 	var pts := star_pts(c, r)
 	if filled:
 		shape(ci, pts, P.WOOD, P.INK, maxf(2, r * 0.12))
-		fill(ci, ellipse(c + Vector2(-r * 0.2, -r * 0.25), r * 0.14, r * 0.26, -0.6, 12), Color(1, 1, 1, 0.5))
+		fill(ci, ellipse(c + Vector2(-r * 0.2, -r * 0.25), r * 0.14, r * 0.26, -0.6, 12), P.SHINE_MID)
 	else:
 		shape(ci, pts, P.PAPER_DK, Color(P.INK, 0.45), maxf(1.5, r * 0.1))
 

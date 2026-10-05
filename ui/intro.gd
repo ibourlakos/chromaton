@@ -12,15 +12,19 @@ const P = preload("res://ui/palette.gd")
 const K = preload("res://ui/draw_kit.gd")
 const ToyButton = preload("res://ui/toy_button.gd")
 const Keys = preload("res://ui/keys.gd")
+const ProfilePicker = preload("res://ui/profile_picker.gd")
 
 signal done
 signal fresh
 signal keep
+signal chose(id: int)  # a profile picked from "Who's playing?"
 
 const DESIGN := Vector2(1280, 800)
 const BUTTON := Vector2(220, 60)
 
 var stale := false
+var players: Array = []  # with two or more profiles: their badges, "Who's playing?"
+var current := 1  # the profile that played last
 var card := Rect2()
 var t := 0.0
 
@@ -29,6 +33,19 @@ func _ready() -> void:
 	size = DESIGN
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	card = Rect2(DESIGN.x / 2 - 360, 205, 720, 370)
+	if not players.is_empty():
+		# "Who's playing?": a badge per profile, a tap goes on as that player.
+		card = Rect2(DESIGN.x / 2 - 380, 130, 760, 520)
+		var total: float = players.size() * (ProfilePicker.BADGE.x + 16) - 16
+		for i in players.size():
+			var e: Dictionary = players[i]
+			var id: int = e["id"]
+			var b = ProfilePicker.badge_button(e, id == current)
+			b.scale = Vector2.ONE * minf(1.0, 700.0 / total)
+			b.position = Vector2(DESIGN.x / 2 - total * b.scale.x / 2 + i * (ProfilePicker.BADGE.x + 16) * b.scale.x, card.position.y + 330)
+			b.pressed.connect(func(): chose.emit(id))
+			add_child(b)
+		return
 	var y := card.end.y - BUTTON.y - 34
 	var buttons := [["next", "Let's paint", done, Keys.label("continue")]]
 	if stale:
@@ -62,14 +79,17 @@ func _label_painter(icon: String, label: String, inked: bool) -> Callable:
 
 ## Without a question to answer, a tap anywhere goes on.
 func _gui_input(event: InputEvent) -> void:
-	if not stale and event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+	if not stale and players.is_empty() and event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 		done.emit()
 		accept_event()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and Keys.action(event, "Levels") == "continue":
-		(fresh if stale else done).emit()
+		if not players.is_empty():
+			chose.emit(current)  # the one who played last
+		else:
+			(fresh if stale else done).emit()
 		Keys.handled(self)
 
 
@@ -82,7 +102,7 @@ func _draw() -> void:
 	K.fill(self, K.round_rect(Rect2(card.position + Vector2(5, 8), card.size), 22), P.SHADOW)
 	K.shape(self, K.round_rect(card, 22), P.TAG, P.INK, 3)
 	# An empty mix tub peeks over the card's corner, stirring now and then.
-	K.tub(self, card.position + Vector2(72, -10), 0.7, -1, fmod(t, 2.4), "mix", t, 0.4)
+	K.piece(self, "mix", card.position + Vector2(72, -10), 0.7, -1, fmod(t, 2.4), t, 0.4)
 	var cx := card.get_center().x
 	var title := "Welcome to an early build!"
 	var lines := [
@@ -100,3 +120,5 @@ func _draw() -> void:
 	var font := P.ui(700)
 	for i in lines.size():
 		K.text(self, font, Vector2(cx, card.position.y + 140 + i * 36), lines[i], 21, P.INK_SOFT if i == 2 else P.INK)
+	if not players.is_empty():
+		K.text(self, P.display(600), Vector2(cx, card.position.y + 300), "Who's playing?", 28, P.INK)

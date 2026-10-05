@@ -60,6 +60,7 @@ func _initialize() -> void:
 	test_speeds(by_id["parrot"])
 	test_space_on_panel()
 	test_guides(levels)
+	test_profile_screens()
 	test_round_rect()
 	test_level_select(levels)
 	test_intro()
@@ -1037,3 +1038,36 @@ func test_guides(levels: Array) -> void:
 	wb.note = null
 	check(not wb._guide().is_empty(), "the \"?\" brings it back")
 	wb.free()
+
+
+## With two or more profiles the intro asks who's playing (a tap on a badge
+## goes on as that player); the picker switches or adds one.
+func test_profile_screens() -> void:
+	var intro = Intro.new()
+	intro.players = [{"id": 1, "badge": "mix", "name": ""}, {"id": 2, "badge": "shift", "name": "andrew"}]
+	intro.current = 2
+	var chosen := []
+	intro.chose.connect(func(id): chosen.append(id))
+	intro._ready()
+	var badges: Array = intro.get_children().filter(func(c): return c is Control and c.custom_minimum_size == Vector2(132, 150))
+	check(badges.size() == 2, "a badge per player")
+	badges[0].pressed.emit()
+	key(intro, KEY_ENTER)
+	check(chosen == [1, 2], "a tap picks a player, Enter the one who played last")
+	intro.free()
+	var Profiles = load("res://core/profiles.gd")
+	var roster = Profiles.new()
+	roster.list = [{"id": 1, "badge": "mix", "name": ""}]
+	var pk = load("res://ui/profile_picker.gd").new()
+	pk.setup(roster)
+	var got := []
+	pk.added.connect(func(b, n): got.append([b, n]))
+	pk._ready()
+	pk.adding = true
+	pk.badge = "invert"
+	pk._build()
+	check(pk.name_edit != null and pk.name_edit.placeholder_text == "Flip Pan", "a new player's name defaults to their critter's")
+	pk.name_edit.text = "mia"
+	pk._make()
+	check(got == [["invert", "mia"]], "the check makes the player")
+	pk.free()

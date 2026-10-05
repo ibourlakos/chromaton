@@ -74,7 +74,7 @@ func _draw() -> void:
 				_label(at[color] + Vector2(0, DROP + 12), name)
 	var pin := Vector2(SIZE.x / 2, 2)
 	K.shape(self, K.ellipse(pin, 6, 6, 0, 16), P.HOOP, P.INK, 2)
-	K.disc(self, pin + Vector2(-1.5, -1.5), 1.6, Color(1, 1, 1, 0.6))
+	K.disc(self, pin + Vector2(-1.5, -1.5), 1.6, P.PIN_GLINT)
 
 
 ## Small ink arrows outside the triangle, one along each edge, turning the

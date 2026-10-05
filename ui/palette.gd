@@ -40,6 +40,30 @@ const FUR_DK := Color("#C9AE8A")
 const BLUSH := Color(0.84, 0.59, 0.5, 0.45)
 const SHADOW := Color(0.227, 0.188, 0.165, 0.14)
 const VEIL := Color(0.925, 0.898, 0.839, 0.82)
+## Highlights and glints: paper white, a little transparent.
+const SHINE := Color(1, 1, 1, 0.55)  # a drop's glint
+const SHINE_MID := Color(1, 1, 1, 0.5)
+const SHINE_SOFT := Color(1, 1, 1, 0.35)  # on a paint surface
+const STITCH_SHINE := Color(1, 1, 1, 0.3)  # a woven stitch's sheen
+const PIN_GLINT := Color(1, 1, 1, 0.6)
+const SWIRL := Color(1, 1, 1, 0.45)  # the Mixing Tub's swirl on light paint
+const SWIRL_DARK := Color(1, 1, 1, 0.3)  # and on dark paint
+const EYE_WHITE := Color(1, 1, 1)
+const STICKER := Color(1, 1, 1)  # an invention sticker's edge
+const CHIP_EDGE := Color("#DDD3C1")  # an unwoven slot's chip, a white stitch's edge
+const STITCH_EDGE := Color(0.16, 0.12, 0.1, 0.22)
+const STITCH_EDGE_DARK := Color(0.16, 0.12, 0.1, 0.4)
+## The critters' materials beyond wood and clay (DESIGN.md 7.2): the Flip
+## Pan's iron and Split's brass, both muted so no part reads as paint.
+const IRON := Color("#4B4743")
+const IRON_DK := Color("#34312E")
+const IRON_LT := Color("#6E6861")
+const BRASS := Color("#B2A27E")
+const BRASS_DK := Color("#8A7C5E")
+## Glassier tubes: a thin glint along a tube's upper inner edge and a faint
+## shade along its lower one, so a drop sits inside.
+const TUBE_GLINT := Color(1, 1, 1, 0.62)
+const TUBE_SHADE := Color(0.549, 0.478, 0.408, 0.28)
 ## The faint paper tint behind a card's drops when it looks back after a
 ## wrong stitch.
 const LOOK_BACK := Color(0.886, 0.851, 0.776, 0.75)
