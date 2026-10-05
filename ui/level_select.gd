@@ -188,7 +188,12 @@ func _paint_tag(b: Control, r: Rect2, down: bool, i: int, open: bool) -> void:
 	K.shape(b, K.round_rect(body, 14), P.TAG if open else P.PAPER_DK, P.INK if open else Color(P.INK, 0.35), 2.5)
 	var ink := P.INK if open else Color(P.INK, 0.4)
 	_stamp(b, body.position + Vector2(30, 29), level.number, open)
-	K.text(b, P.display(600), body.position + Vector2(57, 27), level.name, 19, ink, HORIZONTAL_ALIGNMENT_LEFT)
+	# The primary title, smaller where it would run into the invention's icon.
+	var room := body.size.x - 57 - (56.0 if not level.invention.is_empty() else 14.0)
+	var name_size := 19
+	while name_size > 13 and P.display(600).get_string_size(level.name, HORIZONTAL_ALIGNMENT_LEFT, -1, name_size).x > room:
+		name_size -= 1
+	K.text(b, P.display(600), body.position + Vector2(57, 27), level.name, name_size, ink, HORIZONTAL_ALIGNMENT_LEFT)
 	if not level.invention.is_empty():
 		var paint := Invention.paint_of(level.invention)
 		if paint >= 0:

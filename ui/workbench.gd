@@ -39,6 +39,7 @@ const Journal = preload("res://ui/journal.gd")
 const JournalNews = preload("res://ui/journal_news.gd")
 const Words = preload("res://core/words.gd")
 const LevelNote = preload("res://ui/level_note.gd")
+const Options = preload("res://ui/options.gd")
 const PaintCard = preload("res://ui/paint_card.gd")
 const Paint = preload("res://core/paint.gd")
 const Pieces = preload("res://core/pieces.gd")
@@ -66,8 +67,8 @@ const COLS := 11
 const ROWS := 7
 const CARD_ROWS := {1: [3], 2: [1, 5], 3: [0, 3, 6]}
 const SIDE := Rect2(980, 74, 288, 578)  # design card, loom and status
-const TITLE_HIT := Rect2(76, 2, 710, 60)  # tapping the title brings the level's note back
-const LINE_HOME := Vector2(80, 47)  # left middle of the line under the title
+const TITLE_X := 132.0  # the title starts right of Back and the Options gear
+const TITLE_END := 716.0  # and ends before the Paints button
 const PORT_DX := 34.0
 const PORT_DY := 17.0
 const PORT_HIT := 20.0
@@ -115,6 +116,9 @@ var outcome := ""  # "", "solved", "wrong", "stalled", "unused", "not_general"
 var panel: Control
 var note: Control  # the level's note while it is up (see show_note)
 var journal: Control  # the journal, open over the bench (peek)
+var options_view: Control  # Options, open over the bench (the gear)
+var hint_glow := false  # after a failed run, until the hint panel opens or a run starts
+var _glowed_for := -1  # the bench_gen whose failure last lit the "?"
 var news: Control  # "New in your journal", after the success panel
 var levels: Array = []  # the campaign, for the journal
 var fresh := []  # [piece kind, input colors] first seen here, not yet in the news
@@ -192,8 +196,9 @@ func load_machine(m) -> void:
 func show_note() -> void:
 	if note != null:
 		return
+	hint_glow = false
 	note = LevelNote.new()
-	note.setup(level, LINE_HOME)
+	note.setup(level, _title_parts()["badge_rect"])
 	note.landed.connect(func(): note = null)
 	add_child(note)
 
@@ -230,6 +235,13 @@ func _ready() -> void:
 	back.key = Keys.label("back")
 	back.pressed.connect(func(): exit_requested.emit())
 	add_child(back)
+	# The Options gear, right of Back (Back stays the upper-leftmost control),
+	# away from the run controls so a reach for Undo never lands on it.
+	var gear = ToyButton.make("options", Vector2(46, 46))
+	gear.position = Vector2(74, 9)
+	gear.key = Keys.label("bench_options")
+	gear.pressed.connect(open_options)
+	add_child(gear)
 	var x := DESIGN.x - 16
 	for i in range(2, -1, -1):
 		var b = ToyButton.make(SPEEDS[i], Vector2(46, 46))
@@ -518,6 +530,8 @@ func _toggle_run() -> void:
 	if sim.status != Simulator.Status.RUNNING:
 		_rebuild()
 	running = not running
+	if running:
+		hint_glow = false
 	_sync_buttons()
 
 
@@ -586,7 +600,16 @@ func _process(delta: float) -> void:
 			_on_tick_shown()
 	elif running:
 		_do_step()
+	_update_glow()
 	_refresh_layers()
+
+
+## After a failed run the title's "?" glows softly, once per run, until the
+## hint panel opens or a run starts.
+func _update_glow() -> void:
+	if outcome in ["wrong", "stalled", "unused", "not_general"] and _glowed_for != bench_gen:
+		_glowed_for = bench_gen
+		hint_glow = true
 
 
 func _on_tick_shown() -> void:
@@ -691,6 +714,27 @@ func open_journal(focus := "", tab := "") -> void:
 	add_child(journal)
 
 
+## Opens Options over the bench (the gear, or its key), as peek opens the
+## journal: the run pauses, a carried piece drops back, and Back closes it
+## to the bench as it was. Not while the success panel or "New in your
+## journal" is up.
+func open_options() -> void:
+	if options_view != null or journal != null or panel != null or news != null:
+		return
+	running = false
+	carrying = -1
+	_show_fan(false)
+	_sync_buttons()
+	options_view = Options.new()
+	options_view.overlay = true
+	options_view.back.connect(func():
+		options_view.queue_free()
+		options_view = null
+		if still != null:  # the grid may have been turned on or off
+			still.queue_redraw())
+	add_child(options_view)
+
+
 ## The journal by the trash: the page of what is selected or picked up.
 func _peek() -> void:
 	var focus := ""
@@ -737,7 +781,7 @@ func _notification(what: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed) or panel != null or note != null or journal != null or news != null:
+	if not (event is InputEventKey and event.pressed) or panel != null or note != null or journal != null or news != null or options_view != null:
 		return
 	var act := Keys.action(event, "Workbench")
 	if event.echo and not act in REPEATING:
@@ -780,6 +824,8 @@ func _key(act: String, event: InputEventKey) -> bool:
 		"delete":
 			if editing:
 				_delete_selected()
+		"bench_options":
+			open_options()
 		"paints":
 			_toggle_paints()
 		"peek":
@@ -846,7 +892,7 @@ func _press(pos: Vector2) -> void:
 	drag_pos = pos
 	drag_moved = false
 	drag = ""
-	if TITLE_HIT.has_point(pos):
+	if _title_parts()["hit"].has_point(pos):
 		show_note()
 		return
 	if _has_selection() and pos.distance_to(_delete_button_pos()) < 26:
@@ -1097,6 +1143,7 @@ func _refresh_layers() -> void:
 
 
 func _draw() -> void:
+	_draw_hint_glow()
 	_draw_run_halo()
 	_draw_drops()
 	_draw_delete_button()
@@ -1110,6 +1157,16 @@ func _draw() -> void:
 		_draw_piece_kind(tray[carrying]["kind"], hover_pos, -1)
 	if drag == "move":
 		_draw_piece(drag_node, node_center(drag_node))
+
+
+## A soft breathing halo round the title's "?" after a failed run.
+func _draw_hint_glow() -> void:
+	if not hint_glow or note != null:
+		return
+	var badge: Vector2 = _title_parts()["badge"]
+	var pulse := 0.5 + 0.5 * sin(clock * 3.2)
+	for k in 3:
+		K.disc(self, badge, 13.0 + k * 4.0 + pulse * 3.0, Color(P.HOOP, (0.22 - k * 0.06) * (0.6 + 0.4 * pulse)))
 
 
 ## Locked tray slots wear a lock where the key cap would sit; a tapped one
@@ -1212,18 +1269,60 @@ func _draw_frame(ci: CanvasItem) -> void:
 	# Top bar
 	K.fill(ci, PackedVector2Array([Vector2(0, 0), Vector2(DESIGN.x, 0), Vector2(DESIGN.x, TOP_H), Vector2(0, TOP_H)]), Color(P.PAPER_DK, 0.6))
 	ci.draw_line(Vector2(0, TOP_H), Vector2(DESIGN.x, TOP_H), Color(P.INK, 0.15), 2)
-	var index := str(level.number)
-	var title := "%s · %s" % [index, level.name]
-	K.text(ci, P.display(600), Vector2(80, 22), title, 24, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-	# A "?" by the title: tapping the title brings the level's note back.
-	var badge := Vector2(80 + P.display(600).get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 24).x + 18, 22)
-	K.shape(ci, K.ellipse(badge, 10, 10, 0, 20), P.TAG, Color(P.INK, 0.6), 1.5)
-	K.text(ci, P.ui(800), badge + Vector2(0, 0.5), "?", 14, P.INK)
-	if note == null:  # while the note is up, its line is on it
-		if LevelNote.line_size(level) == 15:
-			K.text(ci, P.ui(700), LINE_HOME, LevelNote.line(level), 15, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-		else:  # two sentences: two smaller lines, clear of the run controls
-			ci.draw_multiline_string(P.ui(700), LINE_HOME + Vector2(0, -1), LevelNote.line(level), HORIZONTAL_ALIGNMENT_LEFT, LevelNote.LINE_WIDTH, 12, 2, P.INK)
+	# The title: the level's number, what the cloth is, then what the machine
+	# is (on an invention level the piece it becomes, with a sticker mark),
+	# then the "?" that brings the hint panel back.
+	var parts := _title_parts()
+	var font := P.display(600)
+	var size: int = parts["size"]
+	var y := TOP_H / 2
+	K.text(ci, font, Vector2(parts["number_x"], y), str(level.number), size, Color(P.WOOD_DK, 0.95), HORIZONTAL_ALIGNMENT_LEFT)
+	K.text(ci, font, Vector2(parts["cloth_x"], y), level.cloth_phrase, size, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+	if level.machine_phrase != "":
+		K.text(ci, font, Vector2(parts["dot_x"], y), "·", size, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+		K.text(ci, font, Vector2(parts["machine_x"], y), level.machine_phrase, size, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+	if parts["mark_x"] > 0:
+		K.sticker_mark(ci, Vector2(parts["mark_x"], y))
+	var badge: Vector2 = parts["badge"]
+	K.shape(ci, K.ellipse(badge, 11, 11, 0, 20), P.TAG, Color(P.INK, 0.6), 1.5)
+	K.text(ci, P.ui(800), badge + Vector2(0, 0.5), "?", 15, P.INK)
+
+
+## Where the title's parts sit: {"size", "number_x", "cloth_x", "dot_x",
+## "machine_x", "mark_x" (0 without a mark), "badge", "badge_rect", "hit"}.
+## It shrinks to fit between the gear and the Paints button.
+func _title_parts() -> Dictionary:
+	var font := P.display(600)
+	var mark: bool = not level.invention.is_empty() and level.machine_phrase != ""
+	var size := 24
+	var w := func(s: String, sz: int) -> float: return font.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x
+	var total := 0.0
+	while true:
+		var gap := size * 0.45
+		total = w.call(str(level.number), size) + gap + w.call(level.cloth_phrase, size)
+		if level.machine_phrase != "":
+			total += gap + w.call("·", size) + gap + w.call(level.machine_phrase, size)
+		total += (30.0 if mark else 0.0) + 34.0
+		if TITLE_X + total <= TITLE_END or size <= 15:
+			break
+		size -= 1
+	var gap := size * 0.45
+	var out := {"size": size, "number_x": TITLE_X}
+	var x: float = TITLE_X + w.call(str(level.number), size) + gap
+	out["cloth_x"] = x
+	x += w.call(level.cloth_phrase, size)
+	if level.machine_phrase != "":
+		out["dot_x"] = x + gap
+		out["machine_x"] = x + gap + w.call("·", size) + gap
+		x = out["machine_x"] + w.call(level.machine_phrase, size)
+	out["mark_x"] = x + 18.0 if mark else 0.0
+	if mark:
+		x += 30.0
+	var badge := Vector2(x + 22, TOP_H / 2)
+	out["badge"] = badge
+	out["badge_rect"] = Rect2(badge - Vector2(11, 11), Vector2(22, 22))
+	out["hit"] = Rect2(TITLE_X - 6, 2, badge.x + 16 - TITLE_X, TOP_H - 4)
+	return out
 
 
 ## The tray's shelf: its slots (a picked-up piece's slot is lit until it is
@@ -1263,7 +1362,7 @@ func _draw_tray() -> void:
 			label = "Pots"
 		elif kind.begins_with("inv:"):
 			var inv: Dictionary = inventions[kind.substr(4)]
-			label = "%d pieces" % int(inv["cost"])
+			label = ("%d piece" if int(inv["cost"]) == 1 else "%d pieces") % int(inv["cost"])
 		else:
 			label = Pieces.display_name(kind) + ("  free" if Pieces.TABLE[kind]["cost"] == 0 else "")
 		_draw_piece_kind(kind, r.get_center() + Vector2(0, -8), -1, 0.82, ci, 0.0)

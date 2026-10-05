@@ -13,6 +13,7 @@
 ##                               by their reference machines (default 12)
 ##   --piece=<kind>, --word=<n>  the journal's piece page, or picked word
 ##   --peek[=<kind>]             a level with the journal open over it
+##   --options                   a level with Options open over it (the gear)
 ##   --news                      with --finish: "New in your journal" next
 ##   --ticks=<n>                 ticks to run before the screenshot
 ##                               (default: one per stitch)
@@ -294,6 +295,8 @@ func _screenshot(args: Dictionary) -> void:
 				screen.fast_forward(int(args.get("ticks", levels[i].size())), float(args.get("phase", 0.5)))
 			if args.has("fan"):  # the pot slot's pots fanned out
 				screen._show_fan(true)
+			if args.has("options"):  # Options over the bench (the gear)
+				screen.open_options()
 			if args.has("peek"):  # the journal over the bench, at a piece's page
 				screen.open_journal(str(args["peek"]) if str(args["peek"]) != "true" else "")
 	await _snap(path, what)

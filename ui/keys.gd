@@ -36,6 +36,7 @@ const ACTIONS := [
 	["delete", "Workbench", "Delete selected", [KEY_DELETE, KEY_BACKSPACE]],
 	["paints", "Workbench", "Paints", [KEY_P]],
 	["peek", "Workbench", "Journal page", [KEY_J]],
+	["bench_options", "Workbench", "Options", [KEY_O]],
 	["piece_1", "Workbench", "Tray piece 1", [KEY_1]],
 	["piece_2", "Workbench", "Tray piece 2", [KEY_2]],
 	["piece_3", "Workbench", "Tray piece 3", [KEY_3]],

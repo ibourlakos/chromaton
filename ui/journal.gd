@@ -381,16 +381,16 @@ func _locked(r: Rect2, w: Dictionary) -> void:
 ## Words one under another: picture, word, Gameplay text.
 func _draw_article(list: Array, r: Rect2) -> void:
 	var y := r.position.y
-	var gap := 18.0
+	var gap := 12.0
 	for w in list:
 		if not Words.is_unlocked(w, progress):
 			_locked(Rect2(r.position.x, y, r.size.x, 70), w)
 			y += 70 + gap
 			continue
-		picture(self, str(w["id"]), Vector2(r.position.x + 50, y + 44), 1.0, t, levels)
+		picture(self, str(w["id"]), Vector2(r.position.x + 50, y + 40), 1.0, t, levels)
 		K.text(self, P.display(600), Vector2(r.position.x + 116, y + 14), w["word"], 26, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 		var h := _para(Vector2(r.position.x + 116, y + 34), r.size.x - 116, w["text"], 17)
-		y += maxf(96, 34 + h) + gap
+		y += maxf(80, 34 + h) + gap
 
 
 # --- Pieces ------------------------------------------------------------------
@@ -540,7 +540,7 @@ func _draw_inventions() -> void:
 		K.sticker(self, r.position + Vector2(r.size.x / 2, 66), 1.5 * s, inv["name"], 99, t, k * 0.7)
 		var y := r.position.y + 142
 		K.icon(self, "pieces", Vector2(r.position.x + 40, y), 1.2, P.INK)
-		K.text(self, P.ui(800), Vector2(r.position.x + 58, y), "%d pieces" % int(inv["cost"]), 20, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+		K.text(self, P.ui(800), Vector2(r.position.x + 58, y), ("%d piece" if int(inv["cost"]) == 1 else "%d pieces") % int(inv["cost"]), 20, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 		var x := r.position.x + 40
 		var counts: Dictionary = inv.get("counts", {})
 		for kind in counts:

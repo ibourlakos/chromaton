@@ -50,6 +50,8 @@ func _initialize() -> void:
 	test_not_general(by_id["either_not_both"])
 	test_unused_card(by_id["third_color"])
 	test_note(by_id["green"])
+	test_title(levels)
+	test_options_over_bench(by_id["third_color"])
 	test_round_rect()
 	test_level_select(levels)
 	test_intro()
@@ -388,11 +390,14 @@ func test_note(level) -> void:
 	for n in 10:
 		note._process(0.1)
 	check(wb.note == null and not wb.running, "a key lands the note without running the machine")
-	tap(wb, wb.TITLE_HIT.get_center())
+	tap(wb, wb._title_parts()["hit"].get_center())
 	check(wb.note != null, "tapping the title brings the note back")
 	var e := InputEventMouseButton.new()
 	e.button_index = MOUSE_BUTTON_LEFT
 	e.pressed = true
+	wb.note._gui_input(e)
+	e = e.duplicate()
+	e.pressed = false
 	wb.note._gui_input(e)
 	wb.note._process(1.0)
 	check(wb.note == null, "a tap lands it")
@@ -761,3 +766,59 @@ func test_pot_fan(levels: Array, by_id: Dictionary) -> void:
 	var lone = open(by_id["neither_twice"], p)
 	check(not lone.tray.any(func(e): return e.get("pots", false) or e.get("fan", false)), "a level of named pieces offers no pots")
 	lone.queue_free()
+
+
+## The top bar shows both title phrases (the sticker mark on an invention
+## level) between the Options gear and the Paints button on every level; the
+## "?" glows after a failed run until the hint panel opens or a run starts.
+func test_title(levels: Array) -> void:
+	for level in levels:
+		var wb = open(level, Progress.new())
+		var parts: Dictionary = wb._title_parts()
+		check(parts["hit"].end.x <= wb.TITLE_END + 20 and parts["size"] >= 16, "%s: the title fits the top bar (size %d)" % [level.id, parts["size"]])
+		check((parts["mark_x"] > 0) == (not level.invention.is_empty() and level.machine_phrase != ""), "%s: the sticker mark only on an invention level" % level.id)
+		wb.queue_free()
+	var level = levels.filter(func(l): return l.id == "third_color")[0]
+	var wb = open(level, Progress.new())
+	wb.load_machine(level.machine_from_spec({"pieces": [{"id": "m", "kind": "mix", "x": 4, "y": 3}], "tubes": [["card0", "m.0"], ["card1", "m.1"], ["m", "loom"]]}))
+	wb._set_speed(2)
+	wb._toggle_run()
+	var frames := 0
+	while wb.outcome == "" and frames < 2000:
+		wb._process(0.05)
+		frames += 1
+	check(wb.outcome == "wrong" and wb.hint_glow, "after a failed run the \"?\" glows")
+	wb._toggle_run()
+	check(not wb.hint_glow, "running again puts it out")
+	frames = 0
+	while (wb.outcome == "" or wb.running) and frames < 2000:
+		wb._process(0.05)
+		frames += 1
+	check(wb.hint_glow, "and the next failure lights it again")
+	wb.show_note()
+	check(not wb.hint_glow, "opening the hint panel puts it out")
+	wb.queue_free()
+
+
+## The gear right of Back opens Options over the bench, as peek opens the
+## journal: the run pauses, a carried piece drops back, Back closes it.
+func test_options_over_bench(level) -> void:
+	var wb = open(level, Progress.new())
+	if wb.still == null:
+		wb._ready()
+	wb.load_machine(level.reference_machine())
+	wb._toggle_run()
+	wb.carrying = 0
+	key(wb, KEY_O)
+	check(wb.options_view != null and not wb.running and wb.carrying == -1, "O opens Options over the bench, pausing the run")
+	key(wb, KEY_SPACE)
+	check(not wb.running, "the bench takes no keys under it")
+	var before: int = wb.machine.nodes.size()
+	wb.options_view.back.emit()
+	check(wb.options_view == null and wb.machine.nodes.size() == before, "Back closes it to the bench as it was")
+	var gear = null
+	for c in wb.get_children():
+		if c is Control and c.get("icon") == "options":
+			gear = c
+	check(gear != null and gear.position.x > 66 and gear.position.y < 20, "the gear sits right of Back in the top bar")
+	wb.free()
