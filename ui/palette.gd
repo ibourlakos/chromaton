@@ -40,6 +40,9 @@ const FUR_DK := Color("#C9AE8A")
 const BLUSH := Color(0.84, 0.59, 0.5, 0.45)
 const SHADOW := Color(0.227, 0.188, 0.165, 0.14)
 const VEIL := Color(0.925, 0.898, 0.839, 0.82)
+## The faint paper tint behind a card's drops when it looks back after a
+## wrong stitch.
+const LOOK_BACK := Color(0.886, 0.851, 0.776, 0.75)
 
 const FREDOKA := "res://fonts/Fredoka.ttf"
 const NUNITO := "res://fonts/Nunito.ttf"

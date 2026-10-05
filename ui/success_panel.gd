@@ -23,6 +23,9 @@ var invention := {}
 var has_next := false
 var t := 0.0
 var card := Rect2()
+var space_up := not Input.is_key_pressed(KEY_SPACE)  # released since the panel opened
+
+const SPACE_DELAY := 0.5
 
 
 func setup(p_level, p_pieces: int, p_ticks: int, p_stars: int, p_better: Dictionary, p_invention: Dictionary, p_has_next: bool) -> void:
@@ -54,10 +57,17 @@ func _ready() -> void:
 		add_child(b)
 
 
-## Enter (or →) for the next level, R to replay, Esc for the levels. Not
-## Space: it may still be held from running the machine.
+## Enter (or Space) for the next level, R to replay, Esc for the levels.
+## Space counts only once it has been released since the panel opened and
+## the panel has been up SPACE_DELAY seconds: one still held from the run,
+## or a pause pressed as the loom fills, doesn't skip the panel.
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and not event.pressed and event.keycode == KEY_SPACE:
+		space_up = true
 	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	if event.keycode == KEY_SPACE and not (space_up and t >= SPACE_DELAY):
+		Keys.handled(self)
 		return
 	match Keys.action(event, "Woven"):
 		"next":

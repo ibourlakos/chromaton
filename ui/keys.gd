@@ -17,6 +17,10 @@ const K = preload("res://ui/draw_kit.gd")
 
 const GROUP := "key_hints"  # nodes that draw caps and must redraw on a toggle
 const PATH := "user://chromaton_settings.json"
+## Bumped when the default keys change: a settings file with older keys keeps
+## its other settings and takes the new defaults (2: the level select's
+## journal on J, Space as every Continue's second key; DESIGN.md 9.1).
+const KEYS_VERSION := 2
 const EVERYWHERE := "Everywhere"
 const GROUPS := [EVERYWHERE, "Workbench", "Woven", "Levels", "Journal"]
 
@@ -46,12 +50,12 @@ const ACTIONS := [
 	["piece_7", "Workbench", "Tray piece 7", [KEY_7]],
 	["piece_8", "Workbench", "Tray piece 8", [KEY_8]],
 	["piece_9", "Workbench", "Tray piece 9", [KEY_9]],
-	["next", "Woven", "Next level", [KEY_ENTER, KEY_RIGHT]],
+	["next", "Woven", "Next level", [KEY_ENTER, KEY_SPACE]],
 	["replay", "Woven", "Weave again", [KEY_R]],
 	["prev_page", "Levels", "Page back", [KEY_LEFT, KEY_A]],
 	["next_page", "Levels", "Page forward", [KEY_RIGHT, KEY_D]],
-	["continue", "Levels", "Next unsolved level", [KEY_ENTER]],
-	["book", "Levels", "Journal", [KEY_B]],
+	["continue", "Levels", "Next unsolved level", [KEY_ENTER, KEY_SPACE]],
+	["book", "Levels", "Journal", [KEY_J, KEY_B]],
 	["options", "Levels", "Options", [KEY_O]],
 	["page_back", "Journal", "Page back", [KEY_LEFT, KEY_A]],
 	["page_forward", "Journal", "Page forward", [KEY_RIGHT, KEY_D]],
@@ -191,7 +195,7 @@ static func save_settings(path := "") -> void:
 	var keys := {}
 	for act in bindings:
 		keys[act] = bindings[act]
-	var d := {"keys": keys, "speed": speed, "grid": grid, "paints": paints}
+	var d := {"keys": keys, "keys_version": KEYS_VERSION, "speed": speed, "grid": grid, "paints": paints}
 	if _choice != null:
 		d["hints"] = _choice
 	var f := FileAccess.open(path, FileAccess.WRITE)
@@ -209,7 +213,9 @@ static func load_settings(path := "") -> void:
 		return
 	reset()
 	var keys = d.get("keys", {})
-	if keys is Dictionary:
+	# Keys saved before the default keys last changed are dropped (the other
+	# settings stay), so a change of defaults reaches every player.
+	if keys is Dictionary and int(d.get("keys_version", 1)) == KEYS_VERSION:
 		for act in keys:
 			if bindings.has(act) and keys[act] is Array:
 				for slot in mini(SLOTS, keys[act].size()):

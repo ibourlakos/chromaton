@@ -13,6 +13,8 @@ const Workbench = preload("res://ui/workbench.gd")
 const LevelSelect = preload("res://ui/level_select.gd")
 const K = preload("res://ui/draw_kit.gd")
 const Keys = preload("res://ui/keys.gd")
+const Machine = preload("res://core/machine.gd")
+const SuccessPanel = preload("res://ui/success_panel.gd")
 const Options = preload("res://ui/options.gd")
 const Intro = preload("res://ui/intro.gd")
 const PaintCard = preload("res://ui/paint_card.gd")
@@ -52,6 +54,11 @@ func _initialize() -> void:
 	test_note(by_id["green"])
 	test_title(levels)
 	test_options_over_bench(by_id["third_color"])
+	test_half_cells(by_id["third_color"])
+	test_cards_slide(by_id["third_color"])
+	test_bench_parts(levels, by_id)
+	test_speeds(by_id["parrot"])
+	test_space_on_panel()
 	test_round_rect()
 	test_level_select(levels)
 	test_intro()
@@ -149,7 +156,7 @@ func play_level(level, progress, index: int) -> void:
 		var from := tray_point(wb, kind)
 		check(from.x >= 0, "%s: tray offers %s" % [level.id, kind])
 		drag(wb, from, wb.cell_center(int(p["x"]), int(p["y"])))
-		names[p["id"]] = wb.machine.piece_at(int(p["x"]), int(p["y"]))
+		names[p["id"]] = wb.piece_in_cell(int(p["x"]), int(p["y"]))
 		check(names[p["id"]] >= 0, "%s: placed %s by dragging" % [level.id, p["id"]])
 	for t in level.reference["tubes"]:
 		var a: Array = Level._endpoint(t[0])
@@ -247,7 +254,7 @@ func test_left_edge(level) -> void:
 	var wb = open(level, Progress.new())
 	for row in [0, 3, 6]:
 		drag(wb, tray_point(wb, "red_pot"), wb.cell_center(0, row))
-		check(wb.machine.piece_at(0, row) >= 0, "%s: a pot fits in the first column, row %d" % [level.id, row])
+		check(wb.piece_in_cell(0, row) >= 0, "%s: a pot fits in the first column, row %d" % [level.id, row])
 	wb.queue_free()
 
 
@@ -267,8 +274,8 @@ func test_editing(level, progress) -> void:
 	# Place a mix and an invert.
 	drag(wb, tray_point(wb, "mix"), wb.cell_center(5, 3))
 	drag(wb, tray_point(wb, "invert"), wb.cell_center(7, 3))
-	var mix: int = m.piece_at(5, 3)
-	var inv: int = m.piece_at(7, 3)
+	var mix: int = wb.piece_in_cell(5, 3)
+	var inv: int = wb.piece_in_cell(7, 3)
 	check(mix >= 0 and inv >= 0, "drag from tray places pieces")
 	drag(wb, tray_point(wb, "shift"), wb.cell_center(5, 3))
 	check(wb.machine.nodes.size() == 5, "a piece can't be dropped on an occupied cell")
@@ -276,7 +283,7 @@ func test_editing(level, progress) -> void:
 	drag(wb, tray_point(wb, "shift"), wb.cell_center(1, 1))
 	check(wb.machine.nodes.size() == 5, "a piece can't be dropped on a pattern card")
 	drag(wb, tray_point(wb, "shift"), wb.cell_center(0, 3))
-	check(wb.machine.piece_at(0, 3) >= 0, "the left edge between cards takes pieces")
+	check(wb.piece_in_cell(0, 3) >= 0, "the left edge between cards takes pieces")
 	wb._undo()
 	m = wb.machine
 	# Tubes: card A -> mix, card B -> mix (dragged backwards), mix -> invert -> loom.
@@ -292,7 +299,7 @@ func test_editing(level, progress) -> void:
 	check(wb.machine.tube_into(loom, 0) >= 0, "dropping a tube on the loom connects it")
 	# Move the invert; its tubes follow.
 	drag(wb, wb.cell_center(7, 3), wb.cell_center(7, 5))
-	check(wb.machine.piece_at(7, 5) == inv and wb.machine.piece_at(7, 3) == -1, "drag moves a piece")
+	check(wb.piece_in_cell(7, 5) == inv and wb.piece_in_cell(7, 3) == -1, "drag moves a piece")
 	check(wb.machine.tubes.size() == 4, "moving keeps tubes")
 	# Tap a tube, then its delete button.
 	var ti: int = wb.machine.tube_into(inv, 0)
@@ -310,12 +317,12 @@ func test_editing(level, progress) -> void:
 	wb._undo()
 	# Re-route a tube end to another input.
 	drag(wb, tray_point(wb, "shift"), wb.cell_center(9, 5))
-	var shift: int = wb.machine.piece_at(9, 5)
+	var shift: int = wb.piece_in_cell(9, 5)
 	drag(wb, wb.in_port(inv, 0), wb.in_port(shift, 0))
 	check(wb.machine.tube_into(shift, 0) >= 0 and wb.machine.tube_into(inv, 0) < 0, "a tube end can be moved to another input")
 	# Trash: drag a piece onto the tray.
 	drag(wb, wb.cell_center(9, 5), wb.TRASH.get_center())
-	check(wb.machine.piece_at(9, 5) == -1, "dragging a piece to the trash removes it")
+	check(wb.piece_in_cell(9, 5) == -1, "dragging a piece to the trash removes it")
 	check(wb.machine.tube_into(shift, 0) < 0, "its tubes go with it")
 	# An edit while running rewinds the run.
 	wb._undo()
@@ -496,7 +503,7 @@ func test_keys(level) -> void:
 	check(wb.carrying == 0 and wb.machine.nodes.size() == start, "1 picks up the first tray piece without placing it")
 	check(wb._carried_ghost(), "the carried piece follows the pointer over the bench")
 	tap(wb, wb.cell_center(5, 3))
-	var id: int = wb.machine.piece_at(5, 3)
+	var id: int = wb.piece_in_cell(5, 3)
 	check(id >= 0 and wb.machine.nodes[id]["kind"] == wb.tray[0]["kind"] and wb.carrying == -1, "a click puts the carried piece down")
 	key(wb, KEY_2)
 	tap(wb, wb.cell_center(5, 3))
@@ -520,25 +527,25 @@ func test_keys(level) -> void:
 	tap(wb, tray_point(wb, wb.tray[1]["kind"]))
 	check(wb.carrying == 1, "tapping a tray piece picks it up")
 	tap(wb, wb.cell_center(7, 3))
-	check(wb.machine.piece_at(7, 3) >= 0, "and a tap on a free cell puts it down")
+	check(wb.piece_in_cell(7, 3) >= 0, "and a tap on a free cell puts it down")
 	drag(wb, tray_point(wb, wb.tray[0]["kind"]), wb.cell_center(9, 3))
-	check(wb.machine.piece_at(9, 3) >= 0 and wb.carrying == -1, "dragging from the tray still places")
+	check(wb.piece_in_cell(9, 3) >= 0 and wb.carrying == -1, "dragging from the tray still places")
 	# Delete only acts on what is selected, never on what's under the pointer.
 	move(wb, wb.cell_center(7, 3))
 	key(wb, KEY_DELETE)
-	check(wb.machine.piece_at(7, 3) >= 0, "Delete with nothing selected does nothing")
+	check(wb.piece_in_cell(7, 3) >= 0, "Delete with nothing selected does nothing")
 	tap(wb, wb.cell_center(5, 3))
 	check(wb.selected_piece == id, "tapping a piece selects it")
 	key(wb, KEY_ESCAPE)
 	check(wb.selected_piece == -1 and left.is_empty(), "Esc clears the selection and stays")
 	tap(wb, wb.cell_center(5, 3))
 	tap(wb, wb._delete_button_pos())
-	check(wb.machine.piece_at(5, 3) < 0, "a selected piece's delete button removes it")
+	check(wb.piece_in_cell(5, 3) < 0, "a selected piece's delete button removes it")
 	key(wb, KEY_Z)
-	check(wb.machine.piece_at(5, 3) >= 0, "Z undoes")
+	check(wb.piece_in_cell(5, 3) >= 0, "Z undoes")
 	tap(wb, wb.cell_center(5, 3))
 	key(wb, KEY_BACKSPACE)
-	check(wb.machine.piece_at(5, 3) < 0, "Backspace removes the selected piece")
+	check(wb.piece_in_cell(5, 3) < 0, "Backspace removes the selected piece")
 	key(wb, KEY_MINUS)
 	key(wb, KEY_MINUS)
 	check(wb.speed == 0, "- slows down to slow")
@@ -619,7 +626,7 @@ func test_paint_card(level) -> void:
 	next.free()  # now, before a frame would run its _ready again
 	tap(wb, tray_point(wb, wb.tray[0]["kind"]))
 	tap(wb, wb.cell_center(5, 5))
-	check(wb.machine.piece_at(5, 5) >= 0 and wb.paint_card != null, "the bench works around the card")
+	check(wb.piece_in_cell(5, 5) >= 0 and wb.paint_card != null, "the bench works around the card")
 	var e := InputEventMouseButton.new()
 	e.button_index = MOUSE_BUTTON_LEFT
 	e.pressed = true
@@ -727,13 +734,13 @@ func test_pot_fan(levels: Array, by_id: Dictionary) -> void:
 	tap(wb, yellow)
 	check(wb.carrying == wb.shelf_size + 1 and not wb.fan_open, "tapping a fanned-out pot picks it up and folds the fan")
 	tap(wb, wb.cell_center(5, 5))
-	var placed: int = wb.machine.piece_at(5, 5)
+	var placed: int = wb.piece_in_cell(5, 5)
 	check(placed >= 0 and wb.machine.nodes[placed].get("invention", "") == "pot_yellow", "a click puts the yellow pot down")
 	tap(wb, slot)
 	drag(wb, wb.tray[wb.shelf_size + 2]["rect"].get_center(), wb.cell_center(6, 5))
-	check(wb.machine.piece_at(6, 5) >= 0 and wb.machine.nodes[wb.machine.piece_at(6, 5)].get("invention", "") == "pot_blue" and not wb.fan_open, "a pot drags straight out of the fan")
+	check(wb.piece_in_cell(6, 5) >= 0 and wb.machine.nodes[wb.piece_in_cell(6, 5)].get("invention", "") == "pot_blue" and not wb.fan_open, "a pot drags straight out of the fan")
 	drag(wb, slot, wb.cell_center(7, 5))
-	check(wb.machine.piece_at(7, 5) >= 0 and wb.machine.nodes[wb.machine.piece_at(7, 5)]["kind"] == "red_pot", "dragging the pot slot itself places the red pot")
+	check(wb.piece_in_cell(7, 5) >= 0 and wb.machine.nodes[wb.piece_in_cell(7, 5)]["kind"] == "red_pot", "dragging the pot slot itself places the red pot")
 	key(wb, KEY_1)
 	check(wb.fan_open, "the pot slot's key fans the pots out")
 	key(wb, KEY_4)
@@ -822,3 +829,152 @@ func test_options_over_bench(level) -> void:
 			gear = c
 	check(gear != null and gear.position.x > 66 and gear.position.y < 20, "the gear sits right of Back in the top bar")
 	wb.free()
+
+
+## Pieces snap every half cell (21 x 13 spots), still cover a whole cell and
+## never overlap; a stored bench without "grid" was laid on whole cells.
+func test_half_cells(level) -> void:
+	var wb = open(level, Progress.new())
+	check(wb.SPOTS == Vector2i(21, 13), "21 by 13 spots")
+	drag(wb, tray_point(wb, "mix"), wb.spot_center(11, 5))
+	var mix: int = wb.machine.piece_at(11, 5)
+	check(mix >= 0, "a piece sits between two rows and two columns")
+	drag(wb, tray_point(wb, "invert"), wb.spot_center(12, 6))
+	check(wb.machine.piece_at(12, 6) == -1, "but never overlaps another")
+	drag(wb, tray_point(wb, "invert"), wb.spot_center(13, 5))
+	check(wb.machine.piece_at(13, 5) >= 0, "a whole cell away it fits")
+	drag(wb, wb.spot_center(11, 5), wb.spot_center(11, 6))
+	check(wb.machine.piece_at(11, 6) == mix, "a piece moves by half a cell, overlapping only itself")
+	drag(wb, tray_point(wb, "shift"), wb.spot_center(1, 2))
+	check(wb.machine.piece_at(1, 2) == -1, "nor a card's two cells")
+	var saved: Dictionary = wb.machine.to_dict()
+	check(saved["grid"] == 2, "the bench is saved with \"grid\": 2")
+	var old := {"nodes": [{"id": 5, "kind": "mix", "x": 4, "y": 3}], "tubes": [], "next_id": 6}
+	var m = Machine.from_dict(old)
+	check(m.nodes[5]["x"] == 8 and m.nodes[5]["y"] == 6 and Machine.from_dict(m.to_dict()).nodes[5]["x"] == 8, "a bench saved on whole cells is doubled on load, once")
+	wb.queue_free()
+
+
+## A tap selects a card (no delete button: Delete leaves it; its book button
+## peeks at the pattern card's page); a drag slides it along the left edge to
+## a free row, swaps it with another card, or sends it back with a wiggle.
+func test_cards_slide(level) -> void:
+	var wb = open(level, Progress.new())
+	var a: int = wb.machine.find_kind(Pieces.CARD, 0)
+	var b: int = wb.machine.find_kind(Pieces.CARD, 1)
+	check(wb._card_row(0) == 1 and wb._card_row(1) == 5, "cards start on their rows")
+	tap(wb, wb.node_center(a))
+	check(wb.selected_piece == a and wb._card_selected(), "a tap selects a card")
+	key(wb, KEY_DELETE)
+	check(wb.machine.nodes.has(a), "Delete leaves a card")
+	check(wb._book_button_pos().distance_to(wb.node_center(a)) < 60, "its book button floats by it, alone")
+	drag(wb, wb.node_center(a), wb.node_center(a) + Vector2(0, 2 * wb.CELL.y))
+	check(wb._card_row(0) == 3 and wb.machine.nodes[a]["row"] == 3, "a drag slides it down two rows")
+	wb._undo()
+	check(wb._card_row(0) == 1, "a slide is an edit: undo puts it back")
+	drag(wb, wb.node_center(a), wb.node_center(b))
+	check(wb._card_row(0) == 5 and wb._card_row(1) == 1, "dropped on the other card, the two swap")
+	drag(wb, tray_point(wb, "mix"), wb.cell_center(1, 3))
+	drag(wb, wb.node_center(a), wb.cell_center(0, 3))
+	check(wb._card_row(0) == 5 and wb.card_wiggle.has(a), "on a piece it slides back with a wiggle")
+	drag(wb, wb.node_center(a), wb.TRASH.get_center())
+	check(wb.machine.nodes.has(a) and wb._card_row(0) == 5, "the trash takes no card")
+	var m = wb.machine.duplicate()
+	check(m.nodes[a]["row"] == 5, "its row is saved with the bench")
+	wb.queue_free()
+
+
+## The loom's inlet sits on the middle row; tray slots show their cost; a
+## card looks back after a wrong stitch, ringing the drop that wove it.
+func test_bench_parts(levels: Array, by_id: Dictionary) -> void:
+	var wb = open(by_id["parrot"], Progress.new())
+	check(is_equal_approx(wb.loom_port.y, wb.cell_center(5, 3).y), "the loom's inlet is on row 3's middle")
+	check(wb._price("split") == 0 and wb._price("shift") == 1, "the chips: Split free, a critter 1")
+	wb.load_machine(by_id["parrot"].machine_from_spec({"pieces": [], "tubes": [["card0", "loom"]]}))
+	wb._set_speed(2)
+	wb._toggle_run()
+	var frames := 0
+	while wb.outcome == "" and frames < 500:
+		wb._process(0.05)
+		frames += 1
+	check(wb.outcome == "wrong" and wb._card_paints_look().has("wrong"), "a wrong stitch turns the cards to a look back")
+	wb._reset_pressed()
+	check(wb.outcome == "", "Reset ends the look back")
+	wb.queue_free()
+	var p = Progress.new()
+	for l in levels.slice(0, 3):
+		if not l.invention.is_empty():
+			p.add_invention(Invention.package(l, l.reference_machine(), p.inventions))
+	var blue = open(by_id["blue"], p)
+	check(blue._price("inv:pot_yellow") == p.inventions["pot_yellow"]["cost"], "a pot's chip is the player's own price")
+	blue.queue_free()
+
+
+## Three speeds: 0.8 s and 0.22 s a tick, and fast at 30 ticks a second by
+## the clock, several a frame when a frame is long, with no frame lost
+## between ticks.
+func test_speeds(level) -> void:
+	check(Workbench.TICK_SECONDS == [0.8, 0.22, 1.0 / 30.0], "slow 0.8 s, normal 0.22 s, fast 30 a second")
+	var wb = open(level, Progress.new())
+	wb.load_machine(level.reference_machine())
+	wb._set_speed(2)
+	wb._toggle_run()
+	for n in 60:
+		wb._process(1.0 / 60.0)
+	check(absi(wb.sim.tick - 30) <= 1, "fast runs 30 ticks in a second of 60 frames (%d)" % wb.sim.tick)
+	var before: int = wb.sim.tick
+	wb._process(0.2)
+	check(wb.sim.tick - before >= 5, "a long frame steps several ticks (%d)" % (wb.sim.tick - before))
+	wb._reset_pressed()
+	wb._set_speed(1)
+	wb._toggle_run()
+	for n in 60:
+		wb._process(1.0 / 60.0)
+	check(absi(wb.sim.tick - 4) <= 1, "normal runs about 4.5 ticks a second (%d)" % wb.sim.tick)
+	wb.queue_free()
+
+
+## Space is every Continue's second key; the success panel takes it only
+## once it's been released and the panel has been up half a second.
+func test_space_on_panel() -> void:
+	check(_default_keys("next") == [KEY_ENTER, KEY_SPACE] and _default_keys("continue") == [KEY_ENTER, KEY_SPACE], "Enter, then Space, goes on")
+	check(_default_keys("book") == [KEY_J, KEY_B], "the level select's journal is J, then B")
+	var panel = SuccessPanel.new()
+	panel.setup(Level.load_all()[0], 1, 9, 3, {}, {}, true)
+	var went := [false]
+	panel.next.connect(func(): went[0] = true)
+	panel.space_up = false  # Space still held from the run
+	key(panel, KEY_SPACE)
+	check(not went[0], "Space held from the run doesn't skip the panel")
+	var up := InputEventKey.new()
+	up.keycode = KEY_SPACE
+	up.pressed = false
+	panel._unhandled_input(up)
+	key(panel, KEY_SPACE)
+	check(not went[0], "nor one pressed before half a second")
+	panel.t = 0.6
+	key(panel, KEY_SPACE)
+	check(went[0], "then Space goes on, as Enter does")
+	panel.free()
+	# Keys saved before the defaults changed give way to the new ones; the
+	# other settings stay.
+	var path := "user://test_old_settings.json"
+	var fo := FileAccess.open(path, FileAccess.WRITE)
+	fo.store_string(JSON.stringify({"keys": {"book": [KEY_B, 0]}, "speed": 0}))
+	fo.close()
+	Keys.load_settings(path)
+	check(Keys.bindings["book"] == [KEY_J, KEY_B] and Keys.speed == 0, "old saved keys take the new defaults, the speed stays")
+	Keys.bind("book", 1, KEY_K)
+	Keys.save_settings(path)
+	Keys.load_settings(path)
+	check(Keys.bindings["book"][1] == KEY_K, "keys saved now are kept")
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	Keys.reset()
+	Keys.speed = 1
+
+
+func _default_keys(action: String) -> Array:
+	for a in Keys.ACTIONS:
+		if a[0] == action:
+			return a[3]
+	return []
