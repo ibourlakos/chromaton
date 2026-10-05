@@ -5,6 +5,45 @@
 	"machine": "A Cheaper Green Pot",
 	"goal": "Weave a green cloth.",
 	"hint": "Every paint has an opposite across the paint card, and green is red's. Tube the red pot through the Flip Pan.",
+	"steps": [
+		{
+			"line": "Green sits across from red on the paint card.",
+			"do": []
+		},
+		{
+			"line": "The Flip Pan flips a paint to its opposite.",
+			"do": [
+				[
+					"place",
+					"i"
+				]
+			]
+		},
+		{
+			"line": "Tube the red pot into it.",
+			"do": [
+				[
+					"place",
+					"pot"
+				],
+				[
+					"tube",
+					"pot",
+					"i"
+				]
+			]
+		},
+		{
+			"line": "To the loom: green, and cheaper.",
+			"do": [
+				[
+					"tube",
+					"i",
+					"loom"
+				]
+			]
+		}
+	],
 	"pieces": [
 		"red_pot",
 		"shift",

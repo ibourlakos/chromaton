@@ -325,6 +325,7 @@ func _play_references(n: int) -> void:
 				progress.learn(f[0], f[1])
 		var cost: int = m.cost(progress.inventions)
 		progress.record_solve(level.id, cost, sim.tick, level.stars_for(cost))
+		progress.store_machine(level.id, m.to_dict())
 		if not level.invention.is_empty():
 			progress.add_invention(Invention.package(level, m, progress.inventions))
 

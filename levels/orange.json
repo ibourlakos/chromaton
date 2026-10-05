@@ -5,6 +5,60 @@
 	"machine": "The Orange Pot",
 	"goal": "Weave an orange cloth.",
 	"hint": "Paint on paint makes a darker paint: red and yellow make orange. Mix the red pot with your yellow pot.",
+	"steps": [
+		{
+			"line": "Red and yellow make orange.",
+			"do": [
+				[
+					"place",
+					"p"
+				]
+			]
+		},
+		{
+			"line": "Bring your yellow pot.",
+			"do": [
+				[
+					"place",
+					"y"
+				]
+			]
+		},
+		{
+			"line": "The Mixing Tub stirs two paints into one.",
+			"do": [
+				[
+					"place",
+					"m"
+				]
+			]
+		},
+		{
+			"line": "Tube both paints into the tub.",
+			"do": [
+				[
+					"tube",
+					"p",
+					"m"
+				],
+				[
+					"tube",
+					"y",
+					"m"
+				]
+			]
+		},
+		{
+			"line": "Send the orange to the loom.",
+			"do": [
+				[
+					"tube",
+					"m",
+					"loom"
+				]
+			]
+		}
+	],
 	"pieces": [
 		"red_pot",
 		"shift",

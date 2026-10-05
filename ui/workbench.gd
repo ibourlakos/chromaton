@@ -40,6 +40,7 @@ const JournalNews = preload("res://ui/journal_news.gd")
 const Words = preload("res://core/words.gd")
 const LevelNote = preload("res://ui/level_note.gd")
 const Options = preload("res://ui/options.gd")
+const Guide = preload("res://ui/guide.gd")
 const PaintCard = preload("res://ui/paint_card.gd")
 const Paint = preload("res://core/paint.gd")
 const Pieces = preload("res://core/pieces.gd")
@@ -123,10 +124,13 @@ var journal: Control  # the journal, open over the bench (peek)
 var options_view: Control  # Options, open over the bench (the gear)
 var hint_glow := false  # after a failed run, until the hint panel opens or a run starts
 var _glowed_for := -1  # the bench_gen whose failure last lit the "?"
+var guide_on := false  # a guided level's guide shows (unsolved, or brought back by the "?")
+var ran := false  # the machine has been run here (the guide's run step)
 var news: Control  # "New in your journal", after the success panel
 var levels: Array = []  # the campaign, for the journal
 var fresh := []  # [piece kind, input colors] first seen here, not yet in the news
 var new_words := []  # words the last solve unlocked, not yet in the news
+var news_extra := {}  # what else the last solve brought: a new chapter, levels opened, cheaper (journal_news.gd)
 # The layers the bench is drawn in, back to front (see Drawing).
 var still: Layer
 var shelf: Layer
@@ -179,6 +183,7 @@ func setup(p_level, p_progress, p_has_next: bool, p_levels := []) -> void:
 	has_next = p_has_next
 	levels = p_levels
 	inventions = progress.usable()
+	guide_on = not level.steps.is_empty() and not progress.is_solved(level.id)
 	var saved: Dictionary = progress.stored_machine(level.id)
 	machine = Machine.from_dict(saved) if not saved.is_empty() else level.new_machine()
 	if not _fixed_nodes_match():
@@ -202,6 +207,7 @@ func show_note() -> void:
 	if note != null:
 		return
 	hint_glow = false
+	guide_on = not level.steps.is_empty()  # the "?" brings the guide back too
 	note = LevelNote.new()
 	note.setup(level, _title_parts()["badge_rect"])
 	note.landed.connect(func(): note = null)
@@ -582,11 +588,13 @@ func _toggle_run() -> void:
 	running = not running
 	if running:
 		hint_glow = false
+		ran = true
 	_sync_buttons()
 
 
 func _step_pressed() -> void:
 	running = false
+	ran = true
 	if sim.status != Simulator.Status.RUNNING:
 		_rebuild()
 	_do_step()
@@ -720,11 +728,16 @@ func _finish_solve() -> void:
 	var stars: int = level.stars_for(pieces)
 	if not progress.is_solved(level.id):  # a first solve unlocks the level's words
 		new_words = Words.unlocked_by(level.id)
+	var opened_before := _open_levels()
+	var owned_before: Dictionary = progress.inventions.get(level.invention.get("id", ""), {})
 	var better: Dictionary = progress.record_solve(level.id, pieces, ticks, stars)
 	var invention := {}
 	if not level.invention.is_empty():
 		invention = progress.add_invention(Invention.package(level, machine, inventions))
 		inventions = progress.usable()  # earning one replaces a loan
+		if not owned_before.is_empty() and int(invention["cost"]) < int(owned_before["cost"]):
+			news_extra["cheaper"] = [{"inv": invention, "old": int(owned_before["cost"]), "new": int(invention["cost"])}]
+	_note_openings(opened_before, owned_before.is_empty())
 	progress.store_machine(level.id, machine.to_dict())
 	progress_changed.emit()
 	panel = SuccessPanel.new()
@@ -741,19 +754,45 @@ func show_news(then: Callable) -> void:
 	if panel != null:
 		panel.queue_free()
 		panel = null
-	if new_words.is_empty() and fresh.is_empty():
+	if new_words.is_empty() and fresh.is_empty() and news_extra.is_empty():
 		then.call()
 		return
 	news = JournalNews.new()
-	news.setup(new_words, fresh, func(ci, id, c, s): Journal.picture(ci, id, c, s, clock, _levels()))
+	news.setup(new_words, fresh, func(ci, id, c, s): Journal.picture(ci, id, c, s, clock, _levels()), news_extra)
 	new_words = []
 	fresh = []
+	news_extra = {}
 	news.done.connect(func():
 		news.queue_free()
 		news = null
 		then.call())
-	news.open_journal.connect(func(): open_journal("", "words"))
+	news.open_journal.connect(func(tab, focus): open_journal(focus, tab))
 	add_child(news)
+
+
+## The campaign levels open now (their indexes).
+func _open_levels() -> Array:
+	var all := _levels()
+	var ids := all.map(func(l): return l.id)
+	return range(all.size()).filter(func(i): return progress.is_unlocked(ids, i))
+
+
+## What a solve opened that the level select wouldn't make plain, for "New in
+## your journal": a new chapter, and the levels the invention just earned
+## opens (they waited for it).
+func _note_openings(before: Array, first_earn: bool) -> void:
+	var all := _levels()
+	var now := _open_levels().filter(func(i): return not i in before)
+	var chapters_before := before.map(func(i): return all[i].chapter)
+	for i in now:
+		if not all[i].chapter in chapters_before:
+			news_extra["chapter"] = {"name": all[i].chapter_name, "level": all[i]}
+			break
+	var inv_id: String = level.invention.get("id", "")
+	if first_earn and inv_id != "":
+		var opened := now.filter(func(i): return inv_id in all[i].waits_for).map(func(i): return all[i])
+		if not opened.is_empty():
+			news_extra["opens"] = {"what": level.invention.get("in_text", level.invention["name"]), "levels": opened}
 
 
 func _levels() -> Array:
@@ -1315,7 +1354,7 @@ func _draw() -> void:
 	_draw_loom_motion()
 	_draw_fan()
 	_draw_locks()
-	_draw_hint()
+	_draw_guide()
 	if drag == "new":
 		_draw_piece_kind(drag_kind, drag_pos, -1)
 	elif _carried_ghost():
@@ -1893,37 +1932,108 @@ func _draw_run_halo() -> void:
 	K.ring(self, c, r, Color(P.HOOP, 0.55), 5)
 
 
-## For levels marked "hints": a hand shows the next gesture (no words).
-func _hint_path() -> Array:
-	if not level.raw.get("hints", false) or drag != "" or carrying >= 0 or running or outcome != "":
-		return []
-	var placed := []
-	for id in machine.nodes:
-		if not machine.is_fixed(id):
-			placed.append(id)
-	var slot := _first_open_slot()
-	if placed.is_empty() and slot >= 0:
-		return [tray[slot]["rect"].get_center(), cell_center(4, 3)]
-	if placed.is_empty():
-		# Nothing to place: the card itself feeds the loom.
-		var card: int = machine.find_kind(Pieces.CARD, 0)
-		placed = [card] if card >= 0 else []
-	var loom: int = machine.find_kind(Pieces.LOOM)
-	for id in placed:
-		var p := Pieces.ports(machine.nodes[id], inventions)
-		for k in p.y:
-			if machine.tube_from(id, k) < 0 and machine.tube_into(loom, 0) < 0:
-				return [out_port(id, k), loom_port]
-	return []
+## What the guide shows now (ui/guide.gd), or {} when it's hidden: {"lines",
+## "from", "to", "tap" (a tap at `to` instead of a drag), "slot" (the tray
+## slot to light, -1), "ghost" (the kind to show faintly at `to`, or "")}.
+## It hides while the player is doing something (a drag, a carried piece, a
+## run, an overlay) and once every step is done.
+func _guide() -> Dictionary:
+	if not guide_on or level.steps.is_empty() or drag != "" or carrying >= 0 or running or outcome != "":
+		return {}
+	if note != null or journal != null or options_view != null or panel != null or news != null:
+		return {}
+	var step := Guide.current(level, machine, {"fan_open": fan_open, "ran": ran})
+	if step.is_empty():
+		return {}
+	var out := {"lines": step["lines"], "from": Vector2(-1, -1), "to": Vector2(-1, -1), "tap": false, "slot": -1, "ghost": ""}
+	var act: Array = step["action"]
+	var bound: Dictionary = step["bound"]
+	match str(act[0]):
+		"place":
+			var p := {}
+			for q in level.reference.get("pieces", []):
+				if q["id"] == act[1]:
+					p = q
+			var kind: String = p["kind"] if p["kind"] != Pieces.INVENTION else "inv:" + str(p["invention"])
+			var target := cell_center(int(p["x"]), int(p["y"]))
+			var slot := _slot_of(kind)
+			if kind.begins_with("inv:pot_") and not fan_open:
+				slot = _slot_of("red_pot")  # the pot slot: open its fan first
+				out["tap"] = true
+				out["from"] = tray[slot]["rect"].get_center() if slot >= 0 else target
+				out["to"] = out["from"]
+			elif slot >= 0:
+				out["from"] = tray[slot]["rect"].get_center()
+				out["to"] = target
+				out["ghost"] = kind
+			out["slot"] = slot
+		"tube":
+			var a: int = bound.get(act[1], -1)
+			var b: int = bound.get(act[2], -1)
+			if a >= 0 and b >= 0:
+				out["from"] = out_port(a, _free_port(a, false))
+				out["to"] = loom_port if machine.nodes[b]["kind"] == Pieces.LOOM else in_port(b, _free_port(b, true))
+		"fan":
+			var slot := _slot_of("red_pot")
+			if slot >= 0:
+				out["from"] = tray[slot]["rect"].get_center()
+				out["to"] = out["from"]
+				out["tap"] = true
+				out["slot"] = slot
+		"run":
+			out["from"] = btn_run.position + btn_run.size / 2
+			out["to"] = out["from"]
+			out["tap"] = true
+	return out
 
 
-func _draw_hint() -> void:
-	var path := _hint_path()
-	if path.is_empty():
+## The live tray slot (shelf or open fan) that holds this kind, or -1.
+func _slot_of(kind: String) -> int:
+	for i in tray.size():
+		if tray[i]["kind"] == kind and _slot_live(i) and not tray[i]["locked"]:
+			return i
+	return -1
+
+
+## A piece's first input (or output) port with no tube, or its first.
+func _free_port(id: int, inputs: bool) -> int:
+	var p := Pieces.ports(machine.nodes[id], inventions)
+	for k in (p.x if inputs else p.y):
+		if (machine.tube_into(id, k) if inputs else machine.tube_from(id, k)) < 0:
+			return k
+	return 0
+
+
+## The guide: the slot it takes a piece from lights, a faint ghost waits
+## where the piece goes, the hand acts the step out, and the step's line sits
+## beside it.
+func _draw_guide() -> void:
+	var g := _guide()
+	if g.is_empty():
 		return
+	var slot: int = g["slot"]
+	if slot >= 0:
+		var r: Rect2 = tray[slot]["rect"]
+		var pulse := 0.5 + 0.5 * sin(clock * 4.0)
+		K.stroke(self, K.closed(K.round_rect(r.grow(3 + pulse * 2), 12)), Color(P.HOOP, 0.5 + 0.3 * pulse), 3)
+	var from: Vector2 = g["from"]
+	var to: Vector2 = g["to"]
+	if g["ghost"] != "":
+		_draw_piece_kind(g["ghost"], to, -1, 0.82, self, 0.0)
+		K.fill(self, K.round_rect(Rect2(to - CELL / 2, CELL).grow(-2), 12), Color(P.TAG, 0.62))
+		K.dashed(self, K.closed(K.round_rect(Rect2(to - CELL / 2, CELL).grow(-4), 12)), Color(P.INK, 0.3), 2, 7, 6)
+	if from.x >= 0:
+		if g["tap"]:
+			var cycle := fmod(clock, 1.4)
+			K.hand(self, to + Vector2(6, 10), cycle > 0.5 and cycle < 0.8, clampf(cycle / 0.3, 0, 1))
+		else:
+			_draw_hand_drag(from, to)
+	_draw_guide_line(g["lines"], to if to.x >= 0 else BENCH.get_center())
+
+
+## The hand presses at `from`, drags to `to` and lifts, over and over.
+func _draw_hand_drag(from: Vector2, to: Vector2) -> void:
 	var cycle := fmod(clock, 2.6)
-	var from: Vector2 = path[0]
-	var to: Vector2 = path[1]
 	var pos := from
 	var down := false
 	var alpha := 1.0
@@ -1943,6 +2053,27 @@ func _draw_hint() -> void:
 		K.dashed(self, PackedVector2Array([from, pos]), Color(P.INK, 0.35 * alpha), 3, 8, 7)
 	K.hand(self, pos, down, alpha)
 
+
+## The step's line (after any lead-in lines) on a paper slip beside where the
+## hand acts: above it, or below near the top of the bench.
+func _draw_guide_line(lines: Array, at: Vector2) -> void:
+	var font := P.ui(700)
+	var width := 0.0
+	for l in lines:
+		width = maxf(width, font.get_string_size(l, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x)
+	var size := Vector2(minf(width, 520.0) + 32, 14 + 24 * lines.size())
+	var pos := Vector2(at.x - size.x / 2, at.y - 70 - size.y if at.y > BENCH.position.y + 160 else at.y + 64)
+	if at.y >= TRAY.position.y:  # acting on the tray or the run controls: just above the tray
+		pos.y = TRAY.position.y - size.y - 74
+	if at.y < TOP_H + 10:  # the run button: below the top bar
+		pos = Vector2(at.x - size.x + 40, TOP_H + 24)
+	pos.x = clampf(pos.x, BENCH.position.x + 8, BENCH.end.x - size.x - 8)
+	var r := Rect2(pos, size)
+	K.fill(self, K.round_rect(Rect2(r.position + Vector2(3, 4), r.size), 12), P.SHADOW)
+	K.shape(self, K.round_rect(r, 12), P.TAG, Color(P.INK, 0.6), 2)
+	for i in lines.size():
+		var last := i == lines.size() - 1
+		K.text(self, font, Vector2(r.position.x + 16, r.position.y + 19 + i * 24), lines[i], 16, P.INK if last else P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT, size.x - 32)
 
 ## A little puff where the last stitch landed.
 func _draw_stitch_puff() -> void:

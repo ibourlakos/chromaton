@@ -5,7 +5,35 @@
 	"machine": "One Pot of Red",
 	"goal": "Weave a red cloth.",
 	"hint": "Every paint in the box starts from this one pot of red. Tube it straight to the loom.",
-	"hints": true,
+	"steps": [
+		{
+			"line": "This is your red pot.",
+			"do": [
+				[
+					"place",
+					"pot"
+				]
+			]
+		},
+		{
+			"line": "Tube its paint to the loom.",
+			"do": [
+				[
+					"tube",
+					"pot",
+					"loom"
+				]
+			]
+		},
+		{
+			"line": "Press Run and watch it weave.",
+			"do": [
+				[
+					"run"
+				]
+			]
+		}
+	],
 	"pieces": [
 		"red_pot"
 	],

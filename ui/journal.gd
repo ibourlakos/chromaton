@@ -55,6 +55,11 @@ var chapter := 0  # the Cloths and Scores page
 var piece := 0  # the Pieces page
 var word := 0  # the word picked on the Words tab
 var overlay := false  # over the workbench: draws its own paper
+var article_view: Control  # the open article (Paint, Loom), clipped so it scrolls
+var article_scroll := 0.0
+var article_focus := ""  # a word to scroll the article to (a peek on a tube or card)
+var _press_at := Vector2(-1, -1)
+var _dragged := false
 var here = null  # the level it was opened from (peek): its pieces count as met
 var t := 0.0
 var pieces: Array = []  # piece kinds in the order the campaign brings them
@@ -64,7 +69,8 @@ var next_button
 var _pressed := ""
 
 
-## focus: a piece kind ("mix", "inv:<id>"), "tube" or "card", for a peek; tab_id ""
+## focus: a piece kind ("mix", "inv:<id>"), "tube" or "card", for a peek, or
+## "word:<id>" for a word; tab_id ""
 ## for the tab last open.
 func setup(p_levels: Array, p_progress, tab_id := "", focus := "") -> void:
 	levels = p_levels if not p_levels.is_empty() else Level.load_all()
@@ -76,8 +82,14 @@ func setup(p_levels: Array, p_progress, tab_id := "", focus := "") -> void:
 	tab = last_tab
 	if focus.begins_with("inv:"):
 		tab = "inventions"
-	elif focus in ["tube", "card"]:  # a tube or a pattern card: the Loom article
+	elif focus.begins_with("word:"):  # "New in your journal": its first new word
+		tab = "words"
+		for i in words.size():
+			if str(words[i]["id"]) == focus.substr(5):
+				word = i
+	elif focus in ["tube", "card"]:  # a tube or a pattern card: the Loom article at its word
 		tab = "loom"
+		article_focus = "tube" if focus == "tube" else "pattern-card"
 	elif focus in pieces:
 		tab = "pieces"
 		piece = pieces.find(focus)
@@ -111,12 +123,29 @@ func _ready() -> void:
 	next_button.key_above = true
 	next_button.pressed.connect(func(): turn(1))
 	add_child(next_button)
+	article_view = Control.new()
+	article_view.clip_contents = true
+	article_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	article_view.draw.connect(_draw_article_view)
+	add_child(article_view)
 	show_tab(tab)
 
 
 func show_tab(id: String) -> void:
+	if id != tab:
+		article_scroll = 0.0
 	tab = id
 	last_tab = id
+	if article_view != null:
+		var r := _article_rect()
+		article_view.position = r.position
+		article_view.size = r.size
+		article_view.visible = r.size.y > 0
+	if article_focus != "":  # a peek: the article starts at that word
+		for row in _article_rows():
+			if row["w"]["id"] == article_focus:
+				article_scroll = minf(row["y"], _article_max())
+		article_focus = ""
 	paint_card.visible = tab == "paint"
 	_sync_arrows()
 	queue_redraw()
@@ -154,9 +183,11 @@ func open_word_page() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if not (event is InputEventKey and event.pressed) or event.echo:
+	if not (event is InputEventKey and event.pressed):
 		return
 	var act := Keys.action(event, "Journal")
+	if event.echo and not act in ["scroll_up", "scroll_down"]:
+		return
 	match act:
 		"back", "close_journal":
 			back.emit()
@@ -166,6 +197,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			turn(-1)
 		"page_forward":
 			turn(1)
+		"scroll_up":
+			scroll_article(-ARTICLE_STEP)
+		"scroll_down":
+			scroll_article(ARTICLE_STEP)
 		"open_page":
 			if tab == "words":
 				open_word_page()
@@ -178,14 +213,29 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
+	# An article scrolls with the wheel or a drag (a drag taps nothing).
+	if event is InputEventMouseButton and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+		if event.pressed and _article_rect().size.y > 0:
+			scroll_article(-ARTICLE_STEP if event.button_index == MOUSE_BUTTON_WHEEL_UP else ARTICLE_STEP)
+		accept_event()
+		return
+	if event is InputEventMouseMotion and _press_at.x >= 0 and _article_rect().size.y > 0:
+		if _dragged or event.position.distance_to(_press_at) > 8:
+			_dragged = true
+			scroll_article(-event.relative.y)
+		accept_event()
+		return
 	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT):
 		return
 	accept_event()
 	var hit := _target_at(event.position)
 	if event.pressed:
 		_pressed = hit
+		_press_at = event.position
+		_dragged = false
 		return
-	if hit == "" or hit != _pressed:
+	_press_at = Vector2(-1, -1)
+	if _dragged or hit == "" or hit != _pressed:
 		return
 	_pressed = ""
 	var parts := hit.split(":")
@@ -198,12 +248,16 @@ func _gui_input(event: InputEvent) -> void:
 			word = int(parts[1])
 		"open":
 			open_word_page()
+		"more":  # the chip scrolls on by most of a page
+			scroll_article(_article_rect().size.y - 80)
 	queue_redraw()
 
 
 func _process(delta: float) -> void:
 	t += delta
 	queue_redraw()
+	if article_view != null and article_view.visible:
+		article_view.queue_redraw()
 
 
 # ---------------------------------------------------------------------------
@@ -246,6 +300,8 @@ func _target_at(pos: Vector2) -> String:
 	for i in TABS.size():
 		if _tab_rect(i).has_point(pos):
 			return "tab:" + TABS[i][0]
+	if _more_rect().has_point(pos):
+		return "more"
 	match tab:
 		"pieces":
 			for i in pieces.size():
@@ -332,10 +388,8 @@ func _draw() -> void:
 	K.shape(self, K.round_rect(PAGE, 18), P.TAG, P.INK, 2.5)
 	_draw_tab(_tab_index(), true)
 	match tab:
-		"paint":
-			_draw_article(_tab_words("paint"), Rect2(PAGE.position.x + 540, PAGE.position.y + 40, 620, PAGE.size.y - 60))
-		"loom":
-			_draw_article(_tab_words("loom"), Rect2(PAGE.position + Vector2(40, 30), PAGE.size - Vector2(80, 50)))
+		"paint", "loom":
+			pass  # drawn by article_view, over the page
 		"pieces":
 			_draw_pieces()
 		"inventions":
@@ -359,39 +413,131 @@ func _draw_tab(i: int, open: bool) -> void:
 	Keys.cap(self, Vector2(r.end.x - 14, r.position.y + 4), Keys.label("tab_%d" % (i + 1)))
 
 
-## Paragraphs that wrap at width, from pos (top left); returns their height.
-func _para(pos: Vector2, width: float, s: String, size := 18, col := P.INK) -> float:
+## Paragraphs that wrap at width, from pos (top left), on `ci` (the journal
+## itself by default); returns their height.
+func _para(pos: Vector2, width: float, s: String, size := 18, col := P.INK, ci: CanvasItem = null) -> float:
+	var on: CanvasItem = ci if ci != null else self
 	var font := P.ui(700)
 	var y := pos.y
 	for p in s.split("\n\n"):
-		draw_multiline_string(font, Vector2(pos.x, y + font.get_ascent(size)), p, HORIZONTAL_ALIGNMENT_LEFT, width, size, -1, col)
+		on.draw_multiline_string(font, Vector2(pos.x, y + font.get_ascent(size)), p, HORIZONTAL_ALIGNMENT_LEFT, width, size, -1, col)
 		y += font.get_multiline_string_size(p, HORIZONTAL_ALIGNMENT_LEFT, width, size).y + size * 0.6
 	return y - pos.y
 
 
+## How tall _para's paragraphs are, without drawing them.
+static func _para_height(width: float, s: String, size := 18) -> float:
+	var font := P.ui(700)
+	var h := 0.0
+	for p in s.split("\n\n"):
+		h += font.get_multiline_string_size(p, HORIZONTAL_ALIGNMENT_LEFT, width, size).y + size * 0.6
+	return h
+
+
 ## A locked entry: an empty frame naming the level that unlocks it.
-func _locked(r: Rect2, w: Dictionary) -> void:
-	K.dashed(self, K.closed(K.round_rect(r, 12)), Color(P.INK, 0.3), 2, 8, 6)
+func _locked(r: Rect2, w: Dictionary, ci: CanvasItem = null) -> void:
+	var on: CanvasItem = ci if ci != null else self
+	K.dashed(on, K.closed(K.round_rect(r, 12)), Color(P.INK, 0.3), 2, 8, 6)
 	var level = _level_by_id(str(w["level"]))
-	K.text(self, P.display(600), Vector2(r.position.x + 40, r.get_center().y), "?", 34, Color(P.INK, 0.3))
+	K.text(on, P.display(600), Vector2(r.position.x + 40, r.get_center().y), "?", 34, Color(P.INK, 0.3))
 	if level != null:
-		K.text(self, P.ui(700), Vector2(r.position.x + 74, r.get_center().y), "Weave %s to read this." % level.ref_name(), 16, Color(P.INK, 0.45), HORIZONTAL_ALIGNMENT_LEFT)
+		K.text(on, P.ui(700), Vector2(r.position.x + 74, r.get_center().y), "Weave %s to read this." % level.ref_name(), 16, Color(P.INK, 0.45), HORIZONTAL_ALIGNMENT_LEFT)
 
 
-## Words one under another: picture, word, Gameplay text.
-func _draw_article(list: Array, r: Rect2) -> void:
-	var y := r.position.y
-	var gap := 12.0
-	for w in list:
-		if not Words.is_unlocked(w, progress):
-			_locked(Rect2(r.position.x, y, r.size.x, 70), w)
-			y += 70 + gap
+# --- Articles (Paint, Loom) ----------------------------------------------------
+#
+# Words one under another: picture, word, Gameplay text. Each row is as tall
+# as its picture or its text, whichever is taller, plus a gap; an article
+# longer than its page scrolls (drag, the wheel, or the scroll keys), with a
+# "more below" chip that scrolls on when tapped.
+
+const ARTICLE_GAP := 18.0
+const ARTICLE_STEP := 60.0  # a scroll key's or wheel notch's distance
+
+
+## Where the open tab's article sits, or an empty rect on other tabs.
+func _article_rect() -> Rect2:
+	match tab:
+		"paint":
+			return Rect2(PAGE.position.x + 540, PAGE.position.y + 40, 620, PAGE.size.y - 60)
+		"loom":
+			return Rect2(PAGE.position + Vector2(40, 30), PAGE.size - Vector2(80, 50))
+	return Rect2()
+
+
+## Each word's row on the open tab's article: [{"w", "y", "h"}].
+func _article_rows() -> Array:
+	var width := _article_rect().size.x
+	var rows := []
+	var y := 0.0
+	for w in _tab_words(tab):
+		var h := 70.0
+		if Words.is_unlocked(w, progress):
+			h = maxf(80.0, 34.0 + _para_height(width - 116, w["text"], 17))
+		rows.append({"w": w, "y": y, "h": h})
+		y += h + ARTICLE_GAP
+	return rows
+
+
+## How far the article can scroll.
+func _article_max() -> float:
+	var rows := _article_rows()
+	if rows.is_empty():
+		return 0.0
+	var last: Dictionary = rows[rows.size() - 1]
+	return maxf(0.0, last["y"] + last["h"] - _article_rect().size.y)
+
+
+func scroll_article(by: float) -> void:
+	article_scroll = clampf(article_scroll + by, 0.0, _article_max())
+	article_view.queue_redraw()
+
+
+## Rows that end below the article's window.
+func _rows_below() -> int:
+	var bottom := article_scroll + _article_rect().size.y
+	return _article_rows().filter(func(row): return row["y"] + row["h"] > bottom + 1).size()
+
+
+## The "more below" chip at the article's foot, while there's more below.
+func _more_rect() -> Rect2:
+	var r := _article_rect()
+	if r.size.y <= 0 or _rows_below() == 0:
+		return Rect2()
+	return Rect2(r.get_center().x - 80, r.end.y - 32, 160, 30)
+
+
+## The article view's drawing (a clipped child, so rows scroll under the
+## page's edge).
+func _draw_article_view() -> void:
+	var ci := article_view
+	var r := _article_rect()
+	if r.size.y <= 0:
+		return
+	article_scroll = clampf(article_scroll, 0.0, _article_max())
+	for row in _article_rows():
+		var y: float = row["y"] - article_scroll
+		if y + row["h"] < 0 or y > r.size.y:
 			continue
-		picture(self, str(w["id"]), Vector2(r.position.x + 50, y + 40), 1.0, t, levels)
-		K.text(self, P.display(600), Vector2(r.position.x + 116, y + 14), w["word"], 26, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-		var h := _para(Vector2(r.position.x + 116, y + 34), r.size.x - 116, w["text"], 17)
-		y += maxf(80, 34 + h) + gap
+		var w: Dictionary = row["w"]
+		if not Words.is_unlocked(w, progress):
+			_locked(Rect2(0, y, r.size.x, 70), w, ci)
+			continue
+		picture(ci, str(w["id"]), Vector2(50, y + 40), 1.0, t, levels)
+		K.text(ci, P.display(600), Vector2(116, y + 14), w["word"], 26, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+		_para(Vector2(116, y + 34), r.size.x - 116, w["text"], 17, P.INK, ci)
+	_draw_more_chip(ci, -r.position)
 
+
+func _draw_more_chip(ci: CanvasItem, offset: Vector2) -> void:
+	var m := _more_rect()
+	if m.size.x <= 0:
+		return
+	m.position += offset
+	var n := _rows_below()
+	K.fill(ci, K.round_rect(Rect2(m.position + Vector2(0, 3), m.size), 15), P.SHADOW)
+	K.shape(ci, K.round_rect(m, 15), P.TAG, Color(P.INK, 0.5), 1.5)
+	K.text(ci, P.ui(700), m.get_center(), "%d more below ↓" % n, 14, P.INK_SOFT)
 
 # --- Pieces ------------------------------------------------------------------
 
@@ -403,7 +549,13 @@ func _draw_pieces() -> void:
 		K.shape(self, K.round_rect(r, 12), Color(P.HOOP, 0.25) if lit else (P.TAG if met else P.PAPER_DK), Color(P.INK, 0.8 if lit else 0.35), 2.5 if lit else 1.5)
 		if met:
 			critter(self, pieces[i], r.position + Vector2(48, r.size.y / 2), 0.62, t)
-			K.text(self, P.display(600), Vector2(r.position.x + 92, r.get_center().y), Pieces.display_name(pieces[i]), 19, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+			# A long name (Shift Wheel, Mixing Tub) takes two lines.
+			var name := Pieces.display_name(pieces[i])
+			var lines := [name]
+			if P.display(600).get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, 19).x > r.size.x - 96 and name.contains(" "):
+				lines = name.split(" ", false, 1)
+			for k in lines.size():
+				K.text(self, P.display(600), Vector2(r.position.x + 92, r.get_center().y + (k - (lines.size() - 1) / 2.0) * 22), lines[k], 19, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 		else:
 			K.icon(self, "lock", r.get_center(), 1.4, Color(P.INK, 0.35))
 	var kind: String = pieces[piece] if piece < pieces.size() else ""
@@ -431,6 +583,79 @@ func _draw_pieces() -> void:
 			_fact(Vector2(area.position.x + 60, top + 60), [], [Paint.RED], "Every drop it makes is red.")
 		"split":
 			_fact(Vector2(area.position.x + 60, top + 60), [Paint.ORANGE], [Paint.ORANGE, Paint.ORANGE], "Whatever goes in comes out twice.")
+	# Using the paint card for this piece, once its page is read.
+	if CARD_LINES.has(kind) and not w.is_empty() and Words.is_unlocked(w, progress):
+		if kind in ["shift", "invert"]:
+			_card_line(Rect2(area.position.x, top + 214, area.size.x, 60), CARD_LINES[kind])
+		else:
+			var x := area.position.x + 40 + 9 * 44.0 + 30
+			_card_line(Rect2(x, top + 170, area.end.x - x, 120), CARD_LINES[kind])
+	# What it's made of: the levels that rebuild it.
+	if kind in ["shift", "invert"]:
+		_draw_made_of(kind, Rect2(area.position.x, top + 290, area.size.x, area.end.y - top - 290))
+	elif kind in ["mix", "filter"]:
+		var x2 := area.position.x + 40 + 9 * 44.0 + 30
+		_draw_made_of(kind, Rect2(x2, top + 250, area.end.x - x2, area.end.y - top - 250))
+
+
+## What a critter is made of: a row for each level that rebuilds it from
+## other pieces, showing what the player's machine there used (its pieces,
+## each with how many), or an empty frame naming the level until it's woven.
+func _draw_made_of(kind: String, r: Rect2) -> void:
+	var rebuilt := levels.filter(func(l): return l.rebuilds() == kind)
+	if rebuilt.is_empty():
+		return
+	K.text(self, P.display(600), Vector2(r.position.x, r.position.y + 12), "Made of", 22, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+	var y := r.position.y + 34
+	for level in rebuilt:
+		var row := Rect2(r.position.x, y, minf(r.size.x, 520), 56)
+		y += 64
+		if not progress.is_solved(level.id):
+			_locked(row, {"level": level.id})
+			continue
+		K.shape(self, K.round_rect(row, 12), P.TAG, Color(P.INK, 0.35), 1.5)
+		K.text(self, P.ui(700), Vector2(row.position.x + 14, row.get_center().y), level.ref_name(), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+		var x := row.position.x + 30 + P.ui(700).get_string_size(level.ref_name(), HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x
+		var counts := _machine_parts(progress.stored_machine(level.id))
+		for part in counts:
+			var c := Vector2(x + 26, row.get_center().y)
+			if part.begins_with("inv:"):
+				var inv: Dictionary = progress.inventions.get(part.substr(4), {})
+				K.sticker(self, c + Vector2(8, 0), 0.42, str(inv.get("name", "?")), 99, t, 0.2)
+				x += 70
+			else:
+				critter(self, part, c, 0.42, t)
+				x += 44
+			K.text(self, P.ui(800), Vector2(x + 6, row.get_center().y), "× %d" % counts[part], 15, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+			x += 46
+
+
+## The pieces a saved machine is built from, by tray kind ("inv:<id>" for an
+## invention), with how many of each; cards and the loom aren't pieces.
+static func _machine_parts(m: Dictionary) -> Dictionary:
+	var out := {}
+	for n in m.get("nodes", []):
+		var kind: String = n["kind"]
+		if kind in [Pieces.CARD, Pieces.LOOM]:
+			continue
+		var key := "inv:" + str(n.get("invention", "")) if kind == Pieces.INVENTION else kind
+		out[key] = out.get(key, 0) + 1
+	return out
+
+
+## The line on using the paint card for a piece (levels/level-text.md),
+## beside a little paint card. The red pot and Split have none.
+const CARD_LINES := {
+	"mix": "On the paint card, a mix sits between its two paints: red and yellow meet at orange.",
+	"filter": "On the paint card, the Sieve keeps the corners two paints share: orange and purple share red.",
+	"invert": "On the paint card, a paint's opposite sits straight across black.",
+	"shift": "On the paint card, follow one arrow: every paint moves one corner on.",
+}
+
+
+func _card_line(r: Rect2, s: String) -> void:
+	picture(self, "paint-card", r.position + Vector2(30, 26), 0.9, t, levels)
+	_para(r.position + Vector2(70, 4), r.size.x - 70, s, 16, P.INK_SOFT)
 
 
 ## Shift and Invert: a frame per paint, the paint over what it becomes.

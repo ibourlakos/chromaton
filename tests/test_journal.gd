@@ -9,9 +9,11 @@ const Level = preload("res://core/level.gd")
 const Progress = preload("res://core/progress.gd")
 const Pieces = preload("res://core/pieces.gd")
 const Simulator = preload("res://core/simulator.gd")
+const Invention = preload("res://core/invention.gd")
 const Words = preload("res://core/words.gd")
 const Lexicon = preload("res://tools/lexicon.gd")
 const Journal = preload("res://ui/journal.gd")
+const JournalNews = preload("res://ui/journal_news.gd")
 const Workbench = preload("res://ui/workbench.gd")
 const Options = preload("res://ui/options.gd")
 const Keys = preload("res://ui/keys.gd")
@@ -43,7 +45,9 @@ func _initialize() -> void:
 	test_journal_tabs()
 	test_word_pages()
 	test_peek()
+	test_articles()
 	test_news()
+	test_news_entries()
 	test_options_fit()
 	if failures == 0:
 		print("test_journal: all %d checks passed" % checks)
@@ -286,8 +290,14 @@ func test_news() -> void:
 	check(wb.fresh.size() >= 1 and wb.fresh[0][0] == "shift" and p.knows("shift", [1]), "Shift turning red is a new frame")
 	wb.panel.next.emit()
 	check(wb.panel == null and wb.news != null and went.is_empty(), "Next shows the news first")
-	key(wb.news, KEY_ENTER)
-	check(wb.news == null and went.size() == 1, "Enter goes on to the next level")
+	var presses := 0
+	while wb.news != null and presses < 5:
+		var below: int = wb.news.rows_below()
+		key(wb.news, KEY_ENTER)
+		presses += 1
+		if wb.news != null:
+			check(below > 0, "Enter scrolls only while there's more below")
+	check(wb.news == null and went.size() == 1, "Enter goes on to the next level at the bottom")
 	# Solving it again brings nothing new: straight on.
 	wb._rebuild()
 	wb.fast_forward(100000, 1.0)
@@ -312,3 +322,102 @@ func test_options_fit() -> void:
 			if o.slots[a]["rect"].intersects(o.slots[b]["rect"]):
 				check(false, "slots %s and %s overlap" % [o.slots[a]["action"], o.slots[b]["action"]])
 	o.free()
+
+
+## An article fits each word's text and scrolls when it runs past its page:
+## the scroll keys, the "more below" chip, and a peek on a tube or a card
+## opening Loom at that word.
+func test_articles() -> void:
+	var p = Progress.new()
+	p.unlock_all = true
+	var j = Journal.new()
+	j.setup(levels, p, "loom")
+	j._ready()
+	check(j._article_max() > 0 and j._rows_below() > 0 and j._more_rect().size.x > 0, "Loom runs past its page, with a \"more below\" chip")
+	var rows: Array = j._article_rows()
+	check(rows.all(func(r): return r["h"] >= 80) and rows[3]["h"] > rows[2]["h"], "rows are as tall as their text (Tick is longer than Thread)")
+	key(j, KEY_DOWN)
+	check(is_equal_approx(j.article_scroll, minf(j.ARTICLE_STEP, j._article_max())), "the down key scrolls down")
+	key(j, KEY_W)
+	check(j.article_scroll == 0.0, "W scrolls back up")
+	j._gui_input(_click(j._more_rect().get_center(), true))
+	j._gui_input(_click(j._more_rect().get_center(), false))
+	check(j.article_scroll > 0.0, "the chip scrolls on")
+	j.scroll_article(9999)
+	check(is_equal_approx(j.article_scroll, j._article_max()) and j._rows_below() == 0 and j._more_rect().size.x == 0, "at the bottom the chip goes")
+	j.free()
+	for focus in ["tube", "card"]:
+		var k = Journal.new()
+		k.setup(levels, p, "", focus)
+		k._ready()
+		var want := "tube" if focus == "tube" else "pattern-card"
+		var row: Dictionary = k._article_rows().filter(func(r): return r["w"]["id"] == want)[0]
+		check(k.tab == "loom" and is_equal_approx(k.article_scroll, minf(row["y"], k._article_max())), "a peek on a %s opens Loom at its word" % focus)
+		k.free()
+
+
+func _click(pos: Vector2, down: bool) -> InputEventMouseButton:
+	var e := InputEventMouseButton.new()
+	e.button_index = MOUSE_BUTTON_LEFT
+	e.pressed = down
+	e.position = pos
+	return e
+
+
+func _key_event(code: Key) -> InputEventKey:
+	var e := InputEventKey.new()
+	e.keycode = code
+	e.pressed = true
+	return e
+
+
+## What else "New in your journal" says, most important first: a new
+## chapter, the levels an invention opens, an invention made cheaper.
+func test_news_entries() -> void:
+	var p = Progress.new()
+	p.know_levels(levels)
+	for l in levels.slice(0, 22):  # up to The Rock Pool
+		p.record_solve(l.id, l.best, 10, 3)
+		if not l.invention.is_empty():
+			p.add_invention(Invention.package(l, l.reference_machine(), p.inventions))
+	# Solving The Fish opens The Pawn, chapter 3's first level.
+	var wb = open_bench(by_id["wash_out"], p)
+	wb.levels = levels
+	wb.load_machine(by_id["wash_out"].reference_machine())
+	wb.fast_forward(100000, 1.0)
+	wb._on_tick_shown()
+	check(wb.news_extra.has("chapter") and wb.news_extra["chapter"]["name"] == "Invent What You Know", "a solve that opens a chapter says so")
+	wb.queue_free()
+	# The Pawn earns the Third Paint, which opens The Rook and The Knight.
+	p.record_solve("black_cat", 4, 10, 3)
+	wb = open_bench(by_id["third_color"], p)
+	wb.levels = levels
+	wb.load_machine(by_id["third_color"].reference_machine())
+	wb.fast_forward(100000, 1.0)
+	wb._on_tick_shown()
+	var opens: Array = wb.news_extra.get("opens", {}).get("levels", []).map(func(l): return l.id)
+	check(opens == ["neither_twice", "back_to_mix"], "the Third Paint opens The Rook and The Knight (%s)" % str(opens))
+	var news = JournalNews.new()
+	news.setup([], [], func(ci, id, c, s): pass, wb.news_extra)
+	check(news.rows[0]["title"] == "The Third Paint opens 26. The Rook and 27. The Knight.", "in those words (%s)" % news.rows[0]["title"])
+	news.free()
+	wb.queue_free()
+	# A cheaper pot: both prices, only when the price drops.
+	var q = Progress.new()
+	var refs := Invention.reference_inventions_by_level(levels)
+	q.add_invention(Invention.package(by_id["yellow"], by_id["yellow"].reference_machine(), {}))
+	q.add_invention(Invention.package(by_id["orange"], by_id["orange"].reference_machine(), refs[by_id["orange"].number - 1]))
+	q.add_invention(Invention.package(by_id["blue"], by_id["blue"].reference_machine(), refs[by_id["blue"].number - 1]))
+	wb = open_bench(by_id["orange_opposite"], q)
+	wb.levels = levels
+	wb.load_machine(by_id["orange_opposite"].reference_machine())
+	wb.fast_forward(100000, 1.0)
+	wb._on_tick_shown()
+	var cheaper: Array = wb.news_extra.get("cheaper", [])
+	check(cheaper.size() == 1 and cheaper[0]["old"] == 2 and cheaper[0]["new"] == 1, "Orange pot: cheaper, 2 → 1")
+	news = JournalNews.new()
+	news.setup([], [[ "invert", [4]]], func(ci, id, c, s): pass, {"chapter": {"name": "X", "level": levels[24]}, "cheaper": cheaper})
+	check(news.rows.map(func(r): return r["kind"]) == ["level", "invention", "frames"] and news.rows[1]["title"] == "Orange pot: cheaper, 2 → 1", "rows in order of importance, one kind")
+	check(news.first_entry() == ["cloths", ""], "the book opens at the first entry")
+	news.free()
+	wb.queue_free()

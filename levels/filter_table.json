@@ -5,6 +5,42 @@
 	"machine": "What Every Pair Shares",
 	"goal": "Weave the table.",
 	"hint": "The Sieve keeps only the paint both drops share. Sieve card A with card B, and the cloth becomes the table of every share.",
+	"steps": [
+		{
+			"line": "The Sieve keeps what two paints share.",
+			"do": [
+				[
+					"place",
+					"m"
+				]
+			]
+		},
+		{
+			"line": "Tube one card into each side.",
+			"do": [
+				[
+					"tube",
+					"card0",
+					"m"
+				],
+				[
+					"tube",
+					"card1",
+					"m"
+				]
+			]
+		},
+		{
+			"line": "To the loom: what every pair shares.",
+			"do": [
+				[
+					"tube",
+					"m",
+					"loom"
+				]
+			]
+		}
+	],
 	"pieces": [
 		"red_pot",
 		"shift",

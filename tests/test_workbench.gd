@@ -59,6 +59,7 @@ func _initialize() -> void:
 	test_bench_parts(levels, by_id)
 	test_speeds(by_id["parrot"])
 	test_space_on_panel()
+	test_guides(levels)
 	test_round_rect()
 	test_level_select(levels)
 	test_intro()
@@ -258,14 +259,23 @@ func test_left_edge(level) -> void:
 	wb.queue_free()
 
 
-## With nothing in the tray, the hand shows the tube from the card to the loom.
+## With nothing in the tray, the guide's hand shows the tube from the card
+## to the loom, then points at Run.
 func test_card_hint(level) -> void:
 	var wb = open(level, Progress.new())
+	if wb.still == null:
+		wb._ready()
 	var card: int = wb.machine.find_kind(Pieces.CARD, 0)
-	check(wb._hint_path() == [wb.out_port(card, 0), wb.loom_port], "%s: the hint lays the card's tube" % level.id)
+	var g: Dictionary = wb._guide()
+	check(g["from"] == wb.out_port(card, 0) and g["to"] == wb.loom_port, "%s: the guide lays the card's tube" % level.id)
+	check(g["lines"] == ["This card holds the whole picture.", "Tube it to the loom."], "%s: a line-only step leads into the next (%s)" % [level.id, str(g["lines"])])
 	drag(wb, wb.out_port(card, 0), wb.loom_port)
-	check(wb._hint_path().is_empty(), "%s: the hint stops once the loom is fed" % level.id)
-	wb.queue_free()
+	g = wb._guide()
+	check(g["tap"] and g["lines"][-1].begins_with("Run"), "%s: once the loom is fed it points at Run" % level.id)
+	wb._toggle_run()
+	wb._toggle_run()
+	check(wb._guide().is_empty(), "%s: and after a run the guide is done" % level.id)
+	wb.free()
 
 
 func test_editing(level, progress) -> void:
@@ -978,3 +988,52 @@ func _default_keys(action: String) -> Array:
 		if a[0] == action:
 			return a[3]
 	return []
+
+
+## The ten guided levels: the guide starts at the first step, never blocks,
+## skips what the bench already has (a built machine leaves at most the run),
+## lights the slot a step takes a piece from, and comes back with the "?" on
+## a solved level.
+func test_guides(levels: Array) -> void:
+	var guided := levels.filter(func(l): return not l.steps.is_empty()).map(func(l): return l.id)
+	check(guided == ["one_pot", "yellow", "blue", "orange", "purple", "green", "pattern_card", "mix_table", "filter_table", "neither_twice"], "ten guided levels (%s)" % str(guided))
+	var p = Progress.new()
+	for l in levels:
+		if not l.invention.is_empty():
+			p.add_invention(Invention.package(l, l.reference_machine(), p.inventions))
+	for level in levels.filter(func(l): return not l.steps.is_empty()):
+		var wb = open(level, p)
+		if wb.still == null:
+			wb._ready()
+		var g: Dictionary = wb._guide()
+		var first: Dictionary = level.steps.filter(func(s): return not s["do"].is_empty())[0]
+		check(not g.is_empty() and g["lines"][-1] == first["line"], "%s: the guide starts at its first step" % level.id)
+		check(g["from"].x >= 0, "%s: the hand has something to show" % level.id)
+		if first["do"][0][0] == "place":
+			check(g["slot"] >= 0 and g["ghost"] != "", "%s: the slot lights and a ghost waits" % level.id)
+		wb.load_machine(level.reference_machine())
+		g = wb._guide()
+		check(g.is_empty() or g["lines"][-1].contains("Run") or g["lines"][-1].contains("run"), "%s: a built machine leaves only the run (%s)" % [level.id, str(g.get("lines", []))])
+		wb.free()
+	var blue = levels.filter(func(l): return l.id == "blue")[0]
+	var wb = open(blue, p)
+	if wb.still == null:
+		wb._ready()
+	var g: Dictionary = wb._guide()
+	check(g["tap"] and wb.tray[g["slot"]].get("pots", false), "Blue: the hand taps the pot slot")
+	wb._show_fan(true)
+	g = wb._guide()
+	check(g["lines"][-1] == "Take it out." and wb.tray[g["slot"]]["kind"] == "inv:pot_yellow", "then takes the yellow pot from the fan")
+	wb.free()
+	var solved = Progress.new()
+	solved.record_solve("one_pot", 1, 9, 3)
+	var one = levels[0]
+	wb = open(one, solved)
+	if wb.still == null:
+		wb._ready()
+	check(wb._guide().is_empty(), "a solved guided level hides its guide")
+	wb.show_note()
+	wb.note.queue_free()
+	wb.note = null
+	check(not wb._guide().is_empty(), "the \"?\" brings it back")
+	wb.free()

@@ -3,7 +3,7 @@
 - **Tags:** gameplay, design, implementation
 - **Status:** ✅ two names (designer, 2026-10-05): the term is the algebra's and the code's name; the player sees the critter's name; the player word built 2026-10-05
 - **Player word:** Sieve
-- **Journal:** unlocks in Sandy Crab; page on the Pieces tab
+- **Journal:** unlocks in The Sieve Table, the guided level that brings the Sieve in; page on the Pieces tab (The Sieve Table fills most of it at once)
 
 ## Gameplay
 

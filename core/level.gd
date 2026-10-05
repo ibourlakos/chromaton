@@ -10,7 +10,8 @@
 ## Mix": what the cloth is, then what the machine does; machine "" for the
 ## cloth alone; name is the cloth phrase, or in the paint box the machine
 ## phrase), goal (what to weave) and hint (the rule in paint, then how),
-## both shown in the hint panel (ui/level_note.gd), pieces (the kinds it
+## both shown in the hint panel (ui/level_note.gd), optional steps (a guided
+## level's guide: [{line, do: [actions]}], see ui/guide.gd), pieces (the kinds it
 ## offers; the tray also shows earlier levels' pieces, locked), inventions
 ## (invention ids allowed in the tray), optional hold_pots (earned pots this
 ## level holds back; see _lay_trays), optional waits_for (invention ids the
@@ -53,6 +54,7 @@ var cloth_phrase := ""
 var machine_phrase := ""
 var goal := ""
 var hint := ""
+var steps: Array = []  # a guided level's steps (ui/guide.gd): [{"line", "do"}]
 var cols := 0
 var rows := 0
 var target := PackedByteArray()
@@ -199,6 +201,13 @@ static func waiting_line(levels: Array, inv_ids: Array) -> String:
 	return "Earn %s in %s." % [what, earner.ref_name()]
 
 
+## The critter this level rebuilds from other pieces ("" if none): its card
+## rule is the critter's, and its tray holds that critter back.
+func rebuilds() -> String:
+	var rule := str(raw.get("card_rule", ""))
+	return rule if rule in tray and not rule in pieces else ""
+
+
 ## Whether this level lets the player place this invention: one it lists, or
 ## an earned pot (_lay_trays).
 func offers_invention(inv_id: String) -> bool:
@@ -233,6 +242,7 @@ static func from_dict(d: Dictionary):
 	level.machine_phrase = str(d.get("machine", ""))
 	level.goal = str(d.get("goal", ""))
 	level.hint = str(d.get("hint", ""))
+	level.steps = d.get("steps", []).duplicate(true)
 	var rows_in: Array = d.get("target", [])
 	level.rows = rows_in.size()
 	level.cols = str(rows_in[0]).length() if rows_in.size() > 0 else 0
