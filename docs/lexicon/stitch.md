@@ -12,7 +12,7 @@ A stitch is one square of a cloth. The loom weaves one stitch from each drop it 
 
 - The loom takes at most one drop a tick, so one stitch a tick.
 - Unwoven stitches are sunken slots, darker than the cloth, each with a faint chip of the paint it wants; woven stitches carry no glyph dots (🟡), and the wrong-stitch bubble compares the two drops with dots.
-- A pattern card holds paint for every stitch; smudges are stitches of a card with stray paint.
+- A pattern card holds paint for every stitch. (Smudges, stitches of a card marked as stray paint, were dropped, designer 2026-10-05: a paint with another mixed in is just a paint.)
 
 ## Implementation
 

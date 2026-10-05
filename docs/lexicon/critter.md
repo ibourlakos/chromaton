@@ -19,14 +19,14 @@ Critters are the workshop's little helpers. Each one does one job to paint: pain
   | Red pot | 0 → 1 | Red, every time its tube is free | A sleepy clay pot that burps |
   | [Mix](mix.md) | 2 → 1 | Everything in either paint | A tub that stirs with a spoon |
   | [Filter](filter.md) | 2 → 1 | Only what both paints share | A fussy, heavy-lidded tub with a sieve that shakes |
-  | [Invert](invert.md) | 1 → 1 | The opposite paint | A tub that flips like a pancake |
+  | [Invert](invert.md) | 1 → 1 | The opposite paint | A tub that flips like a pancake (to become the Flip Pan, DESIGN.md §7.2) |
   | [Shift](shift.md) | 1 → 1 | Turns the wheel one step: red → yellow → blue → red | A hamster in a red, yellow and blue wheel |
   | Catch pot | 1 → 0 | Swallows every drop and remembers the last few | A pale glazed jar looking back up its tube (out of the trays for now) |
 
 - Earned pots (yellow, blue and the rest) are inventions drawn as the clay pot holding their own paint.
 - Glyph dots show a critter's rule as it fires: Shift turns the dots one notch; Invert empties the filled dots and fills the empty ones.
 - Art: chunky, toy-like vector art drawn in code; each critter has a signature animation. Faces must stay out of the way on big machines.
-- More personality (playtest): more whimsical, less factory-like. Some critters could be real tools (like the red pot); the hamster wheel is the vibe; Invert could be a gerbil that shaves the input off a black paint.
+- More personality (playtest): more whimsical, less factory-like. ✅ Decided 2026-10-05, not built (DESIGN.md §7.2, "Each critter becomes what its name says"): each critter gets its own silhouette, the thing its name says: a jolly Mixing Tub, an actual Sieve, the Flip Pan (a frying pan tossing an omelette), a bigger hamster in the Shift Wheel; the pots kept; Split a glass and brass fitting. The gerbil that shaves paint waits for Bleach.
 - The workshop cast (small animals and a master who hands out commissions) is a separate idea, not decided (DESIGN.md §7.2, §12).
 - New critters to come: the prism (one paint in, its three primaries out), and from the algebra review, Delay, If White and Slate. Each needs a character and animations, the known cost of this style.
 
@@ -40,4 +40,5 @@ Critters are the workshop's little helpers. Each one does one job to paint: pain
 
 ## Open questions
 
-- Noun names: Mix, Filter, Invert and Shift are verbs; they stay as they are for now (tagged temporary).
+- ~~Noun names: Mix, Filter, Invert and Shift are verbs.~~ Settled (designer, 2026-10-05; not built): every piece has two names, the operation's (algebra and code: Mix, Filter, Invert, Shift, Split, Red) and the critter's (what the player sees: Mixing Tub, Sieve, Flip Pan, Shift Wheel, Split, red pot), so the algebra and the art can change apart.
+- Later: the inventions' names and personalities (the playtest notes keep this).

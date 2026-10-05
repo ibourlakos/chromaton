@@ -3,7 +3,7 @@
 - **Tags:** gameplay, design, implementation
 - **Status:** ✅ (the only basic pot, DESIGN.md §2.5)
 - **Journal:** unlocks in One Pot of Red; page on the Pieces tab
-- **Also called:** red source (algebra notes), pot
+- **Also called:** red source (algebra notes), pot; **Red** is its algebra and code name (designer, 2026-10-05: algebra names and critter names are kept apart; the player always sees "red pot", earned pots likewise "yellow pot" over Yellow)
 
 ## Gameplay
 

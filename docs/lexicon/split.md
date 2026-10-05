@@ -3,7 +3,7 @@
 - **Tags:** gameplay, design, implementation
 - **Status:** 🟡
 - **Journal:** unlocks in Purple; page on the Pieces tab
-- **Also called:** tube split, junction
+- **Also called:** tube split, junction. Split is both its algebra name and its player word (designer, 2026-10-05: kept; a plumbing split is a noun).
 
 ## Gameplay
 

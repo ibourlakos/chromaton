@@ -15,6 +15,7 @@ The paint card shows all eight paints at a glance. Red, yellow and blue sit at t
 - Laid out as a mixing triangle in the glyph dots' places. Two lessons come without text: opposites face each other across black along dashed lines (Invert jumps across), and Shift turns the triangle one corner clockwise.
 - Not modal: the workbench keeps working around it. It clears the middle row, where a single card's machine sits, and stays up from level to level.
 - Came from the playtest (2026-10-04): testers asked why red, yellow and blue make black and how the dark paints are made.
+- ✅ **Working pieces out on the card** (designer, 2026-10-05; not built): small arrows around the triangle (red → yellow → blue, and orange → green → purple with them), in ink, never a signal hue, so Shift can be read off the card too. Each piece's journal page gets a line on using the card for it: Mix (where two paints meet: the edge between two corners, black once all three are in), Invert (straight across black along the dashed line), Shift (one arrow on). The line unlocks with the page.
 
 ## Implementation
 

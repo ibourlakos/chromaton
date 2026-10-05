@@ -7,7 +7,9 @@ The game's vocabulary, one file per term; this page is the index. One catch-all 
 - **gameplay**: the player meets the word. Its **Gameplay** section is the text the journal shows, so it's written for players: short, in paint, never bits or numbers for colors, readable by an 8-year-old. After editing one, run `.\make words` (it rewrites `data/words.json`, which the game ships; a test fails if they drift apart).
 - **design**: a word of the design (DESIGN.md, playtest notes, design talk).
 - **implementation**: a word of the code. Its **Implementation** section is a reminder for us and never appears in the game.
-- **temporary**: a placeholder name we keep on purpose for now. Use it, but expect it to change (the noun names for Mix, Filter, Invert and Shift; the tray).
+- **temporary**: a placeholder name we keep on purpose for now. Use it, but expect it to change (the tray).
+
+A piece has two names (designer, 2026-10-05): the term is the operation's name, used by the algebra, the code and the design (Mix, Filter, Invert, Shift, Split, Red); its **Player word** is the critter's name, the only one in player-facing text (Mixing Tub, Sieve, Flip Pan, Shift Wheel, Split, red pot). Until the rename is built, the new word sits on a "Player word (decided ..., not built)" line.
 
 A term carries every tag that fits.
 
@@ -33,18 +35,19 @@ Files are named after the term in lower-case kebab-case (`paint-card.md`) and li
 |---|---|---|---|
 | [Cloth](cloth.md) | gameplay, design, implementation | 🟡 | The picture a machine weaves on the loom. |
 | [Critter](critter.md) | gameplay, design, implementation | 🟡 | A piece drawn as a character that does one thing to paint. |
-| [Filter](filter.md) | gameplay, design, implementation, temporary | 🟡 | The critter that keeps only what two paints share. |
-| [Invert](invert.md) | gameplay, design, implementation, temporary | 🟡 | The critter that turns a paint into its opposite. |
+| [Filter](filter.md) | gameplay, design, implementation | ✅ | Keeps only what two paints share. Player word: Sieve. |
+| [Invert](invert.md) | gameplay, design, implementation | ✅ | Turns a paint into its opposite. Player word: Flip Pan. |
 | [Invention](invention.md) | gameplay, design, implementation | ✅ | A machine the player built, kept as one piece to use again. |
 | [Journal](journal.md) | gameplay, design, implementation | ✅ | The player's book of everything learned, made and woven. |
 | [Loom](loom.md) | gameplay, design, implementation | 🟡 | Weaves the machine's paint into the cloth, one stitch per tick. |
-| [Mix](mix.md) | gameplay, design, implementation, temporary | 🟡 | The critter that gives everything in either of two paints. |
+| [Lost Levels](lost-levels.md) | design | ✅ | The hidden extra campaign where levels that leave the campaign go. |
+| [Mix](mix.md) | gameplay, design, implementation | ✅ | Gives everything in either of two paints. Player word: Mixing Tub. |
 | [Paint](paint.md) | gameplay, design, implementation | ✅ | One of the eight paints, from white (none) to black (all three primaries). |
 | [Paint card](paint-card.md) | gameplay, design, implementation | ✅ | The cheat sheet of the eight paints, up over the workbench. |
 | [Piece](piece.md) | gameplay, design, implementation | 🟡 | Anything put on the workbench from the tray; its price counts toward the Pieces score. |
 | [Quilt](quilt.md) | gameplay, design, implementation | ✅ | A chapter's cloths sewn together. |
 | [Red pot](red-pot.md) | gameplay, design, implementation | ✅ | The one pot of red paint every other paint starts from. |
-| [Shift](shift.md) | gameplay, design, implementation, temporary | 🟡 | The critter that turns the paint wheel one step. |
+| [Shift](shift.md) | gameplay, design, implementation | ✅ | Turns the paint wheel one step. Player word: Shift Wheel. |
 | [Split](split.md) | gameplay, design, implementation | 🟡 | Copies one drop into two; free. |
 | [Stars](stars.md) | gameplay, design, implementation | ✅ | One to three per level: woven, few pieces, fewest pieces. |
 | [Stitch](stitch.md) | gameplay, design, implementation | 🟡 | One square of a cloth, woven from one drop. |
@@ -52,8 +55,8 @@ Files are named after the term in lower-case kebab-case (`paint-card.md`) and li
 | [Tick](tick.md) | gameplay, design, implementation | 🟡 | One beat of the workshop clock. |
 | [Tray](tray.md) | gameplay, design, implementation, temporary | 🟡 | The shelf of pieces along the bottom of the workbench. |
 | [Tube](tube.md) | gameplay, design, implementation | ✅ | The glass tube that carries paint from one piece to the next. |
-| [Workbench](workbench.md) | gameplay, design, implementation | 🟡 | Where the player builds a machine. |
+| [Workbench](workbench.md) | gameplay, design, implementation | ✅ | Where the player builds a machine. Player word: Workshop. |
 
 ## Still to write
 
-Catch pot, drop, pattern card, design card, smudge, opposite, primary, glyph dots, machine, chapter, level, tool introduction, peek.
+Catch pot, drop, pattern card (gameplay: unlocks in The Pattern Card, 2026-10-05), design card, opposite, primary, glyph dots, machine, chapter, level, guided level (design: a level whose hand teaches what it brings in, DESIGN.md §5.7; replaced "tool introduction", 2026-10-05), peek, profile (gameplay, design: a local save slot with a critter badge and an optional name, the anonymous, local, offline mode, DESIGN.md §9, 2026-10-05; not built).

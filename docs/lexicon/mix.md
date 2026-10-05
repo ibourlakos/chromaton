@@ -1,7 +1,8 @@
 # Mix
 
-- **Tags:** gameplay, design, implementation, temporary (a verb; noun names are wanted but deferred)
-- **Status:** 🟡
+- **Tags:** gameplay, design, implementation
+- **Status:** ✅ two names (designer, 2026-10-05): the term is the algebra's and the code's name; the player sees the critter's name
+- **Player word (decided 2026-10-05, not built):** Mixing Tub. It becomes the Player word, and the Gameplay text uses it, when the rename is built (then `.\make words`).
 - **Journal:** unlocks in Orange; page on the Pieces tab
 
 ## Gameplay
