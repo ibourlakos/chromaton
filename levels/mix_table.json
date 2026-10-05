@@ -5,6 +5,46 @@
 	"machine": "Every Pair Mixed",
 	"goal": "Weave the table.",
 	"hint": "Card A holds one paint a row, card B every paint. Mix them drop by drop, and the cloth becomes the table of every mix.",
+	"steps": [
+		{
+			"line": "Two cards this time.",
+			"do": []
+		},
+		{
+			"line": "The Mixing Tub takes one drop from each.",
+			"do": [
+				[
+					"place",
+					"m"
+				]
+			]
+		},
+		{
+			"line": "Tube card A and card B into the tub.",
+			"do": [
+				[
+					"tube",
+					"card0",
+					"m"
+				],
+				[
+					"tube",
+					"card1",
+					"m"
+				]
+			]
+		},
+		{
+			"line": "To the loom: every mix, row by row.",
+			"do": [
+				[
+					"tube",
+					"m",
+					"loom"
+				]
+			]
+		}
+	],
 	"pieces": [
 		"red_pot",
 		"shift",

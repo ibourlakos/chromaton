@@ -5,7 +5,30 @@
 	"machine": "Straight from the Card",
 	"goal": "Weave the sailboat.",
 	"hint": "A card holds a paint for every stitch and lets them out one drop at a time. Tube it straight to the loom.",
-	"hints": true,
+	"steps": [
+		{
+			"line": "This card holds the whole picture.",
+			"do": []
+		},
+		{
+			"line": "Tube it to the loom.",
+			"do": [
+				[
+					"tube",
+					"card0",
+					"loom"
+				]
+			]
+		},
+		{
+			"line": "Run, and watch the drops come out in order.",
+			"do": [
+				[
+					"run"
+				]
+			]
+		}
+	],
 	"pieces": [],
 	"inventions": [],
 	"stars": {

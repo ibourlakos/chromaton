@@ -156,7 +156,7 @@
 		},
 		{
 			"id": "filter",
-			"level": "smudges",
+			"level": "filter_table",
 			"tab": "pieces",
 			"text": "The Sieve takes two paints and keeps only what they share. Orange and purple share red, so out comes red. Two paints that share nothing give white.",
 			"word": "Sieve"

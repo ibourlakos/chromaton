@@ -5,6 +5,83 @@
 	"machine": "The Purple Pot",
 	"goal": "Weave a purple cloth.",
 	"hint": "Today the shelf is shut: only the red pot. Split its red, turn one copy twice to blue, and mix it back with the other.",
+	"steps": [
+		{
+			"line": "Only red today.",
+			"do": [
+				[
+					"place",
+					"pot"
+				]
+			]
+		},
+		{
+			"line": "Split copies one drop into two.",
+			"do": [
+				[
+					"place",
+					"s"
+				],
+				[
+					"tube",
+					"pot",
+					"s"
+				]
+			]
+		},
+		{
+			"line": "Turn one copy twice to make blue.",
+			"do": [
+				[
+					"place",
+					"h1"
+				],
+				[
+					"place",
+					"h2"
+				],
+				[
+					"tube",
+					"s",
+					"h1"
+				],
+				[
+					"tube",
+					"h1",
+					"h2"
+				]
+			]
+		},
+		{
+			"line": "Mix it back with the other copy.",
+			"do": [
+				[
+					"place",
+					"m"
+				],
+				[
+					"tube",
+					"s",
+					"m"
+				],
+				[
+					"tube",
+					"h2",
+					"m"
+				]
+			]
+		},
+		{
+			"line": "To the loom.",
+			"do": [
+				[
+					"tube",
+					"m",
+					"loom"
+				]
+			]
+		}
+	],
 	"pieces": [
 		"red_pot",
 		"shift",

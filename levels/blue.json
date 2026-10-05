@@ -5,6 +5,49 @@
 	"machine": "The Blue Pot",
 	"goal": "Weave a blue cloth.",
 	"hint": "Your yellow pot is a piece now, and cheaper than a red pot with a wheel. Turn its yellow once more on the Shift Wheel.",
+	"steps": [
+		{
+			"line": "Your yellow pot is on the shelf now.",
+			"do": [
+				[
+					"fan"
+				]
+			]
+		},
+		{
+			"line": "Take it out.",
+			"do": [
+				[
+					"place",
+					"y"
+				]
+			]
+		},
+		{
+			"line": "One more turn makes blue.",
+			"do": [
+				[
+					"place",
+					"h"
+				],
+				[
+					"tube",
+					"y",
+					"h"
+				]
+			]
+		},
+		{
+			"line": "To the loom.",
+			"do": [
+				[
+					"tube",
+					"h",
+					"loom"
+				]
+			]
+		}
+	],
 	"pieces": [
 		"red_pot",
 		"shift"

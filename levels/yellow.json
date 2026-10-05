@@ -5,6 +5,46 @@
 	"machine": "The Yellow Pot",
 	"goal": "Weave a yellow cloth.",
 	"hint": "The hamster runs, and its wheel turns red into yellow. Tube the red pot through the Shift Wheel.",
+	"steps": [
+		{
+			"line": "We only have red now.",
+			"do": [
+				[
+					"place",
+					"pot"
+				]
+			]
+		},
+		{
+			"line": "One turn of the Shift Wheel makes red yellow.",
+			"do": [
+				[
+					"place",
+					"h"
+				]
+			]
+		},
+		{
+			"line": "Tube the red into the wheel.",
+			"do": [
+				[
+					"tube",
+					"pot",
+					"h"
+				]
+			]
+		},
+		{
+			"line": "Send the new paint to the loom.",
+			"do": [
+				[
+					"tube",
+					"h",
+					"loom"
+				]
+			]
+		}
+	],
 	"pieces": [
 		"red_pot",
 		"shift"
