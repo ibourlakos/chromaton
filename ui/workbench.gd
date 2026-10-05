@@ -65,14 +65,18 @@ const GRID_ORIGIN := Vector2(24, 84)
 const CELL := Vector2(84, 80)
 const COLS := 11
 const ROWS := 7
-const CARD_ROWS := {1: [3], 2: [1, 5], 3: [0, 3, 6]}
+const CARD_ROWS := {1: [3], 2: [1, 5], 3: [0, 3, 6]}  # a card's row when the bench doesn't say
+const SPOTS := Vector2i(COLS * 2 - 1, ROWS * 2 - 1)  # where a piece can sit: every half cell
 const SIDE := Rect2(980, 74, 288, 578)  # design card, loom and status
 const TITLE_X := 132.0  # the title starts right of Back and the Options gear
 const TITLE_END := 716.0  # and ends before the Paints button
 const PORT_DX := 34.0
 const PORT_DY := 17.0
 const PORT_HIT := 20.0
-const TICK_SECONDS := [0.55, 0.22, 0.05]
+## Seconds a tick: slow (one drop to follow and talk through), normal, and
+## fast, 30 ticks a second on any machine (DESIGN.md 9.1, wider speeds).
+const TICK_SECONDS := [0.8, 0.22, 1.0 / 30.0]
+const MAX_TICKS_A_FRAME := 8  # a very long frame catches up this far, no further
 const SPEEDS := ["slow", "normal", "fast"]
 const PIECE_SCALE := 0.6
 const FAN_SLOT := Vector2(96, 104)  # a pot in the pot slot's fan
@@ -147,7 +151,8 @@ var loom_cs := 20.0
 var loom_port := Vector2.ZERO
 var tube_paths := {}  # Vector4(from end, to end) -> curve (see _tube_path)
 
-var drag := ""  # "", "new", "move", "tube", "tube_in"
+var drag := ""  # "", "new", "move", "card", "tube", "tube_in"
+var card_wiggle := {}  # card node id -> clock when a refused slide sent it back
 var drag_kind := ""
 var drag_index := -1  # tray index of a "new" drag
 var drag_node := -1
@@ -389,30 +394,60 @@ func _layout_loom() -> void:
 	loom_cs = floorf(clampf(minf(avail.y / level.rows, avail.x / level.cols), 10, 30))
 	var w: float = level.cols * loom_cs
 	var h: float = level.rows * loom_cs
-	var mid := Vector2(SIDE.position.x + 62 + avail.x / 2, SIDE.position.y + 276)
+	# The inlet sits on the bench's middle row, so a machine laid along it
+	# runs straight into the loom.
+	var mid := Vector2(SIDE.position.x + 62 + avail.x / 2, GRID_ORIGIN.y + 3.5 * CELL.y)
 	loom_cloth = Rect2(mid - Vector2(w, h) / 2, Vector2(w, h))
 	loom_port = Vector2(loom_cloth.position.x - 52, mid.y)
 
 
+## Pieces sit on spots, every half cell (DESIGN.md 9.1): SPOTS of them. A
+## piece still covers a whole cell around its spot and never overlaps
+## another, so it can sit between two rows. Spot (2x, 2y) is cell (x, y).
+func spot_center(x: int, y: int) -> Vector2:
+	return GRID_ORIGIN + Vector2((x + 1) * CELL.x / 2, (y + 1) * CELL.y / 2)
+
+
+## The middle of whole cell (x, y).
 func cell_center(x: int, y: int) -> Vector2:
-	return GRID_ORIGIN + Vector2((x + 0.5) * CELL.x, (y + 0.5) * CELL.y)
+	return spot_center(2 * x, 2 * y)
 
 
-func cell_at(pos: Vector2) -> Vector2i:
+## The spot a piece centred near pos snaps to, or (-1, -1) off the bench.
+func spot_at(pos: Vector2) -> Vector2i:
 	var rel := pos - GRID_ORIGIN
-	var c := Vector2i(floori(rel.x / CELL.x), floori(rel.y / CELL.y))
-	if c.x < 0 or c.y < 0 or c.x >= COLS or c.y >= ROWS:
+	if rel.x < 0 or rel.y < 0 or rel.x >= COLS * CELL.x or rel.y >= ROWS * CELL.y:
 		return Vector2i(-1, -1)
-	return c
+	return Vector2i(clampi(roundi(rel.x / (CELL.x / 2)) - 1, 0, SPOTS.x - 1), clampi(roundi(rel.y / (CELL.y / 2)) - 1, 0, SPOTS.y - 1))
 
 
-## A cell holds a placed piece or part of a pattern card.
-func cell_taken(cell: Vector2i) -> bool:
-	return machine.piece_at(cell.x, cell.y) >= 0 or _card_cell(cell)
+## The piece placed on whole cell (x, y), or -1.
+func piece_in_cell(x: int, y: int) -> int:
+	return machine.piece_at(2 * x, 2 * y)
 
 
-func _card_cell(cell: Vector2i) -> bool:
-	return level.cards.size() > 0 and cell.x <= 1 and cell.y in CARD_ROWS.get(level.cards.size(), [])
+## A piece on this spot would overlap a placed piece (other than `except`)
+## or a pattern card.
+func spot_taken(spot: Vector2i, except := -1) -> bool:
+	for id in machine.nodes:
+		if id == except or machine.is_fixed(id):
+			continue
+		var n: Dictionary = machine.nodes[id]
+		if absi(int(n["x"]) - spot.x) < 2 and absi(int(n["y"]) - spot.y) < 2:
+			return true
+	return _card_spot(spot) >= 0
+
+
+## The card a piece on this spot would overlap, or -1. A card covers the
+## first two cells of its row.
+func _card_spot(spot: Vector2i) -> int:
+	if spot.x >= 4:
+		return -1
+	for c in level.cards.size():
+		var row := _card_row(c)
+		if spot.y > 2 * row - 2 and spot.y < 2 * row + 2:
+			return c
+	return -1
 
 
 func node_center(id: int) -> Vector2:
@@ -421,16 +456,31 @@ func node_center(id: int) -> Vector2:
 		return drag_pos - grab
 	match n["kind"]:
 		Pieces.CARD:
-			return _card_center(int(n["card"]))
+			var c := _card_center(int(n["card"]))
+			if drag == "card" and drag_node == id and drag_moved:  # sliding along the edge
+				c.y = clampf(drag_pos.y - grab.y, GRID_ORIGIN.y + CELL.y / 2, GRID_ORIGIN.y + (ROWS - 0.5) * CELL.y)
+			elif card_wiggle.has(id):  # a refused slide: back with a wiggle
+				var u: float = (clock - card_wiggle[id]) / 0.45
+				if u < 1.0:
+					c.x += sin(u * TAU * 3.0) * 5.0 * (1.0 - u)
+			return c
 		Pieces.LOOM:
 			return loom_port
-	return cell_center(n["x"], n["y"])
+	return spot_center(n["x"], n["y"])
 
 
 ## A pattern card covers the first two cells of its row.
 func _card_center(card: int) -> Vector2:
-	var rows: Array = CARD_ROWS.get(level.cards.size(), [3])
-	return Vector2(GRID_ORIGIN.x + CELL.x, GRID_ORIGIN.y + (rows[card] + 0.5) * CELL.y)
+	return Vector2(GRID_ORIGIN.x + CELL.x, GRID_ORIGIN.y + (_card_row(card) + 0.5) * CELL.y)
+
+
+## The row a card sits on: its own, saved with the bench, or else the
+## default for the level's number of cards (CARD_ROWS).
+func _card_row(card: int) -> int:
+	var id: int = machine.find_kind(Pieces.CARD, card) if machine != null else -1
+	if id >= 0 and machine.nodes[id].has("row"):
+		return int(machine.nodes[id]["row"])
+	return CARD_ROWS.get(level.cards.size(), [3, 3, 3])[card]
 
 
 ## Port offsets on one side of a piece (dx < 0: inputs, dx > 0: outputs),
@@ -592,16 +642,33 @@ func _process(delta: float) -> void:
 		_refresh_layers()
 		return
 	clock += delta
-	if phase < 1.0:
-		phase = minf(1.0, phase + delta / TICK_SECONDS[speed])
-		if phase >= 1.0:
+	_advance(delta / TICK_SECONDS[speed])
+	_update_glow()
+	_refresh_layers()
+
+
+## Moves the run on by this many ticks of time, by the clock, not the frame:
+## a tick's animation ends and, while running, the next tick starts in the
+## same frame, so every speed runs at its rate; when a frame is longer than a
+## tick, several ticks step and the last is drawn (drops jump, not glide).
+func _advance(ticks: float) -> void:
+	var steps := 0
+	while true:
+		if phase < 1.0:
+			if ticks < 1.0 - phase:
+				phase += ticks
+				return
+			ticks -= 1.0 - phase
+			phase = 1.0
 			if sim.last_weave_tick == sim.tick and sim.tick > 0:
 				landed_at = clock
 			_on_tick_shown()
-	elif running:
+		if not running or steps >= MAX_TICKS_A_FRAME:
+			return
 		_do_step()
-	_update_glow()
-	_refresh_layers()
+		steps += 1
+		if phase >= 1.0:  # nothing stepped: the run is over or stuck
+			return
 
 
 ## After a failed run the title's "?" glows softly, once per run, until the
@@ -742,7 +809,10 @@ func _peek() -> void:
 		focus = tray[carrying]["kind"]
 	elif selected_piece >= 0 and machine.nodes.has(selected_piece):
 		var n: Dictionary = machine.nodes[selected_piece]
-		focus = "inv:" + str(n.get("invention", "")) if n["kind"] == Pieces.INVENTION else n["kind"]
+		if n["kind"] == Pieces.CARD:
+			focus = "card"
+		else:
+			focus = "inv:" + str(n.get("invention", "")) if n["kind"] == Pieces.INVENTION else n["kind"]
 	elif selected_tube >= 0 and selected_tube < machine.tubes.size():
 		focus = "tube"
 	open_journal(focus)
@@ -875,7 +945,13 @@ func _has_selection() -> bool:
 	return (selected_piece >= 0 and machine.nodes.has(selected_piece)) or (selected_tube >= 0 and selected_tube < machine.tubes.size())
 
 
+func _card_selected() -> bool:
+	return selected_piece >= 0 and machine.nodes.has(selected_piece) and machine.nodes[selected_piece]["kind"] == Pieces.CARD
+
+
 func _delete_selected() -> void:
+	if _card_selected():  # a card is never removed
+		return
 	if selected_piece >= 0 and machine.nodes.has(selected_piece):
 		_push_undo()
 		machine.remove_node(selected_piece)
@@ -895,7 +971,10 @@ func _press(pos: Vector2) -> void:
 	if _title_parts()["hit"].has_point(pos):
 		show_note()
 		return
-	if _has_selection() and pos.distance_to(_delete_button_pos()) < 26:
+	if _has_selection() and pos.distance_to(_book_button_pos()) < 22:
+		_peek()
+		return
+	if _has_selection() and not _card_selected() and pos.distance_to(_delete_button_pos()) < 26:
 		_delete_selected()
 		return
 	if PEEK.has_point(pos):
@@ -917,9 +996,9 @@ func _press(pos: Vector2) -> void:
 	if carrying >= 0:
 		# A click puts the carried piece down on a free cell; anywhere else
 		# it goes back to the tray.
-		var cell := cell_at(pos)
-		if cell.x >= 0 and not cell_taken(cell):
-			_place(tray[carrying]["kind"], cell)
+		var spot := spot_at(pos)
+		if spot.x >= 0 and not spot_taken(spot):
+			_place(tray[carrying]["kind"], spot)
 		carrying = -1
 		return
 	var port := _port_at(pos, "any", -1)
@@ -949,6 +1028,13 @@ func _press(pos: Vector2) -> void:
 		grab = pos - node_center(pid)
 		selected_tube = -1
 		return
+	var cid := _card_at_pos(pos)
+	if cid >= 0:  # a card: a tap selects it, a drag slides it along the left edge
+		drag = "card"
+		drag_node = cid
+		grab = pos - node_center(cid)
+		selected_tube = -1
+		return
 	selected_tube = _tube_at(pos)
 
 
@@ -963,6 +1049,8 @@ func _release(pos: Vector2) -> void:
 				_pick(drag_index)  # a tap picks the piece up
 		"move":
 			_finish_move(pos)
+		"card":
+			_finish_card(pos)
 		"tube":
 			var target := _port_at(pos, "in", drag_node)
 			if not target.is_empty():
@@ -990,21 +1078,78 @@ func _release(pos: Vector2) -> void:
 
 
 func _place_new(pos: Vector2) -> void:
-	_place(drag_kind, cell_at(pos))
+	_place(drag_kind, spot_at(pos))
 
 
-## Puts a new piece of a tray kind on a free cell.
-func _place(kind: String, cell: Vector2i) -> void:
-	if cell.x < 0 or cell_taken(cell):
+## Puts a new piece of a tray kind on a free spot.
+func _place(kind: String, spot: Vector2i) -> void:
+	if spot.x < 0 or spot_taken(spot):
 		return
 	_push_undo()
 	var id: int
 	if kind.begins_with("inv:"):
-		id = machine.add_node(Pieces.INVENTION, cell.x, cell.y, {"invention": kind.substr(4)})
+		id = machine.add_node(Pieces.INVENTION, spot.x, spot.y, {"invention": kind.substr(4)})
 	else:
-		id = machine.add_node(kind, cell.x, cell.y)
+		id = machine.add_node(kind, spot.x, spot.y)
 	placed_at[id] = clock
 	_edited()
+
+
+## A card's slide ends: a tap selects it; dropped on a row whose first two
+## cells are free it moves there, on another card the two swap, and dropped
+## on a piece, off the bench or on the trash it slides back with a wiggle.
+## Cards never leave the left edge, so paint still enters on the left.
+func _finish_card(pos: Vector2) -> void:
+	var id := drag_node
+	drag = ""
+	if not drag_moved:
+		selected_piece = id  # a tap selects the card
+		selected_tube = -1
+		return
+	var card := int(machine.nodes[id]["card"])
+	var from := _card_row(card)
+	var row := clampi(floori((pos.y - grab.y - GRID_ORIGIN.y) / CELL.y), 0, ROWS - 1)
+	if not BENCH.has_point(pos):
+		card_wiggle[id] = clock
+		return
+	if row == from:
+		return
+	var other := -1
+	for c in level.cards.size():
+		if c != card and _card_row(c) == row:
+			other = c
+	if other < 0 and not _row_free_for_card(row):
+		card_wiggle[id] = clock
+		return
+	_push_undo()
+	for c in level.cards.size():  # every card says its row from now on
+		machine.nodes[machine.find_kind(Pieces.CARD, c)]["row"] = _card_row(c)
+	machine.nodes[id]["row"] = row
+	if other >= 0:
+		machine.nodes[machine.find_kind(Pieces.CARD, other)]["row"] = from
+	_edited()
+
+
+## Whether a card fits on this row: no piece covers its first two cells.
+func _row_free_for_card(row: int) -> bool:
+	for id in machine.nodes:
+		if machine.is_fixed(id):
+			continue
+		var n: Dictionary = machine.nodes[id]
+		if int(n["x"]) < 4 and int(n["y"]) > 2 * row - 2 and int(n["y"]) < 2 * row + 2:
+			return false
+	return true
+
+
+## The card under the pointer, or -1.
+func _card_at_pos(pos: Vector2) -> int:
+	for c in level.cards.size():
+		var id: int = machine.find_kind(Pieces.CARD, c)
+		var r := K.CARD_RECT
+		r.position += node_center(id)
+		if id >= 0 and r.has_point(pos):
+			return id
+	return -1
 
 
 func _finish_move(pos: Vector2) -> void:
@@ -1021,14 +1166,14 @@ func _finish_move(pos: Vector2) -> void:
 		machine.remove_node(id)
 		_edited()
 		return
-	var cell := cell_at(pos - grab)
+	var spot := spot_at(pos - grab)
 	var n: Dictionary = machine.nodes[id]
-	if cell.x < 0 or (cell.x == n["x"] and cell.y == n["y"]):
+	if spot.x < 0 or (spot.x == n["x"] and spot.y == n["y"]):
 		return
-	if cell_taken(cell):
+	if spot_taken(spot, id):
 		return
 	_push_undo()
-	machine.move_node(id, cell.x, cell.y)
+	machine.move_node(id, spot.x, spot.y)
 	placed_at[id] = clock
 	_edited()
 
@@ -1091,6 +1236,16 @@ func _delete_button_pos() -> Vector2:
 	return K.along(tube_points(selected_tube), 0.5) + Vector2(0, -30)
 
 
+## The book button beside the delete button: a tap opens the selection's
+## journal page, as the journal by the trash does. A card, which has no
+## delete button, shows it alone in that place.
+func _book_button_pos() -> Vector2:
+	if _card_selected():
+		var below := _card_row(int(machine.nodes[selected_piece]["card"])) == 0
+		return node_center(selected_piece) + Vector2(0, 52 if below else -52)
+	return _delete_button_pos() + Vector2(50, 0)
+
+
 # ---------------------------------------------------------------------------
 # Drawing
 # ---------------------------------------------------------------------------
@@ -1128,18 +1283,28 @@ func _refresh_layers() -> void:
 	shelf.show_look([carrying, fan_open, _trash_lit(), _peek_lit()])
 	tray_layer.show_look([level, tray.size()])
 	aim_layer.show_look([_aim_cell(), bench_gen, drag, drag_node])
-	cards_layer.show_look([level])
+	cards_layer.show_look([level, _cards_look()])
 	paints_layer.show_look(_card_paints_look())
 	# Ports stay put while a piece or tube is dragged (the dragged piece's go
 	# with it); tubes follow the pointer.
-	var editing := [bench_gen, drag, drag_node, drag_moved]
+	var editing := [bench_gen, drag, drag_node, drag_moved, _cards_look()]
 	ports.show_look(editing)
-	if drag in ["move", "tube", "tube_in"]:
+	if drag in ["move", "card", "tube", "tube_in"]:
 		editing.append(drag_pos)
 	wiring.show_look(editing + [selected_tube, selected_piece, drag_port, drag_detach])
 	loom_layer.show_look([bench_gen, sim.tick, outcome, _loom_shown()])
 	critters.queue_redraw()
 	queue_redraw()
+
+
+## Where the cards are drawn (they slide and wiggle), for the layers that
+## show them.
+func _cards_look() -> Array:
+	var out := []
+	for c in level.cards.size():
+		var id: int = machine.find_kind(Pieces.CARD, c)
+		out.append(node_center(id) if id >= 0 else Vector2.ZERO)
+	return out
 
 
 func _draw() -> void:
@@ -1208,17 +1373,40 @@ func _draw_fan() -> void:
 		var lit := k == carrying or (drag == "new" and drag_index == k)
 		K.shape(self, K.round_rect(r, 10), Color(P.HOOP, 0.3) if lit else P.TAG, P.INK if lit else Color(P.INK, 0.5), 3 if lit else 1.5)
 		_draw_piece_kind(item["kind"], r.get_center() + Vector2(0, -8), -1, 0.78, self, 0.0)
-		var label := "Red · 1"
+		var label := "Red"
 		if item["kind"] != "red_pot":
-			var inv: Dictionary = inventions[item["kind"].substr(4)]
-			label = "%s · %d" % [Paint.name_of(Invention.paint_of(inv)), int(inv["cost"])]
+			label = Paint.name_of(Invention.paint_of(inventions[item["kind"].substr(4)]))
 		if item["locked"]:
 			K.fill(self, K.round_rect(r.grow(-2), 9), Color(P.TAG, 0.72))
 			K.text(self, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, Color(P.INK_SOFT, 0.45))
+			_cost_chip(self, r, _price(item["kind"]), true)
 			continue
 		K.text(self, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, P.INK_SOFT)
+		_cost_chip(self, r, _price(item["kind"]), false)
 		if k - shelf_size < 9:
 			Keys.cap(self, r.position + Vector2(16, 16), Keys.label("piece_%d" % (k - shelf_size + 1)))
+
+
+## What a tray kind costs the player: a piece its table price, an invention
+## or pot the player's own price.
+func _price(kind: String) -> int:
+	if kind.begins_with("inv:"):
+		return int(inventions.get(kind.substr(4), {}).get("cost", 0))
+	return int(Pieces.TABLE[kind]["cost"]) if Pieces.TABLE.has(kind) else 0
+
+
+## A slot's cost chip in its top-right corner: the cost bar's piece icon and
+## the number, "free" after Split's 0 (the key cap is top left, the name on
+## the bottom line). Faded under a locked slot's veil.
+func _cost_chip(ci: CanvasItem, r: Rect2, cost: int, faded: bool) -> void:
+	var font := P.ui(800)
+	var text := str(cost) if cost > 0 else "0 free"
+	var w := 24.0 + font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 12).x
+	var chip := Rect2(r.end.x - 7 - w, r.position.y + 6, w, 20)
+	var a := 0.45 if faded else 1.0
+	K.shape(ci, K.round_rect(chip, 10), Color(P.PAPER, a), Color(P.INK, 0.35 * a), 1.2)
+	K.icon(ci, "pieces", chip.position + Vector2(11, 10), 0.6, Color(P.INK_SOFT, a))
+	K.text(ci, font, chip.position + Vector2(19, 10), text, 12, Color(P.INK_SOFT, a), HORIZONTAL_ALIGNMENT_LEFT)
 
 
 func _wiggle(i: int) -> void:
@@ -1259,6 +1447,11 @@ func _draw_still() -> void:
 		for gy in ROWS + 1:
 			var y := GRID_ORIGIN.y + gy * CELL.y
 			still.draw_line(Vector2(GRID_ORIGIN.x, y), Vector2(GRID_ORIGIN.x + span.x, y), Color(P.INK, 0.07), 1.5)
+		# Faint dots at the half points: pieces snap every half cell.
+		for hx in COLS * 2 + 1:
+			for hy in ROWS * 2 + 1:
+				if hx % 2 == 1 or hy % 2 == 1:
+					still.draw_circle(GRID_ORIGIN + Vector2(hx, hy) * CELL / 2, 1.3, Color(P.INK, 0.1))
 	for gx in COLS + 1:
 		for gy in ROWS + 1:
 			still.draw_circle(GRID_ORIGIN + Vector2(gx * CELL.x, gy * CELL.y), 2, Color(P.INK, 0.12))
@@ -1360,53 +1553,54 @@ func _draw_tray() -> void:
 				var pot: Dictionary = behind[behind.size() - 1 - k]
 				_draw_piece_kind(pot["kind"], r.get_center() + Vector2(-22 if k == 0 else 22, -16), -1, 0.56, ci, 0.0)
 			label = "Pots"
-		elif kind.begins_with("inv:"):
-			var inv: Dictionary = inventions[kind.substr(4)]
-			label = ("%d piece" if int(inv["cost"]) == 1 else "%d pieces") % int(inv["cost"])
-		else:
-			label = Pieces.display_name(kind) + ("  free" if Pieces.TABLE[kind]["cost"] == 0 else "")
+		elif not kind.begins_with("inv:"):  # an invention's sticker carries its name
+			label = Pieces.display_name(kind)
 		_draw_piece_kind(kind, r.get_center() + Vector2(0, -8), -1, 0.82, ci, 0.0)
 		if item["locked"]:
 			# Under a paper veil, its lock (drawn live, so it can wiggle)
 			# where the key cap sits.
 			K.fill(ci, K.round_rect(r.grow(-2), 9), Color(P.TAG, 0.72))
 			K.text(ci, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, Color(P.INK_SOFT, 0.45))
+			if not item.get("pots", false):
+				_cost_chip(ci, r, _price(kind), true)
 			continue
 		K.text(ci, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, P.INK_SOFT)
+		if not item.get("pots", false):  # one number on the folded pots would read as every pot's
+			_cost_chip(ci, r, _price(kind), false)
 		if i < 9:
 			Keys.cap(ci, r.position + Vector2(16, 16), Keys.label("piece_%d" % (i + 1)))
 	Keys.cap(ci, PEEK.position + Vector2(16, 16), Keys.label("peek"))
 
 
-## The cell aimed at while dragging or carrying a piece ((-1, -1): none).
+## The spot aimed at while dragging or carrying a piece ((-1, -1): none).
 func _aim_cell() -> Vector2i:
 	var aim := Vector2(-1, -1)
 	if drag == "new" or (drag == "move" and drag_moved):
 		aim = drag_pos - (grab if drag == "move" else Vector2.ZERO)
 	elif _carried_ghost():
 		aim = hover_pos
-	return cell_at(aim)
+	return spot_at(aim)
 
 
-## The aim layer: the cell a dragged or carried piece would land on, lit if
+## The aim layer: the cell a dragged or carried piece would cover, lit if
 ## it is free.
 func _draw_aim() -> void:
-	var cell := _aim_cell()
-	if cell.x >= 0:
-		var ok: bool = not cell_taken(cell) or (drag == "move" and machine.piece_at(cell.x, cell.y) == drag_node)
-		var r := Rect2(GRID_ORIGIN + Vector2(cell) * CELL, CELL).grow(-4)
+	var spot := _aim_cell()
+	if spot.x >= 0:
+		var ok: bool = not spot_taken(spot, drag_node if drag == "move" else -1)
+		var r := Rect2(GRID_ORIGIN + Vector2(spot) * CELL / 2, CELL).grow(-4)
 		K.fill(aim_layer, K.round_rect(r, 10), Color(P.HOOP, 0.22) if ok else Color(P.INK, 0.08))
 
 
 func _draw_cards() -> void:
 	for c in level.cards.size():
-		K.card_body(cards_layer, _card_center(c), level.card_names[c])
+		K.card_body(cards_layer, node_center(machine.find_kind(Pieces.CARD, c)), level.card_names[c])
 
 
 ## What the paints layer shows: each card's next colors, and how far they
 ## have slid since it released one.
 func _card_paints_look() -> Array:
-	var look := [bench_gen]
+	var look := [bench_gen, _cards_look(), outcome]
 	for id in machine.nodes:
 		if machine.nodes[id]["kind"] == Pieces.CARD:
 			look.append(sim.card_cursor[machine.nodes[id]["card"]])
@@ -1422,6 +1616,15 @@ func _draw_card_paints() -> void:
 			continue
 		var c: int = n["card"]
 		var upcoming := []
+		if outcome == "wrong":
+			# A look back: the drops the card showed at the start, or as many
+			# ending at the one that wove the wrong stitch, which is ringed.
+			var wrong: int = sim.wrong_index
+			var start := maxi(0, wrong - level.card_shows + 1)
+			for k in range(start, mini(start + level.card_shows, level.cards[c].size())):
+				upcoming.append(level.cards[c][k])
+			K.card_paints(paints_layer, node_center(id), upcoming, 1.0, level.card_shows, wrong - start, start > 0)
+			continue
 		for k in range(sim.card_cursor[c], mini(sim.card_cursor[c] + level.card_shows, level.cards[c].size())):
 			upcoming.append(level.cards[c][k])
 		K.card_paints(paints_layer, node_center(id), upcoming, _age(id), level.card_shows)
@@ -1441,6 +1644,9 @@ func _draw_wiring() -> void:
 		K.tube(ci, K.tube_path(drag_pos, in_port(drag_node, drag_port)), false)
 	if selected_piece >= 0 and machine.nodes.has(selected_piece) and drag == "":
 		var r := Rect2(node_center(selected_piece) - CELL / 2, CELL).grow(-3)
+		if _card_selected():  # a card: the usual outline round its body
+			r = K.CARD_RECT.grow(6)
+			r.position += node_center(selected_piece)
 		K.shape(ci, K.round_rect(r, 12), Color(P.HOOP, 0.25), Color(P.INK, 0.5), 2)
 	for id in machine.nodes:
 		if machine.is_fixed(id) or (drag == "move" and id == drag_node):
@@ -1486,15 +1692,22 @@ func _draw_drops() -> void:
 		K.drop(self, K.along(tube_points(i), f), DROP_R, c)
 
 
-## The delete button for the selected tube or piece.
+## The delete button for the selected tube or piece, and the book button
+## beside it (alone on a card), drawn the same way.
 func _draw_delete_button() -> void:
 	if not _has_selection():
 		return
-	var b := _delete_button_pos()
-	K.fill(self, K.ellipse(b + Vector2(0, 3), 22, 22), P.SHADOW)
-	K.shape(self, K.ellipse(b, 22, 22), P.TAG, P.INK, 2.5)
-	K.icon(self, "trash", b, 1.0, P.INK)
-	Keys.cap(self, b + Vector2(0, 24), Keys.label("delete"))
+	if not _card_selected():
+		var b := _delete_button_pos()
+		K.fill(self, K.ellipse(b + Vector2(0, 3), 22, 22), P.SHADOW)
+		K.shape(self, K.ellipse(b, 22, 22), P.TAG, P.INK, 2.5)
+		K.icon(self, "trash", b, 1.0, P.INK)
+		Keys.cap(self, b + Vector2(0, 24), Keys.label("delete"))
+	var k := _book_button_pos()
+	K.fill(self, K.ellipse(k + Vector2(0, 3), 20, 20), P.SHADOW)
+	K.shape(self, K.ellipse(k, 20, 20), P.TAG, P.INK, 2.5)
+	K.icon(self, "book", k, 0.9, P.INK)
+	Keys.cap(self, k + Vector2(0, 22), Keys.label("peek"))
 
 
 ## Glass pipes into a piece's left side, wooden spouts out of its right side.

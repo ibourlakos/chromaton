@@ -14,6 +14,7 @@
 ##   --piece=<kind>, --word=<n>  the journal's piece page, or picked word
 ##   --peek[=<kind>]             a level with the journal open over it
 ##   --options                   a level with Options open over it (the gear)
+##   --select[=card]             the first placed piece selected (or card A)
 ##   --news                      with --finish: "New in your journal" next
 ##   --ticks=<n>                 ticks to run before the screenshot
 ##                               (default: one per stitch)
@@ -43,6 +44,7 @@ const Simulator = preload("res://core/simulator.gd")
 const Options = preload("res://ui/options.gd")
 const Intro = preload("res://ui/intro.gd")
 const Keys = preload("res://ui/keys.gd")
+const Pieces = preload("res://core/pieces.gd")
 
 const DESIGN := Vector2(1280, 800)
 
@@ -295,6 +297,13 @@ func _screenshot(args: Dictionary) -> void:
 				screen.fast_forward(int(args.get("ticks", levels[i].size())), float(args.get("phase", 0.5)))
 			if args.has("fan"):  # the pot slot's pots fanned out
 				screen._show_fan(true)
+			if args.has("select"):  # the first placed piece selected, or a card (--select=card)
+				var want := Pieces.CARD if str(args["select"]) == "card" else ""
+				for id in screen.machine.nodes:
+					var kind: String = screen.machine.nodes[id]["kind"]
+					if (want == "" and not screen.machine.is_fixed(id)) or kind == want:
+						screen.selected_piece = id
+						break
 			if args.has("options"):  # Options over the bench (the gear)
 				screen.open_options()
 			if args.has("peek"):  # the journal over the bench, at a piece's page

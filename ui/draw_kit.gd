@@ -725,17 +725,29 @@ const CARD_RECT := Rect2(-78, -26, 156, 52)
 ## A card's next colors, on its body: the drops it shows (`shows`, 4 to 10;
 ## fewer when the card runs out). With more than six they sit closer and a
 ## little smaller, so ten fit across the card.
-static func card_paints(ci: CanvasItem, c: Vector2, upcoming: Array, age: float, shows := 6) -> void:
+##
+## After a wrong stitch the card looks back (`ringed` >= 0): the drops it
+## showed, on a faint paper tint, the one that wove the wrong stitch ringed in
+## ink; `gap` marks that the window starts past the card's first drop.
+static func card_paints(ci: CanvasItem, c: Vector2, upcoming: Array, age: float, shows := 6, ringed := -1, gap_mark := false) -> void:
 	var r := CARD_RECT
 	r.position += c
 	var gap := minf(18.0, (r.size.x - 40.0) / maxf(shows - 1, 1))
 	var size := minf(7.5, gap * 0.5 - 0.4)
+	if ringed >= 0:
+		var x0 := r.end.x - 20 - (upcoming.size() - 1) * gap - size - 6
+		fill(ci, round_rect(Rect2(x0, r.position.y + 11, r.end.x - 11 - x0, 22), 11), P.LOOK_BACK)
+		if gap_mark:  # the window starts past the card's first drop
+			for k in 3:
+				disc(ci, Vector2(x0 - 6 - k * 5, r.position.y + 22), 1.4, P.INK_SOFT)
 	# next colors, the next one on the right by the card's port; they slide
 	# right as the card releases
 	var slide := -clampf(1.0 - age, 0, 1) * gap if age < 1 else 0.0
 	for i in upcoming.size():
 		var p := Vector2(r.end.x - 20 - i * gap + slide, r.position.y + 22)
-		swatch(ci, p, size if i > 0 else size + 1.0, upcoming[i])
+		swatch(ci, p, size if i > 0 or ringed >= 0 else size + 1.0, upcoming[i])
+		if i == ringed:
+			ring(ci, p, size + 3.0, P.INK, 2.0)
 	if upcoming.is_empty():
 		stroke(ci, arc(Vector2(c.x + 10, r.position.y + 21), 6, 0, TAU, 16), P.WARP, 2)
 
