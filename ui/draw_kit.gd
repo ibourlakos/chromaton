@@ -436,15 +436,15 @@ static func mixing_tub(ci: CanvasItem, c: Vector2, s: float, liq: int, age: floa
 	stroke(ci, body, P.INK, 3.5)
 	# Stubby arms out of its sides, reaching up to the spoon.
 	var a := t * (1.2 + 5 * k)
-	var grip := Vector2(cos(a) * 20 + 8, -78 + sin(a) * 4)
-	for side in [-1, 1]:
-		var shoulder := Vector2(side * 49, -36)
-		var hand := grip + Vector2(side * 7, side * 3)
-		var elbow := (shoulder + hand) / 2 + Vector2(side * 10, 6)
+	var grip := Vector2(cos(a) * 14 + 4, -66 + sin(a) * 3)
+	for side in [-1, 1]:  # stubby arms: short and thick, from the rim's ends
+		var shoulder := Vector2(side * 44, -50)
+		var hand := grip + Vector2(side * 9, 2)
+		var elbow := (shoulder + hand) / 2 + Vector2(side * 4, -5)
 		var arm := quad(shoulder, elbow, hand, 6)
 		arm.insert(0, shoulder)
-		ci.draw_polyline(arm, P.INK, 8.5, true)
-		ci.draw_polyline(arm, P.WOOD, 4.5, true)
+		ci.draw_polyline(arm, P.INK, 12, true)
+		ci.draw_polyline(arm, P.WOOD, 7.5, true)
 	var blink := fmod(t * 0.31 + seed, 1.0) < 0.035
 	_eyes(ci, -33, 16, blink)
 	var puff := 1.0 + 0.7 * k
@@ -469,11 +469,13 @@ static func mixing_tub(ci: CanvasItem, c: Vector2, s: float, liq: int, age: floa
 			dashed(ci, closed(ellipse(Vector2(0, -56), 40, 6.5, 0, 30)), P.INK_SOFT, 1.5, 5, 4)
 		_surface_pips(ci, Vector2(0, -56), liq)
 	# The spoon: in the paint, its handle held by both hands.
-	var bowl := Vector2(cos(a) * 26, -56 + sin(a) * 5)
-	line(ci, bowl, grip + Vector2(4, -10), P.INK, 8)
-	line(ci, bowl, grip + Vector2(4, -10), P.WOOD_LT, 4)
+	var bowl := Vector2(cos(a) * 24, -56 + sin(a) * 5)
+	var knob := grip + Vector2(6, -22)
+	line(ci, bowl, knob, P.INK, 8)
+	line(ci, bowl, knob, P.WOOD_LT, 4)
+	shape(ci, ellipse(knob, 4.5, 4.5, 0, 12), P.WOOD_LT, P.INK, 2)
 	for side in [-1, 1]:
-		shape(ci, ellipse(grip + Vector2(side * 7, side * 3), 5.5, 5, 0, 14), P.WOOD, P.INK, 2.2)
+		shape(ci, ellipse(grip + Vector2(side * 9, 2), 7, 6.5, 0, 14), P.WOOD, P.INK, 2.4)
 	reset_xf(ci)
 
 

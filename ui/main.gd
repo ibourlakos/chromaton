@@ -5,7 +5,8 @@
 ##   --unlock-all                open every level
 ##   --screenshot=<id>:<path>    load a level's reference solution, run it,
 ##                               save a PNG and quit. <id> may also be
-##                               "levels", "journal" (or "book"), "options"
+##                               "levels", "journal" (or "book"), "options",
+##                               "profiles" (--add: a new one)
 ##                               or "intro".
 ##   --tab=<id>                  the journal's tab (paint, loom, pieces,
 ##                               inventions, cloths, scores, words)
@@ -29,6 +30,7 @@
 ##   --grid                      the bench grid on (Options)
 ##   --paints                    the paint card up on the workbench
 ##   --fan                       the pot slot's pots fanned out (chapter 2 on)
+##   --players                   three profiles (the intro asks who plays)
 ##   --touch                     as on a phone build: no keys in Options, no
 ##                               key labels
 extends Control
@@ -44,6 +46,8 @@ const Simulator = preload("res://core/simulator.gd")
 const Options = preload("res://ui/options.gd")
 const Intro = preload("res://ui/intro.gd")
 const Keys = preload("res://ui/keys.gd")
+const Profiles = preload("res://core/profiles.gd")
+const ProfilePicker = preload("res://ui/profile_picker.gd")
 const Pieces = preload("res://core/pieces.gd")
 
 const DESIGN := Vector2(1280, 800)
@@ -56,22 +60,16 @@ var select_page := 0  # the level select's chapter page
 var stale := false  # the save doesn't fit this build and the player hasn't chosen yet
 var unlock_all := false
 var throwaway := false  # screenshot mode: never write the real save
+var profiles  # core/profiles.gd: who plays (the save files)
+var save_path := Progress.PATH  # the playing profile's save file
 
 
 func _ready() -> void:
 	levels = Level.load_all()
-	var saved = Progress.read()
-	var known := levels + Level.load_lost()  # Lost Levels keep their records too
-	var problems: Array = [] if saved == null else Progress.problems(saved, known)
-	if not problems.is_empty():
-		print("The save doesn't fit this build: " + "; ".join(problems))
-	stale = not problems.is_empty()
-	# Only what still fits the levels is loaded (the intro asks about the rest).
-	progress = Progress.from_dict(saved, known) if saved is Dictionary else Progress.new()
 	var args := _args()
 	unlock_all = args.has("unlock-all")
-	progress.unlock_all = unlock_all
-	progress.know_levels(levels)
+	profiles = Profiles.load_from()
+	_use_profile(profiles.current)
 	stage = Control.new()
 	stage.size = DESIGN
 	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -97,6 +95,37 @@ func _start() -> void:
 	if start >= 0:
 		open_level(start)
 	else:
+		show_level_select()
+
+
+## Plays as this profile: its save file, loaded (only what still fits the
+## levels; a save that doesn't fit waits for the intro's question).
+func _use_profile(id: int) -> void:
+	profiles.current = id
+	save_path = Profiles.save_path(id)
+	var saved = Progress.read(save_path)
+	var known := levels + Level.load_lost()  # Lost Levels keep their records too
+	var problems: Array = [] if saved == null else Progress.problems(saved, known)
+	if not problems.is_empty():
+		print("The save doesn't fit this build: " + "; ".join(problems))
+	stale = not problems.is_empty()
+	progress = Progress.from_dict(saved, known) if saved is Dictionary else Progress.new()
+	progress.unlock_all = unlock_all
+	progress.know_levels(levels)
+
+
+## Another profile plays: the current one is saved first. A save that
+## doesn't fit this build asks the intro's question.
+func _switch_profile(id: int) -> void:
+	if not stale:
+		_save()
+	_use_profile(id)
+	if not throwaway:
+		profiles.save()
+	if stale:
+		show_intro()
+	else:
+		select_page = _first_open_chapter()
 		show_level_select()
 
 
@@ -151,7 +180,7 @@ func _notification(what: int) -> void:
 
 func _save() -> void:
 	if not throwaway:
-		progress.save()
+		progress.save(save_path)
 
 
 func _set_screen(c: Control) -> void:
@@ -164,6 +193,19 @@ func _set_screen(c: Control) -> void:
 func show_intro() -> void:
 	var s = Intro.new()
 	s.stale = stale
+	if not stale and profiles.list.size() >= 2:  # with two or more: "Who's playing?"
+		s.players = profiles.list
+		s.current = profiles.current
+		s.chose.connect(func(id):
+			if id != profiles.current:
+				_save()
+				_use_profile(id)
+				if not throwaway:
+					profiles.save()
+			if stale:
+				show_intro()
+			else:
+				_start())
 	s.done.connect(_start)
 	s.fresh.connect(func(): _settle_save(true))
 	s.keep.connect(func(): _settle_save(false))
@@ -173,24 +215,37 @@ func show_intro() -> void:
 ## The player's answer about a stale save: the old file moves to a .bak, then
 ## a fresh save, or the parts that still fit, take its place.
 func _settle_save(fresh: bool) -> void:
-	Progress.back_up()
+	Progress.back_up(save_path)
 	if fresh:
 		progress = Progress.new()
 		progress.unlock_all = unlock_all
 		progress.know_levels(levels)
 	stale = false
-	progress.save()
+	progress.save(save_path)
 	_start()
 
 
 func show_level_select() -> void:
 	var s = LevelSelect.new()
+	s.profile = profiles.find(profiles.current)
 	s.setup(levels, progress, select_page)
 	s.level_chosen.connect(open_level)
+	s.profile_requested.connect(show_profiles)
 	s.book_requested.connect(show_book)
 	s.options_requested.connect(show_options)
 	s.page_changed.connect(func(c): select_page = c)
 	_set_screen(s)
+
+
+## Who plays: switch to a profile, or add one (from the level select's
+## profile chip).
+func show_profiles() -> void:
+	var pk = ProfilePicker.new()
+	pk.setup(profiles)
+	pk.chosen.connect(_switch_profile)
+	pk.added.connect(func(badge, name): _switch_profile(profiles.add(badge, name)))
+	pk.back.connect(show_level_select)
+	_set_screen(pk)
 
 
 func show_book(tab := "", focus := "") -> void:
@@ -243,10 +298,20 @@ func _screenshot(args: Dictionary) -> void:
 	if args.has("touch"):  # as on a phone: no keyboard, no key labels
 		Keys.keyboard = false
 		Keys.shown = false
+	profiles = Profiles.new()  # a made-up roster, never saved
+	profiles.list = [{"id": 1, "badge": "mix", "name": ""}]
+	if args.has("players"):  # three players: "Who's playing?" on the intro, the chip
+		profiles.list.append({"id": 2, "badge": "shift", "name": "andrew"})
+		profiles.list.append({"id": 3, "badge": "invert", "name": ""})
 	for level in levels:
 		if not level.invention.is_empty():
 			progress.add_invention(Invention.package(level, level.reference_machine(), progress.inventions))
 	match what:
+		"profiles":
+			show_profiles()
+			if args.has("add"):
+				screen.adding = true
+				screen._build()
 		"levels":
 			for k in 6:
 				progress.record_solve(levels[k].id, levels[k].best + (k % 2), 40 + k, 3 - (k % 2))

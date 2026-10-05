@@ -8,7 +8,10 @@ const ToyButton = preload("res://ui/toy_button.gd")
 const Keys = preload("res://ui/keys.gd")
 const Invention = preload("res://core/invention.gd")
 const Level = preload("res://core/level.gd")
+const Pieces = preload("res://core/pieces.gd")
+const Profiles = preload("res://core/profiles.gd")
 
+signal profile_requested
 signal level_chosen(index: int)
 signal book_requested
 signal options_requested
@@ -21,9 +24,11 @@ const COLUMNS := 4  # three rows fit a page: twelve levels per chapter at most
 const TAGS_Y := 196.0
 const DOTS_Y := 772.0
 const HINTS_CHIP := Vector2(196, 34)
+const CHIP := Vector2(176, 50)  # the profile chip, under the journal button
 
 var levels: Array = []
 var progress
+var profile := {}  # who plays (core/profiles.gd), for the profile chip
 var page := 0  # the chapter on show
 var chapter_count := 1
 var tags: Array = []  # the ToyButtons on this page
@@ -59,6 +64,14 @@ func _build() -> void:
 	book.key = Keys.label("book")
 	book.pressed.connect(func(): book_requested.emit())
 	add_child(book)
+	# Who plays: the profile chip, under the journal; a tap switches or adds one.
+	var chip = ToyButton.new()
+	chip.custom_minimum_size = CHIP
+	chip.size = CHIP
+	chip.position = Vector2(DESIGN.x - 30 - CHIP.x, 120)
+	chip.painter = _paint_profile_chip
+	chip.pressed.connect(func(): profile_requested.emit())
+	add_child(chip)
 	# Options on every build (the bench grid); its keys only where a keyboard is likely.
 	var options = ToyButton.make("options", Vector2(64, 64))
 	options.position = Vector2(32, 40)
@@ -268,3 +281,19 @@ func _chapter_name(chapter: int) -> String:
 		if level.chapter == chapter:
 			return level.chapter_name
 	return ""
+
+
+## The profile chip: who plays, their critter and name, on tag paper.
+func _paint_profile_chip(b: Control, r: Rect2, down: bool) -> void:
+	var body := Rect2(r.position + (Vector2(0, 2) if down else Vector2.ZERO), r.size)
+	if not down:
+		K.fill(b, K.round_rect(Rect2(r.position + Vector2(0, 3), r.size), r.size.y / 2), P.SHADOW)
+	K.shape(b, K.round_rect(body, r.size.y / 2), P.TAG, P.INK, 2.5)
+	var kind := str(profile.get("badge", "mix"))
+	var look: String = Pieces.TABLE[kind]["look"] if Pieces.TABLE.has(kind) else "mix"
+	K.piece(b, look, body.position + Vector2(34, 27), 0.36, -1, 99.0, t, 0.3)
+	var name := Profiles.display_name(profile) if not profile.is_empty() else "Mixing Tub"
+	var size := 19
+	while size > 12 and P.display(600).get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x > r.size.x - 82:
+		size -= 1
+	K.text(b, P.display(600), Vector2(body.position.x + 64, body.get_center().y), name, size, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
