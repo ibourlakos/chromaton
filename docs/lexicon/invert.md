@@ -1,13 +1,13 @@
 # Invert
 
 - **Tags:** gameplay, design, implementation
-- **Status:** ✅ two names (designer, 2026-10-05): the term is the algebra's and the code's name; the player sees the critter's name
-- **Player word (decided 2026-10-05, not built):** Flip Pan (first decided as Flip Tub, changed the same day: a pan that flips paint like an omelette). It becomes the Player word, and the Gameplay text uses it, when the rename is built (then `.\make words`).
-- **Journal:** unlocks in Green; page on the Pieces tab (Opposites fills it at once)
+- **Status:** ✅ two names (designer, 2026-10-05): the term is the algebra's and the code's name; the player sees the critter's name; the player word built 2026-10-05 (first decided as Flip Tub, changed the same day: a pan that flips paint like an omelette)
+- **Player word:** Flip Pan
+- **Journal:** unlocks in A Cheaper Green Pot, where the Flip Pan comes in; page on the Pieces tab (Opposites fills it at once)
 
 ## Gameplay
 
-Invert turns a paint into its opposite. Red becomes green, yellow becomes purple, blue becomes orange, and white becomes black. Invert it again and you're back where you started.
+The Flip Pan flips a paint to its opposite. Red becomes green, yellow becomes purple, blue becomes orange, and white becomes black. Flip it again and you're back where you started.
 
 ## Design
 

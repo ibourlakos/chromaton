@@ -1,6 +1,8 @@
-## Options: a faint grid on the bench, on every build. Where a keyboard is
-## likely (not on phone builds, see Keys.rebindable) also the keys (every
-## action, up to two keys each) and whether key caps show on the controls.
+## Options: a faint grid on the bench, on every build. Opened from the level
+## select's gear, or over the workshop from its own gear (overlay). Where a
+## keyboard is likely (not on phone builds, see Keys.rebindable) also the keys
+## (every action, up to two keys each) and whether key caps show on the
+## controls.
 ##
 ## Tap a key slot, then press the new key; Back's key cancels, and tapping
 ## the slot again clears it. A key moves off any action it would clash with
@@ -22,7 +24,7 @@ const COLUMN := 410.0
 const LABEL_W := 172.0
 const SLOT := Vector2(88, 30)
 const PIECE_SLOT := Vector2(38, 30)
-const GROUP_NAMES := {"Everywhere": "Everywhere", "Workbench": "Workbench", "Woven": "After weaving", "Levels": "Level select", "Journal": "Journal"}
+const GROUP_NAMES := {"Everywhere": "Everywhere", "Workbench": "Workshop", "Woven": "After weaving", "Levels": "Level select", "Journal": "Journal"}
 
 var slots := []  # [{"rect": Rect2, "action": String, "slot": int}]
 var labels := []  # [position, text, header?]
@@ -34,6 +36,7 @@ var grid_button
 var hints_button
 var t := 0.0
 var _pressed_slot := -1
+var overlay := false  # over the workshop (its gear): draws its own paper
 
 
 func _ready() -> void:
@@ -47,7 +50,7 @@ func _ready() -> void:
 	# With keys, the round buttons stand in a third column beside the keys;
 	# without, the grid toggle is all there is.
 	var at := Vector2(LEFT + 2 * COLUMN, TOP + 36) if with_keys else Vector2(DESIGN.x / 2 - 170, 170)
-	grid_button = _toggle("check", at, "Show a grid on the bench", _toggle_grid)
+	grid_button = _toggle("check", at, "Show a grid in the workshop", _toggle_grid)
 	grid_button.toggled_on = Keys.grid
 	if not with_keys:
 		return
@@ -181,6 +184,8 @@ func _process(delta: float) -> void:
 
 
 func _draw() -> void:
+	if overlay:
+		draw_texture_rect(P.paper_texture(), Rect2(Vector2.ZERO, DESIGN), true)
 	K.text(self, P.display(600), Vector2(DESIGN.x / 2, 44), "Options", 40, P.INK)
 	if with_keys:
 		K.text(self, P.ui(700), Vector2(DESIGN.x / 2, 96), "Tap a key to change it, then press the new one. Tap it again to clear it.", 16, P.INK_SOFT)

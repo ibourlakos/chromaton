@@ -1,8 +1,10 @@
 {
 	"id": "third_color",
-	"name": "The Third Paint",
-	"goal": "Weave the pawn. Your machine becomes a new piece.",
-	"hint": "A paint shows where neither card has it. Mix the two cards, then Invert the mix.",
+	"name": "The Pawn",
+	"cloth": "The Pawn",
+	"machine": "Third Paint",
+	"goal": "Weave the pawn.",
+	"hint": "Any two paints leave out a third, the one neither has. Mix the two cards, then flip the mix.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -31,7 +33,7 @@
 		{
 			"name": "A",
 			"colors": [
-				"WBYRBWYY",
+				"WWYRBWYY",
 				"WWWGYBYR",
 				"ORYGYBWW",
 				"OWBBRWWW",
@@ -44,7 +46,7 @@
 		{
 			"name": "B",
 			"colors": [
-				"BWRYWBOO",
+				"BBRYWBOO",
 				"BBOOPBOO",
 				"OYPGBOBB",
 				"ROWOGOBB",
@@ -92,6 +94,8 @@
 	"invention": {
 		"id": "third_paint",
 		"name": "Third Paint",
-		"check": "third_paint"
-	}
+		"check": "third_paint",
+		"in_text": "the Third Paint"
+	},
+	"card_shows": 4
 }

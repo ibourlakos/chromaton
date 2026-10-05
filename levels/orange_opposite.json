@@ -1,0 +1,57 @@
+{
+	"id": "orange_opposite",
+	"name": "A Cheaper Orange Pot",
+	"cloth": "Orange",
+	"machine": "A Cheaper Orange Pot",
+	"goal": "Weave an orange cloth.",
+	"hint": "A mix is the opposite of the one paint it lacks, and orange lacks only blue. Flip your blue pot.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"split",
+		"invert"
+	],
+	"inventions": [],
+	"invention": {
+		"id": "pot_orange",
+		"name": "Orange pot",
+		"check": "paint:O"
+	},
+	"stars": {
+		"budget": 3,
+		"best": 2
+	},
+	"target": [
+		"OOOOOOOO"
+	],
+	"card_rule": "",
+	"cards": [],
+	"reference": {
+		"pieces": [
+			{
+				"id": "b",
+				"kind": "invention",
+				"invention": "pot_blue",
+				"x": 4,
+				"y": 3
+			},
+			{
+				"id": "h",
+				"kind": "invert",
+				"x": 8,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"b",
+				"h"
+			],
+			[
+				"h",
+				"loom"
+			]
+		]
+	}
+}

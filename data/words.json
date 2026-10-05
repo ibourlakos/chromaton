@@ -39,7 +39,7 @@
 			"id": "piece",
 			"level": "one_pot",
 			"tab": "pieces",
-			"text": "A piece is anything you take from the tray and put on the workbench to build your machine. Every piece has a price, and the fewer pieces your machine uses, the more stars it earns. Machines you invent become pieces you can use again.",
+			"text": "A piece is anything you take from the tray and put in the workshop to build your machine. Every piece has a price, and the fewer pieces your machine uses, the more stars it earns. Machines you invent become pieces you can use again.",
 			"word": "Piece"
 		},
 		{
@@ -81,7 +81,7 @@
 			"id": "tray",
 			"level": "one_pot",
 			"tab": "",
-			"text": "The tray along the bottom holds the pieces you can use. Drag one onto the workbench, or tap it to pick it up. A piece with a lock is one this level does without. Your pots share one slot: tap it and they fan out above the shelf, then drag one out. To put a piece away, drag it back onto the tray.",
+			"text": "The tray along the bottom holds the pieces you can use. Drag one into the workshop, or tap it to pick it up. A piece with a lock is one this level does without. Your pots share one slot: tap it and they fan out above the shelf, then drag one out. To put a piece away, drag it back onto the tray.",
 			"word": "Tray"
 		},
 		{
@@ -95,8 +95,8 @@
 			"id": "workbench",
 			"level": "one_pot",
 			"tab": "",
-			"text": "The workbench is where you build. Put pieces on it from the tray and join them with tubes. Paint comes in from the pattern cards on the left, flows to the right, and the loom on the right weaves it into a cloth.",
-			"word": "Workbench"
+			"text": "The workshop is where you build. Put pieces in it from the tray and join them with tubes. Paint comes in from the pattern cards on the left, flows to the right, and the loom on the right weaves it into a cloth.",
+			"word": "Workshop"
 		},
 		{
 			"id": "critter",
@@ -109,22 +109,22 @@
 			"id": "invention",
 			"level": "yellow",
 			"tab": "inventions",
-			"text": "Solve some levels and the machine you built becomes an invention: one piece you can use again, priced at all the pieces inside it. Every paint-box level earns a pot of its paint.",
+			"text": "Solve some levels and the machine you built becomes an invention: one piece you can use again, cheaper by one than the pieces inside it. Every paint-box level earns a pot of its paint.",
 			"word": "Invention"
 		},
 		{
 			"id": "shift",
 			"level": "yellow",
 			"tab": "pieces",
-			"text": "Shift turns the paint wheel one step: red becomes yellow, yellow becomes blue, and blue becomes red again. Mixed paints turn too: orange becomes green. White and black stay as they are.",
-			"word": "Shift"
+			"text": "The Shift Wheel turns paint one step round the wheel: red becomes yellow, yellow becomes blue, and blue becomes red again. Mixed paints turn too: orange becomes green. White and black stay as they are.",
+			"word": "Shift Wheel"
 		},
 		{
 			"id": "mix",
 			"level": "orange",
 			"tab": "pieces",
-			"text": "Mix takes two paints and gives back everything in either one. Red and yellow make orange; orange and blue make black. Mixing in a paint that's already there changes nothing.",
-			"word": "Mix"
+			"text": "The Mixing Tub takes two paints and gives back everything in either one. Red and yellow make orange; orange and blue make black. Mixing in a paint that's already there changes nothing.",
+			"word": "Mixing Tub"
 		},
 		{
 			"id": "split",
@@ -137,8 +137,8 @@
 			"id": "invert",
 			"level": "green",
 			"tab": "pieces",
-			"text": "Invert turns a paint into its opposite. Red becomes green, yellow becomes purple, blue becomes orange, and white becomes black. Invert it again and you're back where you started.",
-			"word": "Invert"
+			"text": "The Flip Pan flips a paint to its opposite. Red becomes green, yellow becomes purple, blue becomes orange, and white becomes black. Flip it again and you're back where you started.",
+			"word": "Flip Pan"
 		},
 		{
 			"id": "quilt",
@@ -148,11 +148,18 @@
 			"word": "Quilt"
 		},
 		{
+			"id": "pattern-card",
+			"level": "pattern_card",
+			"tab": "loom",
+			"text": "A pattern card holds a picture as paint, one drop for every stitch. It lets its drops out one at a time, in order, from its right end, and the drops it shows are the next ones coming. Tube it to a piece, or straight to the loom.",
+			"word": "Pattern card"
+		},
+		{
 			"id": "filter",
 			"level": "smudges",
 			"tab": "pieces",
-			"text": "Filter takes two paints and keeps only what they share. Orange and purple share red, so out comes red. Two paints that share nothing give white.",
-			"word": "Filter"
+			"text": "The Sieve takes two paints and keeps only what they share. Orange and purple share red, so out comes red. Two paints that share nothing give white.",
+			"word": "Sieve"
 		}
 	]
 }

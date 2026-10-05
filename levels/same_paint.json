@@ -1,8 +1,10 @@
 {
 	"id": "same_paint",
-	"name": "Same Paint",
-	"goal": "Weave the black queen. Your machine becomes a new piece.",
-	"hint": "Either, Not Both in the looking glass: Mix and Filter swap, black and white swap. Mix what the cards share with the opposite of their Mix.",
+	"name": "The Black Queen",
+	"cloth": "The Black Queen",
+	"machine": "Same Paint",
+	"goal": "Weave the black queen.",
+	"hint": "In the looking glass, the queen wears paint where the cards agree. Mix what the cards share with the opposite of their mix.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -15,7 +17,8 @@
 	"invention": {
 		"id": "same_paint",
 		"name": "Same Paint",
-		"check": "same_paint"
+		"check": "same_paint",
+		"in_text": "Same Paint"
 	},
 	"stars": {
 		"budget": 6,
@@ -36,7 +39,7 @@
 		{
 			"name": "A",
 			"colors": [
-				"BBBOPPGG",
+				"POBOPGGR",
 				"WWRKKGBB",
 				"WRKBKPWR",
 				"YWRBKBOY",
@@ -49,7 +52,7 @@
 		{
 			"name": "B",
 			"colors": [
-				"KBWOPGGY",
+				"GOWOPPGP",
 				"OWWKKKBW",
 				"BPKBKPOY",
 				"GBYBKWWR",
@@ -141,5 +144,6 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"card_shows": 8
 }

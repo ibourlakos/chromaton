@@ -646,6 +646,22 @@ static func split(ci: CanvasItem, c: Vector2, ins: Array, outs: Array, liq: int,
 
 
 ## An invention: a sticker with the invention's name.
+## A small sticker mark beside an invention level's machine phrase: a tilted
+## white sticker with the gear-and-drop badge, no name (the phrase is the
+## name).
+static func sticker_mark(ci: CanvasItem, c: Vector2) -> void:
+	fill(ci, round_rect(Rect2(c + Vector2(-11, -7), Vector2(26, 18)), 5), P.SHADOW)
+	set_xf(ci, c, Vector2.ONE, -0.12)
+	shape(ci, round_rect(Rect2(-13, -9, 26, 18), 5), Color.WHITE, P.INK, 1.8)
+	fill(ci, round_rect(Rect2(-10, -6, 20, 12), 3), P.TAG)
+	for i in 6:
+		var a := i * TAU / 6
+		disc(ci, Vector2(cos(a), sin(a)) * 4.2, 1.5, P.HOOP)
+	disc(ci, Vector2.ZERO, 3.2, P.HOOP)
+	disc(ci, Vector2.ZERO, 1.2, P.TAG)
+	reset_xf(ci)
+
+
 static func sticker(ci: CanvasItem, c: Vector2, s: float, name: String, age: float, t: float, seed := 0.0) -> void:
 	var k := exp(-age * 5.0)
 	var rot := -0.05 + sin(seed * 7) * 0.02 + sin(t * 22) * 0.05 * k
@@ -689,41 +705,39 @@ static func sticker(ci: CanvasItem, c: Vector2, s: float, name: String, age: flo
 ## A punched pattern card, without its colors (card_paints): it never
 ## changes, so it can be drawn once.
 static func card_body(ci: CanvasItem, c: Vector2, name: String) -> void:
-	var r := Rect2(c + Vector2(-72, -26), Vector2(144, 52))
+	var r := CARD_RECT
+	r.position += c
 	fill(ci, round_rect(Rect2(r.position + Vector2(3, 4), r.size), 8), P.SHADOW)
 	shape(ci, round_rect(r, 8), P.TAG, P.INK, 2)
-	for i in 8:
+	for i in 9:
 		disc(ci, Vector2(r.position.x + 14 + i * 16, r.end.y - 7), 2, P.HOOP)
 	# name tab
-	var tab := Vector2(r.position.x + 13, r.position.y + 13)
+	var tab := Vector2(r.position.x + 16, r.position.y + 1)  # on the top edge, clear of the drops
 	shape(ci, ellipse(tab, 9, 9, 0, 20), P.WOOD_LT, P.INK, 2)
 	text(ci, P.display(600), tab + Vector2(0, 0.5), name, 13, P.INK)
 
 
-## A card's next colors, on its body. `smudged` marks which of them carry
-## stray paint (an ink smudge behind the swatch).
-static func card_paints(ci: CanvasItem, c: Vector2, upcoming: Array, age: float, smudged: Array = []) -> void:
-	var r := Rect2(c + Vector2(-72, -26), Vector2(144, 52))
+## A card's body, around its centre: as wide as its two cells allow, less a
+## margin, so ten drops fit across it (the name tab sits on its top edge).
+const CARD_RECT := Rect2(-78, -26, 156, 52)
+
+
+## A card's next colors, on its body: the drops it shows (`shows`, 4 to 10;
+## fewer when the card runs out). With more than six they sit closer and a
+## little smaller, so ten fit across the card.
+static func card_paints(ci: CanvasItem, c: Vector2, upcoming: Array, age: float, shows := 6) -> void:
+	var r := CARD_RECT
+	r.position += c
+	var gap := minf(18.0, (r.size.x - 40.0) / maxf(shows - 1, 1))
+	var size := minf(7.5, gap * 0.5 - 0.4)
 	# next colors, the next one on the right by the card's port; they slide
 	# right as the card releases
-	var slide := -clampf(1.0 - age, 0, 1) * 18 if age < 1 else 0.0
+	var slide := -clampf(1.0 - age, 0, 1) * gap if age < 1 else 0.0
 	for i in upcoming.size():
-		var p := Vector2(r.end.x - 20 - i * 18 + slide, r.position.y + 21)
-		if i < smudged.size() and smudged[i]:
-			smudge(ci, p)
-		swatch(ci, p, 7.5 if i > 0 else 8.5, upcoming[i])
+		var p := Vector2(r.end.x - 20 - i * gap + slide, r.position.y + 22)
+		swatch(ci, p, size if i > 0 else size + 1.0, upcoming[i])
 	if upcoming.is_empty():
 		stroke(ci, arc(Vector2(c.x + 10, r.position.y + 21), 6, 0, TAU, 16), P.WARP, 2)
-
-
-## An ink blot on a card swatch's shoulder: this stitch carries stray paint.
-## Neutral ink, never a paint color.
-static func smudge(ci: CanvasItem, c: Vector2) -> void:
-	var ink := Color(P.INK, 0.6)
-	disc(ci, c + Vector2(5, -9), 3.6, ink)
-	disc(ci, c + Vector2(8, -7), 2.4, ink)
-	disc(ci, c + Vector2(2.5, -11.5), 1.8, ink)
-	disc(ci, c + Vector2(9.5, -12), 1.1, ink)
 
 
 ## The loom: cloth with warp threads, wooden frame, woven stitches. It holds

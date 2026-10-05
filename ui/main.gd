@@ -13,6 +13,7 @@
 ##                               by their reference machines (default 12)
 ##   --piece=<kind>, --word=<n>  the journal's piece page, or picked word
 ##   --peek[=<kind>]             a level with the journal open over it
+##   --options                   a level with Options open over it (the gear)
 ##   --news                      with --finish: "New in your journal" next
 ##   --ticks=<n>                 ticks to run before the screenshot
 ##                               (default: one per stitch)
@@ -58,15 +59,17 @@ var throwaway := false  # screenshot mode: never write the real save
 func _ready() -> void:
 	levels = Level.load_all()
 	var saved = Progress.read()
-	var problems: Array = [] if saved == null else Progress.problems(saved, levels)
+	var known := levels + Level.load_lost()  # Lost Levels keep their records too
+	var problems: Array = [] if saved == null else Progress.problems(saved, known)
 	if not problems.is_empty():
 		print("The save doesn't fit this build: " + "; ".join(problems))
 	stale = not problems.is_empty()
 	# Only what still fits the levels is loaded (the intro asks about the rest).
-	progress = Progress.from_dict(saved, levels) if saved is Dictionary else Progress.new()
+	progress = Progress.from_dict(saved, known) if saved is Dictionary else Progress.new()
 	var args := _args()
 	unlock_all = args.has("unlock-all")
 	progress.unlock_all = unlock_all
+	progress.know_levels(levels)
 	stage = Control.new()
 	stage.size = DESIGN
 	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -172,6 +175,7 @@ func _settle_save(fresh: bool) -> void:
 	if fresh:
 		progress = Progress.new()
 		progress.unlock_all = unlock_all
+		progress.know_levels(levels)
 	stale = false
 	progress.save()
 	_start()
@@ -231,6 +235,7 @@ func _screenshot(args: Dictionary) -> void:
 	throwaway = true
 	progress = Progress.new()
 	progress.unlock_all = args.has("unlock-all")
+	progress.know_levels(levels)
 	Keys.grid = args.has("grid")
 	Keys.paints = args.has("paints")
 	if args.has("touch"):  # as on a phone: no keyboard, no key labels
@@ -290,6 +295,8 @@ func _screenshot(args: Dictionary) -> void:
 				screen.fast_forward(int(args.get("ticks", levels[i].size())), float(args.get("phase", 0.5)))
 			if args.has("fan"):  # the pot slot's pots fanned out
 				screen._show_fan(true)
+			if args.has("options"):  # Options over the bench (the gear)
+				screen.open_options()
 			if args.has("peek"):  # the journal over the bench, at a piece's page
 				screen.open_journal(str(args["peek"]) if str(args["peek"]) != "true" else "")
 	await _snap(path, what)

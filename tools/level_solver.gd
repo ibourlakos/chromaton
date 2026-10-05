@@ -3,8 +3,11 @@
 ## Run from the project folder:
 ##   godot_console --headless --path . --script res://tools/level_solver.gd
 ## Writes docs/level-report.md and exits with code 1 if a level is broken:
-## its reference solution fails, it can't be solved by any machine, or a
-## machine cheaper than its three-star count exists.
+## its reference solution fails, it can't be solved by any machine, a
+## machine cheaper than its three-star count exists, a wrong machine within
+## its two-star budget gets past the drops its cards show (check_decode), or
+## its waits_for doesn't match the inventions it can't be built without
+## (check_waits).
 ##
 ## Why a search is enough: with one-drop tubes every piece takes one drop per
 ## input and gives one per output, and loops can never start (a loop waits on
@@ -19,6 +22,7 @@ const Paint = preload("res://core/paint.gd")
 const Level = preload("res://core/level.gd")
 const Simulator = preload("res://core/simulator.gd")
 const Invention = preload("res://core/invention.gd")
+const Functions = preload("res://tools/functions.gd")
 
 const LANES := 20  # colors packed per int (3 flags each)
 ## The two-input operations the search knows, by piece or invention check.
@@ -37,12 +41,13 @@ var ops: Array = []
 var visited := {}
 var found := ""
 var nodes_seen := 0
+var card_signals: Array = []  # the cards, as the last solve() packed them
 
 
 func _init() -> void:
 	var t0 := Time.get_ticks_msec()
 	var levels := Level.load_all()
-	var inventions := _reference_inventions(levels)
+	var by_level := Invention.reference_inventions_by_level(levels)
 	var lines := PackedStringArray()
 	lines.append("# Chromaton level report")
 	lines.append("")
@@ -52,14 +57,17 @@ func _init() -> void:
 	lines.append("godot_console --headless --path . --script res://tools/level_solver.gd")
 	lines.append("```")
 	lines.append("")
-	lines.append("**Cheapest** is the fewest pieces any machine needs to weave the level (splits free where the level offers them, otherwise each result feeds one piece; an invention at its reference price). It is found by trying every machine the level's pieces can build, cheapest first. Three stars need the cheapest count; two stars need the budget.")
+	lines.append("**Cheapest** is the fewest pieces any machine needs to weave the level (splits free where the level offers them, otherwise each result feeds one piece; an invention at its reference price, which is its machine minus one, never below 1). It is found by trying every machine the level's pieces can build, cheapest first. Three stars need the cheapest count; two stars need the budget.")
 	lines.append("")
-	lines.append("| Level | Stitches | Cards | Card combos | Reference | Ticks | Cheapest | Cheapest machine | ★★ budget | ★★★ best |")
-	lines.append("|---|---|---|---|---|---|---|---|---|---|")
+	lines.append("**Shows** is how many drops a card shows at the start: every wrong machine within the ★★ budget fails within them, so they are all the player needs to work out the rule. **Waits for** names the inventions a level can't be built without (proven: no machine of the rest of its tray weaves it); the level stays locked until the player owns them.")
+	lines.append("")
+	lines.append("| Level | Stitches | Cards | Card combos | Shows | Reference | Ticks | Cheapest | Cheapest machine | ★★ budget | ★★★ best | Waits for |")
+	lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
 	for level in levels:
 		if level.error != "":
 			_fail(level.error)
 			continue
+		var inventions: Dictionary = by_level[level.number - 1]
 		var m = level.reference_machine()
 		var sim = Simulator.new(m, level.cards, level.target, inventions)
 		sim.run()
@@ -76,9 +84,12 @@ func _init() -> void:
 			_fail("%s: a %d-piece machine exists (%s), cheaper than best %d" % [level.id, res["cost"], res["program"], level.best])
 		if res["cost"] < 0:
 			_fail("%s: no machine of up to %d pieces found" % [level.id, level.best])
-		lines.append("| %s | %d | %d | %d | %d | %d | %s | `%s` | %d | %d |" % [
-			level.name, level.size(), level.cards.size(), res["combos"], ref_cost, sim.tick,
-			cheapest, res["program"], level.budget, level.best])
+		var waits := check_waits(level, inventions)
+		check_decode(level, inventions)
+		lines.append("| %d. %s | %d | %d | %d | %s | %d | %d | %s | `%s` | %d | %d | %s |" % [
+			level.number, level.name, level.size(), level.cards.size(), res["combos"],
+			str(level.card_shows) if not level.cards.is_empty() else "–", ref_cost, sim.tick,
+			cheapest, res["program"], level.budget, level.best, ", ".join(waits) if not waits.is_empty() else "–"])
 		print("%s: cheapest %s  %s  (%d states)" % [level.id, cheapest, res["program"], res["states"]])
 	lines.append("")
 	lines.append("---")
@@ -94,18 +105,85 @@ func _fail(msg: String) -> void:
 	printerr("PROBLEM: " + msg)
 
 
-## The inventions the reference solutions use: each invention level's own
-## reference, the cheaper machine winning where two levels earn the same one
-## (as a player's save keeps it). So a pot costs its cheapest price.
-static func _reference_inventions(levels: Array) -> Dictionary:
-	var inventions := {}
-	for level in levels:
-		if not level.invention.is_empty():
-			var inv := Invention.package(level, level.reference_machine(), inventions)
-			var old: Dictionary = inventions.get(inv["id"], {})
-			if old.is_empty() or int(inv["cost"]) <= int(old["cost"]):
-				inventions[inv["id"]] = inv
-	return inventions
+## A level waits for exactly the inventions it can't be built without: for
+## each invention it offers, either a machine without it weaves the cloth
+## (searched up to a few pieces past the budget), or every machine the rest
+## of the tray can build is listed and none weaves it. Returns the
+## inventions proven needed.
+func check_waits(level, inventions: Dictionary) -> Array:
+	var needed := []
+	for inv_id in level.inventions:
+		var res := solve(level, inventions, level.budget + 4, inv_id)
+		if res["cost"] >= 0:
+			if inv_id in level.waits_for:
+				_fail("%s waits for %s but %s weaves it without" % [level.id, inv_id, res["program"]])
+			continue
+		var closed := _closure(CLOSURE_CAP)
+		if closed < 0:
+			_fail("%s: can't tell whether it needs %s (more than %d machines without it)" % [level.id, inv_id, CLOSURE_CAP])
+		elif closed == 0:
+			_fail("%s: no machine without %s exists up to %d pieces, but some might beyond" % [level.id, inv_id, level.budget + 4])
+		else:
+			needed.append(inv_id)
+			if not inv_id in level.waits_for:
+				_fail("%s can't be built without %s but doesn't wait for it (waits_for)" % [level.id, inv_id])
+	for inv_id in level.waits_for:
+		if not inv_id in level.inventions:
+			_fail("%s waits for %s, which it doesn't offer" % [level.id, inv_id])
+	return needed
+
+
+const CLOSURE_CAP := 20000
+
+## Every paint table the last solve()'s pieces can make from the cards, at
+## any cost: 1 if the list closes without the target (no machine can weave
+## it), 0 if the target is among them, -1 if the list passes `cap`.
+func _closure(cap: int) -> int:
+	var have := {}
+	var list := []
+	for s in card_signals:
+		if not have.has(s["key"]):
+			have[s["key"]] = true
+			list.append(s)
+	var k := 0
+	while true:
+		for g in _gates(list, 1 << 30):
+			if not have.has(g["key"]):
+				have[g["key"]] = true
+				list.append(g)
+		if have.has(target_key):
+			return 0
+		if list.size() > cap:
+			return -1
+		if list.size() == k:
+			return 1
+		k = list.size()
+	return -1
+
+
+## What a card shows decodes the level: every wrong machine within the
+## two-star budget fails within the drops a card shows (card_shows). Returns
+## the fewest drops that would do (at least CARD_SHOWS_MIN), or -1 if some
+## wrong machine gets past every drop shown.
+func check_decode(level, inventions: Dictionary) -> int:
+	if level.cards.is_empty():
+		return 0
+	var fn = Functions.new()
+	var funcs: Array = fn.cheap_functions(level_ops(level, inventions), level.cards.size(), level.budget)
+	var combos := Functions.stitch_combos(level.cards, level.size())
+	var needed := Level.CARD_SHOWS_MIN
+	var late := 0
+	for f in funcs:
+		var w := Functions.first_wrong(f, combos, level.target)
+		if w >= level.card_shows:
+			late += 1
+		needed = maxi(needed, w + 1)
+	if late > 0:
+		_fail("%s: %d wrong machine(s) within the budget get past the %d drops a card shows" % [level.id, late, level.card_shows])
+		return -1
+	if needed < level.card_shows and level.card_shows > int(level.raw.get("card_shows_min", 0)):
+		_fail("%s: cards show %d drops but %d decode it (rerun make cards)" % [level.id, level.card_shows, needed])
+	return needed
 
 
 # ---------------------------------------------------------------------------
@@ -113,7 +191,7 @@ static func _reference_inventions(levels: Array) -> Dictionary:
 # ---------------------------------------------------------------------------
 
 ## Cheapest machine up to max_cost: {"cost": int (-1 if none), "program": String, "combos": int, "states": int}.
-func solve(level, inventions: Dictionary, max_cost: int) -> Dictionary:
+func solve(level, inventions: Dictionary, max_cost: int, without := "") -> Dictionary:
 	# Distinct combinations of card colors, and what each must weave.
 	var combo_of := {}
 	var combos := []
@@ -138,7 +216,7 @@ func solve(level, inventions: Dictionary, max_cost: int) -> Dictionary:
 	combo_count = combos.size()
 	has_split = "split" in level.pieces
 	target_key = str(_pack(want))
-	ops = level_ops(level, inventions)
+	ops = level_ops(level, inventions).filter(func(o): return o.get("id", "") != without or without == "")
 	for o in ops:
 		if o["op"] == "paint":
 			o["v"] = _const_vec(combos.size(), o["paint"])
@@ -150,6 +228,7 @@ func solve(level, inventions: Dictionary, max_cost: int) -> Dictionary:
 			col.append(combo[k])
 		var v := _pack(col)
 		signals.append({"v": v, "key": str(v), "desc": names[k]})
+	card_signals = signals.duplicate()
 	nodes_seen = 0
 	for limit in max_cost + 1:
 		visited = {}
@@ -229,12 +308,12 @@ static func level_ops(level, inventions: Dictionary) -> Array:
 	for pot_id in level.pots:
 		if inventions.has(pot_id):
 			var inv: Dictionary = inventions[pot_id]
-			out.append({"op": "paint", "paint": Invention.paint_of(inv), "cost": int(inv["cost"]), "name": inv["name"].replace(" pot", "")})
+			out.append({"op": "paint", "paint": Invention.paint_of(inv), "cost": int(inv["cost"]), "name": inv["name"].replace(" pot", ""), "id": pot_id})
 	for inv_id in level.inventions:
 		if inventions.has(inv_id):
 			var inv: Dictionary = inventions[inv_id]
 			if inv["check"] in BINARY or inv["check"] in ["invert", "shift"]:
-				out.append({"op": inv["check"], "cost": int(inv["cost"]), "name": inv["name"].replace(" ", "")})
+				out.append({"op": inv["check"], "cost": int(inv["cost"]), "name": inv["name"].replace(" ", ""), "id": inv_id})
 	return out
 
 

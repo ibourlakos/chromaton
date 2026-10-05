@@ -26,29 +26,22 @@ func check(ok: bool, what: String) -> void:
 func _init() -> void:
 	var levels := Level.load_all()
 	test_loading(levels)
-	var inventions := reference_inventions(levels)
-	test_references(levels, inventions)
+	var by_level := Invention.reference_inventions_by_level(levels)
+	var inventions: Dictionary = by_level[by_level.size() - 1]
+	test_references(levels, by_level)
 	test_wrong_solutions(levels)
 	test_stars(levels)
-	test_progress(levels)
+	test_progress(levels, inventions)
 	test_stale_saves(levels, inventions)
+	test_locks_and_loans(levels, inventions)
 	if failures == 0:
 		print("test_levels: all %d checks passed" % checks)
 	quit(1 if failures > 0 else 0)
 
 
-## Each invention level's reference solution, packaged the way a player's would be.
-func reference_inventions(levels: Array) -> Dictionary:
-	var inventions := {}
-	for level in levels:
-		if not level.invention.is_empty():
-			inventions[level.invention["id"]] = Invention.package(level, level.reference_machine(), inventions)
-	return inventions
-
-
 func test_loading(levels: Array) -> void:
-	check(levels.size() == 33, "thirty-three campaign levels (got %d)" % levels.size())
-	check(Level.chapters().map(func(c): return c["levels"].size()) == [9, 12, 6, 6], "four chapters of 9, 12, 6 and 6 levels, each quilt full")
+	check(levels.size() == 36, "thirty-six campaign levels (got %d)" % levels.size())
+	check(Level.chapters().map(func(c): return c["levels"].size()) == [12, 12, 6, 6], "four chapters of 12, 12, 6 and 6 levels, each quilt full")
 	var ids := {}
 	for level in levels:
 		check(level.error == "", "level loads cleanly: %s %s" % [level.id, level.error])
@@ -69,19 +62,30 @@ func test_loading(levels: Array) -> void:
 			check(p.get("invention", "") == "" or level.offers_invention(p["invention"]), "%s reference uses an offered invention" % level.id)
 	check(Level.parse_rows(["WRYOBPGK"]) == PackedByteArray([0, 1, 2, 3, 4, 5, 6, 7]), "color letters")
 	check(Level.letters(PackedByteArray([1, 2, 3, 4]), 2) == ["RY", "OB"], "letters round trip")
-	var smudgy = levels.filter(func(l): return l.id == "smudges")[0]
-	var stray := range(smudgy.size()).filter(func(i): return smudgy.cards[0][i] != smudgy.target[i])
-	check(smudgy.smudges[0] == stray and stray.any(func(i): return i < smudgy.cols), "Smudges marks exactly its stray stitches, some in the first row")
+	for level in levels:
+		if not level.cards.is_empty():
+			check(level.card_shows >= Level.CARD_SHOWS_MIN and level.card_shows <= Level.CARD_SHOWS_MAX and level.raw.has("card_shows"), "%s: its cards show 4 to 10 drops (%d)" % [level.id, level.card_shows])
+			check(level.raw["cards"].all(func(c): return not c.has("smudges")), "%s: no smudges on its cards" % level.id)
+	var lost := Level.load_lost()
+	check(lost.map(func(l): return l.id) == ["flip_side", "the_flower"] and lost.all(func(l): return l.error == ""), "Flip Side and The Harbour wait in Lost Levels")
+	check(not Level.index_ids().has("flip_side") and not Level.index_ids().has("the_flower"), "Lost Levels stay out of the campaign")
+	var tables := levels.filter(func(l): return l.id in ["mix_table", "filter_table"])
+	for t in tables:
+		check(Level.letters(t.cards[1], 8) == ["WRYOBPGK", "WRYOBPGK", "WRYOBPGK", "WRYOBPGK", "WRYOBPGK", "WRYOBPGK"], "%s: card B is every paint on every row" % t.id)
+		check(Level.letters(t.cards[0], 8) == ["RRRRRRRR", "YYYYYYYY", "BBBBBBBB", "OOOOOOOO", "PPPPPPPP", "GGGGGGGG"], "%s: card A is one paint a row" % t.id)
 	var inv_levels := levels.filter(func(l): return not l.invention.is_empty())
 	var pot_ids := inv_levels.filter(func(l): return l.chapter == 0).map(func(l): return l.invention["id"])
-	check(pot_ids == ["pot_yellow", "pot_blue", "pot_orange", "pot_purple", "pot_black", "pot_green", "pot_black", "pot_white"], "paint-box levels 2 to 9 each earn a pot, black twice (%s)" % str(pot_ids))
+	check(pot_ids == ["pot_yellow", "pot_blue", "pot_orange", "pot_purple", "pot_green", "pot_black", "pot_green", "pot_orange", "pot_purple", "pot_black", "pot_white"], "paint-box levels 2 to 12 each earn a pot, then green, orange, purple and black again, cheaper (%s)" % str(pot_ids))
 	var others := inv_levels.filter(func(l): return l.chapter > 0).map(func(l): return l.invention["id"])
-	check(others == ["third_paint", "contrast", "same_paint", "missing_from_either", "same_paint"], "the inventions after the paint box, Same Paint twice (%s)" % str(others))
+	check(others == ["third_paint", "contrast", "missing_from_either", "same_paint"], "two inventions a chapter after the paint box (%s)" % str(others))
 	test_pots_in_trays(levels)
 
 
-func test_references(levels: Array, inventions: Dictionary) -> void:
+## Each level's reference, with the inventions the levels before it earn at
+## their cheapest so far (Invention.reference_inventions_by_level).
+func test_references(levels: Array, by_level: Array) -> void:
 	for level in levels:
+		var inventions: Dictionary = by_level[level.number - 1]
 		var m = level.reference_machine()
 		var sim := Simulator.new(m, level.cards, level.target, inventions)
 		sim.run()
@@ -114,6 +118,7 @@ func formula(f: String, a: int, b: int, c: int) -> int:
 
 
 func test_wrong_solutions(levels: Array) -> void:
+	levels = levels + Level.load_lost()
 	var by_id := {}
 	for level in levels:
 		by_id[level.id] = level
@@ -159,7 +164,7 @@ func test_stars(levels: Array) -> void:
 		check(level.stars_for(level.budget + 1) == 1, "%s: over budget is one star" % level.id)
 
 
-func test_progress(levels: Array) -> void:
+func test_progress(levels: Array, inventions: Dictionary) -> void:
 	var ids := levels.map(func(l): return l.id)
 	var p = Progress.new()
 	check(p.is_unlocked(ids, 0) and not p.is_unlocked(ids, 1), "only the first level starts open")
@@ -175,13 +180,13 @@ func test_progress(levels: Array) -> void:
 	check(rec["best_pieces"] == 3 and rec["best_ticks"] == 30 and rec["stars"] == 2, "best pieces and ticks kept separately")
 
 	var inv_level = levels.filter(func(l): return l.id == "either_not_both")[0]
-	p.inventions["contrast"] = Invention.package(inv_level, inv_level.reference_machine(), {})
+	p.inventions["contrast"] = Invention.package(inv_level, inv_level.reference_machine(), inventions)
 	p.store_machine(inv_level.id, inv_level.reference_machine().to_dict())
 	var path := "user://test_progress.json"
 	check(p.save(path), "progress saves")
 	var q = Progress.load_from(path)
 	check(q.to_dict() == p.to_dict(), "progress loads back the same")
-	check(q.inventions["contrast"]["cost"] == 4 and q.inventions["contrast"]["inputs"] == 2, "saved invention keeps its ports and price")
+	check(q.inventions["contrast"]["cost"] == 2 and q.inventions["contrast"]["inputs"] == 2, "saved invention keeps its ports and price")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
 	var fresh = Progress.load_from("user://no_such_save.json")
 	check(fresh.levels.is_empty(), "a missing save starts fresh")
@@ -262,7 +267,10 @@ func test_pots_in_trays(levels: Array) -> void:
 	for level in levels:
 		by_id[level.id] = level
 	var all := ["pot_white", "pot_yellow", "pot_orange", "pot_blue", "pot_purple", "pot_green", "pot_black"]
-	check(levels.filter(func(l): return l.chapter == 0).all(func(l): return l.pots.is_empty()), "the paint box offers no earned pots")
+	check(by_id["one_pot"].pots.is_empty() and by_id["yellow"].pots.is_empty() and by_id["blue"].pots == ["pot_yellow"], "pots open from Blue on: its tray offers the yellow pot")
+	check(by_id["purple"].pots.is_empty() and by_id["purple"].held_pots == ["pot_yellow", "pot_orange", "pot_blue"], "Purple holds every pot back")
+	check(not "pot_green" in by_id["green"].pots and "pot_green" in by_id["green"].held_pots and not "pot_black" in by_id["black_short_way"].pots, "a level holds back the pot it earns")
+	check(by_id["white"].pots == ["pot_yellow", "pot_orange", "pot_blue", "pot_purple", "pot_green", "pot_black"], "the white pot level offers every pot but white")
 	check(by_id["orange_sun"].pots == all, "Orange Sun offers every earned pot, in paint order: %s" % str(by_id["orange_sun"].pots))
 	check(by_id["orange_sun"].offers_invention("pot_yellow") and not by_id["orange_sun"].offers_invention("contrast"), "an earned pot counts as offered")
 	check(by_id["pattern_card"].pots.is_empty() and by_id["neither_twice"].pots.is_empty() and by_id["only_missing"].pots.is_empty(), "levels without the red pot offer no pots")
@@ -276,3 +284,48 @@ func test_pots_in_trays(levels: Array) -> void:
 	Level._lay_trays(copy)
 	check(not "pot_orange" in held.pots and held.held_pots == ["pot_orange"] and not held.offers_invention("pot_orange"), "a level can hold a pot back")
 	Level._lay_trays(levels)
+
+
+## A level that can't be built without an invention waits for it, on top of
+## solve-two-ahead; force unlock lends every invention and pot at its
+## reference price without saving it; keeping what fits forgets an invention
+## level whose invention it dropped.
+func test_locks_and_loans(levels: Array, inventions: Dictionary) -> void:
+	var ids := levels.map(func(l): return l.id)
+	var by_id := {}
+	for level in levels:
+		by_id[level.id] = level
+	var waiting := levels.filter(func(l): return not l.waits_for.is_empty()).map(func(l): return l.id)
+	check(waiting == ["neither_twice", "back_to_mix", "only_third_paint", "missing_twice", "back_to_filter", "only_missing"], "the levels offering only an invention and Split wait for it (%s)" % str(waiting))
+	var p = Progress.new()
+	p.know_levels(levels)
+	var rook: int = ids.find("neither_twice")
+	p.record_solve("third_color", 2, 70, 3)
+	check(not p.is_unlocked(ids, rook), "The Rook stays locked after The Pawn until the Third Paint is owned")
+	check(Level.waiting_line(levels, p.waiting_for("neither_twice")) == "Earn the Third Paint in %s." % by_id["third_color"].ref_name(), "its tag says where to earn it")
+	p.add_invention(inventions["third_paint"])
+	check(p.is_unlocked(ids, rook) and p.waiting_for("neither_twice").is_empty(), "owning the Third Paint opens it")
+	check(not p.is_unlocked(ids, ids.find("only_third_paint")), "the rule of two still holds for the rest")
+
+	var q = Progress.new()
+	q.unlock_all = true
+	q.know_levels(levels)
+	check(q.inventions.is_empty() and q.usable().has("third_paint") and q.usable().has("pot_white"), "force unlock lends every invention and pot")
+	check(q.usable()["pot_orange"]["cost"] == inventions["pot_orange"]["cost"], "at its reference price")
+	var rook_level = by_id["neither_twice"]
+	q.store_machine("neither_twice", rook_level.reference_machine().to_dict())
+	var saved: Dictionary = q.to_dict()
+	check(saved["inventions"].is_empty(), "a loan is never saved")
+	check(saved["levels"]["neither_twice"]["machine"]["nodes"].all(func(n): return n["kind"] != "invention") and saved["levels"]["neither_twice"]["machine"]["tubes"].size() == 1, "a saved bench leaves out lent inventions and their tubes")
+	check(Progress.problems(JSON.parse_string(JSON.stringify(saved)), levels).is_empty(), "so the save still fits without the cheat")
+	var own: Dictionary = inventions["pot_orange"].duplicate(true)
+	own["cost"] = 9
+	q.add_invention(own)
+	check(q.usable()["pot_orange"]["cost"] == 9, "earning one for real replaces the loan")
+
+	var r = Progress.new()
+	r.record_solve("yellow", 2, 10, 3)
+	r.record_solve("one_pot", 1, 9, 3)
+	r.store_machine("yellow", by_id["yellow"].reference_machine().to_dict())
+	var kept = Progress.from_dict(JSON.parse_string(JSON.stringify(r.to_dict())), levels)
+	check(not kept.is_solved("yellow") and kept.levels["yellow"].has("machine") and kept.is_solved("one_pot"), "a solved invention level without its invention reads unsolved, its bench kept")

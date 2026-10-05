@@ -1,6 +1,12 @@
-## The level's note: pops up over the workbench as a level opens, with its
-## title, goal and hint, and lands under the title when tapped (or on any
-## key). Tapping the title brings it back. DESIGN.md "Level text teaches".
+## The hint panel (the level's note): pops up over the workshop as an
+## unsolved level opens, with the whole title, the goal (what to weave) and
+## the hint (the rule in paint, then how), and flies home into the title's
+## "?" when tapped (or on any key). Tapping the title brings it back.
+## DESIGN.md 5.1, "The title says what you do, the hint says how".
+##
+## It grows to fit its text up to MAX_H; past that the hint scrolls (drag,
+## the wheel, or the up and down keys), and a tap that doesn't drag sends it
+## home.
 extends Control
 
 const P = preload("res://ui/palette.gd")
@@ -11,66 +17,99 @@ signal landed
 
 const DESIGN := Vector2(1280, 800)
 const POP := 0.25  # seconds to pop up
-const LAND := 0.45  # seconds to fly home under the title
-const HINT_WIDTH := 520.0
-## How wide the line under the title may run before the run controls; a
-## longer one wraps onto a second, smaller line (line_size).
-const LINE_WIDTH := 640.0
+const LAND := 0.45  # seconds to fly home into the "?"
+const WIDTH := 640.0
+const TEXT_W := 540.0
+const HINT_SIZE := 22
+const MAX_H := 600.0
+const TITLE_SIZE := 32
+const DRAG := 8.0  # how far a press moves before it scrolls instead of tapping
 
 var level
-var home := Rect2()  # the line under the title it lands on
+var home := Rect2()  # the title's "?", where the note lands
 var t := 0.0
 var leaving := -1.0  # seconds since it was sent home (-1: still up)
 var card := Rect2()
+var scroll := 0.0
+var max_scroll := 0.0
+var _press := Vector2(-1, -1)
+var _dragged := false
 
 
-## `home` is the left middle of the line under the title, where the hint
-## (or the goal, on a level without one) sits once the note has landed.
-func setup(p_level, p_home: Vector2) -> void:
+## `p_home` is the title's "?" badge, where the note flies home to.
+func setup(p_level, p_home: Rect2) -> void:
 	level = p_level
-	var w := P.ui(700).get_string_size(line(level), HORIZONTAL_ALIGNMENT_LEFT, -1, line_size(level)).x
-	home = Rect2(p_home - Vector2(0, 11), Vector2(minf(w, LINE_WIDTH), 22 if line_size(level) == 15 else 30))
+	home = p_home
 
 
-## The text under the title: the hint, or the goal when there is none.
-static func line(p_level) -> String:
-	return p_level.hint if p_level.hint != "" else p_level.goal
+static func title_size(p_level) -> int:
+	var font := P.display(600)
+	var s := TITLE_SIZE
+	while s > 20 and font.get_string_size(_title(p_level), HORIZONTAL_ALIGNMENT_LEFT, -1, s).x > WIDTH - 60:
+		s -= 1
+	return s
 
 
-## The font size of the line under the title: 15, or 12 on two lines when it
-## doesn't fit on one (a hint of two sentences).
-static func line_size(p_level) -> int:
-	return 15 if P.ui(700).get_string_size(line(p_level), HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x <= LINE_WIDTH else 12
+static func _title(p_level) -> String:
+	return "%d · %s" % [p_level.number, p_level.title()]
 
 
-## How many lines the hint takes on the note.
-static func hint_lines(p_level) -> int:
+## The hint's height on the note, at its width.
+static func hint_height(p_level) -> float:
 	if p_level.hint == "":
-		return 0
-	var size := P.ui(700).get_multiline_string_size(p_level.hint, HORIZONTAL_ALIGNMENT_CENTER, HINT_WIDTH, 22)
-	return maxi(1, roundi(size.y / P.ui(700).get_height(22)))
+		return 0.0
+	return P.ui(700).get_multiline_string_size(p_level.hint, HORIZONTAL_ALIGNMENT_CENTER, TEXT_W, HINT_SIZE).y
 
 
 func _ready() -> void:
 	size = DESIGN
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var h := 212.0 + P.ui(700).get_height(22) * maxi(2, hint_lines(level)) if level.hint != "" else 168.0
-	card = Rect2(DESIGN.x / 2 - 310, DESIGN.y / 2 - h / 2 - 20, 620, h)
+	var goal_h := P.ui(700).get_multiline_string_size(level.goal, HORIZONTAL_ALIGNMENT_CENTER, TEXT_W, 20).y
+	var want := 150.0 + goal_h + (hint_height(level) + 34.0 if level.hint != "" else 0.0)
+	var h := minf(want, MAX_H)
+	max_scroll = want - h
+	card = Rect2(DESIGN.x / 2 - WIDTH / 2, DESIGN.y / 2 - h / 2 - 10, WIDTH, h)
 
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed:
-		dismiss()
+	if event is InputEventMouseButton:
+		if event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+			if event.pressed and max_scroll > 0:
+				scroll_by(-40.0 if event.button_index == MOUSE_BUTTON_WHEEL_UP else 40.0)
+			accept_event()
+			return
+		if event.button_index != MOUSE_BUTTON_LEFT:
+			return
+		if event.pressed:
+			_press = event.position
+			_dragged = false
+		elif _press.x >= 0:
+			if not _dragged:
+				dismiss()
+			_press = Vector2(-1, -1)
+		accept_event()
+	elif event is InputEventMouseMotion and _press.x >= 0 and max_scroll > 0:
+		if _dragged or event.position.distance_to(_press) > DRAG:
+			_dragged = true
+			scroll_by(-event.relative.y)
 		accept_event()
 
 
+func scroll_by(dy: float) -> void:
+	scroll = clampf(scroll + dy, 0, max_scroll)
+
+
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo:
-		dismiss()
+	if event is InputEventKey and event.pressed:
+		var k := Keys.normalize(event.keycode)
+		if max_scroll > 0 and k in [KEY_UP, KEY_W, KEY_DOWN, KEY_S]:
+			scroll_by(-60.0 if k in [KEY_UP, KEY_W] else 60.0)
+		elif not event.echo:
+			dismiss()
 		Keys.handled(self)
 
 
-## Sends the note home under the title.
+## Sends the note home into the title's "?".
 func dismiss() -> void:
 	if leaving < 0:
 		leaving = 0.0
@@ -90,25 +129,51 @@ func _draw() -> void:
 	var u := clampf(leaving / LAND, 0, 1) if leaving >= 0 else 0.0
 	var e := u * u * (3 - 2 * u)
 	draw_rect(Rect2(Vector2.ZERO, DESIGN), Color(P.VEIL, P.VEIL.a * (1 - e)))
-	# Pops up from a little smaller; flies home shrinking onto the line under
-	# the title, its words fading first.
+	# Pops up from a little smaller; flies home shrinking into the "?", its
+	# words fading first.
 	var p := clampf(t / POP, 0, 1)
 	var grow := 0.92 + 0.08 * (1 - pow(1 - p, 3))
 	var r := Rect2(card.get_center() - card.size * grow / 2, card.size * grow)
 	r = Rect2(r.position.lerp(home.position, e), r.size.lerp(home.size, e))
 	var words := clampf(1 - u * 2.5, 0, 1)
 	var a := 1 - e * e
-	K.fill(self, K.round_rect(Rect2(r.position + Vector2(5, 8), r.size), 22 * (1 - e) + 4), Color(P.SHADOW, P.SHADOW.a * a))
-	K.shape(self, K.round_rect(r, 22 * (1 - e) + 4), Color(P.TAG, a), Color(P.INK, a), 3)
+	var corner := 22 * (1 - e) + home.size.y / 2 * e
+	K.fill(self, K.round_rect(Rect2(r.position + Vector2(5, 8), r.size), corner), Color(P.SHADOW, P.SHADOW.a * a))
+	K.shape(self, K.round_rect(r, corner), Color(P.TAG, a), Color(P.INK, a), 3)
 	if words <= 0:
 		return
+	var font := P.ui(700)
 	var cx := r.get_center().x
-	var y := r.position.y
-	K.text(self, P.display(600), Vector2(cx, y + 46), "%d · %s" % [level.number, level.name], 32, Color(P.INK, words))
-	K.text(self, P.ui(700), Vector2(cx, y + 92), level.goal, 20, Color(P.INK_SOFT, words))
+	var top := r.position.y
+	var x0 := cx - TEXT_W / 2
+	K.text(self, P.display(600), Vector2(cx, top + 46), _title(level), title_size(level), Color(P.INK, words))
+	# The goal and the hint scroll under the title, clipped above the foot.
+	var view := Rect2(r.position.x + 10, top + 80, r.size.x - 20, r.size.y - 124)
+	var y := view.position.y + 4 - scroll
+	var goal_h := font.get_multiline_string_size(level.goal, HORIZONTAL_ALIGNMENT_CENTER, TEXT_W, 20).y
+	if y >= view.position.y - 2 and y + goal_h <= view.end.y + 2:
+		draw_multiline_string(font, Vector2(x0, y + font.get_ascent(20)), level.goal, HORIZONTAL_ALIGNMENT_CENTER, TEXT_W, 20, -1, Color(P.INK_SOFT, words))
+	y += goal_h + 16
 	if level.hint != "":
-		var font := P.ui(700)
-		for i in 9:  # a dotted rule between the goal and the hint
-			K.disc(self, Vector2(cx - 64 + i * 16, y + 126), 2, Color(P.HOOP, words))
-		draw_multiline_string(font, Vector2(r.position.x + 50, y + 168), level.hint, HORIZONTAL_ALIGNMENT_CENTER, r.size.x - 100, 22, -1, Color(P.INK, words))
-	K.text(self, P.ui(700), Vector2(cx, r.end.y - 26), "Tap anywhere to start", 14, Color(P.INK_SOFT, words))
+		if y > view.position.y - 4 and y < view.end.y:
+			for i in 9:  # a dotted rule between the goal and the hint
+				K.disc(self, Vector2(cx - 64 + i * 16, y), 2, Color(P.HOOP, words))
+		y += 18
+		_hint_lines(font, x0, y, view, Color(P.INK, words))
+	if max_scroll > 0 and scroll < max_scroll - 1:
+		K.text(self, P.ui(700), Vector2(cx, r.end.y - 46), "more below ↓", 13, Color(P.INK_SOFT, words))
+	K.text(self, P.ui(700), Vector2(cx, r.end.y - 24), "Tap anywhere to start", 14, Color(P.INK_SOFT, words))
+
+
+## The hint, wrapped, each line drawn only where it is inside the view (so
+## a scrolled hint never spills over the title or the foot).
+func _hint_lines(font: Font, x0: float, y: float, view: Rect2, col: Color) -> void:
+	var para := TextParagraph.new()
+	para.add_string(level.hint, font, HINT_SIZE)
+	para.width = TEXT_W
+	para.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var line_h := font.get_height(HINT_SIZE)
+	for i in para.get_line_count():
+		var ly := y + i * line_h
+		if ly >= view.position.y - 2 and ly + line_h <= view.end.y + 2:
+			para.draw_line(get_canvas_item(), Vector2(x0, ly), i, col)

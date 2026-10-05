@@ -1,8 +1,10 @@
 {
 	"id": "only_missing",
-	"name": "Only Missing From Either",
-	"goal": "Weave the black king.",
-	"hint": "Only the Third Paint in the looking glass: paint from one card, never both. Ask what the cards lack, ask each card with that, then the two answers.",
+	"name": "The Black King",
+	"cloth": "The Black King",
+	"machine": "Extreme Mix",
+	"goal": "Weave the black king using only Missing From Either.",
+	"hint": "The king's twin wears paint from one card alone. Ask Missing From Either of the two cards, then of each card with that answer, then of the two answers.",
 	"pieces": [
 		"split"
 	],
@@ -10,8 +12,8 @@
 		"missing_from_either"
 	],
 	"stars": {
-		"budget": 10,
-		"best": 8
+		"budget": 6,
+		"best": 4
 	},
 	"target": [
 		"BBOKKBOO",
@@ -151,5 +153,9 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"waits_for": [
+		"missing_from_either"
+	],
+	"card_shows": 4
 }

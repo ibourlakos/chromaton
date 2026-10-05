@@ -16,6 +16,7 @@ const S = Simulator.Status
 var failures := 0
 var checks := 0
 var by_id := {}
+var campaign: Array = []
 
 
 func check(ok: bool, what: String) -> void:
@@ -26,7 +27,8 @@ func check(ok: bool, what: String) -> void:
 
 
 func _init() -> void:
-	for level in Level.load_all():
+	campaign = Level.load_all()
+	for level in campaign + Level.load_lost():
 		by_id[level.id] = level
 	by_id["make_filter"] = filter_level()
 	var inventions := test_packaging()
@@ -60,7 +62,7 @@ func test_packaging() -> Dictionary:
 	var inv := Invention.package(level, level.reference_machine(), {})
 	check(inv["id"] == "filter" and inv["name"] == "Filter", "the level makes Filter")
 	check(inv["inputs"] == 2, "its cards become two input ports")
-	check(inv["cost"] == 4, "it costs the four pieces inside it")
+	check(inv["cost"] == 3, "it costs the four pieces inside it, minus one")
 	check(inv["counts"] == {"invert": 3, "mix": 1}, "it remembers what it is made of")
 	check(Pieces.ports({"kind": Pieces.INVENTION, "invention": "filter"}, {"filter": inv}) == Vector2i(2, 1), "two inputs, one output")
 	var round_trip = JSON.parse_string(JSON.stringify(inv))
@@ -92,7 +94,7 @@ func test_in_later_levels(inventions: Dictionary) -> void:
 	var sim := Simulator.new(m, level.cards, level.target, inventions)
 	sim.run()
 	check(sim.status == S.SOLVED, "Filter solves Wash Out (status %d, stitch %d)" % [sim.status, sim.wrong_index])
-	check(m.cost(inventions) == 5 and level.stars_for(5) == 1, "the sticker counts its full price: 5 pieces, where the Filter critter needs 2")
+	check(m.cost(inventions) == 4 and level.stars_for(4) == 1, "the sticker counts its price: 4 pieces, where the Filter critter needs 2")
 	check(m.piece_counts(inventions) == {"invert": 4, "mix": 1}, "counts open the invention up")
 
 	# The Flower with two Filter stickers: Filter(Mix(C, B), Mix(A, Filter(C, B))).
@@ -107,7 +109,7 @@ func test_in_later_levels(inventions: Dictionary) -> void:
 	sim = Simulator.new(m, level.cards, level.target, inventions)
 	sim.run()
 	check(sim.status == S.SOLVED, "Filter stickers solve The Flower")
-	check(m.cost(inventions) == 10, "two stickers and two Mixes cost 10")
+	check(m.cost(inventions) == 8, "two stickers and two Mixes cost 8")
 
 	# Without the invention the same machine can't run.
 	sim = Simulator.new(m, level.cards, level.target, {})
@@ -156,7 +158,7 @@ func test_nested(inventions: Dictionary) -> void:
 		"tubes": [["card0", "f.0"], ["card1", "ib"], ["ib", "f.1"], ["f", "loom"]]})
 	var all := inventions.duplicate()
 	all["bleach"] = Invention.package(level, m, inventions)
-	check(all["bleach"]["cost"] == 5, "a nested invention costs everything inside it")
+	check(all["bleach"]["cost"] == 3, "a nested invention costs everything inside it, the inner one at its price, minus one")
 	var outer := Machine.new()
 	var a: int = outer.add_node(Pieces.CARD, 0, 0, {"card": 0})
 	var b: int = outer.add_node(Pieces.CARD, 0, 0, {"card": 1})
@@ -200,13 +202,16 @@ func test_edges() -> void:
 ## its paint every tick, and it keeps the cheapest price the player has made
 ## it for.
 func test_pots(inventions: Dictionary) -> void:
+	var refs := Invention.reference_inventions_by_level(campaign)
 	var level = by_id["orange"]
-	var pot := Invention.package(level, level.reference_machine(), {})
-	check(pot["id"] == "pot_orange" and pot["inputs"] == 0 and pot["cost"] == 4, "Orange earns an orange pot priced at its 4 pieces")
+	var before: Dictionary = refs[level.number - 1]  # the yellow pot, at 1
+	var pot := Invention.package(level, level.reference_machine(), before)
+	check(pot["id"] == "pot_orange" and pot["inputs"] == 0 and pot["cost"] == 2, "Orange earns an orange pot: red and the yellow pot mixed, 3 pieces, less one (%d)" % pot["cost"])
 	check(Invention.paint_of(pot) == Paint.ORANGE and Invention.paint_of(inventions["filter"]) == -1, "a pot knows its paint; other inventions aren't pots")
-	check(Invention.works_for_every_paint(level.reference_machine(), 0, "paint:O", {}), "the orange machine passes the every-paint check")
+	check(Invention.works_for_every_paint(level.reference_machine(), 0, "paint:O", before), "the orange machine passes the every-paint check")
 	check(not Invention.works_for_every_paint(by_id["yellow"].reference_machine(), 0, "paint:O", {}), "a yellow machine is no orange pot")
-	var all := {"pot_orange": pot}
+	var all := before.duplicate()
+	all["pot_orange"] = pot
 	check(Simulator.invention_table(pot, all) == PackedByteArray([Paint.ORANGE]), "a pot's table has one entry")
 	var m = level.machine_from_spec({
 		"pieces": [{"id": "o", "kind": "invention", "invention": "pot_orange", "x": 4, "y": 3}],
@@ -214,45 +219,50 @@ func test_pots(inventions: Dictionary) -> void:
 	var sim := Simulator.new(m, level.cards, level.target, all)
 	sim.run()
 	check(sim.status == S.SOLVED and sim.tick == level.size() + 1, "the orange pot weaves an orange cloth, one drop a tick (%d ticks)" % sim.tick)
-	check(m.cost(all) == 4, "and costs what it's made of")
+	check(m.cost(all) == 2, "and costs its price")
+	check(Invention.price(1) == 1 and Invention.price(0) == 1 and Invention.price(5) == 4, "the discount is one piece, never below 1")
+	var paint_box := campaign.filter(func(l): return l.chapter == 0 and not l.invention.is_empty())
+	var prices := paint_box.map(func(l): return Invention.package(l, l.reference_machine(), refs[l.number - 1])["cost"])
+	check(prices == [1, 1, 2, 3, 2, 3, 1, 1, 1, 2, 2], "the paint box earns Yellow 1, Blue 1, Orange 2, Purple 3, Green 2, Black 3, then Green, Orange and Purple at 1, Black 2, White 2 (%s)" % str(prices))
 
 	var p = Progress.new()
 	p.add_invention(pot)
 	var dearer := pot.duplicate(true)
 	dearer["cost"] = 6
-	check(p.add_invention(dearer)["cost"] == 4 and p.inventions["pot_orange"]["cost"] == 4, "a dearer orange pot keeps the cheaper price")
+	check(p.add_invention(dearer)["cost"] == 2 and p.inventions["pot_orange"]["cost"] == 2, "a dearer orange pot keeps the cheaper price")
 	var cheaper := pot.duplicate(true)
-	cheaper["cost"] = 3
-	check(p.add_invention(cheaper)["cost"] == 3 and p.inventions["pot_orange"]["cost"] == 3, "a cheaper orange pot lowers the price")
+	cheaper["cost"] = 1
+	check(p.add_invention(cheaper)["cost"] == 1 and p.inventions["pot_orange"]["cost"] == 1, "a cheaper orange pot lowers the price")
 	var filter: Dictionary = inventions["filter"]
 	p.add_invention(filter)
 	var bigger := filter.duplicate(true)
 	bigger["cost"] = 9
-	check(p.add_invention(bigger)["cost"] == 4, "every invention keeps its cheaper machine")
+	check(p.add_invention(bigger)["cost"] == 3, "every invention keeps its cheaper machine")
 	var same := filter.duplicate(true)
 	same["machine"] = {"nodes": [], "tubes": [], "next_id": 1}
 	check(p.add_invention(same)["machine"] == same["machine"], "a machine as cheap takes its place")
 	test_earned_twice()
 
 
-## Two levels earn Same Paint: Only the Third Paint for 8 pieces (four Third
-## Paints), Same Paint for 4 with the kit. The cheaper machine wins, whichever
-## level is solved first or again.
+## The discount compounds: four Third Paints at 1 each make a 4-piece
+## machine, so Same Paint built from them would cost 3. Two inventions a
+## chapter: Same Paint is earned only in The Black Queen, and the Black pot
+## twice, the cheaper machine winning.
 func test_earned_twice() -> void:
-	var inventions := {}
 	var p = Progress.new()
-	for id in ["third_color", "only_third_paint", "same_paint"]:
+	for id in ["third_color", "same_paint"]:
 		var level = by_id[id]
 		var inv := Invention.package(level, level.reference_machine(), p.inventions)
 		check(Invention.works_for_every_paint(level.reference_machine(), level.cards.size(), inv["check"], p.inventions), "%s earns a real %s" % [id, inv["name"]])
 		p.add_invention(inv)
-		inventions[id] = inv
-	check(inventions["only_third_paint"]["id"] == "same_paint" and inventions["only_third_paint"]["cost"] == 8, "Only the Third Paint earns Same Paint for 8 pieces")
-	check(p.inventions["same_paint"]["cost"] == 4 and p.inventions["same_paint"]["from_level"] == "same_paint", "the 4-piece Same Paint replaces it")
-	p.add_invention(inventions["only_third_paint"])
-	check(p.inventions["same_paint"]["cost"] == 4, "solving Only the Third Paint again keeps the cheaper one")
-	var black := [by_id["black"], by_id["black_short_way"]].map(func(l): return Invention.package(l, l.reference_machine(), {}))
+	check(p.inventions["third_paint"]["cost"] == 1, "the Third Paint costs 1: Mix and Flip, less one")
+	check(p.inventions["same_paint"]["cost"] == 3 and p.inventions["same_paint"]["from_level"] == "same_paint", "the 4-piece Same Paint costs 3")
+	var king = by_id["only_third_paint"]
+	check(king.invention.is_empty(), "Only the Third Paint earns nothing now")
+	check(Invention.price(king.reference_machine().cost(p.inventions)) == 3, "four Third Paints would make Same Paint at 4 - 1 = 3")
+	var refs := Invention.reference_inventions_by_level(campaign)
+	var black := [by_id["black"], by_id["black_short_way"]].map(func(l): return Invention.package(l, l.reference_machine(), refs[l.number - 1]))
 	var q = Progress.new()
 	q.add_invention(black[1])
 	q.add_invention(black[0])
-	check(black[0]["id"] == "pot_black" and q.inventions["pot_black"]["cost"] == 3, "All the Paint's 5-piece black pot doesn't replace the short way's 3")
+	check(black[0]["cost"] == 3 and black[1]["cost"] == 2 and q.inventions["pot_black"]["cost"] == 2, "the first Black pot (3) doesn't replace the cheaper one (2)")

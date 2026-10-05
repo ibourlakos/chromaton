@@ -4,7 +4,9 @@
 ## order) and the loom becomes its one output port. The simulator runs an
 ## invention as one piece that takes one tick, looking up what the machine
 ## inside makes (exact, because of the every-paint check below).
-## Its piece cost is the total of the pieces inside it.
+## Its piece cost is the total of the pieces inside it (inventions inside at
+## their own price) minus one, never below 1: the invention discount
+## (DESIGN.md 5.1), so inventing pays on Pieces too, and it compounds.
 ##
 ## A color pot is an invention with no inputs (check "paint:<letter>", e.g.
 ## "paint:Y"): each paint-box level packages its machine as a pot of that
@@ -25,11 +27,46 @@ static func package(level, machine, inventions: Dictionary) -> Dictionary:
 		"name": level.invention["name"],
 		"check": level.invention["check"],
 		"inputs": level.cards.size(),
-		"cost": machine.cost(inventions),
+		"cost": price(machine.cost(inventions)),
 		"counts": machine.piece_counts(inventions),
 		"machine": machine.to_dict(),
 		"from_level": level.id,
 	}
+
+
+## What an invention made by a machine of this many pieces costs: one less,
+## never below 1 (the invention discount).
+static func price(machine_cost: int) -> int:
+	return maxi(1, machine_cost - 1)
+
+
+## Every invention the levels earn, packaged from the levels' reference
+## solutions, the cheaper machine winning where two levels earn the same one
+## (as a player's save keeps it). So each costs its cheapest price: what
+## force unlock lends.
+static func reference_inventions(levels: Array) -> Dictionary:
+	var by_level := reference_inventions_by_level(levels)
+	return by_level[by_level.size() - 1]
+
+
+## What each level can count on, in campaign order: the inventions the levels
+## before it earn, each at the cheapest price so far (a pot re-earned cheaper
+## later in the campaign costs its old price until then), plus, as the last
+## entry, everything at its cheapest. What the solver and the card maker
+## search with, and what star thresholds assume.
+static func reference_inventions_by_level(levels: Array) -> Array:
+	var out := []
+	var inventions := {}
+	for level in levels:
+		out.append(inventions)
+		if not level.invention.is_empty():
+			var inv := package(level, level.reference_machine(), inventions)
+			var old: Dictionary = inventions.get(inv["id"], {})
+			if old.is_empty() or int(inv["cost"]) <= int(old["cost"]):
+				inventions = inventions.duplicate()
+				inventions[inv["id"]] = inv
+	out.append(inventions)
+	return out
 
 
 ## The paint a pot makes, or -1 if this invention (or level invention entry,

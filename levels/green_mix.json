@@ -1,10 +1,10 @@
 {
-	"id": "black",
-	"name": "The Black Pot",
-	"cloth": "Black",
-	"machine": "The Black Pot",
-	"goal": "Weave a black cloth.",
-	"hint": "Pour every paint into one tub and it turns black. Mix a pot that holds red and yellow with your blue pot.",
+	"id": "green_mix",
+	"name": "The Green Pot",
+	"cloth": "Green",
+	"machine": "The Green Pot",
+	"goal": "Weave a green cloth.",
+	"hint": "Yellow and blue make green, as every painter knows. Mix your yellow pot with your blue pot.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -13,25 +13,25 @@
 	],
 	"inventions": [],
 	"invention": {
-		"id": "pot_black",
-		"name": "Black pot",
-		"check": "paint:K"
+		"id": "pot_green",
+		"name": "Green pot",
+		"check": "paint:G"
 	},
 	"stars": {
-		"budget": 5,
-		"best": 4
+		"budget": 4,
+		"best": 3
 	},
 	"target": [
-		"KKKKKKKK"
+		"GGGGGGGG"
 	],
 	"card_rule": "",
 	"cards": [],
 	"reference": {
 		"pieces": [
 			{
-				"id": "o",
+				"id": "y",
 				"kind": "invention",
-				"invention": "pot_orange",
+				"invention": "pot_yellow",
 				"x": 2,
 				"y": 2
 			},
@@ -51,7 +51,7 @@
 		],
 		"tubes": [
 			[
-				"o",
+				"y",
 				"m.0"
 			],
 			[

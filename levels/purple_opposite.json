@@ -1,26 +1,29 @@
 {
-	"id": "blue",
-	"name": "The Blue Pot",
-	"cloth": "Blue",
-	"machine": "The Blue Pot",
-	"goal": "Weave a blue cloth.",
-	"hint": "Your yellow pot is a piece now, and cheaper than a red pot with a wheel. Turn its yellow once more on the Shift Wheel.",
+	"id": "purple_opposite",
+	"name": "A Cheaper Purple Pot",
+	"cloth": "Purple",
+	"machine": "A Cheaper Purple Pot",
+	"goal": "Weave a purple cloth.",
+	"hint": "Purple lacks only yellow, so it sits across from yellow. Flip your yellow pot.",
 	"pieces": [
 		"red_pot",
-		"shift"
+		"shift",
+		"mix",
+		"split",
+		"invert"
 	],
 	"inventions": [],
 	"invention": {
-		"id": "pot_blue",
-		"name": "Blue pot",
-		"check": "paint:B"
+		"id": "pot_purple",
+		"name": "Purple pot",
+		"check": "paint:P"
 	},
 	"stars": {
 		"budget": 3,
 		"best": 2
 	},
 	"target": [
-		"BBBBBBBB"
+		"PPPPPPPP"
 	],
 	"card_rule": "",
 	"cards": [],
@@ -35,7 +38,7 @@
 			},
 			{
 				"id": "h",
-				"kind": "shift",
+				"kind": "invert",
 				"x": 8,
 				"y": 3
 			}

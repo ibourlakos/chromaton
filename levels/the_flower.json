@@ -1,8 +1,10 @@
 {
 	"id": "the_flower",
 	"name": "The Harbour",
+	"cloth": "The Harbour",
+	"machine": "Two of Three",
 	"goal": "Weave the harbour.",
-	"hint": "A paint shows where at least two cards have it. Find what each pair of cards shares, then mix those together.",
+	"hint": "Gulls, sails and the quay, each on two of three cards. Sieve each pair of cards, then mix the three answers.",
 	"pieces": [
 		"red_pot",
 		"shift",

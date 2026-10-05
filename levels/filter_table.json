@@ -1,0 +1,79 @@
+{
+	"id": "filter_table",
+	"name": "The Sieve Table",
+	"cloth": "The Sieve Table",
+	"machine": "What Every Pair Shares",
+	"goal": "Weave the table.",
+	"hint": "The Sieve keeps only the paint both drops share. Sieve card A with card B, and the cloth becomes the table of every share.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"filter",
+		"invert",
+		"split"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 2,
+		"best": 1
+	},
+	"target": [
+		"WRWRWRWR",
+		"WWYYWWYY",
+		"WWWWBBBB",
+		"WRYOWRYO",
+		"WRWRBPBP",
+		"WWYYBBGG"
+	],
+	"card_rule": "",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"RRRRRRRR",
+				"YYYYYYYY",
+				"BBBBBBBB",
+				"OOOOOOOO",
+				"PPPPPPPP",
+				"GGGGGGGG"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"WRYOBPGK",
+				"WRYOBPGK",
+				"WRYOBPGK",
+				"WRYOBPGK",
+				"WRYOBPGK",
+				"WRYOBPGK"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "m",
+				"kind": "filter",
+				"x": 6,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"m.0"
+			],
+			[
+				"card1",
+				"m.1"
+			],
+			[
+				"m",
+				"loom"
+			]
+		]
+	},
+	"card_shows": 10
+}

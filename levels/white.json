@@ -1,8 +1,10 @@
 {
 	"id": "white",
-	"name": "Nothing at All",
+	"name": "The White Pot",
+	"cloth": "White",
+	"machine": "The White Pot",
 	"goal": "Weave a white cloth.",
-	"hint": "White is the opposite of black. Flip your black.",
+	"hint": "White is the empty cloth, the opposite of black. Flip your black pot.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -17,8 +19,8 @@
 		"check": "paint:W"
 	},
 	"stars": {
-		"budget": 6,
-		"best": 4
+		"budget": 5,
+		"best": 3
 	},
 	"target": [
 		"WWWWWWWW"
@@ -28,59 +30,26 @@
 	"reference": {
 		"pieces": [
 			{
-				"id": "pot",
-				"kind": "red_pot",
-				"x": 2,
-				"y": 3
-			},
-			{
-				"id": "s",
-				"kind": "split",
+				"id": "k",
+				"kind": "invention",
+				"invention": "pot_black",
 				"x": 4,
 				"y": 3
 			},
 			{
-				"id": "i1",
+				"id": "h",
 				"kind": "invert",
-				"x": 6,
-				"y": 4
-			},
-			{
-				"id": "m",
-				"kind": "mix",
 				"x": 8,
-				"y": 3
-			},
-			{
-				"id": "i2",
-				"kind": "invert",
-				"x": 10,
 				"y": 3
 			}
 		],
 		"tubes": [
 			[
-				"pot",
-				"s"
+				"k",
+				"h"
 			],
 			[
-				"s.0",
-				"m.0"
-			],
-			[
-				"s.1",
-				"i1"
-			],
-			[
-				"i1",
-				"m.1"
-			],
-			[
-				"m",
-				"i2"
-			],
-			[
-				"i2",
+				"h",
 				"loom"
 			]
 		]

@@ -1,8 +1,10 @@
 {
 	"id": "keep_what_they_share",
-	"name": "Keep What They Share",
-	"goal": "Weave the bishop.",
-	"hint": "Flip both cards to their opposites, then ask the Third Paint for what neither has.",
+	"name": "The Bishop",
+	"cloth": "The Bishop",
+	"machine": "A Sieve, Rebuilt",
+	"goal": "Weave the bishop, and build a Sieve.",
+	"hint": "What two paints share is what neither of their opposites has. Flip both cards, then ask the Third Paint.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -14,8 +16,8 @@
 		"third_paint"
 	],
 	"stars": {
-		"budget": 6,
-		"best": 4
+		"budget": 5,
+		"best": 3
 	},
 	"target": [
 		"OOBWWOBB",
@@ -32,7 +34,7 @@
 		{
 			"name": "A",
 			"colors": [
-				"OOPYPOPP",
+				"OOPGYOPP",
 				"KKOGKPGB",
 				"BBWWPWOK",
 				"BBKKYPKO",
@@ -45,7 +47,7 @@
 		{
 			"name": "B",
 			"colors": [
-				"KKGRWKGB",
+				"KKGWRKGB",
 				"OOWOWWPK",
 				"PGYRWKKO",
 				"PKOWWBOK",
@@ -100,5 +102,6 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"card_shows": 5
 }

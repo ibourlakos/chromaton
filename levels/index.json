@@ -1,12 +1,12 @@
 [
 	{
 		"name": "The Paint Box",
-		"levels": ["one_pot", "yellow", "blue", "orange", "purple", "black", "green", "black_short_way", "white"]
+		"levels": ["one_pot", "yellow", "blue", "orange", "purple", "green_mix", "black", "green", "orange_opposite", "purple_opposite", "black_short_way", "white"]
 	},
 	{
 		"name": "Pattern Cards",
 		"quilt_across": 4,
-		"levels": ["pattern_card", "orange_sun", "parrot", "turn_the_wheel", "opposites", "flip_side", "smudges", "lighthouse", "where_they_meet", "black_cat", "wash_out", "the_flower"]
+		"levels": ["pattern_card", "turn_the_wheel", "opposites", "orange_sun", "parrot", "mix_table", "lighthouse", "filter_table", "smudges", "where_they_meet", "wash_out", "black_cat"]
 	},
 	{
 		"name": "Invent What You Know",
@@ -17,5 +17,10 @@
 		"name": "The Looking Glass",
 		"quilt_across": 3,
 		"levels": ["missing_from_either", "missing_twice", "back_to_filter", "mix_without_mix", "same_paint", "only_missing"]
+	},
+	{
+		"name": "Lost Levels",
+		"lost": true,
+		"levels": ["flip_side", "the_flower"]
 	}
 ]

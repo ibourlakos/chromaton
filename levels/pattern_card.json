@@ -1,8 +1,10 @@
 {
 	"id": "pattern_card",
-	"name": "The Pattern Card",
+	"name": "The Sailboat",
+	"cloth": "The Sailboat",
+	"machine": "Straight from the Card",
 	"goal": "Weave the sailboat.",
-	"hint": "A card holds paint for every stitch and lets it out one drop at a time. Tube it straight to the loom.",
+	"hint": "A card holds a paint for every stitch and lets them out one drop at a time. Tube it straight to the loom.",
 	"hints": true,
 	"pieces": [],
 	"inventions": [],
@@ -40,5 +42,6 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"card_shows": 4
 }

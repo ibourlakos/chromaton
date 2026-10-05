@@ -1,15 +1,16 @@
 {
 	"id": "lighthouse",
-	"name": "Lighthouse",
+	"name": "The Lighthouse",
+	"cloth": "The Lighthouse",
+	"machine": "Two Cards Mixed",
 	"goal": "Weave the lighthouse.",
-	"hint": "Each card holds part of the picture. Mix them, drop by drop.",
+	"hint": "At dusk the tower and its lamp are painted on two cards. Mix them, drop by drop.",
 	"pieces": [
 		"red_pot",
 		"shift",
 		"mix",
-		"filter",
-		"invert",
-		"split"
+		"split",
+		"invert"
 	],
 	"inventions": [],
 	"stars": {
@@ -29,7 +30,7 @@
 		{
 			"name": "A",
 			"colors": [
-				"BRBRBRWP",
+				"PBBPYRWP",
 				"WWBWYPWY",
 				"BPBRRWBB",
 				"RPBWWBRP",
@@ -40,7 +41,7 @@
 		{
 			"name": "B",
 			"colors": [
-				"RBRKOBPW",
+				"WPRYPBPW",
 				"YYRYYWYY",
 				"RPPRRPPP",
 				"BBPWWRBP",
@@ -72,5 +73,6 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"card_shows": 5
 }

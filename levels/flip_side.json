@@ -1,8 +1,10 @@
 {
 	"id": "flip_side",
-	"name": "Flip Side",
+	"name": "The Beach Flags",
+	"cloth": "The Beach Flags",
+	"machine": "Every Mix Flipped",
 	"goal": "Weave the beach flags.",
-	"hint": "Every mix flips to the one paint it lacks: orange to blue. Tube the card through Invert.",
+	"hint": "On the beach, every flag flips to the one paint it lacks. Tube the card through the Flip Pan.",
 	"pieces": [
 		"red_pot",
 		"shift",

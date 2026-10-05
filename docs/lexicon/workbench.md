@@ -1,14 +1,14 @@
 # Workbench
 
 - **Tags:** gameplay, design, implementation
-- **Status:** ✅ renamed for players (designer, 2026-10-05): the place where critters, machines and the player work together; "workbench" stays the code's name (`ui/workbench.gd`)
-- **Player word (decided 2026-10-05, not built):** Workshop. It becomes the Player word, and the Gameplay text uses it, when the rename is built (then `.\make words`).
+- **Status:** ✅ renamed for players (designer, 2026-10-05): the place where critters, machines and the player work together; "workbench" stays the code's name (`ui/workbench.gd`); the player word built 2026-10-05
+- **Player word:** Workshop
 - **Journal:** unlocks in One Pot of Red
 - **Also called:** bench
 
 ## Gameplay
 
-The workbench is where you build. Put pieces on it from the tray and join them with tubes. Paint comes in from the pattern cards on the left, flows to the right, and the loom on the right weaves it into a cloth.
+The workshop is where you build. Put pieces in it from the tray and join them with tubes. Paint comes in from the pattern cards on the left, flows to the right, and the loom on the right weaves it into a cloth.
 
 ## Design
 

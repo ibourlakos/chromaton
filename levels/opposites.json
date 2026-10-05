@@ -1,8 +1,10 @@
 {
 	"id": "opposites",
-	"name": "Opposites",
+	"name": "The Opposites Swatch",
+	"cloth": "The Opposites Swatch",
+	"machine": "Every Paint Flipped",
 	"goal": "Weave the swatch.",
-	"hint": "Every paint on the card, flipped. Tube the card through Invert: each paint flips to the one across the paint card.",
+	"hint": "Tube the card through the Flip Pan: each paint lands on the one across the paint card.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -56,5 +58,6 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"card_shows": 4
 }

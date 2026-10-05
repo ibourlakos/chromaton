@@ -1,13 +1,13 @@
 # Mix
 
 - **Tags:** gameplay, design, implementation
-- **Status:** ✅ two names (designer, 2026-10-05): the term is the algebra's and the code's name; the player sees the critter's name
-- **Player word (decided 2026-10-05, not built):** Mixing Tub. It becomes the Player word, and the Gameplay text uses it, when the rename is built (then `.\make words`).
-- **Journal:** unlocks in Orange; page on the Pieces tab
+- **Status:** ✅ two names (designer, 2026-10-05): the term is the algebra's and the code's name; the player sees the critter's name; the player word built 2026-10-05
+- **Player word:** Mixing Tub
+- **Journal:** unlocks in The Orange Pot; page on the Pieces tab
 
 ## Gameplay
 
-Mix takes two paints and gives back everything in either one. Red and yellow make orange; orange and blue make black. Mixing in a paint that's already there changes nothing.
+The Mixing Tub takes two paints and gives back everything in either one. Red and yellow make orange; orange and blue make black. Mixing in a paint that's already there changes nothing.
 
 ## Design
 

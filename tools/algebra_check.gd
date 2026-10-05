@@ -1281,7 +1281,7 @@ func _init() -> void:
 		var e: Dictionary = GamePieces.TABLE[kind]
 		if not PIECE_NOTES.has(kind):
 			fail("piece %s has no entry in PIECE_NOTES" % kind)
-		w("| %s | %d -> %d | %d | %s |" % [e["name"], e["inputs"], e["outputs"], e["cost"], PIECE_NOTES.get(kind, "**missing**")])
+		w("| %s | %d -> %d | %d | %s |" % [_op_name(kind), e["inputs"], e["outputs"], e["cost"], PIECE_NOTES.get(kind, "**missing**")])
 	w("| Pattern card | 0 -> 1 | 0 | Part of the level: releases its next color whenever its tube is free. Every card must be used. |")
 	w("| Loom | 1 -> 0 | 0 | Part of the level: weaves one drop per tick; the first wrong stitch stops the run. |")
 	w("| Invention | n -> 1 | its inside | A solved machine as one piece: its cards become inputs, its loom the one output. Takes one tick and looks its answer up, which the every-paint check makes exact. |")
@@ -1299,7 +1299,7 @@ func _init() -> void:
 		var e: Dictionary = GamePieces.TABLE[kind]
 		if e["inputs"] != 1 or e["outputs"] != 1 or e["cost"] == 0:
 			continue
-		var row := "| %s |" % e["name"]
+		var row := "| %s |" % _op_name(kind)
 		for c in Paint.ALL:
 			row += " %s |" % Paint.name_of(game(e["op"], [c]))
 		w(row)
@@ -1308,9 +1308,9 @@ func _init() -> void:
 		var e: Dictionary = GamePieces.TABLE[kind]
 		if e["inputs"] != 2:
 			continue
-		w("%s (first paint down the side, second across the top):" % e["name"])
+		w("%s (first paint down the side, second across the top):" % _op_name(kind))
 		w()
-		w(head.replace("Piece", e["name"]))
+		w(head.replace("Piece", _op_name(kind)))
 		w(rule)
 		for a in Paint.ALL:
 			var row := "| **%s** |" % Paint.name_of(a)
@@ -1462,3 +1462,9 @@ func _init() -> void:
 	file.close()
 	print("Wrote docs/algebra-report.md; problems: %d" % problems)
 	quit(1 if problems > 0 else 0)
+
+
+## A piece's operation name, the algebra's word (Mix, Filter, Invert, Shift),
+## not the critter name players see (core/pieces.gd's display names).
+static func _op_name(kind: String) -> String:
+	return kind.capitalize() if kind in ["mix", "filter", "invert", "shift"] else str(GamePieces.TABLE[kind]["name"])

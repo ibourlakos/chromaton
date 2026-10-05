@@ -1,8 +1,10 @@
 {
 	"id": "parrot",
-	"name": "Parrot",
+	"name": "The Parrot",
+	"cloth": "The Parrot",
+	"machine": "Each Paint and the Next",
 	"goal": "Weave the parrot.",
-	"hint": "Fork the card's paint. Turn one half on the wheel, then mix the halves back: red meets yellow and makes orange.",
+	"hint": "The parrot's red feathers glow orange where the sun turns them. Split the card, turn one tube on the Shift Wheel, and mix both tubes back together.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -80,5 +82,6 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"card_shows": 4
 }
