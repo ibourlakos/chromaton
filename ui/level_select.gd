@@ -7,6 +7,7 @@ const K = preload("res://ui/draw_kit.gd")
 const ToyButton = preload("res://ui/toy_button.gd")
 const Keys = preload("res://ui/keys.gd")
 const Invention = preload("res://core/invention.gd")
+const Level = preload("res://core/level.gd")
 
 signal level_chosen(index: int)
 signal book_requested
@@ -215,7 +216,12 @@ func _paint_tag(b: Control, r: Rect2, down: bool, i: int, open: bool) -> void:
 			K.icon(b, "ticks", body.position + Vector2(220, 100), 0.8, P.INK_SOFT)
 			K.text(b, P.ui(700), body.position + Vector2(234, 100), str(rec.get("best_ticks", 0)), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	else:
-		K.icon(b, "lock", body.get_center() + Vector2(0, 16), 1.6, Color(P.INK, 0.4))
+		# A level waiting for an invention says where to earn it.
+		var line := Level.waiting_line(levels, progress.waiting_for(level.id))
+		K.icon(b, "lock", body.get_center() + Vector2(0, 4 if line != "" else 16), 1.6, Color(P.INK, 0.4))
+		if line != "":
+			var font := P.ui(700)
+			b.draw_multiline_string(font, body.position + Vector2(16, 104 + font.get_ascent(14)), line, HORIZONTAL_ALIGNMENT_CENTER, body.size.x - 32, 14, 2, Color(P.INK, 0.6))
 
 
 ## The level's number as a rubber stamp in wood-brown ink: a scalloped ring

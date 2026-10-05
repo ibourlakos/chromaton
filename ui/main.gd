@@ -58,15 +58,17 @@ var throwaway := false  # screenshot mode: never write the real save
 func _ready() -> void:
 	levels = Level.load_all()
 	var saved = Progress.read()
-	var problems: Array = [] if saved == null else Progress.problems(saved, levels)
+	var known := levels + Level.load_lost()  # Lost Levels keep their records too
+	var problems: Array = [] if saved == null else Progress.problems(saved, known)
 	if not problems.is_empty():
 		print("The save doesn't fit this build: " + "; ".join(problems))
 	stale = not problems.is_empty()
 	# Only what still fits the levels is loaded (the intro asks about the rest).
-	progress = Progress.from_dict(saved, levels) if saved is Dictionary else Progress.new()
+	progress = Progress.from_dict(saved, known) if saved is Dictionary else Progress.new()
 	var args := _args()
 	unlock_all = args.has("unlock-all")
 	progress.unlock_all = unlock_all
+	progress.know_levels(levels)
 	stage = Control.new()
 	stage.size = DESIGN
 	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -172,6 +174,7 @@ func _settle_save(fresh: bool) -> void:
 	if fresh:
 		progress = Progress.new()
 		progress.unlock_all = unlock_all
+		progress.know_levels(levels)
 	stale = false
 	progress.save()
 	_start()
@@ -231,6 +234,7 @@ func _screenshot(args: Dictionary) -> void:
 	throwaway = true
 	progress = Progress.new()
 	progress.unlock_all = args.has("unlock-all")
+	progress.know_levels(levels)
 	Keys.grid = args.has("grid")
 	Keys.paints = args.has("paints")
 	if args.has("touch"):  # as on a phone: no keyboard, no key labels

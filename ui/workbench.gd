@@ -169,7 +169,7 @@ func setup(p_level, p_progress, p_has_next: bool, p_levels := []) -> void:
 	progress = p_progress
 	has_next = p_has_next
 	levels = p_levels
-	inventions = progress.inventions
+	inventions = progress.usable()
 	var saved: Dictionary = progress.stored_machine(level.id)
 	machine = Machine.from_dict(saved) if not saved.is_empty() else level.new_machine()
 	if not _fixed_nodes_match():
@@ -634,6 +634,7 @@ func _finish_solve() -> void:
 	var invention := {}
 	if not level.invention.is_empty():
 		invention = progress.add_invention(Invention.package(level, machine, inventions))
+		inventions = progress.usable()  # earning one replaces a loan
 	progress.store_machine(level.id, machine.to_dict())
 	progress_changed.emit()
 	panel = SuccessPanel.new()
@@ -1322,11 +1323,9 @@ func _draw_card_paints() -> void:
 			continue
 		var c: int = n["card"]
 		var upcoming := []
-		var smudged := []
-		for k in range(sim.card_cursor[c], mini(sim.card_cursor[c] + level.CARD_SHOWS, level.cards[c].size())):
+		for k in range(sim.card_cursor[c], mini(sim.card_cursor[c] + level.card_shows, level.cards[c].size())):
 			upcoming.append(level.cards[c][k])
-			smudged.append(k in level.smudges[c])
-		K.card_paints(paints_layer, node_center(id), upcoming, _age(id), smudged)
+		K.card_paints(paints_layer, node_center(id), upcoming, _age(id), level.card_shows)
 
 
 ## The wiring layer: tubes, a selected piece's lit cell, and the pipes into
