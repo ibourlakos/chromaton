@@ -201,6 +201,13 @@ static func waiting_line(levels: Array, inv_ids: Array) -> String:
 	return "Earn %s in %s." % [what, earner.ref_name()]
 
 
+## The critter this level rebuilds from other pieces ("" if none): its card
+## rule is the critter's, and its tray holds that critter back.
+func rebuilds() -> String:
+	var rule := str(raw.get("card_rule", ""))
+	return rule if rule in tray and not rule in pieces else ""
+
+
 ## Whether this level lets the player place this invention: one it lists, or
 ## an earned pot (_lay_trays).
 func offers_invention(inv_id: String) -> bool:

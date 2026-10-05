@@ -57,6 +57,7 @@ func _draw() -> void:
 	for pair in [[1, 6], [2, 5], [4, 3]]:
 		K.dashed(self, PackedVector2Array([at[pair[0]], at[pair[1]]]), Color(P.INK, 0.28), 1.5, 5, 4)
 	K.stroke(self, PackedVector2Array([at[1], at[2], at[4]]), Color(P.INK, 0.4), 2)
+	_draw_shift_arrows(at)
 	for color in at:
 		K.drop(self, at[color], DROP, color)
 	# Names under the drops, except where a line or a name would be in the
@@ -74,6 +75,30 @@ func _draw() -> void:
 	var pin := Vector2(SIZE.x / 2, 2)
 	K.shape(self, K.ellipse(pin, 6, 6, 0, 16), P.HOOP, P.INK, 2)
 	K.disc(self, pin + Vector2(-1.5, -1.5), 1.6, Color(1, 1, 1, 0.6))
+
+
+## Small ink arrows outside the triangle, one along each edge, turning the
+## way the Shift Wheel does: red to yellow to blue, and the mixes with them
+## (orange to green to purple). Ink, never a paint's hue.
+func _draw_shift_arrows(at: Dictionary) -> void:
+	var mid: Vector2 = at[7]
+	for edge in [[1, 2], [2, 4], [4, 1]]:
+		var a: Vector2 = at[edge[0]]
+		var b: Vector2 = at[edge[1]]
+		var along := (b - a).normalized()
+		var out := (a.lerp(b, 0.5) - mid).normalized()
+		var from := a.lerp(b, 0.16) + out * 17
+		var to := a.lerp(b, 0.36) + out * 17
+		var bend := (from + to) / 2 + out * 5
+		var pts := PackedVector2Array()
+		for i in 9:
+			var u := i / 8.0
+			pts.append(from.lerp(bend, u).lerp(bend.lerp(to, u), u))
+		K.stroke(self, pts, Color(P.INK, 0.55), 2)
+		var tip := pts[pts.size() - 1]
+		var back := (tip - pts[pts.size() - 3]).normalized()
+		var side := Vector2(-back.y, back.x)
+		K.fill(self, PackedVector2Array([tip + back * 4, tip - back * 5 + side * 4, tip - back * 5 - side * 4]), Color(P.INK, 0.55))
 
 
 ## A paint's name on a scrap of tag paper, so the lines pass behind it.

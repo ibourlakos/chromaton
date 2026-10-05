@@ -543,7 +543,13 @@ func _draw_pieces() -> void:
 		K.shape(self, K.round_rect(r, 12), Color(P.HOOP, 0.25) if lit else (P.TAG if met else P.PAPER_DK), Color(P.INK, 0.8 if lit else 0.35), 2.5 if lit else 1.5)
 		if met:
 			critter(self, pieces[i], r.position + Vector2(48, r.size.y / 2), 0.62, t)
-			K.text(self, P.display(600), Vector2(r.position.x + 92, r.get_center().y), Pieces.display_name(pieces[i]), 19, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+			# A long name (Shift Wheel, Mixing Tub) takes two lines.
+			var name := Pieces.display_name(pieces[i])
+			var lines := [name]
+			if P.display(600).get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, 19).x > r.size.x - 96 and name.contains(" "):
+				lines = name.split(" ", false, 1)
+			for k in lines.size():
+				K.text(self, P.display(600), Vector2(r.position.x + 92, r.get_center().y + (k - (lines.size() - 1) / 2.0) * 22), lines[k], 19, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 		else:
 			K.icon(self, "lock", r.get_center(), 1.4, Color(P.INK, 0.35))
 	var kind: String = pieces[piece] if piece < pieces.size() else ""
@@ -571,6 +577,79 @@ func _draw_pieces() -> void:
 			_fact(Vector2(area.position.x + 60, top + 60), [], [Paint.RED], "Every drop it makes is red.")
 		"split":
 			_fact(Vector2(area.position.x + 60, top + 60), [Paint.ORANGE], [Paint.ORANGE, Paint.ORANGE], "Whatever goes in comes out twice.")
+	# Using the paint card for this piece, once its page is read.
+	if CARD_LINES.has(kind) and not w.is_empty() and Words.is_unlocked(w, progress):
+		if kind in ["shift", "invert"]:
+			_card_line(Rect2(area.position.x, top + 214, area.size.x, 60), CARD_LINES[kind])
+		else:
+			var x := area.position.x + 40 + 9 * 44.0 + 30
+			_card_line(Rect2(x, top + 170, area.end.x - x, 120), CARD_LINES[kind])
+	# What it's made of: the levels that rebuild it.
+	if kind in ["shift", "invert"]:
+		_draw_made_of(kind, Rect2(area.position.x, top + 290, area.size.x, area.end.y - top - 290))
+	elif kind in ["mix", "filter"]:
+		var x2 := area.position.x + 40 + 9 * 44.0 + 30
+		_draw_made_of(kind, Rect2(x2, top + 250, area.end.x - x2, area.end.y - top - 250))
+
+
+## What a critter is made of: a row for each level that rebuilds it from
+## other pieces, showing what the player's machine there used (its pieces,
+## each with how many), or an empty frame naming the level until it's woven.
+func _draw_made_of(kind: String, r: Rect2) -> void:
+	var rebuilt := levels.filter(func(l): return l.rebuilds() == kind)
+	if rebuilt.is_empty():
+		return
+	K.text(self, P.display(600), Vector2(r.position.x, r.position.y + 12), "Made of", 22, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+	var y := r.position.y + 34
+	for level in rebuilt:
+		var row := Rect2(r.position.x, y, minf(r.size.x, 520), 56)
+		y += 64
+		if not progress.is_solved(level.id):
+			_locked(row, {"level": level.id})
+			continue
+		K.shape(self, K.round_rect(row, 12), P.TAG, Color(P.INK, 0.35), 1.5)
+		K.text(self, P.ui(700), Vector2(row.position.x + 14, row.get_center().y), level.ref_name(), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+		var x := row.position.x + 30 + P.ui(700).get_string_size(level.ref_name(), HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x
+		var counts := _machine_parts(progress.stored_machine(level.id))
+		for part in counts:
+			var c := Vector2(x + 26, row.get_center().y)
+			if part.begins_with("inv:"):
+				var inv: Dictionary = progress.inventions.get(part.substr(4), {})
+				K.sticker(self, c + Vector2(8, 0), 0.42, str(inv.get("name", "?")), 99, t, 0.2)
+				x += 70
+			else:
+				critter(self, part, c, 0.42, t)
+				x += 44
+			K.text(self, P.ui(800), Vector2(x + 6, row.get_center().y), "× %d" % counts[part], 15, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+			x += 46
+
+
+## The pieces a saved machine is built from, by tray kind ("inv:<id>" for an
+## invention), with how many of each; cards and the loom aren't pieces.
+static func _machine_parts(m: Dictionary) -> Dictionary:
+	var out := {}
+	for n in m.get("nodes", []):
+		var kind: String = n["kind"]
+		if kind in [Pieces.CARD, Pieces.LOOM]:
+			continue
+		var key := "inv:" + str(n.get("invention", "")) if kind == Pieces.INVENTION else kind
+		out[key] = out.get(key, 0) + 1
+	return out
+
+
+## The line on using the paint card for a piece (levels/level-text.md),
+## beside a little paint card. The red pot and Split have none.
+const CARD_LINES := {
+	"mix": "On the paint card, a mix sits between its two paints: red and yellow meet at orange.",
+	"filter": "On the paint card, the Sieve keeps the corners two paints share: orange and purple share red.",
+	"invert": "On the paint card, a paint's opposite sits straight across black.",
+	"shift": "On the paint card, follow one arrow: every paint moves one corner on.",
+}
+
+
+func _card_line(r: Rect2, s: String) -> void:
+	picture(self, "paint-card", r.position + Vector2(30, 26), 0.9, t, levels)
+	_para(r.position + Vector2(70, 4), r.size.x - 70, s, 16, P.INK_SOFT)
 
 
 ## Shift and Invert: a frame per paint, the paint over what it becomes.
