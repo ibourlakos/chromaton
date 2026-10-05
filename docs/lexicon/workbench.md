@@ -1,7 +1,8 @@
 # Workbench
 
 - **Tags:** gameplay, design, implementation
-- **Status:** 🟡
+- **Status:** ✅ renamed for players (designer, 2026-10-05): the place where critters, machines and the player work together; "workbench" stays the code's name (`ui/workbench.gd`)
+- **Player word (decided 2026-10-05, not built):** Workshop. It becomes the Player word, and the Gameplay text uses it, when the rename is built (then `.\make words`).
 - **Journal:** unlocks in One Pot of Red
 - **Also called:** bench
 
