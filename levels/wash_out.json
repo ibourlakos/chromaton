@@ -17,8 +17,8 @@
 		"best": 2
 	},
 	"target": [
-		"BBBBBBBB",
-		"BBBOOOBO",
+		"BBWBBBBB",
+		"BWBOOOBO",
 		"BBOKOOOO",
 		"BBOOOOOO",
 		"BBBOOOBO",
@@ -29,8 +29,8 @@
 		{
 			"name": "A",
 			"colors": [
-				"BKBBBGBP",
-				"KBBOOKGO",
+				"GKGBBGBP",
+				"KRBOOKGO",
 				"PPKKOOOK",
 				"GGOKOOOK",
 				"BBGOOOPK",
@@ -40,7 +40,7 @@
 		{
 			"name": "B",
 			"colors": [
-				"RORRRORO",
+				"YOGRRORO",
 				"ORYBWBYB",
 				"RRBWWBWB",
 				"YOBBWBWB",
@@ -82,5 +82,6 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"card_shows": 10
 }

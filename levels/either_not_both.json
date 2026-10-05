@@ -16,12 +16,13 @@
 	],
 	"invention": {
 		"id": "contrast",
-		"name": "Contrast",
-		"check": "contrast"
+		"name": "Extreme Mix",
+		"check": "contrast",
+		"in_text": "Extreme Mix"
 	},
 	"stars": {
-		"budget": 6,
-		"best": 4
+		"budget": 5,
+		"best": 3
 	},
 	"target": [
 		"OWBWWOWB",
@@ -38,7 +39,7 @@
 		{
 			"name": "A",
 			"colors": [
-				"OYOGRYKR",
+				"POBGRGKR",
 				"KPKYYWRB",
 				"PGWGOYGB",
 				"KYGPBOWK",
@@ -51,7 +52,7 @@
 		{
 			"name": "B",
 			"colors": [
-				"WYKGRRKP",
+				"GOWGRPKP",
 				"BPGYYRRW",
 				"RYWGOYPK",
 				"OGPPBKOB",
@@ -77,26 +78,22 @@
 				"y": 5
 			},
 			{
-				"id": "m",
-				"kind": "mix",
+				"id": "n",
+				"kind": "invention",
+				"invention": "third_paint",
 				"x": 5,
-				"y": 1
+				"y": 2
 			},
 			{
-				"id": "f1",
+				"id": "f",
 				"kind": "filter",
-				"x": 4,
-				"y": 5
+				"x": 5,
+				"y": 4
 			},
 			{
-				"id": "inv",
-				"kind": "invert",
-				"x": 6,
-				"y": 5
-			},
-			{
-				"id": "f2",
-				"kind": "filter",
+				"id": "o",
+				"kind": "invention",
+				"invention": "third_paint",
 				"x": 8,
 				"y": 3
 			}
@@ -112,36 +109,33 @@
 			],
 			[
 				"sa.0",
-				"m.0"
+				"n.0"
 			],
 			[
 				"sb.0",
-				"m.1"
+				"n.1"
 			],
 			[
 				"sa.1",
-				"f1.0"
+				"f.0"
 			],
 			[
 				"sb.1",
-				"f1.1"
+				"f.1"
 			],
 			[
-				"f1",
-				"inv"
+				"n",
+				"o.0"
 			],
 			[
-				"m",
-				"f2.0"
+				"f",
+				"o.1"
 			],
 			[
-				"inv",
-				"f2.1"
-			],
-			[
-				"f2",
+				"o",
 				"loom"
 			]
 		]
-	}
+	},
+	"card_shows": 8
 }

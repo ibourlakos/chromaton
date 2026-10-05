@@ -1,8 +1,8 @@
 {
-	"id": "black",
-	"name": "All the Paint",
-	"goal": "Weave a black cloth.",
-	"hint": "Black holds red, yellow and blue together. Split the pot's red, turn some to yellow and some to blue, and Mix all three.",
+	"id": "green_mix",
+	"name": "Green",
+	"goal": "Weave a green cloth.",
+	"hint": "",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -11,25 +11,25 @@
 	],
 	"inventions": [],
 	"invention": {
-		"id": "pot_black",
-		"name": "Black pot",
-		"check": "paint:K"
+		"id": "pot_green",
+		"name": "Green pot",
+		"check": "paint:G"
 	},
 	"stars": {
-		"budget": 5,
-		"best": 4
+		"budget": 4,
+		"best": 3
 	},
 	"target": [
-		"KKKKKKKK"
+		"GGGGGGGG"
 	],
 	"card_rule": "",
 	"cards": [],
 	"reference": {
 		"pieces": [
 			{
-				"id": "o",
+				"id": "y",
 				"kind": "invention",
-				"invention": "pot_orange",
+				"invention": "pot_yellow",
 				"x": 2,
 				"y": 2
 			},
@@ -49,7 +49,7 @@
 		],
 		"tubes": [
 			[
-				"o",
+				"y",
 				"m.0"
 			],
 			[

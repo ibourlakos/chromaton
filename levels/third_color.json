@@ -31,7 +31,7 @@
 		{
 			"name": "A",
 			"colors": [
-				"WBYRBWYY",
+				"WWYRBWYY",
 				"WWWGYBYR",
 				"ORYGYBWW",
 				"OWBBRWWW",
@@ -44,7 +44,7 @@
 		{
 			"name": "B",
 			"colors": [
-				"BWRYWBOO",
+				"BBRYWBOO",
 				"BBOOPBOO",
 				"OYPGBOBB",
 				"ROWOGOBB",
@@ -92,6 +92,8 @@
 	"invention": {
 		"id": "third_paint",
 		"name": "Third Paint",
-		"check": "third_paint"
-	}
+		"check": "third_paint",
+		"in_text": "the Third Paint"
+	},
+	"card_shows": 4
 }

@@ -10,8 +10,8 @@
 		"missing_from_either"
 	],
 	"stars": {
-		"budget": 6,
-		"best": 4
+		"budget": 4,
+		"best": 2
 	},
 	"target": [
 		"BBOOBBOO",
@@ -101,5 +101,9 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"waits_for": [
+		"missing_from_either"
+	],
+	"card_shows": 4
 }

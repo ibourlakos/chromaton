@@ -15,7 +15,8 @@
 	"invention": {
 		"id": "same_paint",
 		"name": "Same Paint",
-		"check": "same_paint"
+		"check": "same_paint",
+		"in_text": "Same Paint"
 	},
 	"stars": {
 		"budget": 6,
@@ -36,7 +37,7 @@
 		{
 			"name": "A",
 			"colors": [
-				"BBBOPPGG",
+				"POBOPGGR",
 				"WWRKKGBB",
 				"WRKBKPWR",
 				"YWRBKBOY",
@@ -49,7 +50,7 @@
 		{
 			"name": "B",
 			"colors": [
-				"KBWOPGGY",
+				"GOWOPPGP",
 				"OWWKKKBW",
 				"BPKBKPOY",
 				"GBYBKWWR",
@@ -141,5 +142,6 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"card_shows": 8
 }

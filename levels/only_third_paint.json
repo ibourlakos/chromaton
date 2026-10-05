@@ -9,14 +9,9 @@
 	"inventions": [
 		"third_paint"
 	],
-	"invention": {
-		"id": "same_paint",
-		"name": "Same Paint",
-		"check": "same_paint"
-	},
 	"stars": {
-		"budget": 10,
-		"best": 8
+		"budget": 6,
+		"best": 4
 	},
 	"target": [
 		"OOBWWOBB",
@@ -156,5 +151,9 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"waits_for": [
+		"third_paint"
+	],
+	"card_shows": 4
 }

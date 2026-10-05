@@ -159,7 +159,7 @@ func test_save() -> void:
 	old["version"] = 1
 	old.erase("seen")
 	check(not Progress.problems(old, levels).is_empty(), "a save from before the journal is stale")
-	check(Progress.VERSION == 3, "the save version moved on")
+	check(Progress.VERSION == 4, "the save version moved on")
 
 
 func test_journal_tabs() -> void:

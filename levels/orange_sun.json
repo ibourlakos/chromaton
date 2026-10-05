@@ -10,8 +10,8 @@
 	],
 	"inventions": [],
 	"stars": {
-		"budget": 4,
-		"best": 3
+		"budget": 3,
+		"best": 2
 	},
 	"target": [
 		"YKYKYOOY",
@@ -65,5 +65,6 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"card_shows": 4
 }

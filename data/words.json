@@ -135,7 +135,7 @@
 		},
 		{
 			"id": "invert",
-			"level": "green",
+			"level": "green_mix",
 			"tab": "pieces",
 			"text": "Invert turns a paint into its opposite. Red becomes green, yellow becomes purple, blue becomes orange, and white becomes black. Invert it again and you're back where you started.",
 			"word": "Invert"

@@ -14,8 +14,8 @@
 		"third_paint"
 	],
 	"stars": {
-		"budget": 6,
-		"best": 4
+		"budget": 5,
+		"best": 3
 	},
 	"target": [
 		"OOBWWOBB",
@@ -32,7 +32,7 @@
 		{
 			"name": "A",
 			"colors": [
-				"OOPYPOPP",
+				"OOPGYOPP",
 				"KKOGKPGB",
 				"BBWWPWOK",
 				"BBKKYPKO",
@@ -45,7 +45,7 @@
 		{
 			"name": "B",
 			"colors": [
-				"KKGRWKGB",
+				"KKGWRKGB",
 				"OOWOWWPK",
 				"PGYRWKKO",
 				"PKOWWBOK",
@@ -100,5 +100,6 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"card_shows": 5
 }

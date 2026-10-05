@@ -14,8 +14,8 @@
 		"check": "paint:B"
 	},
 	"stars": {
-		"budget": 4,
-		"best": 3
+		"budget": 3,
+		"best": 2
 	},
 	"target": [
 		"BBBBBBBB"
@@ -25,35 +25,26 @@
 	"reference": {
 		"pieces": [
 			{
-				"id": "pot",
-				"kind": "red_pot",
-				"x": 2,
+				"id": "y",
+				"kind": "invention",
+				"invention": "pot_yellow",
+				"x": 4,
 				"y": 3
 			},
 			{
-				"id": "h1",
+				"id": "h",
 				"kind": "shift",
-				"x": 6,
-				"y": 3
-			},
-			{
-				"id": "h2",
-				"kind": "shift",
-				"x": 10,
+				"x": 8,
 				"y": 3
 			}
 		],
 		"tubes": [
 			[
-				"pot",
-				"h1"
+				"y",
+				"h"
 			],
 			[
-				"h1",
-				"h2"
-			],
-			[
-				"h2",
+				"h",
 				"loom"
 			]
 		]

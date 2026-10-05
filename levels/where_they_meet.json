@@ -29,7 +29,7 @@
 		{
 			"name": "A",
 			"colors": [
-				"KKBPGPKK",
+				"KKPBGPKK",
 				"KBGGOBBK",
 				"BPBKOOBP",
 				"GGBBKBPB",
@@ -40,7 +40,7 @@
 		{
 			"name": "B",
 			"colors": [
-				"KKPGBBKK",
+				"KKGPBBKK",
 				"KKBBKPKK",
 				"GGPOKKGB",
 				"BKPKOGGG",
@@ -72,5 +72,6 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"card_shows": 4
 }

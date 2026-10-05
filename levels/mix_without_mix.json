@@ -14,8 +14,8 @@
 		"missing_from_either"
 	],
 	"stars": {
-		"budget": 6,
-		"best": 4
+		"budget": 5,
+		"best": 3
 	},
 	"target": [
 		"BBOKKBOO",
@@ -32,7 +32,7 @@
 		{
 			"name": "A",
 			"colors": [
-				"BWYRPBRR",
+				"BBYRKBRR",
 				"WWOPPYRY",
 				"RRYYRGWW",
 				"YYWGGOBB",
@@ -45,7 +45,7 @@
 		{
 			"name": "B",
 			"colors": [
-				"WBRKYBOO",
+				"WWRKYBOO",
 				"BBPBOPOO",
 				"OYPPGOBB",
 				"ROBRKOBB",
@@ -100,5 +100,6 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"card_shows": 5
 }

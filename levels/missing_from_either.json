@@ -92,6 +92,8 @@
 	"invention": {
 		"id": "missing_from_either",
 		"name": "Missing From Either",
-		"check": "missing_from_either"
-	}
+		"check": "missing_from_either",
+		"in_text": "Missing From Either"
+	},
+	"card_shows": 4
 }

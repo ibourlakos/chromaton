@@ -1,0 +1,76 @@
+{
+	"id": "mix_table",
+	"name": "The Mixing Table",
+	"goal": "Weave the table.",
+	"hint": "",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"split",
+		"invert"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 2,
+		"best": 1
+	},
+	"target": [
+		"RROOPPKK",
+		"YOYOGKGK",
+		"BPGKBPGK",
+		"OOOOKKKK",
+		"PPKKPPKK",
+		"GKGKGKGK"
+	],
+	"card_rule": "",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"RRRRRRRR",
+				"YYYYYYYY",
+				"BBBBBBBB",
+				"OOOOOOOO",
+				"PPPPPPPP",
+				"GGGGGGGG"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"WRYOBPGK",
+				"WRYOBPGK",
+				"WRYOBPGK",
+				"WRYOBPGK",
+				"WRYOBPGK",
+				"WRYOBPGK"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "m",
+				"kind": "mix",
+				"x": 6,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"m.0"
+			],
+			[
+				"card1",
+				"m.1"
+			],
+			[
+				"m",
+				"loom"
+			]
+		]
+	},
+	"card_shows": 9
+}

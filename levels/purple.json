@@ -83,5 +83,10 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"hold_pots": [
+		"pot_yellow",
+		"pot_blue",
+		"pot_orange"
+	]
 }

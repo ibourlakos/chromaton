@@ -10,8 +10,8 @@
 		"third_paint"
 	],
 	"stars": {
-		"budget": 3,
-		"best": 2
+		"budget": 2,
+		"best": 1
 	},
 	"target": [
 		"OOBBOOBB",
@@ -73,5 +73,9 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"waits_for": [
+		"third_paint"
+	],
+	"card_shows": 4
 }

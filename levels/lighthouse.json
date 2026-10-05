@@ -7,9 +7,8 @@
 		"red_pot",
 		"shift",
 		"mix",
-		"filter",
-		"invert",
-		"split"
+		"split",
+		"invert"
 	],
 	"inventions": [],
 	"stars": {
@@ -29,7 +28,7 @@
 		{
 			"name": "A",
 			"colors": [
-				"BRBRBRWP",
+				"PBBPYRWP",
 				"WWBWYPWY",
 				"BPBRRWBB",
 				"RPBWWBRP",
@@ -40,7 +39,7 @@
 		{
 			"name": "B",
 			"colors": [
-				"RBRKOBPW",
+				"WPRYPBPW",
 				"YYRYYWYY",
 				"RPPRRPPP",
 				"BBPWWRBP",
@@ -72,5 +71,6 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"card_shows": 5
 }

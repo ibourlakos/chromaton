@@ -15,8 +15,8 @@
 		"check": "paint:O"
 	},
 	"stars": {
-		"budget": 5,
-		"best": 4
+		"budget": 4,
+		"best": 3
 	},
 	"target": [
 		"OOOOOOOO"
@@ -26,21 +26,16 @@
 	"reference": {
 		"pieces": [
 			{
-				"id": "p1",
+				"id": "p",
 				"kind": "red_pot",
 				"x": 2,
 				"y": 2
 			},
 			{
-				"id": "p2",
-				"kind": "red_pot",
+				"id": "y",
+				"kind": "invention",
+				"invention": "pot_yellow",
 				"x": 2,
-				"y": 4
-			},
-			{
-				"id": "h",
-				"kind": "shift",
-				"x": 5,
 				"y": 4
 			},
 			{
@@ -52,15 +47,11 @@
 		],
 		"tubes": [
 			[
-				"p1",
+				"p",
 				"m.0"
 			],
 			[
-				"p2",
-				"h"
-			],
-			[
-				"h",
+				"y",
 				"m.1"
 			],
 			[

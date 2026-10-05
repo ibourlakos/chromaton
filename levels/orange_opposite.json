@@ -1,36 +1,36 @@
 {
-	"id": "white",
-	"name": "Nothing at All",
-	"goal": "Weave a white cloth.",
-	"hint": "White is the opposite of black. Flip your black.",
+	"id": "orange_opposite",
+	"name": "Orange",
+	"goal": "Weave a orange cloth.",
+	"hint": "",
 	"pieces": [
 		"red_pot",
 		"shift",
 		"mix",
-		"invert",
-		"split"
+		"split",
+		"invert"
 	],
 	"inventions": [],
 	"invention": {
-		"id": "pot_white",
-		"name": "White pot",
-		"check": "paint:W"
+		"id": "pot_orange",
+		"name": "Orange pot",
+		"check": "paint:O"
 	},
 	"stars": {
-		"budget": 5,
-		"best": 3
+		"budget": 3,
+		"best": 2
 	},
 	"target": [
-		"WWWWWWWW"
+		"OOOOOOOO"
 	],
 	"card_rule": "",
 	"cards": [],
 	"reference": {
 		"pieces": [
 			{
-				"id": "k",
+				"id": "b",
 				"kind": "invention",
-				"invention": "pot_black",
+				"invention": "pot_blue",
 				"x": 4,
 				"y": 3
 			},
@@ -43,7 +43,7 @@
 		],
 		"tubes": [
 			[
-				"k",
+				"b",
 				"h"
 			],
 			[

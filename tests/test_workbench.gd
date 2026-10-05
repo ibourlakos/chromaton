@@ -172,7 +172,7 @@ func play_level(level, progress, index: int) -> void:
 	check(rec.get("best_pieces", -1) == level.best and rec.get("best_ticks", 0) == wb.sim.tick, "%s: pieces and ticks recorded" % level.id)
 	if not level.invention.is_empty():
 		var inv: Dictionary = progress.inventions.get(level.invention["id"], {})
-		check(not inv.is_empty() and inv["cost"] == level.best, "%s: the player's machine joins the journal's inventions" % level.id)
+		check(not inv.is_empty() and inv["cost"] == Invention.price(level.best), "%s: the player's machine joins the journal's inventions, at its pieces less one" % level.id)
 	wb.queue_free()
 
 
@@ -205,7 +205,7 @@ func test_locked_tray(levels: Array, by_id: Dictionary) -> void:
 			slot[kind] = i
 	check(locked_kinds(by_id["pattern_card"]) == ["red_pot", "shift", "mix", "split", "invert"], "The Pattern Card shows every known piece locked")
 	check(locked_kinds(by_id["orange_sun"]) == ["split", "invert"], "Orange Sun locks Split and Invert")
-	for id in ["opposites", "flip_side", "turn_the_wheel", "smudges", "either_not_both", "missing_from_either", "same_paint"]:
+	for id in ["opposites", "turn_the_wheel", "mix_table", "lighthouse", "filter_table", "smudges", "either_not_both", "missing_from_either", "same_paint"]:
 		check(locked_kinds(by_id[id]).is_empty(), "%s has no locks" % id)
 	check(locked_kinds(by_id["keep_what_they_share"]) == ["filter"], "Keep What They Share locks Filter, which it rebuilds")
 	check(locked_kinds(by_id["mix_without_mix"]) == ["mix"], "Mix Without Mix locks Mix")
@@ -358,8 +358,10 @@ func test_editing(level, progress) -> void:
 func test_not_general(inv_level) -> void:
 	var raw: Dictionary = inv_level.raw.duplicate(true)
 	raw["invention"]["check"] = "bleach"  # the Contrast picture, judged as a Bleach
+	var third = Level.load_all().filter(func(l): return l.id == "third_color")[0]
 	var level = Level.from_dict(raw)
 	var progress = Progress.new()
+	progress.add_invention(Invention.package(third, third.reference_machine(), {}))  # its machine holds Third Paints
 	var wb = open(level, progress)
 	wb.load_machine(level.reference_machine())
 	wb._set_speed(2)
@@ -369,7 +371,7 @@ func test_not_general(inv_level) -> void:
 		wb._process(0.05)
 		frames += 1
 	check(wb.outcome == "not_general", "a machine that only fits the cards is not accepted (%s)" % wb.outcome)
-	check(not progress.is_solved(level.id) and progress.inventions.is_empty(), "nothing is recorded")
+	check(not progress.is_solved(level.id) and not progress.inventions.has("contrast"), "nothing is recorded")
 	wb.queue_free()
 
 
@@ -702,8 +704,8 @@ func test_pot_fan(levels: Array, by_id: Dictionary) -> void:
 	for id in ["yellow", "blue", "black_short_way"]:
 		var l = by_id[id]
 		p.add_invention(Invention.package(l, l.reference_machine(), p.inventions))
-	var plain = open(by_id["black_short_way"], p)
-	check(not plain.tray[0].get("pots", false) and plain.shelf_size == plain.tray.size(), "the paint box keeps a plain red pot")
+	var plain = open(by_id["one_pot"], p)
+	check(not plain.tray[0].get("pots", false) and plain.shelf_size == plain.tray.size(), "One Pot of Red, before any pot is earned, keeps a plain red pot")
 	plain.queue_free()
 	var wb = open(by_id["orange_sun"], p)
 	wb._ready()
