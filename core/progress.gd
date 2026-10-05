@@ -2,7 +2,7 @@
 ## their inventions. Stored as JSON in user://chromaton_save.json:
 ##
 ##   {
-##     "version": 3,
+##     "version": 4,
 ##     "levels": {                        level id (levels/<id>.json) -> record
 ##       "<level id>": {
 ##         "solved": true,                these four only once solved
@@ -29,13 +29,20 @@
 ##
 ## A save is stale when it was written by another version or no longer fits
 ## the levels (see problems()): the game says so at launch and offers to
-## start fresh, moving the old file to a .bak beside it (back_up()).
+## start fresh, moving the old file to a .bak beside it (back_up()). Keeping
+## what fits also forgets the solve of an invention level whose invention
+## didn't fit, so the level earns it again.
+##
+## Force unlock (--unlock-all) lends every invention and pot the levels earn,
+## at its reference price (loans, usable()); loans are never saved, and a
+## saved machine leaves out any invention the player doesn't own.
 extends RefCounted
 
 const PATH := "user://chromaton_save.json"
-const VERSION := 3
+const VERSION := 4
 const Machine = preload("res://core/machine.gd")
 const Pieces = preload("res://core/pieces.gd")
+const Invention = preload("res://core/invention.gd")
 const RECORD_KEYS := ["stars", "best_pieces", "best_ticks"]
 const INVENTION_KEYS := ["id", "name", "check", "inputs", "cost", "counts", "machine", "from_level"]
 ## The pieces whose every-paint behaviour the journal collects, frame by frame.
@@ -49,6 +56,36 @@ var inventions := {}
 ## learnable piece doing, in any run (the journal's Pieces frames)
 var seen := {}
 var unlock_all := false
+## level id -> the invention ids it can't be built without (Level.waits_for)
+var waits := {}
+## invention id -> invention lent by force unlock, at its reference price
+var loans := {}
+
+
+## Learns what the campaign asks of the player: which levels wait for an
+## invention, and (with unlock_all set) what force unlock lends.
+func know_levels(campaign: Array) -> void:
+	waits = {}
+	for level in campaign:
+		if not level.waits_for.is_empty():
+			waits[level.id] = level.waits_for
+	loans = Invention.reference_inventions(campaign) if unlock_all else {}
+
+
+## The inventions the player can place: their own, plus force unlock's loans
+## for the ones they haven't earned (earning one replaces the loan).
+func usable() -> Dictionary:
+	if loans.is_empty():
+		return inventions
+	var out := loans.duplicate()
+	out.merge(inventions, true)
+	return out
+
+
+## The inventions a level still waits for: the ones it can't be built
+## without that the player doesn't own.
+func waiting_for(level_id: String) -> Array:
+	return waits.get(level_id, []).filter(func(inv_id): return not inventions.has(inv_id))
 
 
 func level_record(level_id: String) -> Dictionary:
@@ -64,9 +101,14 @@ func stars(level_id: String) -> int:
 
 
 ## A level is open once either of the two levels before it is solved, so one
-## hard level never walls off the rest of the campaign.
+## hard level never walls off the rest of the campaign, and the player owns
+## every invention it can't be built without (know_levels).
 func is_unlocked(level_ids: Array, index: int) -> bool:
-	return unlock_all or index == 0 or is_solved(level_ids[index - 1]) or (index >= 2 and is_solved(level_ids[index - 2]))
+	if unlock_all:
+		return true
+	if not waiting_for(level_ids[index]).is_empty():
+		return false
+	return index == 0 or is_solved(level_ids[index - 1]) or (index >= 2 and is_solved(level_ids[index - 2]))
 
 
 ## Records a solve. Returns which metrics improved: {"pieces": bool, "ticks": bool, "stars": bool}.
@@ -144,7 +186,28 @@ func to_dict() -> Dictionary:
 		var keys: Array = seen[kind].keys()
 		keys.sort()
 		seen_lists[kind] = keys
-	return {"version": VERSION, "levels": levels, "inventions": inventions, "seen": seen_lists}
+	var out_levels := levels
+	if not loans.is_empty():  # a lent invention never reaches the save
+		out_levels = levels.duplicate(true)
+		for id in out_levels:
+			if out_levels[id].has("machine"):
+				out_levels[id]["machine"] = _owned_only(out_levels[id]["machine"])
+	return {"version": VERSION, "levels": out_levels, "inventions": inventions, "seen": seen_lists}
+
+
+## A saved machine without the inventions the player doesn't own (lent by
+## force unlock) and the tubes to them.
+func _owned_only(m: Dictionary) -> Dictionary:
+	var gone := {}
+	for n in m.get("nodes", []):
+		if n["kind"] == Pieces.INVENTION and not inventions.has(str(n.get("invention", ""))):
+			gone[int(n["id"])] = true
+	if gone.is_empty():
+		return m
+	var out := m.duplicate(true)
+	out["nodes"] = out["nodes"].filter(func(n): return not gone.has(int(n["id"])))
+	out["tubes"] = out["tubes"].filter(func(t): return not gone.has(int(t["from"])) and not gone.has(int(t["to"])))
+	return out
 
 
 ## Builds progress from saved data. Given the levels, it keeps only the
@@ -167,6 +230,14 @@ static func from_dict(d: Dictionary, levels := []):
 		for id in lv.keys():
 			if not _record_problems(id, lv[id], by_id, inv).is_empty():
 				lv.erase(id)
+			elif lv[id] is Dictionary and lv[id].get("solved", false):
+				# An invention level whose invention didn't fit reads unsolved,
+				# so solving it earns the invention again (the bench is kept).
+				var earns: String = by_id[id].invention.get("id", "")
+				if earns != "" and not inv.has(earns):
+					lv[id] = lv[id].duplicate()
+					for k in ["solved"] + RECORD_KEYS:
+						lv[id].erase(k)
 	for id in lv:
 		var rec: Dictionary = lv[id].duplicate(true)
 		for k in ["stars", "best_pieces", "best_ticks"]:

@@ -8,14 +8,22 @@
 ## as the level opens and under the title after), pieces (the kinds it
 ## offers; the tray also shows earlier levels' pieces, locked), inventions
 ## (invention ids allowed in the tray), optional hold_pots (earned pots this
-## level holds back; see _lay_trays), target (rows), cards
-## ([{name, colors: rows, optional smudges: [stitch indices that carry stray
-## paint]}]),
-## stars {budget, best}, optional invention {id, name, check} on invention
-## levels, reference (a solution: {pieces: [{id, kind, x, y}], tubes:
-## [[from, to]]}, endpoints written "name" or "name.port", with "card0",
-## "card1", ... and "loom" predefined), and card_rule (used by
-## tools/make_cards.gd to derive cards from the target).
+## level holds back; see _lay_trays), optional waits_for (invention ids the
+## level can't be built without: it stays locked until the player owns them,
+## proven by tools/level_solver.gd), target (rows), cards ([{name, colors:
+## rows}]), card_shows (how many drops a card shows at the start, 4 to 10:
+## enough to work the rule out; written by tools/make_cards.gd, checked by
+## the solver), optional card_shows_min (a level asking for more, for looks),
+## stars {budget, best}, optional invention {id, name, check, in_text} on
+## invention levels (in_text: the name inside a sentence, "the Third Paint"),
+## reference (a solution: {pieces: [{id, kind, x, y}], tubes: [[from, to]]},
+## endpoints written "name" or "name.port", with "card0", "card1", ... and
+## "loom" predefined), and card_rule (used by tools/make_cards.gd to derive
+## cards from the target).
+##
+## levels/index.json lists the campaign's chapters in order; an entry marked
+## "lost": true is Lost Levels, levels that left the campaign, kept apart and
+## shown nowhere yet (lost_ids()).
 extends RefCounted
 
 const Machine = preload("res://core/machine.gd")
@@ -25,7 +33,10 @@ const Invention = preload("res://core/invention.gd")
 
 const LETTERS := "WRYOBPGK"
 const INDEX_PATH := "res://levels/index.json"
-const CARD_SHOWS := 6  # how many coming drops a pattern card shows
+## How many coming drops a pattern card may show: each level's card_shows
+## lies between these.
+const CARD_SHOWS_MIN := 4
+const CARD_SHOWS_MAX := 10
 
 var id := ""
 var number := 0  # position in the campaign, from 1 (0 when loaded on its own)
@@ -40,13 +51,14 @@ var rows := 0
 var target := PackedByteArray()
 var cards: Array = []
 var card_names: Array = []
-var smudges: Array = []  # per card, the stitch indices marked as stray paint
+var card_shows := 0  # how many coming drops each card shows (0 without cards)
 var pieces: Array = []  # the kinds this level offers
 var tray: Array = []  # the tray's piece kinds in order, offered or locked (see _lay_trays)
 var inventions: Array = []
 var pots: Array = []  # the earned pots open in the pot slot's fan (see _lay_trays)
 var held_pots: Array = []  # earned pots this level holds back: in the fan, locked
 var hold_pots: Array = []  # the level file's hold_pots
+var waits_for: Array = []  # invention ids the level can't be built without
 var invention := {}
 var budget := 0
 var best := 0
@@ -60,6 +72,20 @@ var error := ""
 ## (how many patches across the chapter's quilt is; every chapter but the
 ## paint box, whose threads stack, has a multiple of it so the quilt fills).
 static func chapters() -> Array:
+	return _index().filter(func(c): return not c.get("lost", false))
+
+
+## Lost Levels' ids: levels that left the campaign, kept apart in the index
+## and shown nowhere yet (DESIGN.md 5.1).
+static func lost_ids() -> Array:
+	var out := []
+	for chapter in _index():
+		if chapter.get("lost", false):
+			out.append_array(chapter["levels"])
+	return out
+
+
+static func _index() -> Array:
 	var index = _read_json(INDEX_PATH)
 	if not index is Array:
 		push_error("cannot read " + INDEX_PATH)
@@ -98,13 +124,13 @@ static func load_all() -> Array:
 ## campaign first offers them, so a new piece joins at the right end and no
 ## piece's slot (or number key) ever moves.
 ##
-## Pots are pieces too: from chapter 2 on, a level that offers the red pot
-## also offers every pot an earlier level earns (in the pot slot's fan, in
-## paint order), except the ones its hold_pots holds back, which show
-## locked. A level that offers only named pieces (no red pot) offers no pots.
-## Worked out from the campaign, like the tray, so the solver and tests see
-## what a player who got here has; the workbench shows only the pots the
-## player owns.
+## Pots are pieces too: a level that offers the red pot also offers every
+## pot an earlier level earns (in the pot slot's fan, in paint order), from
+## Blue on, except the ones its hold_pots holds back and the pot it earns
+## itself (a cheaper pot is made, not placed), which show locked. A level
+## that offers only named pieces (no red pot) offers no pots. Worked out from
+## the campaign, like the tray, so the solver and tests see what a player
+## who got here has; the workbench shows only the pots the player owns.
 static func _lay_trays(levels: Array) -> void:
 	var order := []
 	for level in levels:
@@ -119,9 +145,10 @@ static func _lay_trays(levels: Array) -> void:
 		level.tray = order.filter(func(kind): return seen.has(kind))
 		level.pots = []
 		level.held_pots = []
-		if level.chapter > 0 and "red_pot" in level.pieces:
+		if "red_pot" in level.pieces:
 			for pot in earned:
-				(level.held_pots if pot in level.hold_pots else level.pots).append(pot)
+				var held: bool = pot in level.hold_pots or pot == level.invention.get("id", "")
+				(level.held_pots if held else level.pots).append(pot)
 		var paint := Invention.paint_of(level.invention)
 		if paint >= 0 and not level.invention["id"] in earned:
 			earned.append(level.invention["id"])
@@ -133,6 +160,32 @@ static func _pot_paint(pot_id: String) -> int:
 	return Paint.NAMES.map(func(n): return "pot_" + n.to_lower()).find(pot_id)
 
 
+## How text refers to a level: its number and primary title, "2. The Yellow
+## Pot" (DESIGN.md 5.1).
+func ref_name() -> String:
+	return "%d. %s" % [number, name]
+
+
+## The first campaign level that earns this invention, or null.
+static func earning_level(levels: Array, inv_id: String):
+	for level in levels:
+		if level.invention.get("id", "") == inv_id:
+			return level
+	return null
+
+
+## The locked tag's line for a level waiting for inventions: where to earn
+## the first one it waits for ("Earn the Third Paint in 25. The Pawn.").
+static func waiting_line(levels: Array, inv_ids: Array) -> String:
+	if inv_ids.is_empty():
+		return ""
+	var earner = earning_level(levels, inv_ids[0])
+	if earner == null:
+		return ""
+	var what: String = earner.invention.get("in_text", earner.invention.get("name", ""))
+	return "Earn %s in %s." % [what, earner.ref_name()]
+
+
 ## Whether this level lets the player place this invention: one it lists, or
 ## an earned pot (_lay_trays).
 func offers_invention(inv_id: String) -> bool:
@@ -142,6 +195,11 @@ func offers_invention(inv_id: String) -> bool:
 ## A piece the tray shows that this level doesn't offer.
 func is_locked(kind: String) -> bool:
 	return kind in tray and not kind in pieces
+
+
+## Lost Levels, loaded on their own (unnumbered, no chapter's tray).
+static func load_lost() -> Array:
+	return lost_ids().map(func(level_id): return load_file("res://levels/%s.json" % level_id))
 
 
 static func load_file(path: String):
@@ -173,11 +231,13 @@ static func from_dict(d: Dictionary):
 		if seq.size() != level.target.size():
 			level.error = "%s: card %s has %d colors, loom has %d stitches" % [level.id, card.get("name", ""), seq.size(), level.target.size()]
 		level.cards.append(seq)
-		level.smudges.append(card.get("smudges", []).map(func(i): return int(i)))
+	if not level.cards.is_empty():
+		level.card_shows = clampi(int(d.get("card_shows", 6)), CARD_SHOWS_MIN, CARD_SHOWS_MAX)
 	level.pieces = d.get("pieces", []).duplicate()
 	level.tray = level.pieces.duplicate()  # on its own; load_all adds the locked ones
 	level.inventions = d.get("inventions", []).duplicate()
 	level.hold_pots = d.get("hold_pots", []).duplicate()
+	level.waits_for = d.get("waits_for", []).duplicate()
 	level.invention = d.get("invention", {}).duplicate()
 	var stars: Dictionary = d.get("stars", {})
 	level.budget = int(stars.get("budget", 0))
