@@ -192,4 +192,4 @@ With one-drop tubes every piece takes one drop per input and gives one per outpu
 
 ---
 
-Checks: all passed. Run time 64.1 s.
+Checks: all passed. Run time 117.2 s.
