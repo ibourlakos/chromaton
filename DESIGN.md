@@ -187,6 +187,22 @@ The central visual and the late-campaign goal. Historical anchor: the **Jacquard
 - 🟡 Unwoven cells are sunken slots, darker than the cloth, so an empty slot never looks like a woven white stitch (bright and full size); a small faint chip of the target's paint sits in each (white as a pale chip). The target picture is pinned beside the loom as a small design card.
 - 🟡 Woven stitches carry no glyph dots (as in the mockup); the wrong-stitch bubble compares the two drops with dots.
 
+**The pattern card's look: two paths, mutually exclusive** (designer, 2026-10-06, from the R3 playtest notes). The card is shown one way, so the paths are alternatives, not stages: choosing B retires A's strip-specific work.
+
+- **Shared by both (✅ decided, built whichever path wins):**
+  - Card length 4 to 8 drops, 6 by default (was 4 to 10; touches `.\make cards`, `card_shows` and the solver's decoding checks).
+  - The loom's shuttle stands before its next target and steps onto it on a successful stitch (it sits on the next slot today, as the 🟡 above says).
+  - **Shuttle** joins the journal's Words and the lexicon.
+  - What a card shows still decodes the level (§5.1): the solver's proof holds under both paths.
+- **Path A: improve the card as it is (✅ decided, with one open item).** The card stays a strip of its next `card_shows` drops that slides as it releases. The open item is the failed-run display: the card's look-back (built in WP2) shows the starting window or the window ending at the wrong drop, never both; the playtest asks for both. Any fix here (a faint second window, say) belongs to the strip and is thrown away if B is chosen, so it waits unless B is more than a release away.
+- **Path B: the card as the loom cloth's counterpart (🟡 leaning, pending a prototype).**
+  - *Narrative:* the level's machine converts the pattern pictures into a result cloth. This points at an image algebra (pictures in, an operator, a picture out) without ever naming it; player-facing text stays in paint and thread. The simulation already is that: stitch *i* depends only on each card's *i*-th drop.
+  - *Look:* the card is a picture on the loom's grid, in the loom's raster order, so card cell *i* lines up with cloth cell *i*. The next `card_shows` cells are uncovered, cells already read stay shown (as woven stitches do), the rest is veiled slots (as the loom's unwoven ghost slots are), which leaks the card's shape and no colors. The card gets its own shuttle and cursor, standing before its next drop.
+  - *Failed run:* the read trail and the ringed drop show where the run stopped, which replaces the look-back and answers the playtest note by itself.
+  - *Why it's worth it:* chapter 6's Appliqué (the cards are the player's earlier cloths) and the "rows that remember" chapter need cards that read as pictures.
+  - *Risk, to settle first:* bench room. Today a card is 156×52; an 8×6 picture at about 14 px a cell is about 112×84, so three cards stack to about 250 px, and The Harbour (16×12) doesn't fit. Fallback: a small preview that grows when the card is selected.
+  - *Next step:* a branch prototype on a one-card level, a three-card level and The Harbour; then decide.
+
 ---
 
 ## 5. Modes
