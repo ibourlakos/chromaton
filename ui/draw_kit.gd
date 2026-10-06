@@ -942,54 +942,88 @@ static func sticker(ci: CanvasItem, c: Vector2, s: float, name: String, age: flo
 # Level furniture
 # ---------------------------------------------------------------------------
 
-## A punched pattern card, without its colors (card_paints): it never
-## changes, so it can be drawn once.
-static func card_body(ci: CanvasItem, c: Vector2, name: String) -> void:
-	var r := CARD_RECT
+## A pattern card is a picture, the loom cloth's counterpart (DESIGN.md 4,
+## "The pattern card's look", Path B): the same grid in the same order, read
+## left to right and row by row, as wide as its two cells allow. The cell
+## shrinks only for a picture too big to fit (the lost Harbour).
+const CARD_W := 156.0
+const CARD_CELL := 16.0
+
+
+## A card picture's cell size.
+static func card_cell(cols: int, rows: int) -> float:
+	return minf(CARD_CELL, minf((CARD_W - 28.0) / cols, 104.0 / rows))
+
+
+## A card's body, around its centre, for a picture cols wide and rows tall.
+static func card_rect(cols: int, rows: int) -> Rect2:
+	var h := rows * card_cell(cols, rows) + 24.0
+	return Rect2(-CARD_W / 2, -h / 2, CARD_W, h)
+
+
+## Where a card's picture starts: its top-left corner, for a card centred on c.
+static func _card_origin(c: Vector2, cols: int, rows: int) -> Vector2:
+	var cs := card_cell(cols, rows)
+	var r := card_rect(cols, rows)
+	return c + Vector2(-cols * cs / 2, r.position.y + 14)
+
+
+## A punched pattern card with every cell veiled, a sunken slot like the
+## loom's unwoven ones (card_paints uncovers them): it never changes, so it
+## can be drawn once.
+static func card_body(ci: CanvasItem, c: Vector2, name: String, cols: int, rows: int) -> void:
+	var r := card_rect(cols, rows)
 	r.position += c
 	fill(ci, round_rect(Rect2(r.position + Vector2(3, 4), r.size), 8), P.SHADOW)
 	shape(ci, round_rect(r, 8), P.TAG, P.INK, 2)
-	for i in 9:
-		disc(ci, Vector2(r.position.x + 14 + i * 16, r.end.y - 7), 2, P.HOOP)
+	var cs := card_cell(cols, rows)
+	var o := _card_origin(c, cols, rows)
+	for i in cols * rows:
+		var cell := Rect2(o + Vector2((i % cols) * cs, (i / cols) * cs), Vector2(cs, cs))
+		fill(ci, round_rect(cell.grow(-cs * 0.1), cs * 0.2, 2), Color(P.HOOP, 0.28))
 	# name tab
-	var tab := Vector2(r.position.x + 16, r.position.y + 1)  # on the top edge, clear of the drops
+	var tab := Vector2(r.position.x + 16, r.position.y + 1)  # on the top edge, clear of the picture
 	shape(ci, ellipse(tab, 9, 9, 0, 20), P.WOOD_LT, P.INK, 2)
 	text(ci, P.display(600), tab + Vector2(0, 0.5), name, 13, P.INK)
 
 
-## A card's body, around its centre: as wide as its two cells allow, less a
-## margin, so ten drops fit across it (the name tab sits on its top edge).
-const CARD_RECT := Rect2(-78, -26, 156, 52)
-
-
-## A card's next colors, on its body: the drops it shows (`shows`, 4 to 10;
-## fewer when the card runs out). With more than six they sit closer and a
-## little smaller, so ten fit across the card.
-##
-## After a wrong stitch the card looks back (`ringed` >= 0): the drops it
-## showed, on a faint paper tint, the one that wove the wrong stitch ringed in
-## ink; `gap` marks that the window starts past the card's first drop.
-static func card_paints(ci: CanvasItem, c: Vector2, upcoming: Array, age: float, shows := 6, ringed := -1, gap_mark := false) -> void:
-	var r := CARD_RECT
-	r.position += c
-	var gap := minf(18.0, (r.size.x - 40.0) / maxf(shows - 1, 1))
-	var size := minf(7.5, gap * 0.5 - 0.4)
-	if ringed >= 0:
-		var x0 := r.end.x - 20 - (upcoming.size() - 1) * gap - size - 6
-		fill(ci, round_rect(Rect2(x0, r.position.y + 11, r.end.x - 11 - x0, 22), 11), P.LOOK_BACK)
-		if gap_mark:  # the window starts past the card's first drop
-			for k in 3:
-				disc(ci, Vector2(x0 - 6 - k * 5, r.position.y + 22), 1.4, P.INK_SOFT)
-	# next colors, the next one on the right by the card's port; they slide
-	# right as the card releases
-	var slide := -clampf(1.0 - age, 0, 1) * gap if age < 1 else 0.0
-	for i in upcoming.size():
-		var p := Vector2(r.end.x - 20 - i * gap + slide, r.position.y + 22)
-		swatch(ci, p, size if i > 0 or ringed >= 0 else size + 1.0, upcoming[i])
+## A card's drops on its picture: the ones read already (`cursor` of them),
+## dimmed under a paper tint like the loom's woven stitches stay put, and the
+## `shows` coming up, uncovered, with their glyphs; the rest stay veiled. A
+## small shuttle stands before the next drop, never on it, and slides on as
+## the card releases one (`age` 0 to 1). After a wrong stitch the card stays
+## as it was, the drop that wove it (`ringed`) ringed in ink and no shuttle.
+static func card_paints(ci: CanvasItem, c: Vector2, cols: int, rows: int, colors: PackedByteArray, cursor: int, shows: int, age := 1.0, ringed := -1) -> void:
+	var cs := card_cell(cols, rows)
+	var o := _card_origin(c, cols, rows)
+	var radius := cs * 0.5 - 1.0
+	# The trail is a plain muted disc while the card runs (a redraw each tick,
+	# and up to a picture's worth of them); glyphs come back once it stops.
+	for i in mini(cursor + shows, colors.size()):
+		var p := o + Vector2((i % cols + 0.5) * cs, (i / cols + 0.5) * cs)
+		if i < cursor and ringed < 0:
+			disc(ci, p, radius * 0.8, Color(P.SIG[colors[i]], 0.45))
+			continue
+		swatch(ci, p, radius, colors[i])
+		if i < cursor:
+			disc(ci, p, radius + 0.5, Color(P.TAG, 0.55))
 		if i == ringed:
-			ring(ci, p, size + 3.0, P.INK, 2.0)
-	if upcoming.is_empty():
-		stroke(ci, arc(Vector2(c.x + 10, r.position.y + 21), 6, 0, TAU, 16), P.WARP, 2)
+			ring(ci, p, radius + 3.0, P.INK, 2.0)
+	if ringed >= 0 or cursor >= colors.size():
+		return
+	var to := _card_stop(o, cols, cs, cursor)
+	var from := to
+	if age < 1.0 and cursor > 0:
+		from = _card_stop(o, cols, cs, cursor - 1)
+		if cursor % cols == 0:  # a new row: in from the card's edge
+			from = Vector2(o.x - cs, to.y)
+	var at := from.lerp(to, 1.0 - pow(1.0 - clampf(age, 0, 1), 3))
+	shuttle(ci, at, cs * 0.5, 6.0, 3.0)
+
+
+## Where the shuttle stands before cell i of a card's picture: just left of it.
+static func _card_stop(o: Vector2, cols: int, cs: float, i: int) -> Vector2:
+	return Vector2(o.x + (i % cols) * cs - 6.0, o.y + (i / cols + 0.5) * cs)
 
 
 ## The loom: cloth with warp threads, wooden frame, woven stitches. It holds
@@ -1081,9 +1115,11 @@ static func _weft(ci: CanvasItem, a: Vector2, b: Vector2, cs: float) -> void:
 
 
 ## A loom shuttle: a pointed wooden boat with a bobbin of thread in its hollow.
-static func shuttle(ci: CanvasItem, c: Vector2, cs: float) -> void:
-	var hl := maxf(cs * 0.62, 11)
-	var hh := maxf(cs * 0.19, 4)
+## It is at least min_hl long from the middle to a tip and min_hh from the
+## middle to the hollow's edge (a card's is smaller than the loom's).
+static func shuttle(ci: CanvasItem, c: Vector2, cs: float, min_hl := 11.0, min_hh := 4.0) -> void:
+	var hl := maxf(cs * 0.62, min_hl)
+	var hh := maxf(cs * 0.19, min_hh)
 	var body := quad(c + Vector2(-hl, 0), c + Vector2(0, -hh * 2), c + Vector2(hl, 0), 12)
 	body.append_array(quad(c + Vector2(hl, 0), c + Vector2(0, hh * 2), c + Vector2(-hl, 0), 12))
 	fill(ci, ellipse(c + Vector2(0, hh * 0.9), hl * 0.9, hh * 0.6, 0, 20), P.SHADOW)

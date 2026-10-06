@@ -342,7 +342,7 @@ func test_editing(level, progress) -> void:
 	for n in 10:
 		wb._process(0.25)
 	check(wb.sim.tick > 0, "the machine runs")
-	drag(wb, tray_point(wb, "red_pot"), wb.cell_center(0, 0))
+	drag(wb, tray_point(wb, "red_pot"), wb.cell_center(0, 3))
 	check(wb.sim.tick == 0 and not wb.running, "editing stops and rewinds the run")
 	# A wrong machine shows the wrong stitch.
 	drag(wb, wb.in_port(inv, 0), wb.cell_center(8, 0))
@@ -878,7 +878,15 @@ func test_cards_slide(level) -> void:
 	check(wb.selected_piece == a and wb._card_selected(), "a tap selects a card")
 	key(wb, KEY_DELETE)
 	check(wb.machine.nodes.has(a), "Delete leaves a card")
-	check(wb._book_button_pos().distance_to(wb.node_center(a)) < 60, "its book button floats by it, alone")
+	check(wb._book_button_pos().distance_to(wb.node_center(a)) < 100, "its book button floats by it, alone")
+	var body: Rect2 = wb._card_rect(a)
+	check(wb.BENCH.encloses(body), "a card is a picture as tall as the target, all on the bench")
+	check(not body.has_point(wb._book_button_pos()), "its book button floats clear of the body")
+	var rows: Vector2i = wb._card_rows()
+	check(rows == Vector2i(1, 5), "a card may sit on rows 1 to 5 (got %s)" % rows)
+	drag(wb, wb.node_center(a), wb.node_center(a) - Vector2(0, 3 * wb.CELL.y))
+	check(wb._card_row(0) == 1, "dragged past the top it stays on row 1")
+	check(wb._card_spot(Vector2i(0, 4)) == 0 and wb._card_spot(Vector2i(0, 6)) < 0, "a card's body reaches two spots above and below its row's middle")
 	drag(wb, wb.node_center(a), wb.node_center(a) + Vector2(0, 2 * wb.CELL.y))
 	check(wb._card_row(0) == 3 and wb.machine.nodes[a]["row"] == 3, "a drag slides it down two rows")
 	wb._undo()
@@ -908,9 +916,10 @@ func test_bench_parts(levels: Array, by_id: Dictionary) -> void:
 	while wb.outcome == "" and frames < 500:
 		wb._process(0.05)
 		frames += 1
-	check(wb.outcome == "wrong" and wb._card_paints_look().has("wrong"), "a wrong stitch turns the cards to a look back")
+	check(wb.outcome == "wrong" and wb._card_paints_look().has("wrong"), "a wrong stitch freezes the cards' pictures, the drop that wove it ringed")
+	check(wb._card_paints_look().has(wb.sim.wrong_index), "and the picture's look names that drop")
 	wb._reset_pressed()
-	check(wb.outcome == "", "Reset ends the look back")
+	check(wb.outcome == "", "Reset puts the cards back")
 	wb.queue_free()
 	var p = Progress.new()
 	for l in levels.slice(0, 3):

@@ -195,13 +195,18 @@ The central visual and the late-campaign goal. Historical anchor: the **Jacquard
   - **Shuttle** joins the journal's Words and the lexicon.
   - What a card shows still decodes the level (§5.1): the solver's proof holds under both paths.
 - **Path A: improve the card as it is (✅ decided, with one open item).** The card stays a strip of its next `card_shows` drops that slides as it releases. The open item is the failed-run display: the card's look-back (built in WP2) shows the starting window or the window ending at the wrong drop, never both; the playtest asks for both. Any fix here (a faint second window, say) belongs to the strip and is thrown away if B is chosen, so it waits unless B is more than a release away.
-- **Path B: the card as the loom cloth's counterpart (🟡 leaning, pending a prototype).**
+- **Path B: the card as the loom cloth's counterpart (🟡 built on branch `path-b-card-picture` (2026-10-06), awaiting the designer's verdict; if kept, Path A's strip work is retired).**
   - *Narrative:* the level's machine converts the pattern pictures into a result cloth. This points at an image algebra (pictures in, an operator, a picture out) without ever naming it; player-facing text stays in paint and thread. The simulation already is that: stitch *i* depends only on each card's *i*-th drop.
   - *Look:* the card is a picture on the loom's grid, in the loom's raster order, so card cell *i* lines up with cloth cell *i*. The next `card_shows` cells are uncovered, cells already read stay shown (as woven stitches do), the rest is veiled slots (as the loom's unwoven ghost slots are), which leaks the card's shape and no colors. The card gets its own shuttle and cursor, standing before its next drop.
   - *Failed run:* the read trail and the ringed drop show where the run stopped, which replaces the look-back and answers the playtest note by itself.
   - *Why it's worth it:* chapter 6's Appliqué (the cards are the player's earlier cloths) and the "rows that remember" chapter need cards that read as pictures.
-  - *Risk, to settle first:* bench room. Today a card is 156×52; an 8×6 picture at about 14 px a cell is about 112×84, so three cards stack to about 250 px, and The Harbour (16×12) doesn't fit. Fallback: a small preview that grows when the card is selected.
-  - *Next step:* a branch prototype on a one-card level, a three-card level and The Harbour; then decide.
+  - *Risk, bench room: settled, it fits.*
+    - The campaign's cards are all 8×6 (the target's own shape) and no campaign level has more than two cards; the 16×12 Harbour and the three-card Flower are Lost Levels, shown nowhere.
+    - A card keeps its 156 px width and grows from 52 to 124 px tall (a 16 px cell), so it sits on rows 1 to 5 (row 0 and 6 would poke off the bench) and reaches two spots above and below its row's middle, where a piece can't be placed. Two cards at rows 1 and 5 leave the middle of the bench free. A bigger picture shrinks its cell (16 across and 12 down fits at 8 px, no glyphs worth reading; fine for a Lost Level).
+    - The card's book button floats just above the body.
+  - *Cost, `.\make bench`:* a redraw every tick of up to a picture's worth of drops. Glyph swatches on the whole trail took the paints layer from about 0.6 to about 4 ms a frame (30 ms worst); the trail as plain muted discs while running, glyphs only on the frozen wrong-stitch view, brings it to about 1.3 ms (running average 2.8 ms against 2.6 before).
+  - *Built:* `K.card_body` (the veiled slots), `K.card_paints` (the trail, the window, the shuttle, the ringed drop), `K.card_rect`, the workbench's `_card_rect`, `_card_rows`, `_card_reach`, the journal's pattern-card picture, the lexicon's Gameplay text (and `data/words.json`).
+  - *Still open:* the shuttle on the card stands in the gap before the next drop and covers part of the drop just read; the loom's own shuttle still sits on its next slot (the shared item above). The "Shuttle" word is not in the lexicon yet.
 
 ---
 
