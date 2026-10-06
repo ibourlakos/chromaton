@@ -335,7 +335,11 @@ func test_articles() -> void:
 	j._ready()
 	check(j._article_max() > 0 and j._rows_below() > 0 and j._more_rect().size.x > 0, "Loom runs past its page, with a \"more below\" chip")
 	var rows: Array = j._article_rows()
-	check(rows.all(func(r): return r["h"] >= 80) and rows[3]["h"] > rows[2]["h"], "rows are as tall as their text (Tick is longer than Thread)")
+	var heights := {}
+	for r in rows:
+		heights[r["w"]["id"]] = r["h"]
+	check(rows.all(func(r): return r["h"] >= 80) and heights["tick"] > heights["thread"], "rows are as tall as their text (Tick is longer than Thread)")
+	check(heights.has("shuttle"), "the shuttle has its article on the Loom page")
 	key(j, KEY_DOWN)
 	check(is_equal_approx(j.article_scroll, minf(j.ARTICLE_STEP, j._article_max())), "the down key scrolls down")
 	key(j, KEY_W)

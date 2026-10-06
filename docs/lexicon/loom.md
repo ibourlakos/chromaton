@@ -21,4 +21,4 @@ The loom weaves your cloth. Every tick it takes one drop from its tube and weave
 
 ## Related
 
-[Cloth](cloth.md) · [Stitch](stitch.md) · [Tick](tick.md) · [Tube](tube.md)
+[Cloth](cloth.md) · [Stitch](stitch.md) · [Shuttle](shuttle.md) · [Tick](tick.md) · [Tube](tube.md)

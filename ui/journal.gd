@@ -1024,6 +1024,8 @@ static func picture(ci: CanvasItem, id: String, c: Vector2, s: float, t: float, 
 			for py in [cloth.end.y + 4 * s]:  # the cloth hangs from its own rod
 				K.shape(ci, K.round_rect(Rect2(cloth.position.x - 13 * s, py, cloth.size.x + 26 * s, 6 * s), 3 * s), P.WOOD_DK, P.INK, 1.8)
 			K.cloth(ci, Rect2(cloth.position - Vector2(0, 10), cloth.size + Vector2(0, 10)), 8, PackedByteArray([1, 3, 2, 6, 4, 5, 7, 0, 0, 1, 1, 3, 2, 2, 6, 4]))
+		"shuttle":
+			K.shuttle(ci, c, 56.0 * s)
 		"stitch":
 			var r := Rect2(c - Vector2(16, 16) * s, Vector2(32, 32) * s)
 			K.shape(ci, K.round_rect(r, 8 * s), P.SIG[Paint.ORANGE], P.STITCH_EDGE_DARK, 1.5)

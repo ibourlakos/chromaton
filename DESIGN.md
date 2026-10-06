@@ -189,10 +189,10 @@ The central visual and the late-campaign goal. Historical anchor: the **Jacquard
 
 **The pattern card's look: two paths, mutually exclusive** (designer, 2026-10-06, from the R3 playtest notes). The card is shown one way, so the paths are alternatives, not stages: choosing B retires A's strip-specific work.
 
-- **Shared by both (✅ decided; not built yet, still open after Path B merged 2026-10-06):**
-  - Card length 4 to 8 drops, 6 by default (was 4 to 10; touches `.\make cards`, `card_shows` and the solver's decoding checks).
-  - The loom's shuttle stands before its next target and steps onto it on a successful stitch (it sits on the next slot today, as the 🟡 above says).
-  - **Shuttle** joins the journal's Words and the lexicon.
+- **Shared by both (the status after Path B merged, 2026-10-06):**
+  - ~~Card length 4 to 8 drops, 6 by default~~ Irrelevant after the overhaul (designer, 2026-10-06): the player sees the whole card, and `card_shows` is only the solver's decode depth (an open question in PLAYTEST-NOTES.md).
+  - 🟡 **The loom's shuttle** may stand before its next target and step onto it on a successful stitch, as the card's does (it sits on the next slot today, as the 🟡 above says). A small open choice (PLAYTEST-NOTES.md).
+  - ✅ **Shuttle** is in the journal's Words (Loom tab, unlocks in One Pot of Red) and the lexicon, built 2026-10-06.
   - A wrong machine still fails within `card_shows` stitches (§5.1): the solver's proof holds under both paths.
 - **Path A: improve the card as it is (retired 2026-10-06: Path B was built and chosen).** The card stays a strip of its next `card_shows` drops that slides as it releases. The open item is the failed-run display: the card's look-back (built in WP2) shows the starting window or the window ending at the wrong drop, never both; the playtest asks for both. Any fix here (a faint second window, say) belongs to the strip and is thrown away if B is chosen, so it waits unless B is more than a release away.
 - **Path B: the card as the loom cloth's counterpart (✅ built and merged 2026-10-06, designer chose it).**

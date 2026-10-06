@@ -13,7 +13,7 @@ Your journal keeps everything you've learned and made: the paints, how the loom 
 
 - **The player's own record:** pages fill from what the player's machines actually did, like a sticker album. Play teaches the rules first; the journal is a reward and a reference.
 - **Tabs, as the player reads them:** Paint · Loom · Pieces · Inventions · Cloths · Scores · Words.
-  - **Paint** and **Loom:** short articles, the Gameplay text of the words on that tab ([paint](paint.md), [paint card](paint-card.md); [loom](loom.md), [stitch](stitch.md), [tick](tick.md), [tube](tube.md), [thread](thread.md)).
+  - **Paint** and **Loom:** short articles, the Gameplay text of the words on that tab ([paint](paint.md), [paint card](paint-card.md); [loom](loom.md), [stitch](stitch.md), [shuttle](shuttle.md), [tick](tick.md), [tube](tube.md), [thread](thread.md)).
   - **Pieces:** a page per [piece](piece.md) with a frame for every paint it can be given.
   - **Inventions:** the paint shelf and the [invention](invention.md) slots (the old Pattern Book).
   - **Cloths:** a picture gallery, a slot per level, empty until woven, each chapter's [quilt](quilt.md) beside its cloths.

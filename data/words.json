@@ -50,6 +50,13 @@
 			"word": "Red pot"
 		},
 		{
+			"id": "shuttle",
+			"level": "one_pot",
+			"tab": "loom",
+			"text": "The shuttle is the little wooden boat that carries thread across the loom. It marks the stitch the loom weaves next, and slides on after every stitch lands. A pattern card has one too, marking the drop that comes next.",
+			"word": "Shuttle"
+		},
+		{
 			"id": "stars",
 			"level": "one_pot",
 			"tab": "scores",

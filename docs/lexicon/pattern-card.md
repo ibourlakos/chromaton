@@ -21,4 +21,4 @@ A pattern card holds a picture as paint, one drop for every stitch, laid out lik
 
 ## Related
 
-[Loom](loom.md), [Stitch](stitch.md), [Tube](tube.md)
+[Loom](loom.md), [Shuttle](shuttle.md), [Stitch](stitch.md), [Tube](tube.md)

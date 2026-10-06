@@ -49,6 +49,7 @@ Files are named after the term in lower-case kebab-case (`paint-card.md`) and li
 | [Quilt](quilt.md) | gameplay, design, implementation | ✅ | A chapter's cloths sewn together. |
 | [Red pot](red-pot.md) | gameplay, design, implementation | ✅ | The one pot of red paint every other paint starts from. |
 | [Shift](shift.md) | gameplay, design, implementation | ✅ | Turns the paint wheel one step. Player word: Shift Wheel. |
+| [Shuttle](shuttle.md) | gameplay, design, implementation | 🟡 | The little wooden boat that marks the stitch, or the card drop, coming next. |
 | [Split](split.md) | gameplay, design, implementation | 🟡 | Copies one drop into two; free. |
 | [Stars](stars.md) | gameplay, design, implementation | ✅ | One to three per level: woven, few pieces, fewest pieces. |
 | [Stitch](stitch.md) | gameplay, design, implementation | 🟡 | One square of a cloth, woven from one drop. |
