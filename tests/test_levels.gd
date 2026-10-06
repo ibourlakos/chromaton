@@ -68,9 +68,13 @@ func test_loading(levels: Array) -> void:
 		if not level.cards.is_empty():
 			check(level.card_shows >= Level.CARD_SHOWS_MIN and level.card_shows <= Level.CARD_SHOWS_MAX and level.raw.has("card_shows"), "%s: its cards show 4 to 10 drops (%d)" % [level.id, level.card_shows])
 			check(level.raw["cards"].all(func(c): return not c.has("smudges")), "%s: no smudges on its cards" % level.id)
+			check(level.cols >= Level.CARD_COLS_MIN and level.cols <= Level.CARD_COLS_MAX and level.rows >= Level.CARD_ROWS_MIN and level.rows <= Level.CARD_ROWS_MAX, "%s: its card pictures are 4 to 12 columns by 1 to 9 rows (%d by %d)" % [level.id, level.cols, level.rows])
 	var lost := Level.load_lost()
-	check(lost.map(func(l): return l.id) == ["flip_side", "the_flower"] and lost.all(func(l): return l.error == ""), "Flip Side and The Harbour wait in Lost Levels")
-	check(not Level.index_ids().has("flip_side") and not Level.index_ids().has("the_flower"), "Lost Levels stay out of the campaign")
+	check(lost.map(func(l): return l.id) == ["flip_side", "the_flower", "chessboard"] and lost.all(func(l): return l.error == ""), "Flip Side, The Harbour and The Chessboard wait in Lost Levels")
+	check(not Level.index_ids().has("flip_side") and not Level.index_ids().has("the_flower") and not Level.index_ids().has("chessboard"), "Lost Levels stay out of the campaign")
+	var chess = lost.filter(func(l): return l.id == "chessboard")[0]
+	check(chess.cols == Level.CARD_COLS_MAX and chess.rows == Level.CARD_ROWS_MAX and chess.cards.size() == 2, "The Chessboard's cards are the largest a card may be (%d by %d)" % [chess.cols, chess.rows])
+	check(range(chess.size()).all(func(i): return chess.target[i] == (Paint.BLACK if (i / chess.cols + i % chess.cols) % 2 == 0 else Paint.WHITE)), "and it weaves a black and white chessboard")
 	var tables := levels.filter(func(l): return l.id in ["mix_table", "filter_table"])
 	for t in tables:
 		check(Level.letters(t.cards[1], 8) == ["WRYOBPGK", "WRYOBPGK", "WRYOBPGK", "WRYOBPGK", "WRYOBPGK", "WRYOBPGK"], "%s: card B is every paint on every row" % t.id)

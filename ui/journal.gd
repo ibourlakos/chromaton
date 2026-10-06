@@ -977,9 +977,11 @@ func _tab_name(id: String) -> String:
 static func picture(ci: CanvasItem, id: String, c: Vector2, s: float, t: float, levels: Array) -> void:
 	match id:
 		"pattern-card":
+			# a small picture card, three drops read
+			var drops := PackedByteArray([Paint.RED, Paint.RED, Paint.ORANGE, Paint.WHITE, Paint.BLUE, Paint.BLUE, Paint.GREEN, Paint.WHITE, Paint.YELLOW, Paint.RED, Paint.RED, Paint.BLUE])
 			K.set_xf(ci, c, Vector2(0.6, 0.6) * s, -0.06)
-			K.card_body(ci, Vector2.ZERO, "A")
-			K.card_paints(ci, Vector2.ZERO, [Paint.RED, Paint.ORANGE, Paint.WHITE, Paint.BLUE, Paint.GREEN], 1.0, 5)
+			K.card_body(ci, Vector2.ZERO, "A", 4, 3, drops)
+			K.card_paints(ci, Vector2.ZERO, 4, 3, 3)
 			K.reset_xf(ci)
 		"paint":
 			for k in 3:

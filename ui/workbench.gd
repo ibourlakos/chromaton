@@ -445,15 +445,43 @@ func spot_taken(spot: Vector2i, except := -1) -> bool:
 
 
 ## The card a piece on this spot would overlap, or -1. A card covers the
-## first two cells of its row.
+## cells under its body, and a piece's own size beside it: the first spots
+## across (_card_last_spot), _card_reach spots up and down.
 func _card_spot(spot: Vector2i) -> int:
-	if spot.x >= 4:
+	if spot.x > _card_last_spot():
 		return -1
 	for c in level.cards.size():
-		var row := _card_row(c)
-		if spot.y > 2 * row - 2 and spot.y < 2 * row + 2:
+		if absi(spot.y - 2 * _card_row(c)) <= _card_reach():
 			return c
 	return -1
+
+
+## How far a card's body reaches above and below its row's middle, in spots
+## (half cells): a piece closer than half the body and a piece's own size
+## overlaps it.
+func _card_reach() -> int:
+	return ceili((K.card_rect(level.cols, level.rows).size.y / 2.0 + 30.0) / (CELL.y / 2.0)) - 1
+
+
+## The last spot across a card's body keeps pieces off: the first four for
+## the default picture (two cells), more for a wider one.
+func _card_last_spot() -> int:
+	return ceili((K.card_rect(level.cols, level.rows).size.x + 36.0) / (CELL.x / 2.0)) - 2
+
+
+## A card's body on the bench.
+func _card_rect(id: int) -> Rect2:
+	var r := K.card_rect(level.cols, level.rows)
+	r.position += node_center(id)
+	return r
+
+
+## The first and last row a card may sit on: its body stays on the bench.
+func _card_rows() -> Vector2i:
+	var half := K.card_rect(level.cols, level.rows).size.y / 2.0
+	var lo := ceili((BENCH.position.y + 4.0 + half - GRID_ORIGIN.y) / CELL.y - 0.5)
+	var hi := floori((BENCH.end.y - 4.0 - half - GRID_ORIGIN.y) / CELL.y - 0.5)
+	return Vector2i(clampi(lo, 0, ROWS - 1), clampi(hi, 0, ROWS - 1))
 
 
 func node_center(id: int) -> Vector2:
@@ -464,7 +492,8 @@ func node_center(id: int) -> Vector2:
 		Pieces.CARD:
 			var c := _card_center(int(n["card"]))
 			if drag == "card" and drag_node == id and drag_moved:  # sliding along the edge
-				c.y = clampf(drag_pos.y - grab.y, GRID_ORIGIN.y + CELL.y / 2, GRID_ORIGIN.y + (ROWS - 0.5) * CELL.y)
+				var rows := _card_rows()
+				c.y = clampf(drag_pos.y - grab.y, GRID_ORIGIN.y + (rows.x + 0.5) * CELL.y, GRID_ORIGIN.y + (rows.y + 0.5) * CELL.y)
 			elif card_wiggle.has(id):  # a refused slide: back with a wiggle
 				var u: float = (clock - card_wiggle[id]) / 0.45
 				if u < 1.0:
@@ -475,18 +504,21 @@ func node_center(id: int) -> Vector2:
 	return spot_center(n["x"], n["y"])
 
 
-## A pattern card covers the first two cells of its row.
+## A pattern card sits on the bench's left edge, six pixels in, on its row:
+## the first two cells for the default picture, more for a wider one.
 func _card_center(card: int) -> Vector2:
-	return Vector2(GRID_ORIGIN.x + CELL.x, GRID_ORIGIN.y + (_card_row(card) + 0.5) * CELL.y)
+	var w := K.card_rect(level.cols, level.rows).size.x
+	return Vector2(GRID_ORIGIN.x + 6.0 + w / 2.0, GRID_ORIGIN.y + (_card_row(card) + 0.5) * CELL.y)
 
 
 ## The row a card sits on: its own, saved with the bench, or else the
 ## default for the level's number of cards (CARD_ROWS).
 func _card_row(card: int) -> int:
 	var id: int = machine.find_kind(Pieces.CARD, card) if machine != null else -1
+	var rows := _card_rows()
 	if id >= 0 and machine.nodes[id].has("row"):
-		return int(machine.nodes[id]["row"])
-	return CARD_ROWS.get(level.cards.size(), [3, 3, 3])[card]
+		return clampi(int(machine.nodes[id]["row"]), rows.x, rows.y)
+	return clampi(CARD_ROWS.get(level.cards.size(), [3, 3, 3])[card], rows.x, rows.y)
 
 
 ## Port offsets on one side of a piece (dx < 0: inputs, dx > 0: outputs),
@@ -516,7 +548,7 @@ func in_port(id: int, p: int) -> Vector2:
 func out_port(id: int, p: int) -> Vector2:
 	var n: Dictionary = machine.nodes[id]
 	if n["kind"] == Pieces.CARD:
-		return node_center(id) + Vector2(CELL.x / 2 + PORT_DX, 0)
+		return node_center(id) + Vector2(_card_rect(id).size.x / 2.0 - 2.0, 0)  # at the card's right edge
 	var count := Pieces.ports(n, inventions).y
 	return node_center(id) + _offsets(count, PORT_DX)[p]
 
@@ -1147,7 +1179,8 @@ func _finish_card(pos: Vector2) -> void:
 		return
 	var card := int(machine.nodes[id]["card"])
 	var from := _card_row(card)
-	var row := clampi(floori((pos.y - grab.y - GRID_ORIGIN.y) / CELL.y), 0, ROWS - 1)
+	var rows := _card_rows()
+	var row := clampi(floori((pos.y - grab.y - GRID_ORIGIN.y) / CELL.y), rows.x, rows.y)
 	if not BENCH.has_point(pos):
 		card_wiggle[id] = clock
 		return
@@ -1169,13 +1202,13 @@ func _finish_card(pos: Vector2) -> void:
 	_edited()
 
 
-## Whether a card fits on this row: no piece covers its first two cells.
+## Whether a card fits on this row: no piece sits where its body reaches.
 func _row_free_for_card(row: int) -> bool:
 	for id in machine.nodes:
 		if machine.is_fixed(id):
 			continue
 		var n: Dictionary = machine.nodes[id]
-		if int(n["x"]) < 4 and int(n["y"]) > 2 * row - 2 and int(n["y"]) < 2 * row + 2:
+		if int(n["x"]) <= _card_last_spot() and absi(int(n["y"]) - 2 * row) <= _card_reach():
 			return false
 	return true
 
@@ -1184,9 +1217,7 @@ func _row_free_for_card(row: int) -> bool:
 func _card_at_pos(pos: Vector2) -> int:
 	for c in level.cards.size():
 		var id: int = machine.find_kind(Pieces.CARD, c)
-		var r := K.CARD_RECT
-		r.position += node_center(id)
-		if id >= 0 and r.has_point(pos):
+		if id >= 0 and _card_rect(id).has_point(pos):
 			return id
 	return -1
 
@@ -1281,7 +1312,8 @@ func _delete_button_pos() -> Vector2:
 func _book_button_pos() -> Vector2:
 	if _card_selected():
 		var below := _card_row(int(machine.nodes[selected_piece]["card"])) == 0
-		return node_center(selected_piece) + Vector2(0, 52 if below else -52)
+		var off := _card_rect(selected_piece).size.y / 2.0 + 26.0  # clear of the body
+		return node_center(selected_piece) + Vector2(0, off if below else -off)
 	return _delete_button_pos() + Vector2(50, 0)
 
 
@@ -1298,8 +1330,8 @@ func _book_button_pos() -> Vector2:
 #   shelf     the tray and its slots (one lit while its piece is carried), trash
 #   tray      the pieces in the tray, their names and keys
 #   aim       the cell a dragged or carried piece would land on
-#   cards     the pattern cards
-#   paints    the colors coming up on them (they slide as a card releases)
+#   cards     the pattern cards, their pictures in full
+#   paints    what moves on them: the drops read (faded), the shuttle (it slides as a card releases)
 #   wiring    tubes, a selected piece's lit cell, the pipes into pieces
 #   loom      the cloth and its stitches, the status under it
 #   critters  the pieces: they're alive, drawn every frame
@@ -1633,13 +1665,14 @@ func _draw_aim() -> void:
 
 func _draw_cards() -> void:
 	for c in level.cards.size():
-		K.card_body(cards_layer, node_center(machine.find_kind(Pieces.CARD, c)), level.card_names[c])
+		K.card_body(cards_layer, node_center(machine.find_kind(Pieces.CARD, c)), level.card_names[c], level.cols, level.rows, level.cards[c])
 
 
-## What the paints layer shows: each card's next colors, and how far they
-## have slid since it released one.
+## What the paints layer shows over the cards' pictures: how far each is read
+## (its cursor), how far its shuttle has slid since the card released a drop,
+## and the drop that wove a wrong stitch.
 func _card_paints_look() -> Array:
-	var look := [bench_gen, _cards_look(), outcome]
+	var look := [bench_gen, _cards_look(), outcome, sim.wrong_index]
 	for id in machine.nodes:
 		if machine.nodes[id]["kind"] == Pieces.CARD:
 			look.append(sim.card_cursor[machine.nodes[id]["card"]])
@@ -1647,26 +1680,16 @@ func _card_paints_look() -> Array:
 	return look
 
 
-## The paints layer: the colors coming up on each card.
+## The paints layer: each card's drops. After a wrong stitch the card stays
+## as it was, the drop that wove it ringed.
 func _draw_card_paints() -> void:
+	var ringed: int = sim.wrong_index if outcome == "wrong" else -1
 	for id in machine.nodes:
 		var n: Dictionary = machine.nodes[id]
 		if n["kind"] != Pieces.CARD:
 			continue
 		var c: int = n["card"]
-		var upcoming := []
-		if outcome == "wrong":
-			# A look back: the drops the card showed at the start, or as many
-			# ending at the one that wove the wrong stitch, which is ringed.
-			var wrong: int = sim.wrong_index
-			var start := maxi(0, wrong - level.card_shows + 1)
-			for k in range(start, mini(start + level.card_shows, level.cards[c].size())):
-				upcoming.append(level.cards[c][k])
-			K.card_paints(paints_layer, node_center(id), upcoming, 1.0, level.card_shows, wrong - start, start > 0)
-			continue
-		for k in range(sim.card_cursor[c], mini(sim.card_cursor[c] + level.card_shows, level.cards[c].size())):
-			upcoming.append(level.cards[c][k])
-		K.card_paints(paints_layer, node_center(id), upcoming, _age(id), level.card_shows)
+		K.card_paints(paints_layer, node_center(id), level.cols, level.rows, sim.card_cursor[c], _age(id), ringed)
 
 
 ## The wiring layer: tubes, a selected piece's lit cell, and the pipes into
@@ -1684,8 +1707,7 @@ func _draw_wiring() -> void:
 	if selected_piece >= 0 and machine.nodes.has(selected_piece) and drag == "":
 		var r := Rect2(node_center(selected_piece) - CELL / 2, CELL).grow(-3)
 		if _card_selected():  # a card: the usual outline round its body
-			r = K.CARD_RECT.grow(6)
-			r.position += node_center(selected_piece)
+			r = _card_rect(selected_piece).grow(6)
 		K.shape(ci, K.round_rect(r, 12), Color(P.HOOP, 0.25), Color(P.INK, 0.5), 2)
 	for id in machine.nodes:
 		if machine.is_fixed(id) or (drag == "move" and id == drag_node):

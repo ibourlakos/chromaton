@@ -21,6 +21,6 @@
 	{
 		"name": "Lost Levels",
 		"lost": true,
-		"levels": ["flip_side", "the_flower"]
+		"levels": ["flip_side", "the_flower", "chessboard"]
 	}
 ]

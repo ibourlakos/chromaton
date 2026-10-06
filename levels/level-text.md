@@ -207,6 +207,7 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The new chapters 1
 
 - **Flip Side** (`flip_side`): The Beach Flags · Every Mix Flipped. Hint: "On the beach, every flag flips to the one paint it lacks. Tube the card through the Flip Pan."
 - **The Harbour** (`the_flower`): The Harbour · Two of Three. Hint: "Gulls, sails and the quay, each on two of three cards. Sieve each pair of cards, then mix the three answers." Until chapter 6 earns its rule as Consensus.
+- **The Chessboard** (`chessboard`, made up 2026-10-06 to try the largest cards, 12 by 9): The Chessboard · Flip, Then Sieve. Hint: "On the black squares card A is black and card B is bare. On the white squares the two agree. Flip card B to its opposite, then sieve it with card A." A black and white cloth woven from `Filter(A, Invert B)` (Flip Pan and Sieve only; the card maker's "bleach" rule); a Lost Level, played only from the command line (`.make level chessboard`).
 
 ---
 
