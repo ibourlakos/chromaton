@@ -445,10 +445,10 @@ func spot_taken(spot: Vector2i, except := -1) -> bool:
 
 
 ## The card a piece on this spot would overlap, or -1. A card covers the
-## first two cells of its row and, as tall as its picture, reaches the rows
-## beside it (_card_reach spots up and down).
+## cells under its body, and a piece's own size beside it: the first spots
+## across (_card_last_spot), _card_reach spots up and down.
 func _card_spot(spot: Vector2i) -> int:
-	if spot.x >= 4:
+	if spot.x > _card_last_spot():
 		return -1
 	for c in level.cards.size():
 		if absi(spot.y - 2 * _card_row(c)) <= _card_reach():
@@ -457,9 +457,16 @@ func _card_spot(spot: Vector2i) -> int:
 
 
 ## How far a card's body reaches above and below its row's middle, in spots
-## (half cells), with room for a piece's own size.
+## (half cells): a piece closer than half the body and a piece's own size
+## overlaps it.
 func _card_reach() -> int:
-	return floori((K.card_rect(level.cols, level.rows).size.y / 2.0 + 30.0) / (CELL.y / 2.0))
+	return ceili((K.card_rect(level.cols, level.rows).size.y / 2.0 + 30.0) / (CELL.y / 2.0)) - 1
+
+
+## The last spot across a card's body keeps pieces off: the first four for
+## the default picture (two cells), more for a wider one.
+func _card_last_spot() -> int:
+	return ceili((K.card_rect(level.cols, level.rows).size.x + 36.0) / (CELL.x / 2.0)) - 2
 
 
 ## A card's body on the bench.
@@ -497,9 +504,11 @@ func node_center(id: int) -> Vector2:
 	return spot_center(n["x"], n["y"])
 
 
-## A pattern card covers the first two cells of its row.
+## A pattern card sits on the bench's left edge, six pixels in, on its row:
+## the first two cells for the default picture, more for a wider one.
 func _card_center(card: int) -> Vector2:
-	return Vector2(GRID_ORIGIN.x + CELL.x, GRID_ORIGIN.y + (_card_row(card) + 0.5) * CELL.y)
+	var w := K.card_rect(level.cols, level.rows).size.x
+	return Vector2(GRID_ORIGIN.x + 6.0 + w / 2.0, GRID_ORIGIN.y + (_card_row(card) + 0.5) * CELL.y)
 
 
 ## The row a card sits on: its own, saved with the bench, or else the
@@ -539,7 +548,7 @@ func in_port(id: int, p: int) -> Vector2:
 func out_port(id: int, p: int) -> Vector2:
 	var n: Dictionary = machine.nodes[id]
 	if n["kind"] == Pieces.CARD:
-		return node_center(id) + Vector2(CELL.x / 2 + PORT_DX, 0)
+		return node_center(id) + Vector2(_card_rect(id).size.x / 2.0 - 2.0, 0)  # at the card's right edge
 	var count := Pieces.ports(n, inventions).y
 	return node_center(id) + _offsets(count, PORT_DX)[p]
 
@@ -1199,7 +1208,7 @@ func _row_free_for_card(row: int) -> bool:
 		if machine.is_fixed(id):
 			continue
 		var n: Dictionary = machine.nodes[id]
-		if int(n["x"]) < 4 and absi(int(n["y"]) - 2 * row) <= _card_reach():
+		if int(n["x"]) <= _card_last_spot() and absi(int(n["y"]) - 2 * row) <= _card_reach():
 			return false
 	return true
 

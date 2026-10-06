@@ -13,6 +13,7 @@
 extends RefCounted
 
 const P = preload("res://ui/palette.gd")
+const Level = preload("res://core/level.gd")
 
 const PIP := [[1, -PI / 2], [2, PI / 6], [4, 5 * PI / 6]]
 
@@ -944,21 +945,25 @@ static func sticker(ci: CanvasItem, c: Vector2, s: float, name: String, age: flo
 
 ## A pattern card is a picture, the loom cloth's counterpart (DESIGN.md 4,
 ## "The pattern card's look", Path B): the same grid in the same order, read
-## left to right and row by row, as wide as its two cells allow. The cell
-## shrinks only for a picture too big to fit (the lost Harbour).
-const CARD_W := 156.0
+## left to right and row by row. Its cell is always CARD_CELL, so the body
+## grows with the picture (Level.CARD_COLS_MIN.. and CARD_ROWS_MIN.. bound
+## it): never narrower than CARD_MIN_W, the default 8 columns' width. A
+## picture beyond the bounds (a Lost Level's) shrinks its cell to fit them.
+const CARD_MIN_W := 156.0
 const CARD_CELL := 16.0
 
 
 ## A card picture's cell size.
 static func card_cell(cols: int, rows: int) -> float:
-	return minf(CARD_CELL, minf((CARD_W - 28.0) / cols, 104.0 / rows))
+	return CARD_CELL * minf(1.0, minf(float(Level.CARD_COLS_MAX) / cols, float(Level.CARD_ROWS_MAX) / rows))
 
 
 ## A card's body, around its centre, for a picture cols wide and rows tall.
 static func card_rect(cols: int, rows: int) -> Rect2:
-	var h := rows * card_cell(cols, rows) + 24.0
-	return Rect2(-CARD_W / 2, -h / 2, CARD_W, h)
+	var cs := card_cell(cols, rows)
+	var w := maxf(CARD_MIN_W, cols * cs + 28.0)
+	var h := rows * cs + 24.0
+	return Rect2(-w / 2, -h / 2, w, h)
 
 
 ## Where a card's picture starts: its top-left corner, for a card centred on c.

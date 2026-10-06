@@ -68,6 +68,7 @@ func test_loading(levels: Array) -> void:
 		if not level.cards.is_empty():
 			check(level.card_shows >= Level.CARD_SHOWS_MIN and level.card_shows <= Level.CARD_SHOWS_MAX and level.raw.has("card_shows"), "%s: its cards show 4 to 10 drops (%d)" % [level.id, level.card_shows])
 			check(level.raw["cards"].all(func(c): return not c.has("smudges")), "%s: no smudges on its cards" % level.id)
+			check(level.cols >= Level.CARD_COLS_MIN and level.cols <= Level.CARD_COLS_MAX and level.rows >= Level.CARD_ROWS_MIN and level.rows <= Level.CARD_ROWS_MAX, "%s: its card pictures are 4 to 12 columns by 1 to 9 rows (%d by %d)" % [level.id, level.cols, level.rows])
 	var lost := Level.load_lost()
 	check(lost.map(func(l): return l.id) == ["flip_side", "the_flower"] and lost.all(func(l): return l.error == ""), "Flip Side and The Harbour wait in Lost Levels")
 	check(not Level.index_ids().has("flip_side") and not Level.index_ids().has("the_flower"), "Lost Levels stay out of the campaign")

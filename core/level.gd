@@ -43,6 +43,14 @@ const INDEX_PATH := "res://levels/index.json"
 ## lies between these.
 const CARD_SHOWS_MIN := 4
 const CARD_SHOWS_MAX := 10
+## A pattern card's picture is 8 columns by 6 rows by default (4:3, like the
+## loom cloth) and may run from 1 row by 4 columns up to 9 rows by 12
+## columns (designer, 2026-10-06). The Lost Levels' 16 by 12 pictures are
+## beyond it, and shown nowhere.
+const CARD_COLS_MIN := 4
+const CARD_COLS_MAX := 12
+const CARD_ROWS_MIN := 1
+const CARD_ROWS_MAX := 9
 
 var id := ""
 var number := 0  # position in the campaign, from 1 (0 when loaded on its own)

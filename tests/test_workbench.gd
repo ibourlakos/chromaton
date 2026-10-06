@@ -878,10 +878,20 @@ func test_cards_slide(level) -> void:
 	check(wb.selected_piece == a and wb._card_selected(), "a tap selects a card")
 	key(wb, KEY_DELETE)
 	check(wb.machine.nodes.has(a), "Delete leaves a card")
-	check(wb._book_button_pos().distance_to(wb.node_center(a)) < 100, "its book button floats by it, alone")
+	check(wb._book_button_pos().distance_to(wb.node_center(a)) < wb._card_rect(a).size.y / 2.0 + 40.0, "its book button floats by it, alone")
 	var body: Rect2 = wb._card_rect(a)
 	check(wb.BENCH.encloses(body), "a card is a picture as tall as the target, all on the bench")
 	check(not body.has_point(wb._book_button_pos()), "its book button floats clear of the body")
+	# A card's body follows its picture: never narrower than the default's,
+	# a 16 px cell, from one row of four columns to nine rows of twelve.
+	var K = wb.K
+	var small: Rect2 = K.card_rect(4, 1)
+	var normal: Rect2 = K.card_rect(8, 6)
+	var big: Rect2 = K.card_rect(12, 9)
+	check(is_equal_approx(small.size.x, 156.0) and is_equal_approx(small.size.y, 40.0), "a 4-by-1 card is the minimum width, one row tall (%s)" % small.size)
+	check(is_equal_approx(normal.size.x, 156.0) and is_equal_approx(normal.size.y, 120.0), "the default 8-by-6 card is 156 by 120 (%s)" % normal.size)
+	check(is_equal_approx(big.size.x, 220.0) and is_equal_approx(big.size.y, 168.0), "a 12-by-9 card is 220 by 168 (%s)" % big.size)
+	check(K.card_cell(16, 12) < 16.0 and K.card_rect(16, 12).size.x <= big.size.x, "a picture past the bounds shrinks its cell to fit them")
 	var rows: Vector2i = wb._card_rows()
 	check(rows == Vector2i(1, 5), "a card may sit on rows 1 to 5 (got %s)" % rows)
 	drag(wb, wb.node_center(a), wb.node_center(a) - Vector2(0, 3 * wb.CELL.y))

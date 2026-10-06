@@ -11,7 +11,7 @@ A pattern card holds a picture as paint, one drop for every stitch, laid out lik
 
 ## Design
 
-- The program, or input buffer, of the loom (DESIGN.md §4): the Jacquard loom's punched cards. Cards sit on the workshop's left edge, covering the first two cells of their rows (and as tall as their picture, so rows 1 to 5), so paint always enters on the left. A card is the loom cloth's counterpart (Path B, 2026-10-06): the machine turns the pictures on its cards into a result cloth, which hints at an image algebra without naming it.
+- The program, or input buffer, of the loom (DESIGN.md §4): the Jacquard loom's punched cards. Cards sit on the workshop's left edge, covering the first two cells of their rows (wider for a picture of more than 8 columns, and as tall as the picture, so rows 1 to 5; a picture is 4 to 12 columns by 1 to 9 rows, 8 by 6 by default), so paint always enters on the left. A card is the loom cloth's counterpart (Path B, 2026-10-06): the machine turns the pictures on its cards into a result cloth, which hints at an image algebra without naming it.
 - What a card shows decodes the level (designer, 2026-10-05, DESIGN.md §5.1): 4 to 10 drops per level, the fewest that fail every wrong machine within the two-star budget; the rest of the card is veiled, shown as empty slots (the picture's shape, never its colors).
 - A level with several cards names them A, B, C; the letter, not the row, orders an invention's input ports.
 
