@@ -189,13 +189,13 @@ The central visual and the late-campaign goal. Historical anchor: the **Jacquard
 
 **The pattern card's look: two paths, mutually exclusive** (designer, 2026-10-06, from the R3 playtest notes). The card is shown one way, so the paths are alternatives, not stages: choosing B retires A's strip-specific work.
 
-- **Shared by both (✅ decided, built whichever path wins):**
+- **Shared by both (✅ decided; not built yet, still open after Path B merged 2026-10-06):**
   - Card length 4 to 8 drops, 6 by default (was 4 to 10; touches `.\make cards`, `card_shows` and the solver's decoding checks).
   - The loom's shuttle stands before its next target and steps onto it on a successful stitch (it sits on the next slot today, as the 🟡 above says).
   - **Shuttle** joins the journal's Words and the lexicon.
   - A wrong machine still fails within `card_shows` stitches (§5.1): the solver's proof holds under both paths.
-- **Path A: improve the card as it is (✅ decided, with one open item).** The card stays a strip of its next `card_shows` drops that slides as it releases. The open item is the failed-run display: the card's look-back (built in WP2) shows the starting window or the window ending at the wrong drop, never both; the playtest asks for both. Any fix here (a faint second window, say) belongs to the strip and is thrown away if B is chosen, so it waits unless B is more than a release away.
-- **Path B: the card as the loom cloth's counterpart (🟡 built on branch `path-b-card-picture` (2026-10-06), awaiting the designer's verdict; if kept, Path A's strip work is retired).**
+- **Path A: improve the card as it is (retired 2026-10-06: Path B was built and chosen).** The card stays a strip of its next `card_shows` drops that slides as it releases. The open item is the failed-run display: the card's look-back (built in WP2) shows the starting window or the window ending at the wrong drop, never both; the playtest asks for both. Any fix here (a faint second window, say) belongs to the strip and is thrown away if B is chosen, so it waits unless B is more than a release away.
+- **Path B: the card as the loom cloth's counterpart (✅ built and merged 2026-10-06, designer chose it).**
   - *Narrative:* the level's machine converts the pattern pictures into a result cloth. This points at an image algebra (pictures in, an operator, a picture out) without ever naming it; player-facing text stays in paint and thread. The simulation already is that: stitch *i* depends only on each card's *i*-th drop.
   - *Look:* the card is a picture on the loom's grid, in the loom's raster order, so card cell *i* lines up with cloth cell *i*. The whole picture shows, glyphs and all, and cells already read fade (as woven stitches stay put). Decided 2026-10-06: the veil (only the next `card_shows` drops uncovered, the rest empty slots) went, because under the picture-card narrative it looked arbitrary and the player still has to find the operator; `card_shows` stays as the solver's decode depth (a wrong machine fails visibly within that many stitches), not something the player sees. The card gets its own shuttle and cursor, standing before its next drop.
   - *Failed run:* the read trail and the ringed drop show where the run stopped, which replaces the look-back and answers the playtest note by itself.
