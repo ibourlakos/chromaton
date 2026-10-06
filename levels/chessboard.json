@@ -1,0 +1,94 @@
+{
+	"id": "chessboard",
+	"name": "The Chessboard",
+	"cloth": "The Chessboard",
+	"machine": "Flip, Then Sieve",
+	"goal": "Weave the chessboard.",
+	"hint": "On the black squares card A is black and card B is bare. On the white squares the two agree. Flip card B to its opposite, then sieve it with card A.",
+	"pieces": [
+		"filter",
+		"invert"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 3,
+		"best": 2
+	},
+	"target": [
+		"KWKWKWKWKWKW",
+		"WKWKWKWKWKWK",
+		"KWKWKWKWKWKW",
+		"WKWKWKWKWKWK",
+		"KWKWKWKWKWKW",
+		"WKWKWKWKWKWK",
+		"KWKWKWKWKWKW",
+		"WKWKWKWKWKWK",
+		"KWKWKWKWKWKW"
+	],
+	"card_rule": "bleach",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"KBKBKRKYKWKW",
+				"WKWKWKRKPKYK",
+				"KYKBKBKWKRKR",
+				"WKYKGKGKWKWK",
+				"KWKWKRKYKWKR",
+				"BKPKWKPKPKYK",
+				"KYKGKWKWKWKW",
+				"PKGKOKRKYKRK",
+				"KYKKKOKWKRKG"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"WPWGWKWOWKWO",
+				"RWYWYWPWPWKW",
+				"WGWGWGWPWOWO",
+				"GWGWGWGWYWKW",
+				"WKWRWOWKWRWO",
+				"BWPWYWPWPWOW",
+				"WOWGWGWBWPWY",
+				"KWGWKWRWGWRW",
+				"WGWKWKWRWRWG"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "ib",
+				"kind": "invert",
+				"x": 4,
+				"y": 5
+			},
+			{
+				"id": "f",
+				"kind": "filter",
+				"x": 7,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"f.0"
+			],
+			[
+				"card1",
+				"ib"
+			],
+			[
+				"ib",
+				"f.1"
+			],
+			[
+				"f",
+				"loom"
+			]
+		]
+	},
+	"card_shows": 4
+}

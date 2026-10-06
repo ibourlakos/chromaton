@@ -91,11 +91,37 @@ func _ready() -> void:
 ## The first screen after the intro: the level asked for, or the level select.
 func _start() -> void:
 	select_page = _first_open_chapter()
-	var start := _level_index(str(_args().get("level", "")))
+	var wanted := str(_args().get("level", ""))
+	var start := _level_index(wanted)
+	var lost = _lost_level(wanted)
 	if start >= 0:
 		open_level(start)
+	elif lost != null:
+		open_lost(lost)
 	else:
 		show_level_select()
+
+
+## A Lost Level by id (they are in no chapter, so only the command line
+## reaches them), or null.
+func _lost_level(id: String):
+	for level in Level.load_lost():
+		if level.id == id:
+			return level
+	return null
+
+
+## Plays a Lost Level on its own: no next level, back to the level select.
+func open_lost(level) -> void:
+	var w = Workbench.new()
+	w.setup(level, progress, false, levels)
+	w.exit_requested.connect(func():
+		_save()
+		show_level_select())
+	w.progress_changed.connect(func(): _save())
+	_set_screen(w)
+	if not progress.is_solved(level.id):
+		w.show_note()
 
 
 ## Plays as this profile: its save file, loaded (only what still fits the
