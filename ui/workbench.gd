@@ -1330,8 +1330,8 @@ func _book_button_pos() -> Vector2:
 #   shelf     the tray and its slots (one lit while its piece is carried), trash
 #   tray      the pieces in the tray, their names and keys
 #   aim       the cell a dragged or carried piece would land on
-#   cards     the pattern cards
-#   paints    the colors coming up on them (they slide as a card releases)
+#   cards     the pattern cards, their pictures in full
+#   paints    what moves on them: the drops read (faded), the shuttle (it slides as a card releases)
 #   wiring    tubes, a selected piece's lit cell, the pipes into pieces
 #   loom      the cloth and its stitches, the status under it
 #   critters  the pieces: they're alive, drawn every frame
@@ -1665,12 +1665,12 @@ func _draw_aim() -> void:
 
 func _draw_cards() -> void:
 	for c in level.cards.size():
-		K.card_body(cards_layer, node_center(machine.find_kind(Pieces.CARD, c)), level.card_names[c], level.cols, level.rows)
+		K.card_body(cards_layer, node_center(machine.find_kind(Pieces.CARD, c)), level.card_names[c], level.cols, level.rows, level.cards[c])
 
 
-## What the paints layer shows: each card's picture, read up to its cursor
-## and uncovered a few drops past it, and how far its shuttle has slid since
-## the card released one.
+## What the paints layer shows over the cards' pictures: how far each is read
+## (its cursor), how far its shuttle has slid since the card released a drop,
+## and the drop that wove a wrong stitch.
 func _card_paints_look() -> Array:
 	var look := [bench_gen, _cards_look(), outcome, sim.wrong_index]
 	for id in machine.nodes:
@@ -1689,7 +1689,7 @@ func _draw_card_paints() -> void:
 		if n["kind"] != Pieces.CARD:
 			continue
 		var c: int = n["card"]
-		K.card_paints(paints_layer, node_center(id), level.cols, level.rows, level.cards[c], sim.card_cursor[c], level.card_shows, _age(id), ringed)
+		K.card_paints(paints_layer, node_center(id), level.cols, level.rows, sim.card_cursor[c], _age(id), ringed)
 
 
 ## The wiring layer: tubes, a selected piece's lit cell, and the pipes into

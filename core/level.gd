@@ -17,8 +17,9 @@
 ## level holds back; see _lay_trays), optional waits_for (invention ids the
 ## level can't be built without: it stays locked until the player owns them,
 ## proven by tools/level_solver.gd), target (rows), cards ([{name, colors:
-## rows}]), card_shows (how many drops a card shows at the start, 4 to 10:
-## enough to work the rule out; written by tools/make_cards.gd, checked by
+## rows}]), card_shows (how many stitches a wrong machine may weave before it
+## fails visibly, 4 to 10; the player sees the whole card; written by
+## tools/make_cards.gd, checked by
 ## the solver), optional card_shows_min (a level asking for more, for looks),
 ## stars {budget, best}, optional invention {id, name, check, in_text} on
 ## invention levels (in_text: the name inside a sentence, "the Third Paint"),
@@ -39,8 +40,8 @@ const Invention = preload("res://core/invention.gd")
 
 const LETTERS := "WRYOBPGK"
 const INDEX_PATH := "res://levels/index.json"
-## How many coming drops a pattern card may show: each level's card_shows
-## lies between these.
+## How many stitches a wrong machine may take to fail (a level's card_shows,
+## its decode depth): between these.
 const CARD_SHOWS_MIN := 4
 const CARD_SHOWS_MAX := 10
 ## A pattern card's picture is 8 columns by 6 rows by default (4:3, like the
@@ -68,7 +69,7 @@ var rows := 0
 var target := PackedByteArray()
 var cards: Array = []
 var card_names: Array = []
-var card_shows := 0  # how many coming drops each card shows (0 without cards)
+var card_shows := 0  # stitches a wrong machine may weave before it fails visibly: the decode depth (0 without cards)
 var pieces: Array = []  # the kinds this level offers
 var tray: Array = []  # the tray's piece kinds in order, offered or locked (see _lay_trays)
 var inventions: Array = []

@@ -973,48 +973,40 @@ static func _card_origin(c: Vector2, cols: int, rows: int) -> Vector2:
 	return c + Vector2(-cols * cs / 2, r.position.y + 14)
 
 
-## A punched pattern card with every cell veiled, a sunken slot like the
-## loom's unwoven ones (card_paints uncovers them): it never changes, so it
-## can be drawn once.
-static func card_body(ci: CanvasItem, c: Vector2, name: String, cols: int, rows: int) -> void:
+## A punched pattern card with its whole picture on it, every drop in its
+## paint with glyphs (the player sees the pictures the machine turns into a
+## cloth: DESIGN.md 4). It changes only when the card moves, so it can be
+## drawn once; card_paints draws what moves over it.
+static func card_body(ci: CanvasItem, c: Vector2, name: String, cols: int, rows: int, colors: PackedByteArray) -> void:
 	var r := card_rect(cols, rows)
 	r.position += c
 	fill(ci, round_rect(Rect2(r.position + Vector2(3, 4), r.size), 8), P.SHADOW)
 	shape(ci, round_rect(r, 8), P.TAG, P.INK, 2)
 	var cs := card_cell(cols, rows)
 	var o := _card_origin(c, cols, rows)
-	for i in cols * rows:
-		var cell := Rect2(o + Vector2((i % cols) * cs, (i / cols) * cs), Vector2(cs, cs))
-		fill(ci, round_rect(cell.grow(-cs * 0.1), cs * 0.2, 2), Color(P.HOOP, 0.28))
+	for i in mini(cols * rows, colors.size()):
+		swatch(ci, o + Vector2((i % cols + 0.5) * cs, (i / cols + 0.5) * cs), cs * 0.5 - 1.0, colors[i])
 	# name tab
 	var tab := Vector2(r.position.x + 16, r.position.y + 1)  # on the top edge, clear of the picture
 	shape(ci, ellipse(tab, 9, 9, 0, 20), P.WOOD_LT, P.INK, 2)
 	text(ci, P.display(600), tab + Vector2(0, 0.5), name, 13, P.INK)
 
 
-## A card's drops on its picture: the ones read already (`cursor` of them),
-## dimmed under a paper tint like the loom's woven stitches stay put, and the
-## `shows` coming up, uncovered, with their glyphs; the rest stay veiled. A
-## small shuttle stands before the next drop, never on it, and slides on as
-## the card releases one (`age` 0 to 1). After a wrong stitch the card stays
-## as it was, the drop that wove it (`ringed`) ringed in ink and no shuttle.
-static func card_paints(ci: CanvasItem, c: Vector2, cols: int, rows: int, colors: PackedByteArray, cursor: int, shows: int, age := 1.0, ringed := -1) -> void:
+## What moves on a card's picture: the drops read already (`cursor` of them)
+## fade under a paper tint, as the loom's woven stitches stay put, and a small
+## shuttle stands before the next drop, never on it, and slides on as the
+## card releases one (`age` 0 to 1). After a wrong stitch the card stays as
+## it was, the drop that wove it (`ringed`) ringed in ink and no shuttle.
+static func card_paints(ci: CanvasItem, c: Vector2, cols: int, rows: int, cursor: int, age := 1.0, ringed := -1) -> void:
 	var cs := card_cell(cols, rows)
 	var o := _card_origin(c, cols, rows)
 	var radius := cs * 0.5 - 1.0
-	# The trail is a plain muted disc while the card runs (a redraw each tick,
-	# and up to a picture's worth of them); glyphs come back once it stops.
-	for i in mini(cursor + shows, colors.size()):
-		var p := o + Vector2((i % cols + 0.5) * cs, (i / cols + 0.5) * cs)
-		if i < cursor and ringed < 0:
-			disc(ci, p, radius * 0.8, Color(P.SIG[colors[i]], 0.45))
-			continue
-		swatch(ci, p, radius, colors[i])
-		if i < cursor:
-			disc(ci, p, radius + 0.5, Color(P.TAG, 0.55))
-		if i == ringed:
-			ring(ci, p, radius + 3.0, P.INK, 2.0)
-	if ringed >= 0 or cursor >= colors.size():
+	for i in mini(cursor, cols * rows):
+		disc(ci, o + Vector2((i % cols + 0.5) * cs, (i / cols + 0.5) * cs), radius + 0.5, Color(P.TAG, 0.55))
+	if ringed >= 0:
+		ring(ci, o + Vector2((ringed % cols + 0.5) * cs, (ringed / cols + 0.5) * cs), radius + 3.0, P.INK, 2.0)
+		return
+	if cursor >= cols * rows:
 		return
 	var to := _card_stop(o, cols, cs, cursor)
 	var from := to
