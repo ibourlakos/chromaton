@@ -109,6 +109,8 @@ var running := false
 var phase := 1.0
 var speed := Keys.speed  # kept across levels (keys.gd's settings file)
 var clock := 0.0
+var clear_armed_at := -99.0  # when the trash was tapped once (clear all asks first)
+const CLEAR_ARMED_SECONDS := 3.0
 var frozen := false  # screenshot mode: hold the current frame still
 var placed_at := {}  # node id -> clock when it landed on a cell (for the bounce)
 var landed_at := -9.0  # clock when the last stitch landed (for the puff)
@@ -593,6 +595,32 @@ func _edited() -> void:
 	progress.store_machine(level.id, machine.to_dict())
 
 
+## True while the bench holds a placed piece or a tube.
+func _has_parts() -> bool:
+	return not machine.tubes.is_empty() or machine.nodes.keys().any(func(id): return not machine.is_fixed(id))
+
+
+## The trash asks before clearing: a tap arms it for a few seconds.
+func _clear_armed() -> bool:
+	return clock - clear_armed_at < CLEAR_ARMED_SECONDS
+
+
+## Clears the bench for a fresh start: every placed piece and tube goes, the
+## cards and the loom stay. Undo brings it all back.
+func _clear_all() -> void:
+	clear_armed_at = -99.0
+	if not _has_parts():
+		return
+	_push_undo()
+	for id in machine.nodes.keys():
+		if not machine.is_fixed(id):
+			machine.remove_node(id)
+	machine.tubes = []
+	carrying = -1
+	_edited()
+	_sync_buttons()
+
+
 func _push_undo() -> void:
 	undo_stack.append(machine.to_dict())
 	if undo_stack.size() > 200:
@@ -1051,6 +1079,12 @@ func _press(pos: Vector2) -> void:
 	if PEEK.has_point(pos):
 		_peek()
 		return
+	if TRASH.has_point(pos) and carrying < 0:  # a tap asks, a second tap clears the bench
+		if _clear_armed():
+			_clear_all()
+		elif _has_parts():
+			clear_armed_at = clock
+		return
 	selected_piece = -1
 	for i in tray.size():
 		if _slot_live(i) and tray[i]["rect"].has_point(pos):
@@ -1299,22 +1333,36 @@ func _tube_at(pos: Vector2) -> int:
 
 ## Where the selection's delete button floats: above a piece (below one in the
 ## top row), or above the middle of a tube.
+## The delete and book buttons sit in a cross around the selection, far
+## enough apart that a tap can't miss one for the other: the book north, the
+## delete button south. Where the bench ends, that arm turns east.
 func _delete_button_pos() -> Vector2:
-	if selected_piece >= 0:
-		var below: bool = machine.nodes[selected_piece]["y"] == 0
-		return node_center(selected_piece) + Vector2(0, 52 if below else -52)
-	return K.along(tube_points(selected_tube), 0.5) + Vector2(0, -30)
+	var c := _selection_center()
+	var off := 52.0 if selected_piece >= 0 else 32.0
+	if c.y + off + 24 > BENCH.end.y:
+		return c + Vector2(off + 4, 0)
+	return c + Vector2(0, off)
 
 
-## The book button beside the delete button: a tap opens the selection's
-## journal page, as the journal by the trash does. A card, which has no
-## delete button, shows it alone in that place.
+## The book button: a tap opens the selection's journal page, as the journal
+## by the trash does. A card, which has no delete button, shows it alone,
+## clear of its body.
 func _book_button_pos() -> Vector2:
 	if _card_selected():
 		var below := _card_row(int(machine.nodes[selected_piece]["card"])) == 0
 		var off := _card_rect(selected_piece).size.y / 2.0 + 26.0  # clear of the body
 		return node_center(selected_piece) + Vector2(0, off if below else -off)
-	return _delete_button_pos() + Vector2(50, 0)
+	var c := _selection_center()
+	var off := 52.0 if selected_piece >= 0 else 32.0
+	if c.y - off - 22 < BENCH.position.y:
+		return c + Vector2(off + 4, 0)
+	return c + Vector2(0, -off)
+
+
+func _selection_center() -> Vector2:
+	if selected_piece >= 0:
+		return node_center(selected_piece)
+	return K.along(tube_points(selected_tube), 0.5)
 
 
 # ---------------------------------------------------------------------------
@@ -1351,7 +1399,7 @@ func _refresh_layers() -> void:
 	if still == null:
 		return
 	still.show_look(_still_look())
-	shelf.show_look([carrying, fan_open, _trash_lit(), _peek_lit()])
+	shelf.show_look([carrying, fan_open, _trash_lit(), _peek_lit(), _clear_armed()])
 	tray_layer.show_look([level, tray.size()])
 	aim_layer.show_look([_aim_cell(), bench_gen, drag, drag_node])
 	cards_layer.show_look([level, _cards_look()])
@@ -1526,7 +1574,8 @@ func _draw_still() -> void:
 	for gx in COLS + 1:
 		for gy in ROWS + 1:
 			still.draw_circle(GRID_ORIGIN + Vector2(gx * CELL.x, gy * CELL.y), 2, Color(P.INK, 0.12))
-	K.design(still, Rect2(SIDE.position.x + 20, SIDE.position.y + 4, SIDE.size.x - 40, 136), level.cols, level.target)
+	# The design card, small: the loom below shows the same picture, faintly.
+	K.design(still, Rect2(SIDE.position.x + 20, SIDE.position.y + 8, SIDE.size.x - 40, 84), level.cols, level.target)
 
 
 func _draw_frame(ci: CanvasItem) -> void:
@@ -1601,8 +1650,11 @@ func _draw_shelf() -> void:
 		else:
 			K.shape(shelf, K.round_rect(r, 10), P.TAG, Color(P.INK, 0.5), 1.5)
 	var lit := _trash_lit()
-	K.shape(shelf, K.round_rect(TRASH, 12), Color(P.HOOP, 0.35) if lit else Color(P.PAPER, 0.8), Color(P.INK, 0.45), 2)
-	K.icon(shelf, "trash", TRASH.get_center(), 1.5 if lit else 1.3, Color(P.INK, 0.9 if lit else 0.5))
+	var armed := _clear_armed()
+	K.shape(shelf, K.round_rect(TRASH, 12), Color(P.HOOP, 0.35) if lit or armed else Color(P.PAPER, 0.8), Color(P.INK, 0.6 if armed else 0.45), 2.5 if armed else 2)
+	K.icon(shelf, "trash", TRASH.get_center() + Vector2(0, -10), 1.5 if lit else 1.3, Color(P.INK, 0.9 if lit or armed else 0.5))
+	var label := "Tap again" if armed else "Clear all"
+	K.text(shelf, P.ui(700), Vector2(TRASH.get_center().x, TRASH.end.y - 18), label, 13, Color(P.INK_SOFT, 1.0 if armed else 0.7))
 	var peek := _peek_lit()
 	K.shape(shelf, K.round_rect(PEEK, 12), Color(P.HOOP, 0.3) if peek else Color(P.PAPER, 0.8), Color(P.INK, 0.6 if peek else 0.45), 2.5 if peek else 2)
 	K.icon(shelf, "book", PEEK.get_center() + Vector2(0, -10), 1.6 if peek else 1.4, Color(P.INK, 0.9 if peek else 0.55))
@@ -1768,7 +1820,8 @@ func _draw_delete_button() -> void:
 	K.fill(self, K.ellipse(k + Vector2(0, 3), 20, 20), P.SHADOW)
 	K.shape(self, K.ellipse(k, 20, 20), P.TAG, P.INK, 2.5)
 	K.icon(self, "book", k, 0.9, P.INK)
-	Keys.cap(self, k + Vector2(0, 22), Keys.label("peek"))
+	var north := not _card_selected() and k.y < _selection_center().y  # its key cap clear of the piece
+	Keys.cap(self, k + Vector2(0, -22 if north else 22), Keys.label("peek"))
 
 
 ## Glass pipes into a piece's left side, wooden spouts out of its right side.
@@ -1864,26 +1917,33 @@ func _draw_loom_motion() -> void:
 	_draw_stitch_puff()
 
 
-## The pieces bar: one slot per piece placed, so it reads as progress, not a
-## limit. Markers stand after the three-star count (stars to its left) and the
-## two-star count (stars to its right); they light while the bench is within.
-## Room for two pieces past two stars; beyond that the bar stays full.
+## The pieces bar: it fills as pieces are placed, so it reads as progress, not
+## a limit. One line divides it, after the three-star count: three stars over
+## the part before it, two over the part up to the two-star count; they light
+## while the bench is within. Past two stars the bar goes on, paler, with room
+## for two more pieces, and it stretches for a bench that holds more.
 func _draw_piece_bar(ci: CanvasItem, bar: Rect2, pieces: int) -> void:
 	K.icon(ci, "pieces", Vector2(bar.position.x - 20, bar.get_center().y), 1.0, P.INK)
-	var slots: int = level.budget + 2
-	var w := bar.size.x / slots
-	for s in slots:
-		var cell := Rect2(bar.position.x + s * w + 1.5, bar.position.y, w - 3, bar.size.y)
-		K.shape(ci, K.round_rect(cell, 5), P.WOOD if s < pieces else P.PAPER_DK, Color(P.INK, 0.6 if s < pieces else 0.3), 1.5)
-	var marks := [[3, level.best]]
+	var span: int = maxi(level.budget + 2, pieces + 1)
+	var w := bar.size.x / span
+	var two := Rect2(bar.position, Vector2(level.budget * w, bar.size.y))
+	var past := Rect2(Vector2(two.end.x, bar.position.y), Vector2(bar.end.x - two.end.x, bar.size.y))
+	K.fill(ci, K.round_rect(past, 6), Color(P.PAPER_DK, 0.5))
+	K.dashed(ci, K.closed(K.round_rect(past, 6)), Color(P.INK, 0.25), 1.5, 5, 4)
+	K.fill(ci, K.round_rect(two, 6), P.PAPER_DK)
+	if pieces > 0:
+		var fill := Rect2(bar.position, Vector2(minf(pieces, span) * w, bar.size.y))
+		K.fill(ci, K.round_rect(fill, 6), P.WOOD if pieces <= level.budget else Color(P.WOOD, 0.55))
+	K.stroke(ci, K.round_rect(two, 6), Color(P.INK, 0.6), 1.5)
+	var x: float = bar.position.x + level.best * w
+	K.line(ci, Vector2(x, bar.position.y - 28), Vector2(x, bar.end.y + 4), P.INK, 2)
+	var right := maxf(x - 12, bar.position.x + 4)  # a stretched bar keeps them over the column
+	for s in 3:
+		K.star(ci, Vector2(right - s * 17, bar.position.y - 16), 8, pieces > 0 and pieces <= level.best)
 	if level.budget != level.best:
-		marks.append([2, level.budget])
-	for m in marks:
-		var x: float = bar.position.x + m[1] * w
-		K.line(ci, Vector2(x, bar.position.y - 28), Vector2(x, bar.end.y + 4), P.INK, 2)
-		var side := -1.0 if m[0] == 3 else 1.0
-		for s in m[0]:
-			K.star(ci, Vector2(x + side * (12 + s * 17), bar.position.y - 16), 8, pieces > 0 and pieces <= m[1])
+		var mid := (x + two.end.x) / 2.0
+		for s in 2:
+			K.star(ci, Vector2(mid + (s - 0.5) * 17, bar.position.y - 16), 8, pieces > 0 and pieces <= level.budget)
 
 
 func _draw_status(ci: CanvasItem) -> void:

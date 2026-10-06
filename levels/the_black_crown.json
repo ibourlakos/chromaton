@@ -1,0 +1,82 @@
+{
+	"id": "the_black_crown",
+	"name": "The Black Crown",
+	"cloth": "The Black Crown",
+	"machine": "Only the Blue Flipped",
+	"goal": "Weave the black crown.",
+	"hint": "The crown's twin, in the looking glass: the card is the black crown with every paint's blue flipped. Same Paint keeps what agrees, so ask it about the card and an orange pot, which holds everything but blue.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"filter",
+		"invert",
+		"split"
+	],
+	"inventions": [
+		"missing_from_either",
+		"same_paint"
+	],
+	"stars": {
+		"budget": 6,
+		"best": 4
+	},
+	"target": [
+		"BBOOBBOO",
+		"BKOKKBKO",
+		"OKKKKKKB",
+		"OKKGGKKB",
+		"BKKKKKKO",
+		"BBOOBBOO",
+		"OOBBOOBB",
+		"OOBBOOBB"
+	],
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"WWKKWWKK",
+				"WOKOOWOK",
+				"KOOOOOOW",
+				"KOOYYOOW",
+				"WOOOOOOK",
+				"WWKKWWKK",
+				"KKWWKKWW",
+				"KKWWKKWW"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "o",
+				"kind": "invention",
+				"invention": "pot_orange",
+				"x": 3,
+				"y": 5
+			},
+			{
+				"id": "x",
+				"kind": "invention",
+				"invention": "same_paint",
+				"x": 6,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"x.0"
+			],
+			[
+				"o",
+				"x.1"
+			],
+			[
+				"x",
+				"loom"
+			]
+		]
+	},
+	"card_shows": 10
+}

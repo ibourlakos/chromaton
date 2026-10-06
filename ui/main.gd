@@ -6,7 +6,8 @@
 ##   --screenshot=<id>:<path>    load a level's reference solution, run it,
 ##                               save a PNG and quit. <id> may also be
 ##                               "levels", "journal" (or "book"), "options",
-##                               "profiles" (--add: a new one)
+##                               "profiles" (--add: a new one, --edit:
+##                               the one playing)
 ##                               or "intro".
 ##   --tab=<id>                  the journal's tab (paint, loom, pieces,
 ##                               inventions, cloths, scores, words)
@@ -270,6 +271,11 @@ func show_profiles() -> void:
 	pk.setup(profiles)
 	pk.chosen.connect(_switch_profile)
 	pk.added.connect(func(badge, name): _switch_profile(profiles.add(badge, name)))
+	pk.edited.connect(func(id, badge, name):
+		profiles.edit(id, badge, name)
+		if not throwaway:
+			profiles.save()
+		show_profiles())
 	pk.back.connect(show_level_select)
 	_set_screen(pk)
 
@@ -338,6 +344,8 @@ func _screenshot(args: Dictionary) -> void:
 			if args.has("add"):
 				screen.adding = true
 				screen._build()
+			elif args.has("edit"):
+				screen.edit(profiles.current)
 		"levels":
 			for k in 6:
 				progress.record_solve(levels[k].id, levels[k].best + (k % 2), 40 + k, 3 - (k % 2))

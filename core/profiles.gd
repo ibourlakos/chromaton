@@ -61,6 +61,14 @@ func add(badge: String, name := "") -> int:
 	return id
 
 
+## Gives a profile another badge and name ("" for the critter's).
+func edit(id: int, badge: String, name := "") -> void:
+	var e := find(id)
+	if not e.is_empty():
+		e["badge"] = badge if badge in BADGES else "mix"
+		e["name"] = name.strip_edges()
+
+
 ## The profile's save file: the first keeps the save from before profiles.
 static func save_path(id: int) -> String:
 	return Progress.PATH if id == 1 else "user://chromaton_save_%d.json" % id

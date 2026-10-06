@@ -5,55 +5,6 @@
 	"machine": "A Flip Pan, Rebuilt",
 	"goal": "Weave the rook, and build a Flip Pan from Third Paints.",
 	"hint": "What neither of two same paints has is that paint's opposite. Split the card and give the Third Paint the same paint twice.",
-	"steps": [
-		{
-			"line": "Your Third Paint is a piece now, on the shelf.",
-			"do": []
-		},
-		{
-			"line": "Like any piece: paints in on the left, one out on the right.",
-			"do": [
-				[
-					"place",
-					"t"
-				]
-			]
-		},
-		{
-			"line": "Split the card and give it the same paint twice.",
-			"do": [
-				[
-					"place",
-					"s"
-				],
-				[
-					"tube",
-					"card0",
-					"s"
-				],
-				[
-					"tube",
-					"s",
-					"t"
-				],
-				[
-					"tube",
-					"s",
-					"t"
-				]
-			]
-		},
-		{
-			"line": "To the loom: every paint flipped, with no Flip Pan.",
-			"do": [
-				[
-					"tube",
-					"t",
-					"loom"
-				]
-			]
-		}
-	],
 	"pieces": [
 		"split"
 	],

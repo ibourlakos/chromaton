@@ -1,0 +1,71 @@
+{
+	"id": "little_black_board",
+	"name": "The Little Black Board",
+	"cloth": "The Little Black Board",
+	"machine": "Stripes Agreeing",
+	"goal": "Weave the little black chessboard.",
+	"hint": "The little board's twin, in the looking glass: where a row's paint and a column's paint agree, the board turns dark. Give Same Paint both cards and tube it to the loom.",
+	"pieces": [],
+	"inventions": [
+		"same_paint"
+	],
+	"stars": {
+		"budget": 4,
+		"best": 3
+	},
+	"target": [
+		"GWKW",
+		"WKWK",
+		"KWKW",
+		"WKWG"
+	],
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"PBBB",
+				"OOOO",
+				"BBBB",
+				"OOOY"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"BOBO",
+				"BOBO",
+				"BOBO",
+				"BOBO"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "x",
+				"kind": "invention",
+				"invention": "same_paint",
+				"x": 5,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"x.0"
+			],
+			[
+				"card1",
+				"x.1"
+			],
+			[
+				"x",
+				"loom"
+			]
+		]
+	},
+	"waits_for": [
+		"same_paint"
+	],
+	"card_shows": 4
+}

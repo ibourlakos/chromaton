@@ -147,26 +147,41 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The new chapters 1
 - **Goal:** Weave the pawn.
 - **Hint:** Any two paints leave out a third, the one neither has. Mix the two cards, then flip the mix.
 
-### 26 ★ The Rook · A Flip Pan, Rebuilt (`neither_twice`)
+### 26 ★ *Two Pawns · What Neither Has* (`two_pawns`, new 2026-10-06, showcase)
+- **Goal:** Weave the two pawns.
+- **Hint:** Two pawns stand side by side, in the paint neither card has. Give your Third Paint both cards and tube it to the loom: one piece does what a Mixing Tub and a Flip Pan did.
+- **Steps:** 1. "Your Third Paint is a piece now, on the shelf." (its slot lights) 2. "Like any piece: paints in on the left, one out on the right." (the Third Paint in) 3. "Give it both cards." (two tubes) 4. "To the loom: what neither card has, in one piece."
+- Notes: the showcase after The Pawn (playtest R3); the first invention used as a piece is guided here now, so The Rook is no longer guided. Waits for the Third Paint.
+
+### 27 The Rook · A Flip Pan, Rebuilt (`neither_twice`)
 - **Goal:** Weave the rook, and build a Flip Pan from Third Paints.
 - **Hint:** What neither of two same paints has is that paint's opposite. Split the card and give the Third Paint the same paint twice.
-- **Steps:** 1. "Your Third Paint is a piece now, on the shelf." (its slot lights) 2. "Like any piece: paints in on the left, one out on the right." (the Third Paint in) 3. "Split the card and give it the same paint twice." (Split, two tubes) 4. "To the loom: every paint flipped, with no Flip Pan."
-- Notes: the goal and the title now say it rebuilds Invert (designer's note). Guided: the first invention used as a piece (DESIGN.md §5.7; steps decided 2026-10-05).
+- Notes: the goal and the title now say it rebuilds Invert (designer's note). No longer guided since 2026-10-06: its steps (the first invention used as a piece) moved to Two Pawns.
 
-### 27 The Knight · A Mixing Tub, Rebuilt (`back_to_mix`)
+### 28 The Knight · A Mixing Tub, Rebuilt (`back_to_mix`)
 - **Goal:** Weave the knight, and build a Mixing Tub from Third Paints.
 - **Hint:** Flip what neither card has and you get what either has. Ask a Third Paint what neither card has, then flip its answer with a second Third Paint.
 
-### 28 The Bishop · A Sieve, Rebuilt (`keep_what_they_share`)
+### 29 The Bishop · A Sieve, Rebuilt (`keep_what_they_share`)
 - **Goal:** Weave the bishop, and build a Sieve.
 - **Hint:** What two paints share is what neither of their opposites has. Flip both cards, then ask the Third Paint.
 
-### 29 The Queen · Extreme Mix (`either_not_both`, invention)
+### 30 The Queen · Extreme Mix (`either_not_both`, invention)
 - **Goal:** Weave the queen.
 - **Hint:** The queen wears only the paint that comes from one card alone. Mix the cards, then sieve the mix with the opposite of what they share.
 - Notes: the invention's player name is **Extreme Mix** (designer, 2026-10-05; the title was "Either, Not Both"); Contrast stays its internal name. ★★★ with the discount is `Third Paint(Third Paint(A, B), Sieve(A, B))`; the hint describes the clearer ★★ route (4) on purpose; at the rebuild, `.make solve` must keep its ★★ budget at 4 or more.
 
-### 30 The King · Same Paint (`only_third_paint`)
+### 31 *The Little Board · Stripes Crossed* (`little_board`, new 2026-10-06, showcase)
+- **Goal:** Weave the little chessboard.
+- **Hint:** Where a row's paint and a column's paint differ, the board turns dark. Give Extreme Mix both cards and tube it to the loom.
+- Notes: a 4×4 board; card A is row stripes, card B column stripes, blue and orange, with two corner stitches that come out red. Extreme Mix costs 2, so ★★★ is 2. Waits for Extreme Mix.
+
+### 32 *The Crown · Only the Blue Flipped* (`the_crown`, new 2026-10-06)
+- **Goal:** Weave the crown.
+- **Hint:** The card is the crown by night, every paint's blue flipped: added where it was missing, taken away where it was. Ask Extreme Mix about the card and a pot of blue.
+- Notes: one card; ★★★ 3 (Extreme Mix 2 and the blue pot 1).
+
+### 33 The King · Same Paint (`only_third_paint`)
 - **Goal:** Weave the king using only Third Paints.
 - **Hint:** The king wears paint where the cards agree: both have it, or both lack it. Find what only card A has and what only card B has, then ask a Third Paint what neither of those has. (To find what only B has: ask a Third Paint of card A and of what neither card has.)
 - Notes: designer's title. No longer an invention level (two per chapter). Three sentences; the panel has room.
@@ -175,31 +190,46 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The new chapters 1
 
 ## Chapter 4, The Looking Glass
 
-### 31 The Black Pawn · Missing From Either (`missing_from_either`, invention)
+### 34 The Black Pawn · Missing From Either (`missing_from_either`, invention)
 - **Goal:** Weave the black pawn.
 - **Hint:** In the looking glass, mixing turns to sieving and black turns to white. Sieve the two cards, then flip what they share.
 
-### 32 The Black Rook · A Flip Pan, Rebuilt (`missing_twice`)
+### 35 *Two Black Pawns · What They Don't Both Have* (`two_black_pawns`, new 2026-10-06, showcase)
+- **Goal:** Weave the two black pawns.
+- **Hint:** Two black pawns stand side by side, in the paint the cards don't both have. Give Missing From Either both cards and tube it to the loom: one piece does what a Sieve and a Flip Pan did.
+- Notes: Two Pawns' twin; not guided (The Black Rook isn't either). Waits for Missing From Either.
+
+### 36 The Black Rook · A Flip Pan, Rebuilt (`missing_twice`)
 - **Goal:** Weave the black rook, and build a Flip Pan from Missing From Either.
 - **Hint:** The rook's twin, in the looking glass. Split the card and give Missing From Either the same paint twice.
 
-### 33 The Black Knight · A Sieve, Rebuilt (`back_to_filter`)
+### 37 The Black Knight · A Sieve, Rebuilt (`back_to_filter`)
 - **Goal:** Weave the black knight, and build a Sieve from Missing From Either.
 - **Hint:** Flip what the cards don't both have and you get what they share. Ask Missing From Either, then flip its answer with a second one.
 
-### 34 The Black Bishop · A Mixing Tub, Rebuilt (`mix_without_mix`)
+### 38 The Black Bishop · A Mixing Tub, Rebuilt (`mix_without_mix`)
 - **Goal:** Weave the black bishop, and build a Mixing Tub.
 - **Hint:** What either paint has is what their opposites don't both have. Flip both cards, then ask Missing From Either.
 
-### 35 The Black Queen · Same Paint (`same_paint`, invention)
+### 39 The Black Queen · Same Paint (`same_paint`, invention)
 - **Goal:** Weave the black queen.
 - **Hint:** In the looking glass, the queen wears paint where the cards agree. Mix what the cards share with the opposite of their mix.
 - Notes: now the level that invents Same Paint.
 
-### 36 The Black King · Extreme Mix (`only_missing`)
+### 40 *The Little Black Board · Stripes Agreeing* (`little_black_board`, new 2026-10-06, showcase)
+- **Goal:** Weave the little black chessboard.
+- **Hint:** The little board's twin, in the looking glass: where a row's paint and a column's paint agree, the board turns dark. Give Same Paint both cards and tube it to the loom.
+- Notes: the same two cards as The Little Board; the corners come out green. Same Paint costs 3, so ★★★ is 3. Waits for Same Paint.
+
+### 41 *The Black Crown · Only the Blue Flipped* (`the_black_crown`, new 2026-10-06)
+- **Goal:** Weave the black crown.
+- **Hint:** The crown's twin, in the looking glass: the card is the black crown with every paint's blue flipped. Same Paint keeps what agrees, so ask it about the card and an orange pot, which holds everything but blue.
+- Notes: ★★★ 4 (Same Paint 3 and the orange pot 1; the solver also finds a 4 with Missing From Either).
+
+### 42 The Black King · Extreme Mix (`only_missing`)
 - **Goal:** Weave the black king using only Missing From Either.
 - **Hint:** The king's twin wears paint from one card alone. Ask Missing From Either of the two cards, then of each card with that answer, then of the two answers.
-- Notes: machine phrase as level 29's (Extreme Mix, the invention it rebuilds), the king and queen trading rules across the looking glass, as the levels already do.
+- Notes: machine phrase as level 30's (Extreme Mix, the invention it rebuilds), the king and queen trading rules across the looking glass, as the levels already do.
 
 ---
 

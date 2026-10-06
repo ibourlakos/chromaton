@@ -32,6 +32,14 @@ static func is_unlocked(word: Dictionary, progress) -> bool:
 	return progress.unlock_all or progress.is_solved(str(word["level"]))
 
 
+## The words as the journal lists them: those found so far in lexical order,
+## then the ones still to find, in unlock order.
+static func in_order(progress) -> Array:
+	var found := load_all().filter(func(w): return is_unlocked(w, progress))
+	found.sort_custom(func(a, b): return str(a["word"]).naturalnocasecmp_to(str(b["word"])) < 0)
+	return found + load_all().filter(func(w): return not is_unlocked(w, progress))
+
+
 ## The words a level's first solve unlocks.
 static func unlocked_by(level_id: String) -> Array:
 	return load_all().filter(func(w): return w["level"] == level_id)

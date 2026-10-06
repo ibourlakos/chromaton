@@ -1,0 +1,71 @@
+{
+	"id": "little_board",
+	"name": "The Little Board",
+	"cloth": "The Little Board",
+	"machine": "Stripes Crossed",
+	"goal": "Weave the little chessboard.",
+	"hint": "Where a row's paint and a column's paint differ, the board turns dark. Give Extreme Mix both cards and tube it to the loom.",
+	"pieces": [],
+	"inventions": [
+		"contrast"
+	],
+	"stars": {
+		"budget": 3,
+		"best": 2
+	},
+	"target": [
+		"RKWK",
+		"KWKW",
+		"WKWK",
+		"KWKR"
+	],
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"PBBB",
+				"OOOO",
+				"BBBB",
+				"OOOY"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"BOBO",
+				"BOBO",
+				"BOBO",
+				"BOBO"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "x",
+				"kind": "invention",
+				"invention": "contrast",
+				"x": 5,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"x.0"
+			],
+			[
+				"card1",
+				"x.1"
+			],
+			[
+				"x",
+				"loom"
+			]
+		]
+	},
+	"waits_for": [
+		"contrast"
+	],
+	"card_shows": 4
+}

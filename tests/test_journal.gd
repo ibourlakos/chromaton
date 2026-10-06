@@ -392,7 +392,7 @@ func test_news_entries() -> void:
 	wb._on_tick_shown()
 	check(wb.news_extra.has("chapter") and wb.news_extra["chapter"]["name"] == "Invent What You Know", "a solve that opens a chapter says so")
 	wb.queue_free()
-	# The Pawn earns the Third Paint, which opens The Rook and The Knight.
+	# The Pawn earns the Third Paint, which opens Two Pawns and The Rook.
 	p.record_solve("black_cat", 4, 10, 3)
 	wb = open_bench(by_id["third_color"], p)
 	wb.levels = levels
@@ -400,10 +400,10 @@ func test_news_entries() -> void:
 	wb.fast_forward(100000, 1.0)
 	wb._on_tick_shown()
 	var opens: Array = wb.news_extra.get("opens", {}).get("levels", []).map(func(l): return l.id)
-	check(opens == ["neither_twice", "back_to_mix"], "the Third Paint opens The Rook and The Knight (%s)" % str(opens))
+	check(opens == ["two_pawns", "neither_twice"], "the Third Paint opens Two Pawns and The Rook (%s)" % str(opens))
 	var news = JournalNews.new()
 	news.setup([], [], func(ci, id, c, s): pass, wb.news_extra)
-	check(news.rows[0]["title"] == "The Third Paint opens 26. The Rook and 27. The Knight.", "in those words (%s)" % news.rows[0]["title"])
+	check(news.rows[0]["title"] == "The Third Paint opens 26. Two Pawns and 27. The Rook.", "in those words (%s)" % news.rows[0]["title"])
 	news.free()
 	wb.queue_free()
 	# A cheaper pot: both prices, only when the price drops.

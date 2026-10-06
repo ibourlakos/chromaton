@@ -1,0 +1,82 @@
+{
+	"id": "the_crown",
+	"name": "The Crown",
+	"cloth": "The Crown",
+	"machine": "Only the Blue Flipped",
+	"goal": "Weave the crown.",
+	"hint": "The card is the crown by night, every paint's blue flipped: added where it was missing, taken away where it was. Ask Extreme Mix about the card and a pot of blue.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"filter",
+		"invert",
+		"split"
+	],
+	"inventions": [
+		"third_paint",
+		"contrast"
+	],
+	"stars": {
+		"budget": 5,
+		"best": 3
+	},
+	"target": [
+		"OOBBOOBB",
+		"OWBWWOWB",
+		"BWWWWWWO",
+		"BWWRRWWO",
+		"OWWWWWWB",
+		"OOBBOOBB",
+		"BBOOBBOO",
+		"BBOOBBOO"
+	],
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"KKWWKKWW",
+				"KBWBBKBW",
+				"WBBBBBBK",
+				"WBBPPBBK",
+				"KBBBBBBW",
+				"KKWWKKWW",
+				"WWKKWWKK",
+				"WWKKWWKK"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "b",
+				"kind": "invention",
+				"invention": "pot_blue",
+				"x": 3,
+				"y": 5
+			},
+			{
+				"id": "x",
+				"kind": "invention",
+				"invention": "contrast",
+				"x": 6,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"x.0"
+			],
+			[
+				"b",
+				"x.1"
+			],
+			[
+				"x",
+				"loom"
+			]
+		]
+	},
+	"card_shows": 10
+}

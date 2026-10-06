@@ -11,12 +11,12 @@
 	{
 		"name": "Invent What You Know",
 		"quilt_across": 3,
-		"levels": ["third_color", "neither_twice", "back_to_mix", "keep_what_they_share", "either_not_both", "only_third_paint"]
+		"levels": ["third_color", "two_pawns", "neither_twice", "back_to_mix", "keep_what_they_share", "either_not_both", "little_board", "the_crown", "only_third_paint"]
 	},
 	{
 		"name": "The Looking Glass",
 		"quilt_across": 3,
-		"levels": ["missing_from_either", "missing_twice", "back_to_filter", "mix_without_mix", "same_paint", "only_missing"]
+		"levels": ["missing_from_either", "two_black_pawns", "missing_twice", "back_to_filter", "mix_without_mix", "same_paint", "little_black_board", "the_black_crown", "only_missing"]
 	},
 	{
 		"name": "Lost Levels",

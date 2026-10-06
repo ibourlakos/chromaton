@@ -42,8 +42,8 @@ func _init() -> void:
 
 
 func test_loading(levels: Array) -> void:
-	check(levels.size() == 36, "thirty-six campaign levels (got %d)" % levels.size())
-	check(Level.chapters().map(func(c): return c["levels"].size()) == [12, 12, 6, 6], "four chapters of 12, 12, 6 and 6 levels, each quilt full")
+	check(levels.size() == 42, "forty-two campaign levels (got %d)" % levels.size())
+	check(Level.chapters().map(func(c): return c["levels"].size()) == [12, 12, 9, 9], "four chapters of 12, 12, 9 and 9 levels, each quilt full")
 	var ids := {}
 	for level in levels:
 		check(level.error == "", "level loads cleanly: %s %s" % [level.id, level.error])
@@ -302,7 +302,7 @@ func test_locks_and_loans(levels: Array, inventions: Dictionary) -> void:
 	for level in levels:
 		by_id[level.id] = level
 	var waiting := levels.filter(func(l): return not l.waits_for.is_empty()).map(func(l): return l.id)
-	check(waiting == ["neither_twice", "back_to_mix", "only_third_paint", "missing_twice", "back_to_filter", "only_missing"], "the levels offering only an invention and Split wait for it (%s)" % str(waiting))
+	check(waiting == ["two_pawns", "neither_twice", "back_to_mix", "little_board", "only_third_paint", "two_black_pawns", "missing_twice", "back_to_filter", "little_black_board", "only_missing"], "the levels offering only inventions and Split wait for them (%s)" % str(waiting))
 	var p = Progress.new()
 	p.know_levels(levels)
 	var rook: int = ids.find("neither_twice")

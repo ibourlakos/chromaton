@@ -75,7 +75,7 @@ var _pressed := ""
 func setup(p_levels: Array, p_progress, tab_id := "", focus := "") -> void:
 	levels = p_levels if not p_levels.is_empty() else Level.load_all()
 	progress = p_progress
-	words = Words.load_all()
+	words = Words.in_order(progress)
 	pieces = []
 	if not levels.is_empty():
 		pieces = levels[-1].tray.filter(func(k): return Pieces.TABLE.has(k))

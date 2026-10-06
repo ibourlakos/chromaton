@@ -1,0 +1,124 @@
+{
+	"id": "two_pawns",
+	"name": "Two Pawns",
+	"cloth": "Two Pawns",
+	"machine": "What Neither Has",
+	"goal": "Weave the two pawns.",
+	"hint": "Two pawns stand side by side, in the paint neither card has. Give your Third Paint both cards and tube it to the loom: one piece does what a Mixing Tub and a Flip Pan did.",
+	"steps": [
+		{
+			"line": "Your Third Paint is a piece now, on the shelf.",
+			"do": []
+		},
+		{
+			"line": "Like any piece: paints in on the left, one out on the right.",
+			"do": [
+				[
+					"place",
+					"t"
+				]
+			]
+		},
+		{
+			"line": "Give it both cards.",
+			"do": [
+				[
+					"tube",
+					"card0",
+					"t"
+				],
+				[
+					"tube",
+					"card1",
+					"t"
+				]
+			]
+		},
+		{
+			"line": "To the loom: what neither card has, in one piece.",
+			"do": [
+				[
+					"tube",
+					"t",
+					"loom"
+				]
+			]
+		}
+	],
+	"pieces": [],
+	"inventions": [
+		"third_paint"
+	],
+	"stars": {
+		"budget": 2,
+		"best": 1
+	},
+	"target": [
+		"OOBBOOBB",
+		"OORBOORB",
+		"BBWOBBWO",
+		"BWWWBWWW",
+		"OOWBOOWB",
+		"OWWWOWWW",
+		"BBOOBBOO",
+		"BBOOBBOO"
+	],
+	"card_rule": "third_paint",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"BBROWBYY",
+				"WBBWBWYO",
+				"WRBWORBW",
+				"WGBKRRBG",
+				"WBYWWBKW",
+				"BYGYBWYR",
+				"WRWWYOWB",
+				"ORWWROBB"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"WBYWBBOO",
+				"BWGOWBGO",
+				"OOOBYYOB",
+				"OPOYOGKK",
+				"BBKOBBKO",
+				"WPRKWKPK",
+				"OOBBRRBB",
+				"RYBBYWWB"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "t",
+				"kind": "invention",
+				"invention": "third_paint",
+				"x": 5,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"t.0"
+			],
+			[
+				"card1",
+				"t.1"
+			],
+			[
+				"t",
+				"loom"
+			]
+		]
+	},
+	"waits_for": [
+		"third_paint"
+	],
+	"card_shows": 4
+}

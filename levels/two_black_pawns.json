@@ -1,0 +1,84 @@
+{
+	"id": "two_black_pawns",
+	"name": "Two Black Pawns",
+	"cloth": "Two Black Pawns",
+	"machine": "What They Don't Both Have",
+	"goal": "Weave the two black pawns.",
+	"hint": "Two black pawns stand side by side, in the paint the cards don't both have. Give Missing From Either both cards and tube it to the loom: one piece does what a Sieve and a Flip Pan did.",
+	"pieces": [],
+	"inventions": [
+		"missing_from_either"
+	],
+	"stars": {
+		"budget": 2,
+		"best": 1
+	},
+	"target": [
+		"BBOOBBOO",
+		"BBGOBBGO",
+		"OOKBOOKB",
+		"OKKKOKKK",
+		"BBKOBBKO",
+		"BKKKBKKK",
+		"OOBBOOBB",
+		"OOBBOOBB"
+	],
+	"card_rule": "missing",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"KKGGOKBG",
+				"KKRBKKOP",
+				"BKWOPBRK",
+				"PRBRGGPK",
+				"KOGPKOKG",
+				"OWOWKGRO",
+				"BBOOBBKO",
+				"PPOOGPKK"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"OOPPKOGP",
+				"OOPKOOPB",
+				"KBOKGKYO",
+				"GBOGBRYW",
+				"OKRBOKWB",
+				"KPBGORGB",
+				"KGKKKGOK",
+				"BBKKPGOO"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "t",
+				"kind": "invention",
+				"invention": "missing_from_either",
+				"x": 5,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"t.0"
+			],
+			[
+				"card1",
+				"t.1"
+			],
+			[
+				"t",
+				"loom"
+			]
+		]
+	},
+	"waits_for": [
+		"missing_from_either"
+	],
+	"card_shows": 4
+}

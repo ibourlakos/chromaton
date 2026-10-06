@@ -254,10 +254,13 @@ static func set_speed(i: int) -> void:
 # ---------------------------------------------------------------------------
 
 ## Watches every input event (called from the root screen before anything
-## handles it). Returns true when the event was the hints key.
+## handles it). Returns true when the event was the hints key. While a text
+## field has the focus (a profile's name), keys are typing, not hotkeys.
 static func watch(event: InputEvent, tree: SceneTree) -> bool:
 	if event is InputEventScreenTouch and event.pressed and shown:
 		_show(false, tree)
+	elif event is InputEventKey and typing(tree):
+		return false
 	elif event is InputEventKey and event.pressed and not event.echo:
 		if normalize(event.keycode) in bindings["hints"]:
 			set_hints(not shown, tree)
@@ -265,6 +268,12 @@ static func watch(event: InputEvent, tree: SceneTree) -> bool:
 		if not shown and (_choice == null or _choice):
 			_show(true, tree)
 	return false
+
+
+## True while a text field has the focus: every key goes to it.
+static func typing(tree: SceneTree) -> bool:
+	var f := tree.root.gui_get_focus_owner()
+	return f is LineEdit or f is TextEdit
 
 
 ## Turns the caps on or off for good (the hints key, Options).

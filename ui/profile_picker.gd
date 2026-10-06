@@ -1,7 +1,8 @@
 ## Profiles over the level select (DESIGN.md 9): its profile chip opens it.
 ## A badge per profile, its critter and its name; a tap switches to it. The
 ## "+" badge adds one: tap a critter for its badge, type a name if you like
-## (it defaults to the critter's), and the check makes it. Back, the
+## (it defaults to the critter's), and the check makes it. The pencil under
+## the one playing changes its badge and name the same way. Back, the
 ## upper-leftmost control as everywhere, closes it.
 extends Control
 
@@ -14,6 +15,7 @@ const Profiles = preload("res://core/profiles.gd")
 
 signal chosen(id: int)
 signal added(badge: String, name: String)
+signal edited(id: int, badge: String, name: String)
 signal back
 
 const DESIGN := Vector2(1280, 800)
@@ -21,8 +23,10 @@ const BADGE := Vector2(132, 150)
 
 var profiles
 var adding := false
+var editing := -1  # the profile whose badge and name are being changed (adding is on too)
 var badge := "shift"  # the critter picked for a new profile
 var name_edit: LineEdit
+var name_edit_text := ""
 var buttons: Array = []
 var t := 0.0
 
@@ -41,7 +45,8 @@ func _build() -> void:
 	for b in buttons:
 		b.queue_free()
 	buttons = []
-	if name_edit != null:
+	if name_edit != null:  # what was typed stays while another badge is picked
+		name_edit_text = name_edit.text
 		name_edit.queue_free()
 		name_edit = null
 	var b = ToyButton.make("back")
@@ -59,6 +64,11 @@ func _build() -> void:
 			nb.position = Vector2(DESIGN.x / 2 - total / 2 + i * (BADGE.x + 20), 300)
 			nb.pressed.connect(func(): chosen.emit(id))
 			_add(nb)
+			if id == profiles.current:  # its badge and name can change
+				var pen = ToyButton.make("pencil")
+				pen.position = nb.position + Vector2(BADGE.x / 2 - 26, BADGE.y + 16)
+				pen.pressed.connect(func(): edit(id))
+				_add(pen)
 		var plus = ToyButton.new()
 		plus.custom_minimum_size = BADGE
 		plus.size = BADGE
@@ -69,6 +79,7 @@ func _build() -> void:
 			K.text(btn, P.display(600), body.get_center() + Vector2(0, -10), "+", 54, P.INK_SOFT)
 		plus.pressed.connect(func():
 			adding = true
+			editing = -1
 			_build())
 		_add(plus)
 		return
@@ -82,7 +93,9 @@ func _build() -> void:
 			badge = kind
 			_build())
 		_add(cb)
+	var typed := name_edit_text
 	name_edit = LineEdit.new()
+	name_edit.text = typed
 	name_edit.placeholder_text = Pieces.display_name(badge)
 	name_edit.max_length = 16
 	name_edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -114,12 +127,32 @@ func _add(b) -> void:
 
 
 func _make() -> void:
-	added.emit(badge, name_edit.text if name_edit != null else "")
+	var typed := (name_edit.text if name_edit != null else "").strip_edges()
+	if editing >= 0:
+		edited.emit(editing, badge, typed)
+	else:
+		added.emit(badge, typed)
+
+
+## Changes this profile's badge and name: the new player's page, filled in.
+func edit(id: int) -> void:
+	var e: Dictionary = profiles.find(id)
+	adding = true
+	editing = id
+	badge = str(e.get("badge", "mix"))
+	name_edit_text = str(e.get("name", ""))
+	if name_edit != null:
+		name_edit.text = name_edit_text
+	_build()
 
 
 func _back() -> void:
 	if adding:
 		adding = false
+		editing = -1
+		name_edit_text = ""
+		if name_edit != null:
+			name_edit.text = ""
 		_build()
 	else:
 		back.emit()
@@ -143,7 +176,7 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	draw_texture_rect(P.paper_texture(), Rect2(Vector2.ZERO, DESIGN), true)
-	K.text(self, P.display(600), Vector2(DESIGN.x / 2, 120), "A new player" if adding else "Who's playing?", 44, P.INK)
+	K.text(self, P.display(600), Vector2(DESIGN.x / 2, 120), ("Your badge and name" if editing >= 0 else "A new player") if adding else "Who's playing?", 44, P.INK)
 	if adding:
 		K.text(self, P.ui(700), Vector2(DESIGN.x / 2, 410), "A name, if you like", 17, P.INK_SOFT)
 

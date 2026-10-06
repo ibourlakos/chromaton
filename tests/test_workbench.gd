@@ -321,6 +321,20 @@ func test_editing(level, progress) -> void:
 	# Undo brings it back.
 	wb._undo()
 	check(wb.machine.tubes.size() == 4, "undo restores the tube")
+	# A selected piece's book stands north of it, its delete button south.
+	tap(wb, wb.cell_center(7, 5))
+	check(wb.selected_piece == inv, "tapping a piece selects it")
+	var c: Vector2 = wb.node_center(inv)
+	check(wb._book_button_pos().y < c.y and wb._delete_button_pos().y > c.y and absf(wb._book_button_pos().x - c.x) < 1, "book north, delete south")
+	wb.selected_piece = -1
+	# The trash clears the bench on a second tap; undo brings it all back.
+	tap(wb, wb.TRASH.get_center())
+	check(wb.machine.tubes.size() == 4 and wb._clear_armed(), "one tap on the trash only asks")
+	tap(wb, wb.TRASH.get_center())
+	check(wb.machine.tubes.is_empty() and wb.machine.nodes.keys().all(func(id): return wb.machine.is_fixed(id)), "a second tap clears every piece and tube")
+	check(wb.machine.find_kind(Pieces.CARD, 0) >= 0 and wb.machine.find_kind(Pieces.LOOM) >= 0, "the cards and the loom stay")
+	wb._undo()
+	check(wb.machine.tubes.size() == 4 and wb.machine.nodes.has(inv), "undo brings the bench back")
 	m = wb.machine
 	# Drag a tube's end off its input to empty space: removed.
 	drag(wb, wb.in_port(inv, 0), wb.cell_center(8, 0))
@@ -1016,7 +1030,7 @@ func _default_keys(action: String) -> Array:
 ## a solved level.
 func test_guides(levels: Array) -> void:
 	var guided := levels.filter(func(l): return not l.steps.is_empty()).map(func(l): return l.id)
-	check(guided == ["one_pot", "yellow", "blue", "orange", "purple", "green", "pattern_card", "mix_table", "filter_table", "neither_twice"], "ten guided levels (%s)" % str(guided))
+	check(guided == ["one_pot", "yellow", "blue", "orange", "purple", "green", "pattern_card", "mix_table", "filter_table", "two_pawns"], "ten guided levels (%s)" % str(guided))
 	var p = Progress.new()
 	for l in levels:
 		if not l.invention.is_empty():
@@ -1089,4 +1103,22 @@ func test_profile_screens() -> void:
 	pk.name_edit.text = "mia"
 	pk._make()
 	check(got == [["invert", "mia"]], "the check makes the player")
+	pk.free()
+	# The one playing can change badge and name, the first profile too.
+	pk = load("res://ui/profile_picker.gd").new()
+	pk.setup(roster)
+	var changed := []
+	pk.edited.connect(func(i, b, n): changed.append([i, b, n]))
+	pk._ready()
+	var pens: Array = pk.buttons.filter(func(b): return b.icon == "pencil")
+	check(pens.size() == 1, "a pencil under the one playing")
+	pens[0].pressed.emit()
+	check(pk.adding and pk.editing == 1 and pk.badge == "mix", "the pencil opens its badge and name")
+	pk.badge = "shift"
+	pk._build()
+	pk.name_edit.text = " leo "
+	pk._make()
+	check(changed == [[1, "shift", "leo"]], "the check changes them")
+	roster.edit(1, "shift", "leo")
+	check(Profiles.display_name(roster.find(1)) == "leo" and roster.find(1)["badge"] == "shift", "the roster keeps the change")
 	pk.free()

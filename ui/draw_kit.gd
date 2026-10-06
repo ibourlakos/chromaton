@@ -548,11 +548,11 @@ static func flip_pan(ci: CanvasItem, c: Vector2, s: float, liq: int, age: float,
 	var tilt := -sin(u * PI) * 0.12 if tossing else 0.0
 	fill(ci, ellipse(c + Vector2(0, 36) * s, 48 * s, 6 * s, 0, 24), P.SHADOW)
 	set_xf(ci, c + Vector2(0, 32) * s, Vector2(s, s), tilt)
-	# The handle, behind the pan, out to the lower left.
-	line(ci, Vector2(-30, -24), Vector2(-66, -2), P.INK, 13)
-	line(ci, Vector2(-30, -24), Vector2(-66, -2), P.WOOD, 8)
-	disc(ci, Vector2(-62, -4.5), 2.2, P.WOOD_DK)
-	shape(ci, ellipse(Vector2(-34, -22), 6, 5, 0.5, 12), P.IRON_DK, P.INK, 2)
+	# The handle, behind the pan, out to the upper left.
+	line(ci, Vector2(-30, -42), Vector2(-68, -64), P.INK, 13)
+	line(ci, Vector2(-30, -42), Vector2(-68, -64), P.WOOD, 8)
+	disc(ci, Vector2(-64, -61.5), 2.2, P.WOOD_DK)
+	shape(ci, ellipse(Vector2(-45, -50.5), 6, 5, -0.5, 12), P.IRON_DK, P.INK, 2)
 	# The pan: its wall with a face, then the cooking face on top.
 	var wall := PackedVector2Array([Vector2(-48, -40), Vector2(48, -40), Vector2(42, -14)])
 	wall.append_array(quad(Vector2(42, -14), Vector2(0, -4), Vector2(-42, -14), 10))
@@ -1315,6 +1315,16 @@ static func icon(ci: CanvasItem, kind: String, c: Vector2, s: float, col: Color)
 		"x":
 			line(ci, c + Vector2(-7, -7) * s, c + Vector2(7, 7) * s, col, w)
 			line(ci, c + Vector2(-7, 7) * s, c + Vector2(7, -7) * s, col, w)
+		"pencil":
+			# A pencil leaning to the right, its point down at the left.
+			var tip := c + Vector2(-9, 9) * s
+			var d := Vector2(1, -1).normalized()
+			var n := Vector2(d.y, -d.x) * 3.6 * s
+			var heel := tip + d * 6 * s
+			var top := tip + d * 22 * s
+			stroke(ci, PackedVector2Array([tip, heel + n, top + n, top - n, heel - n]), col, w * 0.7)
+			ci.draw_line(heel + n, heel - n, col, w * 0.5, true)
+			ci.draw_line(top - d * 4 * s + n, top - d * 4 * s - n, col, w * 0.5, true)
 		"paints":
 			# Three overlapping rings where the glyph dots sit: the paints mixing.
 			for pip in PIP:
