@@ -33,6 +33,7 @@ Files are named after the term in lower-case kebab-case (`paint-card.md`) and li
 
 | Term | Tags | Status | In short |
 |---|---|---|---|
+| [Brown](brown.md) | design | 🟡 | The paint that is not one of the eight: mixing all three primaries makes black here, and brown's hues dress the interface. |
 | [Cloth](cloth.md) | gameplay, design, implementation | 🟡 | The picture a machine weaves on the loom. |
 | [Critter](critter.md) | gameplay, design, implementation | 🟡 | A piece drawn as a character that does one thing to paint. |
 | [Filter](filter.md) | gameplay, design, implementation | ✅ | Keeps only what two paints share. Player word: Sieve. |
