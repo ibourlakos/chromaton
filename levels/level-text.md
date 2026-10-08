@@ -1,6 +1,6 @@
 # Level text, decided (2026-10-05)
 
-Decided by the designer, 2026-10-05 (DESIGN.md §5.1, "Every level's text is decided"). Written into `levels/*.json` and the code on 2026-10-05 (titles as `name`, `cloth`, `machine`; goals; hints), except the guided step lines, which wait for the guided levels (WP3); this file stays the reference until then. Tracked in git, beside the level files; the web export ships only `levels/*.json`, so it never reaches players. It follows the decisions of 2026-10-05 in DESIGN.md:
+Decided by the designer, 2026-10-05 (DESIGN.md §5.1, "Level text"). Written into `levels/*.json` and the code on 2026-10-05 (titles as `name`, `cloth`, `machine`; goals; hints; the guided step lines as `steps`, with WP3): the level files are what the game uses, and this file keeps the decided text with its notes, the text outside the level files, and the levels' numbers (renumbered 2026-10-08). Tracked in git, beside the level files; the web export ships only `levels/*.json`, so it never reaches players. It follows the decisions of 2026-10-05 in DESIGN.md:
 
 - **Title:** two phrases side by side in the top bar, `cloth · machine`. The machine phrase says what the machine does, never how it's built; on an invention level it's the invention's name (with the sticker mark); in the paint box, the pot it makes.
 - **Hint panel:** the goal, then the hint: a world-story sentence, then the how, naming pieces by their player words (red pot, Shift Wheel, Mixing Tub, Flip Pan, Sieve, Split). Invention names are today's (their names and personalities come later).
@@ -8,7 +8,7 @@ Decided by the designer, 2026-10-05 (DESIGN.md §5.1, "Every level's text is dec
 - Never bits, binary or bytes. No "A paint shows where ...".
 - **A level's name** (its primary title, for tags, Cloths and Scores) is the cloth phrase, or in the paint box the machine phrase. Text that refers to a level gives its number and primary title: "2. The Yellow Pot" (designer, 2026-10-05; DESIGN.md §5.1).
 
-Level numbers and order are the new layout (DESIGN.md §5.1, "The new chapters 1 and 2"). *Italic* titles are new levels.
+Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today"). *Italic* titles are new levels.
 
 ---
 

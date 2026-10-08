@@ -944,7 +944,7 @@ static func sticker(ci: CanvasItem, c: Vector2, s: float, name: String, age: flo
 # ---------------------------------------------------------------------------
 
 ## A pattern card is a picture, the loom cloth's counterpart (DESIGN.md 4,
-## "The pattern card's look", Path B): the same grid in the same order, read
+## "The pattern card is a picture"): the same grid in the same order, read
 ## left to right and row by row. Its cell is always CARD_CELL, so the body
 ## grows with the picture (Level.CARD_COLS_MIN.. and CARD_ROWS_MIN.. bound
 ## it): never narrower than CARD_MIN_W, the default 8 columns' width. A
