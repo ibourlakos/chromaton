@@ -39,7 +39,7 @@
 			"id": "piece",
 			"level": "one_pot",
 			"tab": "pieces",
-			"text": "A piece is anything you take from the tray and put in the workshop to build your machine. Every piece has a price, and the fewer pieces your machine uses, the more stars it earns. Machines you invent become pieces you can use again.",
+			"text": "A piece is anything you take from the tray and put in the workshop to build your machine. Every piece has a price, and the lower your machine's price, the more stars it earns. Machines you invent become pieces you can use again.",
 			"word": "Piece"
 		},
 		{
@@ -60,7 +60,7 @@
 			"id": "stars",
 			"level": "one_pot",
 			"tab": "scores",
-			"text": "Every cloth you weave earns stars: one for weaving it, two for using few pieces, three for using as few as anyone can. Your journal keeps your best stars, your fewest pieces and your fewest ticks for every level.",
+			"text": "Every cloth you weave earns stars: one for weaving it, two for a machine with a low price, three for the lowest price anyone can make it for. Your journal keeps your best stars, your lowest price and your fewest ticks for every level.",
 			"word": "Stars"
 		},
 		{

@@ -302,7 +302,7 @@ func test_locks_and_loans(levels: Array, inventions: Dictionary) -> void:
 	for level in levels:
 		by_id[level.id] = level
 	var waiting := levels.filter(func(l): return not l.waits_for.is_empty()).map(func(l): return l.id)
-	check(waiting == ["two_pawns", "neither_twice", "back_to_mix", "little_board", "only_third_paint", "two_black_pawns", "missing_twice", "back_to_filter", "little_black_board", "only_missing"], "the levels offering only inventions and Split wait for them (%s)" % str(waiting))
+	check(waiting == ["two_pawns", "neither_twice", "little_board", "back_to_mix", "only_third_paint", "two_black_pawns", "missing_twice", "little_black_board", "back_to_filter", "only_missing"], "the levels offering only inventions and Split wait for them (%s)" % str(waiting))
 	var p = Progress.new()
 	p.know_levels(levels)
 	var rook: int = ids.find("neither_twice")

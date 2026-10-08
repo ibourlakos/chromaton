@@ -158,23 +158,23 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The new chapters 1
 - **Hint:** What neither of two same paints has is that paint's opposite. Split the card and give the Third Paint the same paint twice.
 - Notes: the goal and the title now say it rebuilds Invert (designer's note). No longer guided since 2026-10-06: its steps (the first invention used as a piece) moved to Two Pawns.
 
-### 28 The Knight · A Mixing Tub, Rebuilt (`back_to_mix`)
-- **Goal:** Weave the knight, and build a Mixing Tub from Third Paints.
-- **Hint:** Flip what neither card has and you get what either has. Ask a Third Paint what neither card has, then flip its answer with a second Third Paint.
-
-### 29 The Bishop · A Sieve, Rebuilt (`keep_what_they_share`)
-- **Goal:** Weave the bishop, and build a Sieve.
-- **Hint:** What two paints share is what neither of their opposites has. Flip both cards, then ask the Third Paint.
-
-### 30 The Queen · Extreme Mix (`either_not_both`, invention)
+### 28 The Queen · Extreme Mix (`either_not_both`, invention)
 - **Goal:** Weave the queen.
 - **Hint:** The queen wears only the paint that comes from one card alone. Mix the cards, then sieve the mix with the opposite of what they share.
 - Notes: the invention's player name is **Extreme Mix** (designer, 2026-10-05; the title was "Either, Not Both"); Contrast stays its internal name. ★★★ with the discount is `Third Paint(Third Paint(A, B), Sieve(A, B))`; the hint describes the clearer ★★ route (4) on purpose; at the rebuild, `.make solve` must keep its ★★ budget at 4 or more.
 
-### 31 *The Little Board · Stripes Crossed* (`little_board`, new 2026-10-06, showcase)
+### 29 *The Little Board · Stripes Crossed* (`little_board`, new 2026-10-06, showcase)
 - **Goal:** Weave the little chessboard.
 - **Hint:** Where a row's paint and a column's paint differ, the board turns dark. Give Extreme Mix both cards and tube it to the loom.
 - Notes: a 4×4 board; card A is row stripes, card B column stripes, blue and orange, with two corner stitches that come out red. Extreme Mix costs 2, so ★★★ is 2. Waits for Extreme Mix.
+
+### 30 The Knight · A Mixing Tub, Rebuilt (`back_to_mix`)
+- **Goal:** Weave the knight, and build a Mixing Tub from Third Paints.
+- **Hint:** Flip what neither card has and you get what either has. Ask a Third Paint what neither card has, then flip its answer with a second Third Paint.
+
+### 31 The Bishop · A Sieve, Rebuilt (`keep_what_they_share`)
+- **Goal:** Weave the bishop, and build a Sieve.
+- **Hint:** What two paints share is what neither of their opposites has. Flip both cards, then ask the Third Paint.
 
 ### 32 *The Crown · Only the Blue Flipped* (`the_crown`, new 2026-10-06)
 - **Goal:** Weave the crown.
@@ -203,23 +203,23 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The new chapters 1
 - **Goal:** Weave the black rook, and build a Flip Pan from Missing From Either.
 - **Hint:** The rook's twin, in the looking glass. Split the card and give Missing From Either the same paint twice.
 
-### 37 The Black Knight · A Sieve, Rebuilt (`back_to_filter`)
-- **Goal:** Weave the black knight, and build a Sieve from Missing From Either.
-- **Hint:** Flip what the cards don't both have and you get what they share. Ask Missing From Either, then flip its answer with a second one.
-
-### 38 The Black Bishop · A Mixing Tub, Rebuilt (`mix_without_mix`)
-- **Goal:** Weave the black bishop, and build a Mixing Tub.
-- **Hint:** What either paint has is what their opposites don't both have. Flip both cards, then ask Missing From Either.
-
-### 39 The Black Queen · Same Paint (`same_paint`, invention)
+### 37 The Black Queen · Same Paint (`same_paint`, invention)
 - **Goal:** Weave the black queen.
 - **Hint:** In the looking glass, the queen wears paint where the cards agree. Mix what the cards share with the opposite of their mix.
 - Notes: now the level that invents Same Paint.
 
-### 40 *The Little Black Board · Stripes Agreeing* (`little_black_board`, new 2026-10-06, showcase)
+### 38 *The Little Black Board · Stripes Agreeing* (`little_black_board`, new 2026-10-06, showcase)
 - **Goal:** Weave the little black chessboard.
 - **Hint:** The little board's twin, in the looking glass: where a row's paint and a column's paint agree, the board turns dark. Give Same Paint both cards and tube it to the loom.
 - Notes: the same two cards as The Little Board; the corners come out green. Same Paint costs 3, so ★★★ is 3. Waits for Same Paint.
+
+### 39 The Black Knight · A Sieve, Rebuilt (`back_to_filter`)
+- **Goal:** Weave the black knight, and build a Sieve from Missing From Either.
+- **Hint:** Flip what the cards don't both have and you get what they share. Ask Missing From Either, then flip its answer with a second one.
+
+### 40 The Black Bishop · A Mixing Tub, Rebuilt (`mix_without_mix`)
+- **Goal:** Weave the black bishop, and build a Mixing Tub.
+- **Hint:** What either paint has is what their opposites don't both have. Flip both cards, then ask Missing From Either.
 
 ### 41 *The Black Crown · Only the Blue Flipped* (`the_black_crown`, new 2026-10-06)
 - **Goal:** Weave the black crown.
@@ -229,7 +229,7 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The new chapters 1
 ### 42 The Black King · Extreme Mix (`only_missing`)
 - **Goal:** Weave the black king using only Missing From Either.
 - **Hint:** The king's twin wears paint from one card alone. Ask Missing From Either of the two cards, then of each card with that answer, then of the two answers.
-- Notes: machine phrase as level 30's (Extreme Mix, the invention it rebuilds), the king and queen trading rules across the looking glass, as the levels already do.
+- Notes: machine phrase as level 28's (Extreme Mix, the invention it rebuilds), the king and queen trading rules across the looking glass, as the levels already do.
 
 ---
 

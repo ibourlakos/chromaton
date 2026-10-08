@@ -7,12 +7,12 @@
 
 ## Gameplay
 
-Every cloth you weave earns stars: one for weaving it, two for using few pieces, three for using as few as anyone can. Your journal keeps your best stars, your fewest pieces and your fewest ticks for every level.
+Every cloth you weave earns stars: one for weaving it, two for a machine with a low price, three for the lowest price anyone can make it for. Your journal keeps your best stars, your lowest price and your fewest ticks for every level.
 
 ## Design
 
 - The kid-friendly face of the optimizer: ★ solved · ★★ at or under the level's budget · ★★★ at or under the best known count (proven minimal by the solver).
-- Best Pieces and best Ticks are kept separately; no run history. The journal's Scores tab is the scoreboard.
+- Best Price and best Ticks are kept separately; no run history. The journal's Scores tab is the scoreboard.
 
 ## Implementation
 

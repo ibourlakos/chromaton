@@ -757,7 +757,7 @@ func _draw_inventions() -> void:
 		K.sticker(self, r.position + Vector2(r.size.x / 2, 66), 1.5 * s, inv["name"], 99, t, k * 0.7)
 		var y := r.position.y + 142
 		K.icon(self, "pieces", Vector2(r.position.x + 40, y), 1.2, P.INK)
-		K.text(self, P.ui(800), Vector2(r.position.x + 58, y), ("%d piece" if int(inv["cost"]) == 1 else "%d pieces") % int(inv["cost"]), 20, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+		K.text(self, P.ui(800), Vector2(r.position.x + 58, y), "Price %d" % int(inv["cost"]), 20, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 		var x := r.position.x + 40
 		var counts: Dictionary = inv.get("counts", {})
 		for kind in counts:
@@ -902,7 +902,7 @@ func _draw_scores() -> void:
 	K.text(self, P.ui(800), Vector2(cols[0], y), "Level", 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	K.text(self, P.ui(800), Vector2(cols[1] + 40, y), "Stars", 16, P.INK_SOFT)
 	K.icon(self, "pieces", Vector2(cols[2] - 30, y), 1.0, P.INK_SOFT)
-	K.text(self, P.ui(800), Vector2(cols[2] - 14, y), "Pieces", 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+	K.text(self, P.ui(800), Vector2(cols[2] - 14, y), "Price", 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	K.icon(self, "ticks", Vector2(cols[3] - 22, y), 1.0, P.INK_SOFT)
 	K.text(self, P.ui(800), Vector2(cols[3] - 6, y), "Ticks", 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	y += 22

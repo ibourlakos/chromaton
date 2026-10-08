@@ -50,6 +50,7 @@ func _initialize() -> void:
 	test_locked_tray(levels, by_id)
 	test_pot_fan(levels, by_id)
 	test_not_general(by_id["either_not_both"])
+	test_dearer(by_id["third_color"], by_id["either_not_both"])
 	test_unused_card(by_id["third_color"])
 	test_note(by_id["green"])
 	test_title(levels)
@@ -406,6 +407,25 @@ func test_not_general(inv_level) -> void:
 		frames += 1
 	check(wb.outcome == "not_general", "a machine that only fits the cards is not accepted (%s)" % wb.outcome)
 	check(not progress.is_solved(level.id) and not progress.inventions.has("contrast"), "nothing is recorded")
+	wb.queue_free()
+
+
+## The Queen's ★★★ counts on a Third Paint at its lowest price (1): a player
+## whose Third Paint costs 2 is told which invention and where it gets
+## cheaper (playtest R4); at its lowest price nothing is said.
+func test_dearer(pawn, queen) -> void:
+	var progress = Progress.new()
+	var inv: Dictionary = Invention.package(pawn, pawn.reference_machine(), {})
+	inv["cost"] = 2  # earned at two stars
+	progress.add_invention(inv)
+	var wb = open(queen, progress)
+	var dearer: Array = wb._dearer_inventions()
+	check(dearer.size() == 1 and dearer[0]["id"] == "third_paint" and dearer[0]["yours"] == 2 and dearer[0]["lowest"] == 1 and dearer[0]["from"] == pawn.name,
+		"a dearer Third Paint is named, with The Pawn as the way down (%s)" % [dearer])
+	wb.queue_free()
+	progress.add_invention(Invention.package(pawn, pawn.reference_machine(), {}))
+	wb = open(queen, progress)
+	check(wb._dearer_inventions().is_empty(), "at its lowest price nothing is said")
 	wb.queue_free()
 
 

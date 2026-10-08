@@ -1,7 +1,7 @@
 ## The functions of a level's cards that its pieces build cheaply, as packed
 ## tables over every combination of card paints. Shared by the card maker
 ## (tools/make_cards.gd), which picks cards so that every cheap wrong machine
-## fails within the drops a card shows, and the solver (tools/level_solver.gd),
+## fails within the first few stitches (card_shows), and the solver (tools/level_solver.gd),
 ## which checks it.
 ##
 ## A table holds one paint per combination of card paints; combination x

@@ -5,7 +5,7 @@
 ## Writes docs/level-report.md and exits with code 1 if a level is broken:
 ## its reference solution fails, it can't be solved by any machine, a
 ## machine cheaper than its three-star count exists, a wrong machine within
-## its two-star budget gets past the drops its cards show (check_decode), or
+## its two-star budget gets past its decode depth, card_shows (check_decode), or
 ## its waits_for doesn't match the inventions it can't be built without
 ## (check_waits).
 ##
@@ -59,10 +59,12 @@ func _init() -> void:
 	lines.append("")
 	lines.append("**Cheapest** is the fewest pieces any machine needs to weave the level (splits free where the level offers them, otherwise each result feeds one piece; an invention at its reference price, which is its machine minus one, never below 1). It is found by trying every machine the level's pieces can build, cheapest first. Three stars need the cheapest count; two stars need the budget.")
 	lines.append("")
-	lines.append("**Shows** is how many drops a card shows at the start: every wrong machine within the ★★ budget fails within them, so they are all the player needs to work out the rule. **Waits for** names the inventions a level can't be built without (proven: no machine of the rest of its tray weaves it); the level stays locked until the player owns them.")
+	lines.append("**Fails within** is the decode depth (`card_shows`): every wrong machine within the ★★ budget weaves a wrong stitch within that many stitches, so the cards decode the level and a wrong machine shows itself early (the card shows its whole picture). **Waits for** names the inventions a level can't be built without (proven: no machine of the rest of its tray weaves it); the level stays locked until the player owns them.")
 	lines.append("")
-	lines.append("| Level | Stitches | Cards | Card combos | Shows | Reference | Ticks | Cheapest | Cheapest machine | ★★ budget | ★★★ best | Waits for |")
-	lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|")
+	lines.append("**★★★ needs** names the inventions and pots whose cheapest price the level's ★★★ count counts on: earned at only ★★ (the price of a machine at its level's budget), each on its own, no machine weaves the level at its ★★★ count. A player who earned one at ★★ can't reach ★★★ here, so the level's text should say so.")
+	lines.append("")
+	lines.append("| Level | Stitches | Cards | Card combos | Fails within | Reference | Ticks | Cheapest | Cheapest machine | ★★ budget | ★★★ best | Waits for | ★★★ needs |")
+	lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
 	for level in levels:
 		if level.error != "":
 			_fail(level.error)
@@ -86,10 +88,12 @@ func _init() -> void:
 			_fail("%s: no machine of up to %d pieces found" % [level.id, level.best])
 		var waits := check_waits(level, inventions)
 		check_decode(level, inventions)
-		lines.append("| %d. %s | %d | %d | %d | %s | %d | %d | %s | `%s` | %d | %d | %s |" % [
+		var needs := check_star_needs(level, inventions, levels)
+		lines.append("| %d. %s | %d | %d | %d | %s | %d | %d | %s | `%s` | %d | %d | %s | %s |" % [
 			level.number, level.name, level.size(), level.cards.size(), res["combos"],
 			str(level.card_shows) if not level.cards.is_empty() else "–", ref_cost, sim.tick,
-			cheapest, res["program"], level.budget, level.best, ", ".join(waits) if not waits.is_empty() else "–"])
+			cheapest, res["program"], level.budget, level.best, ", ".join(waits) if not waits.is_empty() else "–",
+			", ".join(needs) if not needs.is_empty() else "–"])
 		print("%s: cheapest %s  %s  (%d states)" % [level.id, cheapest, res["program"], res["states"]])
 	lines.append("")
 	lines.append("---")
@@ -133,6 +137,31 @@ func check_waits(level, inventions: Dictionary) -> Array:
 	return needed
 
 
+## The inventions and pots whose cheapest price this level's ★★★ counts on:
+## priced as if earned at only ★★ (a machine at its level's budget), each on
+## its own, no machine reaches the level's three-star count. Returns their
+## names. Only direct: an invention made with another one inside keeps its
+## own price here.
+func check_star_needs(level, inventions: Dictionary, levels: Array) -> Array:
+	var budgets := {}
+	for l in levels:
+		budgets[l.id] = l.budget
+	var needs := []
+	for inv_id in level.pots + level.inventions:
+		if not inventions.has(inv_id):
+			continue
+		var inv: Dictionary = inventions[inv_id]
+		var at_two := Invention.price(int(budgets.get(inv.get("from_level", ""), 0)))
+		if at_two <= int(inv["cost"]):
+			continue
+		var dearer := inventions.duplicate()
+		dearer[inv_id] = inv.duplicate()
+		dearer[inv_id]["cost"] = at_two
+		if solve(level, dearer, level.best)["cost"] < 0:
+			needs.append(inv["name"])
+	return needs
+
+
 const CLOSURE_CAP := 20000
 
 ## Every paint table the last solve()'s pieces can make from the cards, at
@@ -161,10 +190,10 @@ func _closure(cap: int) -> int:
 	return -1
 
 
-## What a card shows decodes the level: every wrong machine within the
-## two-star budget fails within the drops a card shows (card_shows). Returns
-## the fewest drops that would do (at least CARD_SHOWS_MIN), or -1 if some
-## wrong machine gets past every drop shown.
+## The cards decode the level: every wrong machine within the two-star
+## budget weaves a wrong stitch within the decode depth (card_shows). Returns
+## the fewest stitches that would do (at least CARD_SHOWS_MIN), or -1 if some
+## wrong machine gets past the decode depth.
 func check_decode(level, inventions: Dictionary) -> int:
 	if level.cards.is_empty():
 		return 0
@@ -179,10 +208,10 @@ func check_decode(level, inventions: Dictionary) -> int:
 			late += 1
 		needed = maxi(needed, w + 1)
 	if late > 0:
-		_fail("%s: %d wrong machine(s) within the budget get past the %d drops a card shows" % [level.id, late, level.card_shows])
+		_fail("%s: %d wrong machine(s) within the budget weave more than %d stitches (card_shows) before going wrong" % [level.id, late, level.card_shows])
 		return -1
 	if needed < level.card_shows and level.card_shows > int(level.raw.get("card_shows_min", 0)):
-		_fail("%s: cards show %d drops but %d decode it (rerun make cards)" % [level.id, level.card_shows, needed])
+		_fail("%s: card_shows is %d but %d stitches decode it (rerun make cards)" % [level.id, level.card_shows, needed])
 	return needed
 
 

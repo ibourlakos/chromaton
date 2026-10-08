@@ -1071,8 +1071,10 @@ static func loom(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: Pack
 
 ## What moves on the loom (drawn over it): a wrong stitch's pulsing mark, or
 ## else the shuttle. The shuttle threads along the row it weaves, right across
-## the slots, and slides on to the next one after a stitch lands (glide 0 → 1),
-## coming in from the left edge for a new row, its weft trailing behind it.
+## the slots, standing before the next slot, never on it (as the card's does,
+## so the target's ghost stays in sight), and slides on after a stitch lands
+## (glide 0 → 1), coming in from the left edge for a new row, its weft
+## trailing behind it.
 static func loom_shuttle(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, woven: PackedByteArray, target: PackedByteArray, shown: int, wrong: int, t: float, glide := 1.0) -> void:
 	if wrong >= 0 and wrong < woven.size():
 		var wc := cloth.position + Vector2((wrong % cols + 0.5) * cs, (wrong / cols + 0.5) * cs)
@@ -1084,18 +1086,25 @@ static func loom_shuttle(ci: CanvasItem, cloth: Rect2, cols: int, cs: float, wov
 		return
 	if not _threading(woven, target, shown, wrong):
 		return
-	var to := cloth.position + Vector2((shown % cols + 0.5) * cs, (shown / cols + 0.5) * cs)
+	var to := _loom_stop(cloth, cols, cs, shown)
 	var from := to
 	if glide < 1.0 and shown > 0:
-		from = to - Vector2(cs, 0) if shown % cols != 0 else Vector2(cloth.position.x - cs * 0.6, to.y)
+		from = to - Vector2(cs, 0) if shown % cols != 0 else Vector2(cloth.position.x - cs * 1.2, to.y)
 	var at := from.lerp(to, 1.0 - pow(1.0 - clampf(glide, 0, 1), 3))
 	if shown % cols == 0:  # a new row: the weft runs from the cloth's edge
-		_weft(ci, Vector2(cloth.position.x, at.y), at, cs)
+		if at.x > cloth.position.x:
+			_weft(ci, Vector2(cloth.position.x, at.y), at, cs)
 	else:  # past the stitches laid in this row (loom draws it under them)
 		var edge := _laid_edge(cloth, cols, cs, shown)
 		if at.x > edge:
 			_weft(ci, Vector2(edge, at.y), at, cs)
 	shuttle(ci, at, cs)
+
+
+## Where the loom's shuttle stands before slot i: in the gap on its left, its
+## tip short of the slot's ghost chip.
+static func _loom_stop(cloth: Rect2, cols: int, cs: float, i: int) -> Vector2:
+	return cloth.position + Vector2((i % cols) * cs - cs * 0.3, (i / cols + 0.5) * cs)
 
 
 static func _threading(woven: PackedByteArray, target: PackedByteArray, shown: int, wrong: int) -> bool:

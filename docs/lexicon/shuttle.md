@@ -11,7 +11,7 @@ The shuttle is the little wooden boat that carries thread across the loom. It ma
 ## Design
 
 - On the loom the shuttle threads along the row being woven, trailing the weft it lays, and starts a new row from the left edge (DESIGN.md §4).
-- Where it stands (🟡, small open choice, 2026-10-06): the loom's shuttle sits on the slot it will weave, where the card's shuttle stands in the gap before its next drop, so it never covers the drop it points at. Whether the loom's should do the same is open (PLAYTEST-NOTES.md).
+- Where it stands (✅ designer, playtest R4, 2026-10-08): both shuttles stand in the gap before what they point at, the card's before its next drop, the loom's before the slot it will weave, so neither covers it (the loom's sat on its slot until 2026-10-08).
 - It stops where a wrong stitch is: the loom shows the wrong stitch's mark instead of the shuttle, and the card keeps its picture with the drop that wove it ringed and no shuttle.
 
 ## Implementation

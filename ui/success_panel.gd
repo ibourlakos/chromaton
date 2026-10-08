@@ -1,4 +1,4 @@
-## Shown over the workbench after a solve: stars, Pieces and Ticks, and the
+## Shown over the workbench after a solve: stars, Price and Ticks, and the
 ## new invention on invention levels.
 extends Control
 
@@ -21,6 +21,7 @@ var stars := 0
 var better := {}
 var invention := {}
 var has_next := false
+var dearer := []  # inventions that cost this player more than ★★★ assumes (Workbench._dearer_inventions)
 var t := 0.0
 var card := Rect2()
 var space_up := not Input.is_key_pressed(KEY_SPACE)  # released since the panel opened
@@ -28,8 +29,9 @@ var space_up := not Input.is_key_pressed(KEY_SPACE)  # released since the panel 
 const SPACE_DELAY := 0.5
 
 
-func setup(p_level, p_pieces: int, p_ticks: int, p_stars: int, p_better: Dictionary, p_invention: Dictionary, p_has_next: bool) -> void:
+func setup(p_level, p_pieces: int, p_ticks: int, p_stars: int, p_better: Dictionary, p_invention: Dictionary, p_has_next: bool, p_dearer := []) -> void:
 	level = p_level
+	dearer = p_dearer
 	pieces = p_pieces
 	ticks = p_ticks
 	stars = p_stars
@@ -109,7 +111,7 @@ func _draw() -> void:
 	var font := P.ui(800)
 	var bx := card.position.x + 282
 	var y := card.position.y + 196
-	for row in [["pieces", "Pieces", pieces, better.get("pieces", false)], ["ticks", "Ticks", ticks, better.get("ticks", false)]]:
+	for row in [["pieces", "Price", pieces, better.get("pieces", false)], ["ticks", "Ticks", ticks, better.get("ticks", false)]]:
 		K.icon(self, row[0], Vector2(bx, y), 1.2, P.INK)
 		K.text(self, font, Vector2(bx + 22, y), row[1], 22, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 		K.text(self, P.display(600), Vector2(bx + 210, y), str(row[2]), 28, P.INK, HORIZONTAL_ALIGNMENT_RIGHT)
@@ -123,7 +125,13 @@ func _draw() -> void:
 		var want := stars + 1
 		for s in want:
 			K.star(self, Vector2(bx + 4 + s * 20, y + 4), 8, true)
-		K.text(self, P.ui(700), Vector2(bx + 4 + want * 20, y + 4), "with %d pieces or fewer" % (level.best if want == 3 else level.budget), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+		K.text(self, P.ui(700), Vector2(bx + 4 + want * 20, y + 4), "for a price of %d or less" % (level.best if want == 3 else level.budget), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+		# ★★★ counts on an invention at its lowest price: say which one costs
+		# this player more, and where it gets cheaper.
+		if want == 3 and not dearer.is_empty() and dearer[0]["from"] != "":
+			var d: Dictionary = dearer[0]
+			var why := "Your %s costs %d. Three stars on %s bring it down to %d." % [d["name"], d["yours"], d["from"], d["lowest"]]
+			draw_multiline_string(P.ui(700), Vector2(bx - 4, y + 30), why, HORIZONTAL_ALIGNMENT_LEFT, card.end.x - bx - 24, 14, -1, P.INK_SOFT)
 	if not invention.is_empty():
 		var sy := card.position.y + 380
 		var paint := Invention.paint_of(invention)

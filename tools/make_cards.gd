@@ -1,5 +1,6 @@
 ## Derives each level's pattern cards from its target picture, and how many
-## drops its cards show.
+## stitches a wrong machine may weave before it fails (its decode depth,
+## card_shows).
 ##
 ## Run from the project folder:
 ##   godot_console --headless --path . --script res://tools/make_cards.gd
@@ -7,9 +8,9 @@
 ## machine weaves the target, and rewrites the level's "cards". Choices are
 ## pseudo-random but fixed by the level id, so reruns give the same cards.
 ##
-## What a card shows decodes the level (DESIGN.md 5.1): every wrong machine
-## within the level's two-star budget must fail within the drops a card shows
-## at the start. For each count from 4 (or the level's card_shows_min) to 10,
+## The cards decode the level (DESIGN.md 5.1): every wrong machine
+## within the level's two-star budget must weave a wrong stitch within the
+## first few. For each count from 4 (or the level's card_shows_min) to 10,
 ## the first stitches are rerolled among the rule's options, greedily, to make
 ## every cheap wrong machine fail there; the shortest count that works is the
 ## level's "card_shows". A level with fixed cards (no rule: the Mix and Sieve
@@ -89,7 +90,7 @@ func _init() -> void:
 					cols[k].append(picked[k])
 		var res := decode(rule, d, ops_of[level_id], target, salt, cols)
 		if res["shows"] < 0:
-			printerr("%s: no card shows enough to decode it within %d drops (%s)" % [level_id, Level.CARD_SHOWS_MAX, res["note"]])
+			printerr("%s: no cards decode it within %d stitches (%s)" % [level_id, Level.CARD_SHOWS_MAX, res["note"]])
 			failures += 1
 			continue
 		var cards := []
@@ -99,16 +100,16 @@ func _init() -> void:
 		d["card_shows"] = res["shows"]
 		var f := FileAccess.open(path, FileAccess.WRITE)
 		f.store_string(JSON.stringify(_ints(d), "\t", false) + "\n")
-		print("%s: %d card(s) written, showing %d drops (%s)" % [level_id, cards.size(), res["shows"], res["note"]])
+		print("%s: %d card(s) written, decoding within %d stitches (%s)" % [level_id, cards.size(), res["shows"], res["note"]])
 	quit(1 if failures > 0 else 0)
 
 
 # ---------------------------------------------------------------------------
-# Decoding: every cheap wrong machine fails within the drops a card shows
+# Decoding: every cheap wrong machine fails within the first few stitches
 # ---------------------------------------------------------------------------
 
-## Finds the fewest drops a card can show so that every wrong machine within
-## the two-star budget fails within them, rerolling the shown stitches among
+## Finds the fewest stitches (the decode depth) so that every wrong machine within
+## the two-star budget fails within them, rerolling those first stitches among
 ## the rule's options (fixed cards keep theirs). Returns {"shows": int (-1 if
 ## none up to 10 works), "cols": the cards, "note": a report}.
 func decode(rule: String, d: Dictionary, ops: Array, target: PackedByteArray, salt: int, base: Array) -> Dictionary:
@@ -199,8 +200,8 @@ func decode(rule: String, d: Dictionary, ops: Array, target: PackedByteArray, sa
 			var needed := lo
 			for f in funcs:
 				needed = maxi(needed, Functions.first_wrong(f, combos, target) + 1)
-			return {"shows": needed, "cols": cols, "note": "%d cheap wrong machines, all fail in the first %d drops" % [total, needed]}
-	return {"shows": -1, "cols": base, "note": "%d cheap wrong machines still pass the first %d drops" % [survivors, Level.CARD_SHOWS_MAX]}
+			return {"shows": needed, "cols": cols, "note": "%d cheap wrong machines, all fail in the first %d stitches" % [total, needed]}
+	return {"shows": -1, "cols": base, "note": "%d cheap wrong machines still pass the first %d stitches" % [survivors, Level.CARD_SHOWS_MAX]}
 
 
 # ---------------------------------------------------------------------------
