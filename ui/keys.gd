@@ -67,10 +67,9 @@ const ACTIONS := [
 	["tab_1", "Journal", "Paint", [KEY_1]],
 	["tab_2", "Journal", "Loom", [KEY_2]],
 	["tab_3", "Journal", "Pieces", [KEY_3]],
-	["tab_4", "Journal", "Inventions", [KEY_4]],
-	["tab_5", "Journal", "Cloths", [KEY_5]],
-	["tab_6", "Journal", "Scores", [KEY_6]],
-	["tab_7", "Journal", "Words", [KEY_7]],
+	["tab_4", "Journal", "Cloths", [KEY_4]],
+	["tab_5", "Journal", "Scores", [KEY_5]],
+	["tab_6", "Journal", "Words", [KEY_6]],
 ]
 const SLOTS := 2
 ## Keys that only modify others; they can't be bound.

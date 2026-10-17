@@ -13,15 +13,18 @@
 ##   - **Journal:** unlocks in <Level name>; page on the <Tab> tab
 ##   ## Gameplay
 ##   <paragraphs>
+##   ## Cases                             (optional: a piece's or an
+##   - Orange + Red → Yellow: <why>        invention's case rows on its page)
 ## The level is matched by its name in levels/*.json, so renaming a level
 ## without updating the lexicon fails here instead of locking a word for good.
 extends RefCounted
 
 const Level = preload("res://core/level.gd")
+const Paint = preload("res://core/paint.gd")
 
 const DIR := "res://docs/lexicon"
 const OUT := "res://data/words.json"
-const TABS := ["paint", "loom", "pieces", "inventions", "cloths", "scores", "words"]
+const TABS := ["paint", "loom", "pieces", "cloths", "scores", "words"]
 
 
 ## {"words": [...], "errors": [...]}. Words are in unlock order (campaign
@@ -58,6 +61,7 @@ static func parse(id: String, text: String, levels: Array) -> Dictionary:
 	var term := ""
 	var header := {}
 	var gameplay := []
+	var case_lines := []
 	var section := ""
 	for line in lines:
 		if line.begins_with("# ") and term == "":
@@ -70,6 +74,8 @@ static func parse(id: String, text: String, levels: Array) -> Dictionary:
 				header[line.substr(4, close - 4)] = line.substr(close + 3).strip_edges()
 		elif section == "Gameplay":
 			gameplay.append(line)
+		elif section == "Cases" and line.begins_with("- "):
+			case_lines.append(line.substr(2).strip_edges())
 	var tags := str(header.get("Tags", ""))
 	if not "gameplay" in _tags(tags):
 		return {}
@@ -85,7 +91,32 @@ static func parse(id: String, text: String, levels: Array) -> Dictionary:
 	if paragraphs.is_empty():
 		return {"error": "no Gameplay paragraph"}
 	var word := str(header.get("Player word", term))
-	return {"id": id, "word": plain(word), "text": "\n\n".join(paragraphs), "level": level, "tab": _tab_in(journal)}
+	var out := {"id": id, "word": plain(word), "text": "\n\n".join(paragraphs), "level": level, "tab": _tab_in(journal)}
+	if not case_lines.is_empty():
+		var cases := []
+		for s in case_lines:
+			var c := _case(s)
+			if c.is_empty():
+				return {"error": "a case row isn't \"<Paint> + <Paint> → <Paint>: <why>\": " + s}
+			cases.append(c)
+		out["cases"] = cases
+	return out
+
+
+## A case row, "Orange + Red → Yellow: the shared red washes out.", as
+## {"in": ["Orange", "Red"], "out": "Yellow", "why": "The shared red washes
+## out."}, or {} when it doesn't read.
+static func _case(s: String) -> Dictionary:
+	var re := RegEx.new()
+	re.compile("^(\\w+) \\+ (\\w+) → (\\w+): (.+)$")
+	var m := re.search(s)
+	if m == null:
+		return {}
+	for k in [1, 2, 3]:
+		if not m.get_string(k) in Paint.NAMES:
+			return {}
+	var why := plain(m.get_string(4).strip_edges())
+	return {"in": [m.get_string(1), m.get_string(2)], "out": m.get_string(3), "why": why.substr(0, 1).to_upper() + why.substr(1)}
 
 
 static func _tags(s: String) -> Array:

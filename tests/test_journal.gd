@@ -11,6 +11,7 @@ const Pieces = preload("res://core/pieces.gd")
 const Simulator = preload("res://core/simulator.gd")
 const Invention = preload("res://core/invention.gd")
 const Words = preload("res://core/words.gd")
+const Paint = preload("res://core/paint.gd")
 const Lexicon = preload("res://tools/lexicon.gd")
 const Journal = preload("res://ui/journal.gd")
 const JournalNews = preload("res://ui/journal_news.gd")
@@ -44,6 +45,7 @@ func _initialize() -> void:
 	test_save()
 	test_journal_tabs()
 	test_word_pages()
+	test_invention_pages()
 	test_peek()
 	test_articles()
 	test_news()
@@ -112,7 +114,10 @@ func test_words_match_lexicon() -> void:
 	for w in words:
 		check(by_id.has(w["level"]), "%s unlocks in a real level" % w["id"])
 		check(w["tab"] in Lexicon.TABS or w["tab"] == "", "%s points at a real tab" % w["id"])
-		check(banned.search(w["text"] + " " + w["word"]) == null, "%s speaks of paint, not bits or colors" % w["id"])
+		var said: String = w["text"] + " " + w["word"]
+		for c in w.get("cases", []):
+			said += " " + str(c["why"])
+		check(banned.search(said) == null, "%s speaks of paint, not bits or colors (its case rows too)" % w["id"])
 		check(not "](" in w["text"] and not "**" in w["text"], "%s has no markdown left" % w["id"])
 	var shift := Words.find("shift")
 	check(shift.get("level") == "yellow" and shift.get("tab") == "pieces", "Shift unlocks in Yellow, its page on Pieces")
@@ -172,8 +177,10 @@ func test_journal_tabs() -> void:
 	key(j, KEY_3)
 	check(j.tab == "pieces" and not j.paint_card.visible, "3 opens Pieces")
 	key(j, KEY_TAB)
-	check(j.tab == "inventions", "Tab goes to the next tab")
-	tap(j, j._tab_rect(4).get_center())
+	check(j.tab == "cloths", "Tab goes to the next tab (Pieces holds the inventions too)")
+	check(j.TABS.size() == 6 and not j.TABS.any(func(tb): return tb[0] == "inventions"), "six tabs, no Inventions tab")
+	j.show_tab("paint")
+	tap(j, j._tab_rect(3).get_center())
 	check(j.tab == "cloths", "a tap on a tab opens it")
 	var chapter: int = j.chapter
 	check(chapter == by_id[levels[12].id].chapter, "Cloths opens on the first chapter not finished")
@@ -182,7 +189,7 @@ func test_journal_tabs() -> void:
 	j.prev_button.pressed.emit()
 	check(j.chapter == chapter, "and the arrow turns it back")
 	key(j, KEY_2)
-	key(j, KEY_7)
+	key(j, KEY_6)
 	key(j, KEY_RIGHT)
 	check(j.tab == "words" and j.word == 1, "→ on Words picks the next word")
 	var closed := []
@@ -216,6 +223,57 @@ func test_word_pages() -> void:
 	check(j._target_at(j._open_rect().get_center()) == "", "a locked word has no page to open")
 	j.open_word_page()
 	check(j.tab == "words", "and opening it does nothing")
+	j.free()
+
+
+## Pieces and inventions share one tab: the known ones by name, then the
+## rest; the list scrolls; an invention's page opens once it's made; and
+## every case row is what the piece or invention really makes.
+func test_invention_pages() -> void:
+	var rules := {"mix": "mix", "filter": "filter", "contrast": "contrast", "third-paint": "third_paint", "missing-from-either": "missing_from_either", "same-paint": "same_paint"}
+	for id in rules:
+		var cases: Array = Words.find(id).get("cases", [])
+		var fewest := 3 if id in ["mix", "filter"] else 4
+		check(cases.size() >= fewest and cases.size() <= 6, "%s has %d to 6 case rows (%d)" % [id, fewest, cases.size()])
+		for c in cases:
+			var ins := [Paint.NAMES.find(c["in"][0]), Paint.NAMES.find(c["in"][1])]
+			check(Invention.expected(rules[id], ins) == Paint.NAMES.find(c["out"]), "%s: %s + %s makes %s" % [id, c["in"][0], c["in"][1], c["out"]])
+	var p = Progress.new()
+	for l in levels.slice(0, by_id["either_not_both"].number):  # through The Queen
+		p.record_solve(l.id, l.best, 10, 3)
+		if not l.invention.is_empty():
+			p.add_invention(Invention.package(l, l.reference_machine(), p.inventions))
+	var j = journal(p, "pieces")
+	var known: Array = j.pieces.filter(func(e): return j.knows(e))
+	var names: Array = known.map(func(e): return j.entry_name(e))
+	var sorted := names.duplicate()
+	sorted.sort_custom(func(a, b): return a.naturalnocasecmp_to(b) < 0)
+	check(names == sorted and j.pieces.slice(0, known.size()) == known, "the known entries come first, by name: %s" % str(names))
+	check("inv:third_paint" in known and "inv:contrast" in known and "mix" in known, "pieces and the inventions made share the list")
+	check(j.pieces.has("inv:same_paint") and not j.knows("inv:same_paint"), "an invention not made yet waits, locked, after them")
+	check(j.pieces.has("red_pot") and not j.pieces.any(func(e): return e.begins_with("inv:pot_")), "the pots are on the red pot's page, not entries")
+	check(j._article_max() > 0 and j._more_rect().size.x > 0, "the list runs past its page, with a \"more below\" chip")
+	key(j, KEY_DOWN)
+	check(j.article_scroll > 0.0, "the down key scrolls the list")
+	j.article_scroll = 0.0
+	j.piece = 0
+	for k in j.pieces.size():
+		key(j, KEY_RIGHT)
+	check(j.piece == j.pieces.size() - 1 and is_equal_approx(j.article_scroll, j._article_max()), "→ steps down the list, which follows")
+	var last: int = j.pieces.size() - 2
+	tap(j, j._article_rect().position + j._piece_rect(last).get_center() - Vector2(0, j.article_scroll))
+	check(j.piece == last, "a tap on a scrolled entry opens it")
+	j.free()
+	j = journal(p, "", "inv:contrast")
+	check(j.tab == "pieces" and j.pieces[j.piece] == "inv:contrast", "a peek on Extreme Mix opens its page")
+	j.free()
+	j = journal(p, "", "inv:pot_orange")
+	check(j.tab == "pieces" and j.pieces[j.piece] == "red_pot", "a peek on a pot opens the red pot's page, with the paint shelf")
+	j.free()
+	j = journal(p, "words")
+	j.word = j.words.find(Words.find("contrast"))
+	j.open_word_page()
+	check(j.tab == "pieces" and j.pieces[j.piece] == "inv:contrast", "Extreme Mix's word opens its page")
 	j.free()
 
 
@@ -316,7 +374,7 @@ func test_options_fit() -> void:
 	for s in o.slots:
 		tabs += int(str(s["action"]).begins_with("tab_"))
 		check(Rect2(Vector2.ZERO, Options.DESIGN).encloses(s["rect"]), "%s's slot fits on screen" % s["action"])
-	check(tabs == 7, "Options lists the journal's tabs")
+	check(tabs == 6, "Options lists the journal's tabs")
 	for a in o.slots.size():
 		for b in range(a + 1, o.slots.size()):
 			if o.slots[a]["rect"].intersects(o.slots[b]["rect"]):

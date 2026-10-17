@@ -10,10 +10,11 @@
 ##                               the one playing)
 ##                               or "intro".
 ##   --tab=<id>                  the journal's tab (paint, loom, pieces,
-##                               inventions, cloths, scores, words)
+##                               cloths, scores, words)
 ##   --solved=<n>                the journal after the first n levels, woven
 ##                               by their reference machines (default 12)
-##   --piece=<kind>, --word=<n>  the journal's piece page, or picked word
+##   --piece=<kind>, --word=<n>  the journal's piece page ("inv:<id>" for an
+##                               invention's), or picked word
 ##   --peek[=<kind>]             a level with the journal open over it
 ##   --options                   a level with Options open over it (the gear)
 ##   --select[=card]             the first placed piece selected (or card A)

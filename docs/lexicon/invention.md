@@ -2,7 +2,7 @@
 
 - **Tags:** gameplay, design, implementation
 - **Status:** ✅ (DESIGN.md §5.1)
-- **Journal:** unlocks in The Yellow Pot, the first level that earns one (the yellow pot); page on the Inventions tab
+- **Journal:** unlocks in The Yellow Pot, the first level that earns one (the yellow pot); page on the Pieces tab
 - **Also called:** recipe (stateless), machine (stateful), sticker (how it's drawn)
 
 ## Gameplay
@@ -18,7 +18,7 @@ Solve some levels and the machine you built becomes an invention: one piece you 
 - Earned pots are inventions with no inputs. Every invention keeps the cheapest machine the player made it with, so going back for ★★★ makes it cheaper; where two levels earn the same one (the Black pot in All the Paint and Black, the Short Way; Same Paint in Only the Third Paint and Same Paint), the cheaper machine wins (designer, 2026-10-05). Since 2026-10-05 Only the Third Paint no longer earns Same Paint (at most two new inventions per chapter); Black, the Short Way and the Invert levels of chapter 1 re-earn pots more cheaply.
 - From chapter 2 on, every earned pot is in every tray that has the red pot, in the pot slot's fan ([tray](tray.md)). Since 2026-10-05: from Blue on, in chapter 1 too; Purple holds them back to teach Split.
 - A level that can't be built without an invention stays locked until the player owns it (2026-10-05, built 2026-10-05; `tools/level_solver.gd` proves which levels, `waits_for`).
-- The journal's Inventions tab (once the Pattern Book) shows the paint shelf and the invention slots.
+- The journal's Pieces tab lists each invention among the pieces, marked with a light bulb, its page with its rule, case rows and what the player made it of; the pots stand on the paint shelf, on the red pot's page (DESIGN.md §5.7; the Inventions tab, once the Pattern Book, joined Pieces 2026-10-18). Each invention but the pots has its own term here, with its case rows.
 
 ## Implementation
 

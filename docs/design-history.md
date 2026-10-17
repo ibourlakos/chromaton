@@ -323,6 +323,18 @@ An in-game book that explains how the game works and keeps what the player has m
 
 ---
 
+
+## §5.7 The Journal: the Inventions tab, before it joined Pieces
+
+*DESIGN.md §5.7 as of f4250e7; the R4 merge (designer, 2026-10-18) put the inventions on the Pieces tab.*
+
+- ✅ **One book with tabs: Paint · Loom · Pieces · Inventions · Cloths · Scores · Words** (2026-10-04), keys 1 to 7.
+  - **Pieces** had a page per piece in the order the campaign brings them (red pot, Shift, Mix, Split, Invert, Filter), in a list that didn't scroll.
+  - **Inventions** was the old Pattern Book: **the paint shelf** (eight pots across the top in journal order, each with its price; the red pot always there, unearned pots dashed outlines with the first level that earns them), then one slot per invention, however many levels earn it, with its sticker, price, the pieces inside and the level whose machine was kept. Under the tabs, "Machines you invented become pieces you can use again." When there were more than three slots they shrank to share one row, the only row the page had room for.
+- Peek on an invention opened the Inventions tab, not a page of its own.
+
+---
+
 ## §6 Prototype stars, the Pieces metric
 
 *DESIGN.md line 479 as of c369c4d.*

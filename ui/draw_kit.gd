@@ -1338,6 +1338,16 @@ static func icon(ci: CanvasItem, kind: String, c: Vector2, s: float, col: Color)
 			# Three overlapping rings where the glyph dots sit: the paints mixing.
 			for pip in PIP:
 				ring(ci, c + Vector2(cos(pip[1]), sin(pip[1])) * 4.6 * s, 6.4 * s, col, w * 0.55)
+		"bulb":
+			# A light bulb (an invention): round glass, a neck, a screw base, and rays.
+			stroke(ci, ellipse(c + Vector2(0, -3) * s, 7 * s, 7.5 * s, 0, 20), col, w * 0.55)
+			for k in 3:
+				var y := (6 + k * 2.6) * s
+				var half := (3.6 - k * 0.8) * s
+				ci.draw_line(c + Vector2(-half, y), c + Vector2(half, y), col, w * 0.5, true)
+			for a in [-0.75 * PI, -0.5 * PI, -0.25 * PI]:
+				var d := Vector2(cos(a), sin(a))
+				ci.draw_line(c + Vector2(0, -3) * s + d * 10 * s, c + Vector2(0, -3) * s + d * 13.5 * s, col, w * 0.45, true)
 		"zzz":
 			for i in 2:
 				var o := c + Vector2(-5 + i * 9, 3 - i * 8) * s

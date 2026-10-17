@@ -9,6 +9,12 @@
 
 The Mixing Tub takes two paints and gives back everything in either one. Red and yellow make orange; orange and blue make black. Mixing in a paint that's already there changes nothing.
 
+## Cases
+
+- Red + Yellow → Orange: everything in either one.
+- Orange + Red → Orange: red is there already, so nothing changes.
+- Purple + Green → Black: between them they hold red, yellow and blue.
+
 ## Design
 
 - A wooden tub that stirs with a spoon; the paint swirls into the new paint.

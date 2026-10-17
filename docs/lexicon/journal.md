@@ -3,7 +3,7 @@
 - **Tags:** gameplay, design, implementation
 - **Status:** ✅ (renamed, 2026-10-04); its tabs ✅ and built (DESIGN.md §5.7)
 - **Journal:** unlocks in One Pot of Red
-- **Also called:** Swatch Book (the old name), compendium, knowledge base (playtest notes), Pattern Book (the screen it replaced, now the Inventions tab)
+- **Also called:** Swatch Book (the old name), compendium, knowledge base (playtest notes), Pattern Book (the screen it replaced, which became the Inventions tab, merged into Pieces 2026-10-18)
 
 ## Gameplay
 
@@ -12,7 +12,7 @@ Your journal keeps everything you've learned and made: the paints, how the loom 
 ## Design
 
 - **The player's own record:** pages fill from what the player's machines actually did, like a sticker album. Play teaches the rules first; the journal is a reward and a reference.
-- **Tabs, as the player reads them:** Paint · Loom · Pieces · Inventions · Cloths · Scores · Words.
+- **Tabs, as the player reads them:** Paint · Loom · Pieces · Cloths · Scores · Words (Pieces holds the inventions too).
   - **Paint** and **Loom:** short articles, the Gameplay text of the words on that tab ([paint](paint.md), [paint card](paint-card.md); [loom](loom.md), [stitch](stitch.md), [shuttle](shuttle.md), [tick](tick.md), [tube](tube.md), [thread](thread.md)).
   - **Pieces:** a page per [piece](piece.md) with a frame for every paint it can be given.
   - **Inventions:** the paint shelf and the [invention](invention.md) slots (the old Pattern Book).
