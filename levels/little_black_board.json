@@ -1,10 +1,10 @@
 {
 	"id": "little_black_board",
-	"name": "The Little Black Board",
-	"cloth": "The Little Black Board",
+	"name": "The Looking-Glass Board",
+	"cloth": "The Looking-Glass Board",
 	"machine": "Stripes Agreeing",
-	"goal": "Weave the little black chessboard.",
-	"hint": "The little board's twin, in the looking glass: where a row's paint and a column's paint agree, the board turns dark. Give Same Paint both cards and tube it to the loom.",
+	"goal": "Weave the looking-glass board.",
+	"hint": "The chessboard's twin, in the looking glass: the same two cards, and every square swapped. Where a column is white, Same Paint flips the row's paint; where it is black, it keeps it. Give Same Paint both cards and tube it to the loom.",
 	"pieces": [],
 	"inventions": [
 		"same_paint"
@@ -14,28 +14,40 @@
 		"best": 3
 	},
 	"target": [
-		"GWKW",
-		"WKWK",
-		"KWKW",
-		"WKWG"
+		"GOBOBOBO",
+		"OBOBOBOB",
+		"BOBOBOBO",
+		"OBOBOBOB",
+		"BOBOBOBO",
+		"OBOBOBOB",
+		"BOBOBOBO",
+		"OBOBOBOG"
 	],
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"PBBB",
-				"OOOO",
-				"BBBB",
-				"OOOY"
+				"ROOOOOOO",
+				"BBBBBBBB",
+				"OOOOOOOO",
+				"BBBBBBBB",
+				"OOOOOOOO",
+				"BBBBBBBB",
+				"OOOOOOOO",
+				"BBBBBBBG"
 			]
 		},
 		{
 			"name": "B",
 			"colors": [
-				"BOBO",
-				"BOBO",
-				"BOBO",
-				"BOBO"
+				"WKWKWKWK",
+				"WKWKWKWK",
+				"WKWKWKWK",
+				"WKWKWKWK",
+				"WKWKWKWK",
+				"WKWKWKWK",
+				"WKWKWKWK",
+				"WKWKWKWK"
 			]
 		}
 	],

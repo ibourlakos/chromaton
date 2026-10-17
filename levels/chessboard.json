@@ -1,7 +1,7 @@
 {
 	"id": "chessboard",
-	"name": "The Chessboard",
-	"cloth": "The Chessboard",
+	"name": "The Big Board",
+	"cloth": "The Big Board",
 	"machine": "Flip, Then Sieve",
 	"goal": "Weave the chessboard.",
 	"hint": "On the black squares card A is black and card B is bare. On the white squares the two agree. Flip card B to its opposite, then sieve it with card A.",

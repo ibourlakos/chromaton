@@ -1,10 +1,10 @@
 {
 	"id": "the_crown",
-	"name": "The Crown",
-	"cloth": "The Crown",
+	"name": "The Trophy",
+	"cloth": "The Trophy",
 	"machine": "Only the Blue Flipped",
-	"goal": "Weave the crown.",
-	"hint": "The card is the crown by night, every paint's blue flipped: added where it was missing, taken away where it was. Ask Extreme Mix about the card and a pot of blue.",
+	"goal": "Weave the trophy.",
+	"hint": "The game is won, but the card shows the trophy by night, every paint's blue flipped: added where it was missing, taken away where it was. Ask Extreme Mix about the card and a pot of blue.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -22,27 +22,27 @@
 		"best": 3
 	},
 	"target": [
-		"OOBBOOBB",
-		"OWBWWOWB",
-		"BWWWWWWO",
-		"BWWRRWWO",
 		"OWWWWWWB",
-		"OOBBOOBB",
-		"BBOOBBOO",
-		"BBOOBBOO"
+		"WWWWWWWW",
+		"WBWRRWBW",
+		"BWWWWWWO",
+		"OOBWWOBB",
+		"OOBWWOBB",
+		"BBWWWWOO",
+		"BWWWWWWO"
 	],
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"KKWWKKWW",
-				"KBWBBKBW",
-				"WBBBBBBK",
-				"WBBPPBBK",
 				"KBBBBBBW",
-				"KKWWKKWW",
-				"WWKKWWKK",
-				"WWKKWWKK"
+				"BBBBBBBB",
+				"BWBPPBWB",
+				"WBBBBBBK",
+				"KKWBBKWW",
+				"KKWBBKWW",
+				"WWBBBBKK",
+				"WBBBBBBK"
 			]
 		}
 	],
@@ -78,5 +78,5 @@
 			]
 		]
 	},
-	"card_shows": 10
+	"card_shows": 8
 }

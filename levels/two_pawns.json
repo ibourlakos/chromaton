@@ -1,10 +1,10 @@
 {
 	"id": "two_pawns",
-	"name": "Two Pawns",
-	"cloth": "Two Pawns",
+	"name": "The Chess Clock",
+	"cloth": "The Chess Clock",
 	"machine": "What Neither Has",
-	"goal": "Weave the two pawns.",
-	"hint": "Two pawns stand side by side, in the paint neither card has. Give your Third Paint both cards and tube it to the loom: one piece does what a Mixing Tub and a Flip Pan did.",
+	"goal": "Weave the chess clock.",
+	"hint": "The clock starts the game. Where a card has every paint, neither card is missing anything, so the cloth turns white. Give your Third Paint both cards and tube it to the loom: one piece does what a Mixing Tub and a Flip Pan did.",
 	"steps": [
 		{
 			"line": "Your Third Paint is a piece now, on the shelf.",
@@ -54,41 +54,40 @@
 		"best": 1
 	},
 	"target": [
-		"OOBBOOBB",
-		"OORBOORB",
-		"BBWOBBWO",
-		"BWWWBWWW",
-		"OOWBOOWB",
-		"OWWWOWWW",
+		"OOWBOWBB",
+		"WWWWWWWW",
+		"WRRWWRRW",
+		"WRRWWRRW",
+		"WWWWWWWW",
+		"OWBBOOWB",
 		"BBOOBBOO",
 		"BBOOBBOO"
 	],
-	"card_rule": "third_paint",
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"BBROWBYY",
-				"WBBWBWYO",
-				"WRBWORBW",
-				"WGBKRRBG",
-				"WBYWWBKW",
-				"BYGYBWYR",
-				"WRWWYOWB",
-				"ORWWROBB"
+				"BBOOBBOO",
+				"BBOOBBOO",
+				"OWWBOWWB",
+				"OWWBOWWB",
+				"BBOOBBOO",
+				"BBOOBBOO",
+				"OOBBOOBB",
+				"OOBBOOBB"
 			]
 		},
 		{
 			"name": "B",
 			"colors": [
-				"WBYWBBOO",
-				"BWGOWBGO",
-				"OOOBYYOB",
-				"OPOYOGKK",
-				"BBKOBBKO",
-				"WPRKWKPK",
-				"OOBBRRBB",
-				"RYBBYWWB"
+				"WWKWWKWW",
+				"KKKKKKKK",
+				"KGGKKGGK",
+				"KGGKKGGK",
+				"KKKKKKKK",
+				"WKWWWWKW",
+				"WWWWWWWW",
+				"WWWWWWWW"
 			]
 		}
 	],

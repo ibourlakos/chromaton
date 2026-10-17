@@ -147,26 +147,26 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today
 - **Goal:** Weave the pawn.
 - **Hint:** Any two paints leave out a third, the one neither has. Mix the two cards, then flip the mix.
 
-### 26 ★ *Two Pawns · What Neither Has* (`two_pawns`, new 2026-10-06, showcase)
-- **Goal:** Weave the two pawns.
-- **Hint:** Two pawns stand side by side, in the paint neither card has. Give your Third Paint both cards and tube it to the loom: one piece does what a Mixing Tub and a Flip Pan did.
+### 26 ★ *The Chess Clock · What Neither Has* (`two_pawns`, new 2026-10-06, showcase)
+- **Goal:** Weave the chess clock.
+- **Hint:** The clock starts the game. Where a card has every paint, neither card is missing anything, so the cloth turns white. Give your Third Paint both cards and tube it to the loom: one piece does what a Mixing Tub and a Flip Pan did.
 - **Steps:** 1. "Your Third Paint is a piece now, on the shelf." (its slot lights) 2. "Like any piece: paints in on the left, one out on the right." (the Third Paint in) 3. "Give it both cards." (two tubes) 4. "To the loom: what neither card has, in one piece."
-- Notes: the showcase after The Pawn (playtest R3); the first invention used as a piece is guided here now, so The Rook is no longer guided. Waits for the Third Paint.
+- Notes: the showcase after The Pawn (playtest R3); the first invention used as a piece is guided here now, so The Rook is no longer guided. Waits for the Third Paint. Was Two Pawns until 2026-10-17 (playtest R4: it was The Pawn again, on cards of noise); now the first of the quilt's three chess themes (clock, board, trophy). Card A is the board by night with the dials left bare, card B the clock in black ink with green dials: the hint gives the new idea (black wipes the cloth white) and leaves the board flipping back, and the red dials, to the player.
 
 ### 27 The Rook · A Flip Pan, Rebuilt (`neither_twice`)
 - **Goal:** Weave the rook, and build a Flip Pan from Third Paints.
 - **Hint:** What neither of two same paints has is that paint's opposite. Split the card and give the Third Paint the same paint twice.
-- Notes: the goal and the title now say it rebuilds Invert (designer's note). No longer guided since 2026-10-06: its steps (the first invention used as a piece) moved to Two Pawns.
+- Notes: the goal and the title now say it rebuilds Invert (designer's note). No longer guided since 2026-10-06: its steps (the first invention used as a piece) moved to level 26 (now The Chess Clock).
 
 ### 28 The Queen · Extreme Mix (`either_not_both`, invention)
 - **Goal:** Weave the queen.
 - **Hint:** The queen wears only the paint that comes from one card alone. Mix the cards, then sieve the mix with the opposite of what they share.
 - Notes: the invention's player name is **Extreme Mix** (designer, 2026-10-05; the title was "Either, Not Both"); Contrast stays its internal name. ★★★ with the discount is `Third Paint(Third Paint(A, B), Sieve(A, B))`; the hint describes the clearer ★★ route (4) on purpose; at the rebuild, `.make solve` must keep its ★★ budget at 4 or more.
 
-### 29 *The Little Board · Stripes Crossed* (`little_board`, new 2026-10-06, showcase)
-- **Goal:** Weave the little chessboard.
-- **Hint:** Where a row's paint and a column's paint differ, the board turns dark. Give Extreme Mix both cards and tube it to the loom.
-- Notes: a 4×4 board; card A is row stripes, card B column stripes, blue and orange, with two corner stitches that come out red. Extreme Mix costs 2, so ★★★ is 2. Waits for Extreme Mix.
+### 29 *The Chessboard · Stripes Crossed* (`little_board`, new 2026-10-06, showcase)
+- **Goal:** Weave the chessboard.
+- **Hint:** The game is played on sixty-four squares. Where a column is black, Extreme Mix flips the row's paint; where it is white, it keeps it. Give Extreme Mix both cards and tube it to the loom.
+- Notes: 8×8 since 2026-10-17 (was The Little Board, 4×4 in black and white): card A is rows of orange and blue, card B columns of white and black, and the cloth the pieces' orange and blue checker, two corner stitches red. Extreme Mix costs 2, so ★★★ is 2. Waits for Extreme Mix.
 
 ### 30 The Knight · A Mixing Tub, Rebuilt (`back_to_mix`)
 - **Goal:** Weave the knight, and build a Mixing Tub from Third Paints.
@@ -176,10 +176,10 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today
 - **Goal:** Weave the bishop, and build a Sieve.
 - **Hint:** What two paints share is what neither of their opposites has. Flip both cards, then ask the Third Paint.
 
-### 32 *The Crown · Only the Blue Flipped* (`the_crown`, new 2026-10-06)
-- **Goal:** Weave the crown.
-- **Hint:** The card is the crown by night, every paint's blue flipped: added where it was missing, taken away where it was. Ask Extreme Mix about the card and a pot of blue.
-- Notes: one card; ★★★ 3 (Extreme Mix 2 and the blue pot 1).
+### 32 *The Trophy · Only the Blue Flipped* (`the_crown`, new 2026-10-06)
+- **Goal:** Weave the trophy.
+- **Hint:** The game is won, but the card shows the trophy by night, every paint's blue flipped: added where it was missing, taken away where it was. Ask Extreme Mix about the card and a pot of blue.
+- Notes: one card; ★★★ 3 (Extreme Mix 2 and the blue pot 1). Was The Crown until 2026-10-17: the same machine, the third chess theme. The card is a black and white board with the cup in blue and its gem in purple.
 
 ### 33 The King · Same Paint (`only_third_paint`)
 - **Goal:** Weave the king using only Third Paints.
@@ -194,10 +194,10 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today
 - **Goal:** Weave the black pawn.
 - **Hint:** In the looking glass, mixing turns to sieving and black turns to white. Sieve the two cards, then flip what they share.
 
-### 35 *Two Black Pawns · What They Don't Both Have* (`two_black_pawns`, new 2026-10-06, showcase)
-- **Goal:** Weave the two black pawns.
-- **Hint:** Two black pawns stand side by side, in the paint the cards don't both have. Give Missing From Either both cards and tube it to the loom: one piece does what a Sieve and a Flip Pan did.
-- Notes: Two Pawns' twin; not guided (The Black Rook isn't either). Waits for Missing From Either.
+### 35 *The Black Chess Clock · What They Don't Both Have* (`two_black_pawns`, new 2026-10-06, showcase)
+- **Goal:** Weave the black chess clock.
+- **Hint:** The chess clock's twin, in the looking glass. Where a card has no paint at all, the cards can't both have anything, so the cloth turns black. Give Missing From Either both cards and tube it to the loom: one piece does what a Sieve and a Flip Pan did.
+- Notes: The Chess Clock's twin, both its cards flipped; not guided (The Black Rook isn't either). Waits for Missing From Either. Was Two Black Pawns until 2026-10-17.
 
 ### 36 The Black Rook · A Flip Pan, Rebuilt (`missing_twice`)
 - **Goal:** Weave the black rook, and build a Flip Pan from Missing From Either.
@@ -208,10 +208,10 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today
 - **Hint:** In the looking glass, the queen wears paint where the cards agree. Mix what the cards share with the opposite of their mix.
 - Notes: now the level that invents Same Paint.
 
-### 38 *The Little Black Board · Stripes Agreeing* (`little_black_board`, new 2026-10-06, showcase)
-- **Goal:** Weave the little black chessboard.
-- **Hint:** The little board's twin, in the looking glass: where a row's paint and a column's paint agree, the board turns dark. Give Same Paint both cards and tube it to the loom.
-- Notes: the same two cards as The Little Board; the corners come out green. Same Paint costs 3, so ★★★ is 3. Waits for Same Paint.
+### 38 *The Looking-Glass Board · Stripes Agreeing* (`little_black_board`, new 2026-10-06, showcase)
+- **Goal:** Weave the looking-glass board.
+- **Hint:** The chessboard's twin, in the looking glass: the same two cards, and every square swapped. Where a column is white, Same Paint flips the row's paint; where it is black, it keeps it. Give Same Paint both cards and tube it to the loom.
+- Notes: the same two cards as The Chessboard; the corners come out green. Same Paint costs 3, so ★★★ is 3. Waits for Same Paint. Was The Little Black Board until 2026-10-17; the name nods to Through the Looking-Glass, which is a chess game.
 
 ### 39 The Black Knight · A Sieve, Rebuilt (`back_to_filter`)
 - **Goal:** Weave the black knight, and build a Sieve from Missing From Either.
@@ -221,10 +221,10 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today
 - **Goal:** Weave the black bishop, and build a Mixing Tub.
 - **Hint:** What either paint has is what their opposites don't both have. Flip both cards, then ask Missing From Either.
 
-### 41 *The Black Crown · Only the Blue Flipped* (`the_black_crown`, new 2026-10-06)
-- **Goal:** Weave the black crown.
-- **Hint:** The crown's twin, in the looking glass: the card is the black crown with every paint's blue flipped. Same Paint keeps what agrees, so ask it about the card and an orange pot, which holds everything but blue.
-- Notes: ★★★ 4 (Same Paint 3 and the orange pot 1; the solver also finds a 4 with Missing From Either).
+### 41 *The Black Trophy · Only the Blue Flipped* (`the_black_crown`, new 2026-10-06)
+- **Goal:** Weave the black trophy.
+- **Hint:** The trophy's twin, in the looking glass: the card is the black trophy with every paint's blue flipped. Same Paint keeps what agrees, so ask it about the card and an orange pot, which holds everything but blue.
+- Notes: ★★★ 4 (Same Paint 3 and the orange pot 1; the solver also finds a 4 with Missing From Either). Was The Black Crown until 2026-10-17.
 
 ### 42 The Black King · Extreme Mix (`only_missing`)
 - **Goal:** Weave the black king using only Missing From Either.
@@ -237,7 +237,7 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today
 
 - **Flip Side** (`flip_side`): The Beach Flags · Every Mix Flipped. Hint: "On the beach, every flag flips to the one paint it lacks. Tube the card through the Flip Pan."
 - **The Harbour** (`the_flower`): The Harbour · Two of Three. Hint: "Gulls, sails and the quay, each on two of three cards. Sieve each pair of cards, then mix the three answers." Until chapter 6 earns its rule as Consensus.
-- **The Chessboard** (`chessboard`, made up 2026-10-06 to try the largest cards, 12 by 9): The Chessboard · Flip, Then Sieve. Hint: "On the black squares card A is black and card B is bare. On the white squares the two agree. Flip card B to its opposite, then sieve it with card A." A black and white cloth woven from `Filter(A, Invert B)` (Flip Pan and Sieve only; the card maker's "bleach" rule); a Lost Level, played only from the command line (`.make level chessboard`).
+- **The Big Board** (`chessboard`, made up 2026-10-06 to try the largest cards, 12 by 9; was The Chessboard until 2026-10-17, when chapter 3's 8×8 board took the name): The Big Board · Flip, Then Sieve. Hint: "On the black squares card A is black and card B is bare. On the white squares the two agree. Flip card B to its opposite, then sieve it with card A." A black and white cloth woven from `Filter(A, Invert B)` (Flip Pan and Sieve only; the card maker's "bleach" rule); a Lost Level, played only from the command line (`.make level chessboard`).
 
 ---
 

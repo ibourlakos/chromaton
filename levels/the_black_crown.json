@@ -1,10 +1,10 @@
 {
 	"id": "the_black_crown",
-	"name": "The Black Crown",
-	"cloth": "The Black Crown",
+	"name": "The Black Trophy",
+	"cloth": "The Black Trophy",
 	"machine": "Only the Blue Flipped",
-	"goal": "Weave the black crown.",
-	"hint": "The crown's twin, in the looking glass: the card is the black crown with every paint's blue flipped. Same Paint keeps what agrees, so ask it about the card and an orange pot, which holds everything but blue.",
+	"goal": "Weave the black trophy.",
+	"hint": "The trophy's twin, in the looking glass: the card is the black trophy with every paint's blue flipped. Same Paint keeps what agrees, so ask it about the card and an orange pot, which holds everything but blue.",
 	"pieces": [
 		"red_pot",
 		"shift",
@@ -22,27 +22,27 @@
 		"best": 4
 	},
 	"target": [
-		"BBOOBBOO",
-		"BKOKKBKO",
-		"OKKKKKKB",
-		"OKKGGKKB",
 		"BKKKKKKO",
-		"BBOOBBOO",
-		"OOBBOOBB",
-		"OOBBOOBB"
+		"KKKKKKKK",
+		"KOKGGKOK",
+		"OKKKKKKB",
+		"BBOKKBOO",
+		"BBOKKBOO",
+		"OOKKKKBB",
+		"OKKKKKKB"
 	],
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"WWKKWWKK",
-				"WOKOOWOK",
-				"KOOOOOOW",
-				"KOOYYOOW",
 				"WOOOOOOK",
-				"WWKKWWKK",
-				"KKWWKKWW",
-				"KKWWKKWW"
+				"OOOOOOOO",
+				"OKOYYOKO",
+				"KOOOOOOW",
+				"WWKOOWKK",
+				"WWKOOWKK",
+				"KKOOOOWW",
+				"KOOOOOOW"
 			]
 		}
 	],
@@ -78,5 +78,5 @@
 			]
 		]
 	},
-	"card_shows": 10
+	"card_shows": 8
 }
