@@ -1,10 +1,10 @@
 {
 	"id": "two_black_pawns",
-	"name": "Two Black Pawns",
-	"cloth": "Two Black Pawns",
+	"name": "The Black Chess Clock",
+	"cloth": "The Black Chess Clock",
 	"machine": "What They Don't Both Have",
-	"goal": "Weave the two black pawns.",
-	"hint": "Two black pawns stand side by side, in the paint the cards don't both have. Give Missing From Either both cards and tube it to the loom: one piece does what a Sieve and a Flip Pan did.",
+	"goal": "Weave the black chess clock.",
+	"hint": "The chess clock's twin, in the looking glass. Where a card has no paint at all, the cards can't both have anything, so the cloth turns black. Give Missing From Either both cards and tube it to the loom: one piece does what a Sieve and a Flip Pan did.",
 	"pieces": [],
 	"inventions": [
 		"missing_from_either"
@@ -14,41 +14,40 @@
 		"best": 1
 	},
 	"target": [
-		"BBOOBBOO",
-		"BBGOBBGO",
-		"OOKBOOKB",
-		"OKKKOKKK",
-		"BBKOBBKO",
-		"BKKKBKKK",
+		"BBKOBKOO",
+		"KKKKKKKK",
+		"KGGKKGGK",
+		"KGGKKGGK",
+		"KKKKKKKK",
+		"BKOOBBKO",
 		"OOBBOOBB",
 		"OOBBOOBB"
 	],
-	"card_rule": "missing",
 	"cards": [
 		{
 			"name": "A",
 			"colors": [
-				"KKGGOKBG",
-				"KKRBKKOP",
-				"BKWOPBRK",
-				"PRBRGGPK",
-				"KOGPKOKG",
-				"OWOWKGRO",
-				"BBOOBBKO",
-				"PPOOGPKK"
+				"OOBBOOBB",
+				"OOBBOOBB",
+				"BKKOBKKO",
+				"BKKOBKKO",
+				"OOBBOOBB",
+				"OOBBOOBB",
+				"BBOOBBOO",
+				"BBOOBBOO"
 			]
 		},
 		{
 			"name": "B",
 			"colors": [
-				"OOPPKOGP",
-				"OOPKOOPB",
-				"KBOKGKYO",
-				"GBOGBRYW",
-				"OKRBOKWB",
-				"KPBGORGB",
-				"KGKKKGOK",
-				"BBKKPGOO"
+				"KKWKKWKK",
+				"WWWWWWWW",
+				"WRRWWRRW",
+				"WRRWWRRW",
+				"WWWWWWWW",
+				"KWKKKKWK",
+				"KKKKKKKK",
+				"KKKKKKKK"
 			]
 		}
 	],
