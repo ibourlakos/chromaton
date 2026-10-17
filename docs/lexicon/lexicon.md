@@ -23,6 +23,7 @@ A small header, then sections in this order, any left out when there's nothing t
 - **Journal** (gameplay terms): "unlocks in <Level name>", the level whose solve unlocks the word on the Words tab (matched by name, so a renamed level needs this line updated), then "page on the <Tab> tab" if it has a fuller page.
 - **Also called**: other words for it, including old ones, so older notes still lead somewhere.
 - **Gameplay**: what the player is told (the journal's Words entry).
+- **Cases** (a piece or invention that takes two paints): its case rows on its journal page, 3 to 6 lines of `- Orange + Red → Yellow: the red they share washes out.`, one per kind of pair, each with a short reason in the Gameplay voice. `.\make words` writes them into `data/words.json`; the journal test checks each answer against the piece or invention.
 - **Design**: how we think about it.
 - **Implementation**: where it lives in the code.
 - **Related**, **Open questions**.
@@ -35,6 +36,7 @@ Files are named after the term in lower-case kebab-case (`paint-card.md`) and li
 |---|---|---|---|
 | [Brown](brown.md) | design | 🟡 | The paint that is not one of the eight: mixing all three primaries makes black here, and brown's hues dress the interface. |
 | [Cloth](cloth.md) | gameplay, design, implementation | 🟡 | The picture a machine weaves on the loom. |
+| [Contrast](contrast.md) | gameplay, design, implementation | ✅ | An invention: mixes two paints, but what they share washes out. Player word: Extreme Mix. |
 | [Critter](critter.md) | gameplay, design, implementation | 🟡 | A piece drawn as a character that does one thing to paint. |
 | [Filter](filter.md) | gameplay, design, implementation | ✅ | Keeps only what two paints share. Player word: Sieve. |
 | [Invert](invert.md) | gameplay, design, implementation | ✅ | Turns a paint into its opposite. Player word: Flip Pan. |
@@ -42,6 +44,7 @@ Files are named after the term in lower-case kebab-case (`paint-card.md`) and li
 | [Journal](journal.md) | gameplay, design, implementation | ✅ | The player's book of everything learned, made and woven. |
 | [Loom](loom.md) | gameplay, design, implementation | 🟡 | Weaves the machine's paint into the cloth, one stitch per tick. |
 | [Lost Levels](lost-levels.md) | design | ✅ | The hidden extra campaign where levels that leave the campaign go. |
+| [Missing From Either](missing-from-either.md) | gameplay, design, implementation | 🟡 | An invention: whatever one paint or the other lacks, the opposite of the Sieve. |
 | [Mix](mix.md) | gameplay, design, implementation | ✅ | Gives everything in either of two paints. Player word: Mixing Tub. |
 | [Paint](paint.md) | gameplay, design, implementation | ✅ | One of the eight paints, from white (none) to black (all three primaries). |
 | [Paint card](paint-card.md) | gameplay, design, implementation | ✅ | The cheat sheet of the eight paints, up over the workshop. |
@@ -49,11 +52,13 @@ Files are named after the term in lower-case kebab-case (`paint-card.md`) and li
 | [Piece](piece.md) | gameplay, design, implementation | 🟡 | Anything put in the workshop from the tray; its price counts toward the Pieces score. |
 | [Quilt](quilt.md) | gameplay, design, implementation | ✅ | A chapter's cloths sewn together. |
 | [Red pot](red-pot.md) | gameplay, design, implementation | ✅ | The one pot of red paint every other paint starts from. |
+| [Same Paint](same-paint.md) | gameplay, design, implementation | 🟡 | An invention: what two paints agree on, what both have and both lack. |
 | [Shift](shift.md) | gameplay, design, implementation | ✅ | Turns the paint wheel one step. Player word: Shift Wheel. |
 | [Shuttle](shuttle.md) | gameplay, design, implementation | 🟡 | The little wooden boat that marks the stitch, or the card drop, coming next. |
 | [Split](split.md) | gameplay, design, implementation | 🟡 | Copies one drop into two; free. |
 | [Stars](stars.md) | gameplay, design, implementation | ✅ | One to three per level: woven, few pieces, fewest pieces. |
 | [Stitch](stitch.md) | gameplay, design, implementation | 🟡 | One square of a cloth, woven from one drop. |
+| [Third Paint](third-paint.md) | gameplay, design, implementation | 🟡 | An invention: the opposite of a mix, whatever neither paint has. |
 | [Thread](thread.md) | gameplay, design | ✅ | A line of stitches in a cloth: a row across or a column down. |
 | [Tick](tick.md) | gameplay, design, implementation | 🟡 | One beat of the workshop clock. |
 | [Tray](tray.md) | gameplay, design, implementation, temporary | 🟡 | The shelf of pieces along the bottom of the workbench. |

@@ -115,7 +115,7 @@
 		{
 			"id": "invention",
 			"level": "yellow",
-			"tab": "inventions",
+			"tab": "pieces",
 			"text": "Solve some levels and the machine you built becomes an invention: one piece you can use again, cheaper by one than the pieces inside it. Every paint-box level earns a pot of its paint.",
 			"word": "Invention"
 		},
@@ -127,6 +127,32 @@
 			"word": "Shift Wheel"
 		},
 		{
+			"cases": [
+				{
+					"in": [
+						"Red",
+						"Yellow"
+					],
+					"out": "Orange",
+					"why": "Everything in either one."
+				},
+				{
+					"in": [
+						"Orange",
+						"Red"
+					],
+					"out": "Orange",
+					"why": "Red is there already, so nothing changes."
+				},
+				{
+					"in": [
+						"Purple",
+						"Green"
+					],
+					"out": "Black",
+					"why": "Between them they hold red, yellow and blue."
+				}
+			],
 			"id": "mix",
 			"level": "orange",
 			"tab": "pieces",
@@ -162,11 +188,257 @@
 			"word": "Pattern card"
 		},
 		{
+			"cases": [
+				{
+					"in": [
+						"Orange",
+						"Purple"
+					],
+					"out": "Red",
+					"why": "Red is all they share."
+				},
+				{
+					"in": [
+						"Red",
+						"Yellow"
+					],
+					"out": "White",
+					"why": "They share nothing, so nothing gets through."
+				},
+				{
+					"in": [
+						"Green",
+						"Black"
+					],
+					"out": "Green",
+					"why": "Black has everything, so the other paint gets through whole."
+				}
+			],
 			"id": "filter",
 			"level": "filter_table",
 			"tab": "pieces",
 			"text": "The Sieve takes two paints and keeps only what they share. Orange and purple share red, so out comes red. Two paints that share nothing give white.",
 			"word": "Sieve"
+		},
+		{
+			"cases": [
+				{
+					"in": [
+						"Red",
+						"Yellow"
+					],
+					"out": "Blue",
+					"why": "Blue is the one neither has."
+				},
+				{
+					"in": [
+						"Orange",
+						"Red"
+					],
+					"out": "Blue",
+					"why": "What both have doesn't matter; blue is still missing."
+				},
+				{
+					"in": [
+						"Red",
+						"Red"
+					],
+					"out": "Green",
+					"why": "The same paint twice gives its opposite."
+				},
+				{
+					"in": [
+						"Purple",
+						"White"
+					],
+					"out": "Yellow",
+					"why": "White has nothing, so out comes the other paint's opposite."
+				},
+				{
+					"in": [
+						"Orange",
+						"Blue"
+					],
+					"out": "White",
+					"why": "Between them they have everything, so nothing is left."
+				},
+				{
+					"in": [
+						"White",
+						"White"
+					],
+					"out": "Black",
+					"why": "Neither has anything, so out comes everything."
+				}
+			],
+			"id": "third-paint",
+			"level": "third_color",
+			"tab": "pieces",
+			"text": "The Third Paint mixes two paints and gives back the opposite: whatever neither of them has.",
+			"word": "Third Paint"
+		},
+		{
+			"cases": [
+				{
+					"in": [
+						"Red",
+						"Yellow"
+					],
+					"out": "Orange",
+					"why": "They share nothing, so it's a plain mix."
+				},
+				{
+					"in": [
+						"Orange",
+						"Red"
+					],
+					"out": "Yellow",
+					"why": "The red they share washes out."
+				},
+				{
+					"in": [
+						"Green",
+						"Green"
+					],
+					"out": "White",
+					"why": "The same paint twice shares everything, so nothing is left."
+				},
+				{
+					"in": [
+						"Purple",
+						"White"
+					],
+					"out": "Purple",
+					"why": "White brings nothing, so nothing changes."
+				},
+				{
+					"in": [
+						"Orange",
+						"Black"
+					],
+					"out": "Blue",
+					"why": "With black, any paint turns into its opposite, as on the Flip Pan."
+				},
+				{
+					"in": [
+						"Green",
+						"Blue"
+					],
+					"out": "Yellow",
+					"why": "With blue, blue comes out if it was there and goes in if it wasn't."
+				}
+			],
+			"id": "contrast",
+			"level": "either_not_both",
+			"tab": "pieces",
+			"text": "Extreme Mix mixes two paints, but whatever they share washes out.",
+			"word": "Extreme Mix"
+		},
+		{
+			"cases": [
+				{
+					"in": [
+						"Orange",
+						"Purple"
+					],
+					"out": "Green",
+					"why": "They share red; yellow and blue are each missing from one of them."
+				},
+				{
+					"in": [
+						"Red",
+						"Yellow"
+					],
+					"out": "Black",
+					"why": "They share nothing, so everything is missing from one or the other."
+				},
+				{
+					"in": [
+						"Blue",
+						"Blue"
+					],
+					"out": "Orange",
+					"why": "The same paint twice gives its opposite."
+				},
+				{
+					"in": [
+						"Green",
+						"White"
+					],
+					"out": "Black",
+					"why": "White lacks everything."
+				},
+				{
+					"in": [
+						"Purple",
+						"Black"
+					],
+					"out": "Yellow",
+					"why": "Black lacks nothing, so out comes the other paint's opposite."
+				}
+			],
+			"id": "missing-from-either",
+			"level": "missing_from_either",
+			"tab": "pieces",
+			"text": "Missing From Either gives whatever one paint or the other lacks: the opposite of what the Sieve keeps.",
+			"word": "Missing From Either"
+		},
+		{
+			"cases": [
+				{
+					"in": [
+						"Red",
+						"Red"
+					],
+					"out": "Black",
+					"why": "The same paint twice agrees on everything."
+				},
+				{
+					"in": [
+						"Red",
+						"Yellow"
+					],
+					"out": "Blue",
+					"why": "They agree only on lacking blue."
+				},
+				{
+					"in": [
+						"Orange",
+						"Red"
+					],
+					"out": "Purple",
+					"why": "Both have red and both lack blue; they disagree on yellow."
+				},
+				{
+					"in": [
+						"Green",
+						"Black"
+					],
+					"out": "Green",
+					"why": "With black, a paint stays as it is."
+				},
+				{
+					"in": [
+						"Green",
+						"White"
+					],
+					"out": "Red",
+					"why": "With white, a paint turns into its opposite."
+				},
+				{
+					"in": [
+						"Red",
+						"Green"
+					],
+					"out": "White",
+					"why": "Opposites agree on nothing."
+				}
+			],
+			"id": "same-paint",
+			"level": "same_paint",
+			"tab": "pieces",
+			"text": "Same Paint keeps what two paints agree on: what both have and what both lack.",
+			"word": "Same Paint"
 		}
 	]
 }

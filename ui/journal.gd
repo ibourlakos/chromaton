@@ -1,16 +1,18 @@
 ## The journal (DESIGN.md 5.7): the player's own book of what they've learned,
-## made and woven. Paper tabs along the top: Paint · Loom · Pieces ·
-## Inventions · Cloths · Scores · Words.
+## made and woven. Paper tabs along the top: Paint · Loom · Pieces · Cloths ·
+## Scores · Words.
 ##
 ## - Paint and Loom are short articles: the Gameplay text of the lexicon's
 ##   words for that tab (data/words.json), each with a small picture; Paint
 ##   also holds the paint card's triangle.
-## - Pieces has a page per piece: its critter, its words, and a frame for
-##   every paint it can be given, filled the first time the player's own
-##   machine shows it doing that (Progress.seen). Mix and Filter take two
-##   paints, so theirs is a table that fills both ways at once.
-## - Inventions is the old Pattern Book: the paint shelf, then the invention
-##   slots.
+## - Pieces lists every piece and invention (a light bulb marks those), the
+##   ones known so far by name, in a list that scrolls. A piece's page has
+##   its critter, its words, and a frame for every paint it can be given,
+##   filled the first time the player's own machine shows it doing that
+##   (Progress.seen); Mix and Filter take two paints, so theirs is a table
+##   that fills both ways at once. An invention's page has its sticker, its
+##   rule, case rows (drop + drop → drop, and why) and what the player made
+##   it of. The red pot's page holds the paint shelf, the earned pots.
 ## - Cloths hangs every level's cloth, one chapter per page, empty until
 ##   woven, with the chapter's quilt beside them.
 ## - Scores is the scoreboard: best stars, Pieces and Ticks per level.
@@ -19,9 +21,9 @@
 ##
 ## Opened from the level select (book button, B) or over the workbench by
 ## peek (a piece's page). Everything is a tap; keys (keys.gd, group Journal)
-## only do what a tap does: 1–7 a tab, Tab the next one, ← → turn pages (or
-## step through pieces and words), Enter opens a word's page, Back, B or J
-## closes.
+## only do what a tap does: 1–6 a tab, Tab the next one, ← → turn pages (or
+## step through pieces and words), ↑ ↓ scroll, Enter opens a word's page,
+## Back, B or J closes.
 extends Control
 
 const P = preload("res://ui/palette.gd")
@@ -39,11 +41,12 @@ const Words = preload("res://core/words.gd")
 signal back
 
 const DESIGN := Vector2(1280, 800)
-const TABS := [["paint", "Paint"], ["loom", "Loom"], ["pieces", "Pieces"], ["inventions", "Inventions"], ["cloths", "Cloths"], ["scores", "Scores"], ["words", "Words"]]
+const TABS := [["paint", "Paint"], ["loom", "Loom"], ["pieces", "Pieces"], ["cloths", "Cloths"], ["scores", "Scores"], ["words", "Words"]]
 const PAGE := Rect2(40, 112, 1200, 674)
 const TAB_TOP := 66.0
-const SLOT := Vector2(306, 252)  # an invention's slot
 const WORD_COLS := 4
+const ENTRY := Vector2(170, 90)  # an entry in the Pieces list
+const ENTRY_STEP := 100.0
 
 static var last_tab := "paint"  # where the journal opens next time
 
@@ -55,34 +58,32 @@ var chapter := 0  # the Cloths and Scores page
 var piece := 0  # the Pieces page
 var word := 0  # the word picked on the Words tab
 var overlay := false  # over the workbench: draws its own paper
-var article_view: Control  # the open article (Paint, Loom), clipped so it scrolls
+var article_view: Control  # the open article (Paint, Loom) or the Pieces list, clipped so it scrolls
 var article_scroll := 0.0
 var article_focus := ""  # a word to scroll the article to (a peek on a tube or card)
 var _press_at := Vector2(-1, -1)
 var _dragged := false
 var here = null  # the level it was opened from (peek): its pieces count as met
 var t := 0.0
-var pieces: Array = []  # piece kinds in the order the campaign brings them
+var pieces: Array = []  # the Pieces list: piece kinds and "inv:<id>" (_entries)
 var paint_card: Control
 var prev_button
 var next_button
 var _pressed := ""
 
 
-## focus: a piece kind ("mix", "inv:<id>"), "tube" or "card", for a peek, or
-## "word:<id>" for a word; tab_id ""
-## for the tab last open.
+## focus: a piece kind ("mix", "inv:<id>"; a pot opens the red pot's page),
+## "tube" or "card", for a peek, or "word:<id>" for a word; tab_id "" for the
+## tab last open.
 func setup(p_levels: Array, p_progress, tab_id := "", focus := "") -> void:
 	levels = p_levels if not p_levels.is_empty() else Level.load_all()
 	progress = p_progress
 	words = Words.in_order(progress)
-	pieces = []
-	if not levels.is_empty():
-		pieces = levels[-1].tray.filter(func(k): return Pieces.TABLE.has(k))
+	pieces = _entries()
 	tab = last_tab
-	if focus.begins_with("inv:"):
-		tab = "inventions"
-	elif focus.begins_with("word:"):  # "New in your journal": its first new word
+	if focus.begins_with("inv:pot_"):  # a pot: the red pot's page holds the paint shelf
+		focus = "red_pot"
+	if focus.begins_with("word:"):  # "New in your journal": its first new word
 		tab = "words"
 		for i in words.size():
 			if str(words[i]["id"]) == focus.substr(5):
@@ -146,6 +147,8 @@ func show_tab(id: String) -> void:
 			if row["w"]["id"] == article_focus:
 				article_scroll = minf(row["y"], _article_max())
 		article_focus = ""
+	if tab == "pieces":
+		_show_piece()
 	paint_card.visible = tab == "paint"
 	_sync_arrows()
 	queue_redraw()
@@ -164,6 +167,7 @@ func turn(by: int) -> void:
 			chapter = clampi(chapter + by, 0, _chapter_count() - 1)
 		"pieces":
 			piece = clampi(piece + by, 0, pieces.size() - 1)
+			_show_piece()
 		"words":
 			word = clampi(word + by, 0, words.size() - 1)
 	_sync_arrows()
@@ -178,6 +182,8 @@ func open_word_page() -> void:
 	var kind: String = str(w["id"]).replace("-", "_")
 	if kind in pieces:
 		piece = pieces.find(kind)
+	elif "inv:" + kind in pieces:
+		piece = pieces.find("inv:" + kind)
 	if w["tab"] != "" and w["tab"] != "words":
 		show_tab(w["tab"])
 
@@ -276,8 +282,9 @@ func _tab_rect(i: int) -> Rect2:
 	return Rect2(PAGE.position.x + 20 + i * w, TAB_TOP, w - 8, PAGE.position.y - TAB_TOP + 2)
 
 
+## An entry of the Pieces list, inside the list (before it scrolls).
 func _piece_rect(i: int) -> Rect2:
-	return Rect2(PAGE.position + Vector2(24, 24 + i * 100), Vector2(170, 90))
+	return Rect2(Vector2(0, i * ENTRY_STEP), ENTRY)
 
 
 func _word_rect(i: int) -> Rect2:
@@ -304,9 +311,12 @@ func _target_at(pos: Vector2) -> String:
 		return "more"
 	match tab:
 		"pieces":
-			for i in pieces.size():
-				if _piece_rect(i).has_point(pos):
-					return "piece:%d" % i
+			var list := _article_rect()
+			if list.has_point(pos):
+				var at := pos - list.position + Vector2(0, article_scroll)
+				for i in pieces.size():
+					if _piece_rect(i).has_point(at):
+						return "piece:%d" % i
 		"words":
 			for i in words.size():
 				if _word_rect(i).has_point(pos):
@@ -392,8 +402,6 @@ func _draw() -> void:
 			pass  # drawn by article_view, over the page
 		"pieces":
 			_draw_pieces()
-		"inventions":
-			_draw_inventions()
 		"cloths":
 			_draw_cloths()
 		"scores":
@@ -455,20 +463,28 @@ const ARTICLE_GAP := 18.0
 const ARTICLE_STEP := 60.0  # a scroll key's or wheel notch's distance
 
 
-## Where the open tab's article sits, or an empty rect on other tabs.
+## Where the open tab's article (or the Pieces list) sits, or an empty rect
+## on other tabs.
 func _article_rect() -> Rect2:
 	match tab:
 		"paint":
 			return Rect2(PAGE.position.x + 540, PAGE.position.y + 40, 620, PAGE.size.y - 60)
 		"loom":
 			return Rect2(PAGE.position + Vector2(40, 30), PAGE.size - Vector2(80, 50))
+		"pieces":
+			return Rect2(PAGE.position + Vector2(24, 24), Vector2(ENTRY.x, PAGE.size.y - 48))
 	return Rect2()
 
 
-## Each word's row on the open tab's article: [{"w", "y", "h"}].
+## Each word's row on the open tab's article: [{"w", "y", "h"}]; on Pieces,
+## each entry's: [{"y", "h"}].
 func _article_rows() -> Array:
 	var width := _article_rect().size.x
 	var rows := []
+	if tab == "pieces":
+		for i in pieces.size():
+			rows.append({"y": i * ENTRY_STEP, "h": ENTRY.y})
+		return rows
 	var y := 0.0
 	for w in _tab_words(tab):
 		var h := 70.0
@@ -515,6 +531,10 @@ func _draw_article_view() -> void:
 	if r.size.y <= 0:
 		return
 	article_scroll = clampf(article_scroll, 0.0, _article_max())
+	if tab == "pieces":
+		_draw_piece_list(ci, r)
+		_draw_more_chip(ci, -r.position)
+		return
 	for row in _article_rows():
 		var y: float = row["y"] - article_scroll
 		if y + row["h"] < 0 or y > r.size.y:
@@ -540,27 +560,139 @@ func _draw_more_chip(ci: CanvasItem, offset: Vector2) -> void:
 	K.text(ci, P.ui(700), m.get_center(), "%d more below ↓" % n, 14, P.INK_SOFT)
 
 # --- Pieces ------------------------------------------------------------------
+#
+# One list of every piece and invention, the ones known so far (met, or
+# made) by name, then the rest in the order the campaign brings them, as on
+# Words. It scrolls as an article does. Beside it, the open entry's page.
 
-func _draw_pieces() -> void:
+## The Pieces list: piece kinds, and "inv:<id>" for each invention that isn't
+## a pot (the pots share the red pot's page, its paint shelf).
+func _entries() -> Array:
+	var all := []
+	if not levels.is_empty():
+		all = levels[-1].tray.filter(func(k): return Pieces.TABLE.has(k))
+	for slot in _invention_slots():
+		all.append("inv:" + str(slot[1]))
+	var at := {}  # where each comes in: the campaign's order
+	for k in all.size():
+		at[all[k]] = _brought_in(all[k]) * 100 + k
+	var known := all.filter(func(e): return knows(e))
+	known.sort_custom(func(a, b): return entry_name(a).naturalnocasecmp_to(entry_name(b)) < 0)
+	var rest := all.filter(func(e): return not knows(e))
+	rest.sort_custom(func(a, b): return at[a] < at[b])
+	return known + rest
+
+
+## The level that brings an entry in: the first that offers a piece, the one
+## that makes an invention.
+func _brought_in(e: String) -> int:
+	if e.begins_with("inv:"):
+		for slot in _invention_slots():
+			if "inv:" + str(slot[1]) == e:
+				return slot[0]
+	for i in levels.size():
+		if e in levels[i].pieces:
+			return i
+	return levels.size()
+
+
+## Whether the player knows an entry: a piece met, an invention made.
+func knows(e: String) -> bool:
+	if e.begins_with("inv:"):
+		return progress.inventions.has(e.substr(4))
+	return is_met(e)
+
+
+## An entry's name as the player reads it.
+func entry_name(e: String) -> String:
+	if e.begins_with("inv:"):
+		return invention_name(levels, e.substr(4))
+	return Pieces.display_name(e)
+
+
+## An invention's name, from the level that makes it ("" for none).
+static func invention_name(p_levels: Array, id: String) -> String:
+	for level in p_levels:
+		if str(level.invention.get("id", "")) == id:
+			return str(level.invention["name"])
+	return ""
+
+
+## Scrolls the list so the open entry shows.
+func _show_piece() -> void:
+	var h := _article_rect().size.y
+	var y := piece * ENTRY_STEP
+	if y < article_scroll:
+		article_scroll = y
+	elif y + ENTRY.y > article_scroll + h:
+		article_scroll = y + ENTRY.y - h
+	article_scroll = clampf(article_scroll, 0.0, _article_max())
+	if article_view != null:
+		article_view.queue_redraw()
+
+
+## The list, drawn in the scrolling view.
+func _draw_piece_list(ci: CanvasItem, view: Rect2) -> void:
 	for i in pieces.size():
 		var r := _piece_rect(i)
-		var met := is_met(pieces[i])
+		r.position.y -= article_scroll
+		if r.end.y < 0 or r.position.y > view.size.y:
+			continue
+		var e: String = pieces[i]
+		var known := knows(e)
 		var lit := i == piece
-		K.shape(self, K.round_rect(r, 12), Color(P.HOOP, 0.25) if lit else (P.TAG if met else P.PAPER_DK), Color(P.INK, 0.8 if lit else 0.35), 2.5 if lit else 1.5)
-		if met:
-			critter(self, pieces[i], r.position + Vector2(48, r.size.y / 2), 0.62, t)
-			# A long name (Shift Wheel, Mixing Tub) takes two lines.
-			var name := Pieces.display_name(pieces[i])
-			var lines := [name]
-			if P.display(600).get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1, 19).x > r.size.x - 96 and name.contains(" "):
-				lines = name.split(" ", false, 1)
-			for k in lines.size():
-				K.text(self, P.display(600), Vector2(r.position.x + 92, r.get_center().y + (k - (lines.size() - 1) / 2.0) * 22), lines[k], 19, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+		K.shape(ci, K.round_rect(r, 12), Color(P.HOOP, 0.25) if lit else (P.TAG if known else P.PAPER_DK), Color(P.INK, 0.8 if lit else 0.35), 2.5 if lit else 1.5)
+		if e.begins_with("inv:"):
+			bulb(ci, r.position + Vector2(17, 17), 0.75)
+		if not known:
+			K.icon(ci, "lock", r.get_center(), 1.4, Color(P.INK, 0.35))
+			continue
+		var c := r.position + Vector2(48, r.size.y / 2)
+		if e.begins_with("inv:"):
+			K.sticker(ci, c + Vector2(0, 4), 0.42, entry_name(e), 99, t, i * 0.7)
 		else:
-			K.icon(self, "lock", r.get_center(), 1.4, Color(P.INK, 0.35))
+			critter(ci, e, c, 0.62, t)
+		# A long name (Shift Wheel, Missing From Either) takes more lines.
+		var fit := _fit_lines(entry_name(e), r.size.x - 96, 19)
+		var lines: Array = fit[0]
+		var step: float = fit[1] + 3
+		for k in lines.size():
+			K.text(ci, P.display(600), Vector2(r.position.x + 92, r.get_center().y + (k - (lines.size() - 1) / 2.0) * step), lines[k], fit[1], P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+
+
+## A name broken into lines that fit width, a word at a time, in the largest
+## size up to size where every word fits: [lines, size].
+static func _fit_lines(s: String, width: float, size: int) -> Array:
+	var font := P.display(600)
+	while size > 13:
+		var lines := []
+		var ok := true
+		for word in s.split(" "):
+			if font.get_string_size(word, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x > width:
+				ok = false
+			if not lines.is_empty() and font.get_string_size(lines[-1] + " " + word, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x <= width:
+				lines[-1] += " " + word
+			else:
+				lines.append(word)
+		if ok:
+			return [lines, size]
+		size -= 1
+	return [s.split(" "), size]
+
+
+## The light bulb that marks an invention in the list.
+static func bulb(ci: CanvasItem, c: Vector2, s: float) -> void:
+	K.disc(ci, c + Vector2(0, -3) * s, 8 * s, P.TAG)
+	K.icon(ci, "bulb", c, s, P.INK)
+
+
+func _draw_pieces() -> void:
 	var kind: String = pieces[piece] if piece < pieces.size() else ""
 	var area := Rect2(PAGE.position.x + 220, PAGE.position.y + 24, PAGE.size.x - 244, PAGE.size.y - 48)
 	K.line(self, Vector2(area.position.x - 12, area.position.y), Vector2(area.position.x - 12, area.end.y), Color(P.INK, 0.12), 2)
+	if kind.begins_with("inv:"):
+		_draw_invention_page(kind.substr(4), area)
+		return
 	if kind == "" or not is_met(kind):
 		K.text(self, P.display(600), area.get_center() + Vector2(0, -20), "?", 64, Color(P.INK, 0.25))
 		K.text(self, P.ui(700), area.get_center() + Vector2(0, 40), "You haven't met this piece yet.", 18, Color(P.INK, 0.45))
@@ -568,7 +700,8 @@ func _draw_pieces() -> void:
 	critter(self, kind, area.position + Vector2(70, 70), 1.15, t)
 	K.text(self, P.display(600), Vector2(area.position.x + 150, area.position.y + 26), Pieces.display_name(kind), 34, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 	var w := Words.find(kind.replace("_", "-"))
-	if not w.is_empty() and Words.is_unlocked(w, progress):
+	var read := not w.is_empty() and Words.is_unlocked(w, progress)
+	if read:
 		_para(Vector2(area.position.x + 150, area.position.y + 50), area.size.x - 160, w["text"], 17)
 	elif not w.is_empty():
 		var level = _level_by_id(str(w["level"]))
@@ -580,22 +713,78 @@ func _draw_pieces() -> void:
 		"mix", "filter":
 			_draw_two_inputs(kind, Vector2(area.position.x + 40, top))
 		"red_pot":
-			_fact(Vector2(area.position.x + 60, top + 60), [], [Paint.RED], "Every drop it makes is red.")
+			_fact(Vector2(area.position.x + 60, top + 30), [], [Paint.RED], "Every drop it makes is red.")
+			_draw_shelf(Rect2(area.position.x, top + 100, area.size.x, area.end.y - top - 100))
 		"split":
 			_fact(Vector2(area.position.x + 60, top + 60), [Paint.ORANGE], [Paint.ORANGE, Paint.ORANGE], "Whatever goes in comes out twice.")
-	# Using the paint card for this piece, once its page is read.
-	if CARD_LINES.has(kind) and not w.is_empty() and Words.is_unlocked(w, progress):
+	# Beside the table, why: its case rows, then the paint card's line, once
+	# its page is read.
+	var side := area.position.x + 40 + 9 * 44.0 + 30
+	if kind in ["mix", "filter"] and read:
+		_draw_cases(w.get("cases", []), Rect2(side, top, area.end.x - side, 200), 12.0)
+	if CARD_LINES.has(kind) and read:
 		if kind in ["shift", "invert"]:
 			_card_line(Rect2(area.position.x, top + 214, area.size.x, 60), CARD_LINES[kind])
 		else:
-			var x := area.position.x + 40 + 9 * 44.0 + 30
-			_card_line(Rect2(x, top + 170, area.end.x - x, 120), CARD_LINES[kind])
+			_card_line(Rect2(side, top + 206, area.end.x - side, 120), CARD_LINES[kind])
 	# What it's made of: the levels that rebuild it.
 	if kind in ["shift", "invert"]:
 		_draw_made_of(kind, Rect2(area.position.x, top + 290, area.size.x, area.end.y - top - 290))
 	elif kind in ["mix", "filter"]:
-		var x2 := area.position.x + 40 + 9 * 44.0 + 30
-		_draw_made_of(kind, Rect2(x2, top + 250, area.end.x - x2, area.end.y - top - 250))
+		_draw_made_of(kind, Rect2(side, top + 272, area.end.x - side, area.end.y - top - 272))
+
+
+## An invention's page: its sticker and price, its rule, its case rows, and
+## what the player made it of. It opens once the invention is made: the
+## every-paint check proved its answers, so there is nothing to find by play.
+func _draw_invention_page(id: String, area: Rect2) -> void:
+	var inv: Dictionary = progress.inventions.get(id, {})
+	if inv.is_empty():
+		var at := -1
+		for slot in _invention_slots():
+			if slot[1] == id:
+				at = slot[0]
+		K.text(self, P.display(600), area.get_center() + Vector2(0, -20), "?", 64, Color(P.INK, 0.25))
+		if at >= 0:
+			K.text(self, P.ui(700), area.get_center() + Vector2(0, 40), "Weave %s to invent it." % levels[at].ref_name(), 18, Color(P.INK, 0.45))
+		return
+	var name := str(inv.get("name", invention_name(levels, id)))
+	K.sticker(self, area.position + Vector2(84, 62), 1.1, name, 99, t, 0.4)
+	K.icon(self, "pieces", Vector2(area.position.x + 56, area.position.y + 126), 1.0, P.INK_SOFT)
+	K.text(self, P.ui(800), Vector2(area.position.x + 70, area.position.y + 126), "Price %d" % int(inv["cost"]), 18, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+	var x := area.position.x + 184
+	K.text(self, P.display(600), Vector2(x, area.position.y + 26), name, 34, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+	var w := Words.find(id.replace("_", "-"))
+	if not w.is_empty():
+		_para(Vector2(x, area.position.y + 50), area.end.x - x - 10, w["text"], 18)
+	var y := area.position.y + 160
+	y += _draw_cases(w.get("cases", []), Rect2(area.position.x + 20, y, area.size.x - 40, 0), 16.0)
+	var level = _level_by_id(str(inv.get("from_level", "")))
+	K.text(self, P.display(600), Vector2(area.position.x + 20, y + 22), "Made of", 22, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+	_made_of_row(Rect2(area.position.x + 20, y + 44, minf(area.size.x - 40, 620), 56), level.ref_name() if level != null else "", _machine_parts(inv.get("machine", {})))
+
+
+## Case rows: two paints, what they make and why, one row per kind of pair
+## (the lexicon's Cases, data/words.json). Returns their height.
+func _draw_cases(cases: Array, r: Rect2, drop_r: float) -> float:
+	var y := r.position.y
+	var size := 15 if drop_r < 14 else 17
+	var text_x := r.position.x + 20 + drop_r * 6 + 92
+	for c in cases:
+		var why_h := _para_height(r.end.x - text_x - 14, c["why"], size) - size * 0.6
+		var h := maxf(drop_r * 2 + 22, why_h + 18)
+		var row := Rect2(r.position.x, y, r.size.x, h)
+		K.shape(self, K.round_rect(row, 12), P.TAG, Color(P.INK, 0.25), 1.2)
+		var cy := row.get_center().y
+		var dx := r.position.x + 20 + drop_r
+		K.drop(self, Vector2(dx, cy), drop_r, Paint.NAMES.find(c["in"][0]))
+		K.text(self, P.display(600), Vector2(dx + drop_r + 16, cy), "+", 22, P.INK_SOFT)
+		K.drop(self, Vector2(dx + drop_r * 2 + 32, cy), drop_r, Paint.NAMES.find(c["in"][1]))
+		K.icon(self, "next", Vector2(dx + drop_r * 3 + 58, cy), 0.8, P.INK)
+		K.drop(self, Vector2(dx + drop_r * 4 + 84, cy), drop_r, Paint.NAMES.find(c["out"]))
+		_para(Vector2(text_x, cy - why_h / 2), r.end.x - text_x - 14, c["why"], size)
+		y += h + 8
+	return y - r.position.y
 
 
 ## What a critter is made of: a row for each level that rebuilds it from
@@ -613,21 +802,25 @@ func _draw_made_of(kind: String, r: Rect2) -> void:
 		if not progress.is_solved(level.id):
 			_locked(row, {"level": level.id})
 			continue
-		K.shape(self, K.round_rect(row, 12), P.TAG, Color(P.INK, 0.35), 1.5)
-		K.text(self, P.ui(700), Vector2(row.position.x + 14, row.get_center().y), level.ref_name(), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
-		var x := row.position.x + 30 + P.ui(700).get_string_size(level.ref_name(), HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x
-		var counts := _machine_parts(progress.stored_machine(level.id))
-		for part in counts:
-			var c := Vector2(x + 26, row.get_center().y)
-			if part.begins_with("inv:"):
-				var inv: Dictionary = progress.inventions.get(part.substr(4), {})
-				K.sticker(self, c + Vector2(8, 0), 0.42, str(inv.get("name", "?")), 99, t, 0.2)
-				x += 70
-			else:
-				critter(self, part, c, 0.42, t)
-				x += 44
-			K.text(self, P.ui(800), Vector2(x + 6, row.get_center().y), "× %d" % counts[part], 15, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-			x += 46
+		_made_of_row(row, level.ref_name(), _machine_parts(progress.stored_machine(level.id)))
+
+
+## One "Made of" row: the level, then each piece with how many.
+func _made_of_row(row: Rect2, ref: String, counts: Dictionary) -> void:
+	K.shape(self, K.round_rect(row, 12), P.TAG, Color(P.INK, 0.35), 1.5)
+	K.text(self, P.ui(700), Vector2(row.position.x + 14, row.get_center().y), ref, 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+	var x := row.position.x + 30 + P.ui(700).get_string_size(ref, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x
+	for part in counts:
+		var c := Vector2(x + 26, row.get_center().y)
+		if part.begins_with("inv:"):
+			var inv: Dictionary = progress.inventions.get(part.substr(4), {})
+			K.sticker(self, c + Vector2(8, 0), 0.42, str(inv.get("name", "?")), 99, t, 0.2)
+			x += 70
+		else:
+			critter(self, part, c, 0.42, t)
+			x += 44
+		K.text(self, P.ui(800), Vector2(x + 6, row.get_center().y), "× %d" % counts[part], 15, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+		x += 46
 
 
 ## The pieces a saved machine is built from, by tray kind ("inv:<id>" for an
@@ -699,8 +892,7 @@ func _draw_two_inputs(kind: String, o: Vector2) -> void:
 				K.fill(self, K.round_rect(cell, 6), Color(P.PAPER_DK, 0.7))
 	draw_rect(Rect2(origin, Vector2(8, 8) * cs), Color(P.INK, 0.3), false, 1.5)
 	K.text(self, P.ui(700), Vector2(o.x, o.y + 6), "Found %d of 36" % found, 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
-	K.text(self, P.ui(700), Vector2(origin.x + 8 * cs + 30, origin.y + 30), "Each square is what the two", 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
-	K.text(self, P.ui(700), Vector2(origin.x + 8 * cs + 30, origin.y + 52), "paints beside it make.", 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+	K.text(self, P.ui(700), Vector2(origin.x, origin.y + 8 * cs + 18), "Each square is what the two paints beside it make.", 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 
 
 func _fact(o: Vector2, ins: Array, outs: Array, line: String) -> void:
@@ -727,49 +919,11 @@ static func critter(ci: CanvasItem, kind: String, c: Vector2, s: float, t: float
 	K.piece(ci, look, c, 0.6 * s, -1, 99, t, 0.4, more)
 
 
-# --- Inventions (the old Pattern Book) ----------------------------------------
+# --- Inventions and the paint shelf -------------------------------------------
 
-func _draw_inventions() -> void:
-	var page := PAGE
-	K.text(self, P.ui(700), Vector2(page.get_center().x, page.position.y + 30), "Machines you invented become pieces you can use again.", 17, P.INK_SOFT)
-	_draw_shelf(page)
-	var slots := _invention_slots()
-	var origin := page.position + Vector2(64, 236)
-	# Three slots to a row, or all in one row of narrower slots when there
-	# are more (one row is all the page has room for).
-	var across := maxi(3, slots.size())
-	var gap := 46.0 if across == 3 else 16.0
-	var span := 3 * SLOT.x + 2 * 46.0
-	var size := Vector2((span - (across - 1) * gap) / across, SLOT.y)
-	var s := size.x / SLOT.x  # how much smaller than a slot of three
-	for k in across:
-		var r := Rect2(origin + Vector2(k * (size.x + gap), 0), size)
-		if k >= slots.size():
-			K.dashed(self, K.closed(K.round_rect(r.grow(-20), 16)), Color(P.INK, 0.18), 2, 8, 6)
-			continue
-		var slot: Array = slots[k]
-		var inv: Dictionary = progress.inventions.get(slot[1], {})
-		if inv.is_empty():
-			K.dashed(self, K.closed(K.round_rect(r.grow(-20), 16)), Color(P.INK, 0.4), 2, 8, 6)
-			K.text(self, P.display(600), r.get_center() + Vector2(0, -10), "?", 48, Color(P.INK, 0.35))
-			K.text(self, P.ui(700), r.get_center() + Vector2(0, 40), "Level %d" % (slot[0] + 1), 16, Color(P.INK, 0.45))
-			continue
-		K.sticker(self, r.position + Vector2(r.size.x / 2, 66), 1.5 * s, inv["name"], 99, t, k * 0.7)
-		var y := r.position.y + 142
-		K.icon(self, "pieces", Vector2(r.position.x + 40, y), 1.2, P.INK)
-		K.text(self, P.ui(800), Vector2(r.position.x + 58, y), "Price %d" % int(inv["cost"]), 20, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-		var x := r.position.x + 40
-		var counts: Dictionary = inv.get("counts", {})
-		for kind in counts:
-			critter(self, kind, Vector2(x + 18, y + 56), 0.6 * s, t)
-			K.text(self, P.ui(800), Vector2(x + 40 * s, y + 60), "× %d" % int(counts[kind]), 17, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-			x += 96 * s
-		K.text(self, P.ui(700), Vector2(r.position.x + r.size.x / 2, r.end.y - 6), "%d inputs · from level %d" % [int(inv["inputs"]), _number_of(str(inv.get("from_level", "")), slot[0] + 1)], 14, P.INK_SOFT)
-
-
-## Invention slots in campaign order, pots aside: [level index, invention id,
-## name]. An invention two levels earn (Same Paint) has one slot, at the
-## first; the slot tells which level made the one kept.
+## Inventions in campaign order, pots aside: [level index, invention id,
+## name]. An invention two levels earn (Same Paint) is listed once, at the
+## first; its page tells which level made the one kept.
 func _invention_slots() -> Array:
 	var out := []
 	var ids := {}
@@ -794,15 +948,20 @@ func _pots() -> Array:
 	return out
 
 
-func _draw_shelf(page: Rect2) -> void:
-	var y := page.position.y + 108
-	var plank := Rect2(page.position.x + 30, y + 30, page.size.x - 60, 14)
+## The paint shelf on the red pot's page: eight pots in journal order, each
+## with its price; one not earned yet is an outline naming the level that
+## earns it.
+func _draw_shelf(r: Rect2) -> void:
+	K.text(self, P.display(600), Vector2(r.position.x, r.position.y + 12), "The paint shelf", 22, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+	K.text(self, P.ui(700), Vector2(r.position.x, r.position.y + 42), "Every pot you earn is an invention, with its own price.", 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+	var y := r.position.y + 130
+	var plank := Rect2(r.position.x + 10, y + 30, r.size.x - 20, 14)
 	K.fill(self, K.round_rect(Rect2(plank.position + Vector2(2, 4), plank.size), 6), P.SHADOW)
 	K.shape(self, K.round_rect(plank, 6), P.WOOD_LT, P.INK, 2)
-	var step := (page.size.x - 80) / 8.0
+	var step := (r.size.x - 40) / 8.0
 	for spot in _pots():
 		var paint: int = spot[0]
-		var x := page.position.x + 40 + step * (paint + 0.5)
+		var x := r.position.x + 20 + step * (paint + 0.5)
 		var price := 1  # the red pot
 		if spot[1] >= 0:
 			var inv: Dictionary = progress.inventions.get(spot[2], {})
@@ -933,7 +1092,10 @@ func _draw_words() -> void:
 		if Words.is_unlocked(w, progress):
 			K.shape(self, K.round_rect(r, 12), Color(P.HOOP, 0.25) if lit else P.TAG, Color(P.INK, 0.8 if lit else 0.4), 2.5 if lit else 1.5)
 			picture(self, str(w["id"]), r.position + Vector2(40, r.size.y / 2 + 4), minf(0.62, r.size.y / 130), t, levels)
-			_fit_text(Vector2(r.position.x + 120, r.get_center().y), w["word"], 96, 17, P.INK, P.display(600))
+			var fit := _fit_lines(w["word"], 96, 17)  # a long word (Missing From Either) takes more lines
+			var lines: Array = fit[0]
+			for k in lines.size():
+				K.text(self, P.display(600), Vector2(r.position.x + 120, r.get_center().y + (k - (lines.size() - 1) / 2.0) * (fit[1] + 2)), lines[k], fit[1], P.INK)
 		else:
 			K.fill(self, K.round_rect(r, 12), Color(P.PAPER_DK, 0.6))
 			K.dashed(self, K.closed(K.round_rect(r, 12)), Color(P.INK, 0.5 if lit else 0.25), 2 if lit else 1.5, 6, 5)
@@ -1049,4 +1211,8 @@ static func picture(ci: CanvasItem, id: String, c: Vector2, s: float, t: float, 
 		"invention":
 			K.sticker(ci, c, 0.62 * s, "Extreme Mix", 99, t, 0.4)
 		_:
-			K.icon(ci, "book", c, 2.4 * s, P.INK)
+			var name := invention_name(levels, id.replace("-", "_"))  # an invention's word: its sticker
+			if name != "":
+				K.sticker(ci, c, 0.62 * s, name, 99, t, 0.4)
+			else:
+				K.icon(ci, "book", c, 2.4 * s, P.INK)

@@ -95,7 +95,7 @@ func first_entry() -> Array:
 		"frames":
 			return ["pieces", row["piece"]]
 		"invention":
-			return ["inventions", "inv:" + str(row["inv"]["id"])]
+			return ["pieces", "inv:" + str(row["inv"]["id"])]
 	return ["cloths", ""]
 
 

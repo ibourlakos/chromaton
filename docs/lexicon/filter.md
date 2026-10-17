@@ -9,6 +9,12 @@
 
 The Sieve takes two paints and keeps only what they share. Orange and purple share red, so out comes red. Two paints that share nothing give white.
 
+## Cases
+
+- Orange + Purple → Red: red is all they share.
+- Red + Yellow → White: they share nothing, so nothing gets through.
+- Green + Black → Green: black has everything, so the other paint gets through whole.
+
 ## Design
 
 - A fussy, heavy-lidded tub with a sieve in its rim that shakes when it fires; grains of held-back paint hop on the rim.
