@@ -1791,10 +1791,10 @@ func _draw_frame(ci: CanvasItem) -> void:
 	ci.draw_line(Vector2(0, TOP_H), Vector2(DESIGN.x, TOP_H), Color(P.INK, 0.15), 2)
 	# The title: the level's number, what the cloth is, then what the machine
 	# is (on an invention level the piece it becomes, with a sticker mark),
-	# then the "?" that brings the hint panel back. The phrases are in the
-	# level-title font, the number in stamp brown.
+	# then the "?" that brings the hint panel back. All in the level-title
+	# font, the number in stamp brown.
 	var parts := _title_parts()
-	var font := P.display(600)
+	var font := P.title()
 	var size: int = parts["size"]
 	var y := TOP_H / 2
 	K.text(ci, font, Vector2(parts["number_x"], y), str(level.number), size, Color(P.WOOD_DK, 0.95), HORIZONTAL_ALIGNMENT_LEFT)
@@ -1813,7 +1813,7 @@ func _draw_frame(ci: CanvasItem) -> void:
 ## "machine_x", "mark_x" (0 without a mark), "badge", "badge_rect", "hit"}.
 ## It shrinks to fit between the gear and the Paints button.
 func _title_parts() -> Dictionary:
-	var font := P.display(600)
+	var font := P.title()
 	var mark: bool = not level.invention.is_empty() and level.machine_phrase != ""
 	var w := func(s: String, sz: int) -> float: return P.title().get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x
 	var w_num := func(s: String, sz: int) -> float: return font.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x
