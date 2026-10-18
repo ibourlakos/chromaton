@@ -258,3 +258,57 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today
   - The red pot and Split: none (one rule each).
 - **The lexicon's Gameplay texts in critter names:** written at the rebuild, when the rename is built, then `.\make words`.
 - **Lost Levels**, the line under its name: "Levels that wandered off the campaign. They still weave." How it's found and laid out stays open (DESIGN.md §5.1).
+
+---
+
+## Historical notes *(draft, 2026-10-18)*
+
+The shape is decided (designer, 2026-10-18; DESIGN.md §5.7): one note per chapter, unlocked by completing the chapter's quilt (never blocking), pinned to the quilt on the Cloths tab as a paper tag and announced by "New in your journal"; 3 or 4 sentences and one picture drawn in code. The line-up keeps the dates in order and matches a note to its chapter's idea where it can. The texts below wait for the designer's markup; nothing is built.
+
+Each note has a title (the tag's line), a year, the text, and the picture. The pictures are wood, paper, thread and ink in the workshop's neutrals, never the eight paints' hues (CLAUDE.md, reserved colours). Under each, **Checked** lists the facts and where they were checked; **Left out** is what was true but didn't fit. Notes 5 to 8 are provisional until their chapters are planned; 7 is open.
+
+### Chapter 1, The Paint Box: The Paper Strip (1725)
+- **Text:** In the silk town of Lyon, weaving a pattern was slow: before every pass of the shuttle, a helper had to pull the cords of the right threads by hand. In 1725 Basile Bouchon, whose father built organs, gave the loom a long strip of paper punched with holes instead. The holes chose which threads would lift, one row of holes for each row of cloth. For the first time, a loom read its own pattern.
+- **Picture:** a paper strip with rows of holes, curling off a wooden roller into a loom's frame.
+- **Checked:** Lyon silk trade, 1725, the perforated paper roll, his father an organ maker (Wikipedia, "Basile Bouchon"; History of Information); needles in a box raised or left down by the tape's holes, the drawloom's cords pulled by hand before (Grace's Guide, "Basile Bouchon"). "Read its own pattern" stands for "the first industrial use of a semi-automated machine" (History of Information).
+- **Left out:** the helper's name, the *drawboy* (often a child): the usual term, but not in the sources checked here. Which way a hole works (lift or stay down): the sources word it awkwardly, so the text doesn't say.
+
+### Chapter 2, Pattern Cards: Cards on a Chain (1728)
+- **Text:** A paper strip is hard to change once it's punched. In 1728 Jean-Baptiste Falcon, who worked with Bouchon, cut the pattern into cards and laced them together in a chain. A card could be mended, swapped or moved without punching the whole pattern again. Your pattern cards carry the same idea: the picture comes into the machine on a card.
+- **Picture:** a chain of punched cards laced at their edges, folding over itself like a paper fan.
+- **Checked:** 1728, a chain of punched cards in place of Bouchon's tape, "to make the input of instructions more flexible" (Wikipedia, "Basile Bouchon"; Grace's Guide, "Jean-Baptiste Falcon"); Jacquard later used "Falcon's individual pasteboard cards" (Wikipedia, "Jacquard machine").
+- **Left out:** whether Falcon was Bouchon's assistant or his colleague (sources differ, hence "worked with").
+
+### Chapter 3, Invent What You Know: Jacquard's Loom (1804)
+- **Text:** Joseph-Marie Jacquard, a Lyon weaver's son, built his loom out of what others had found. In Paris he studied a loom by Jacques de Vaucanson, the maker of a famous mechanical duck, and joined its ideas to Falcon's chain of cards. His loom of 1804 let one weaver weave the richest pattern with no helper at the cords. By 1812 some 11,000 of them were working in France.
+- **Picture:** the Jacquard head, a wooden box on top of a loom, with its chain of cards draping down beside it.
+- **Checked:** patented 1804 (Wikipedia, "Jacquard machine"); attached to the Conservatoire des Arts et Métiers in Paris in 1803, where Vaucanson's loom "suggested various improvements" (Wikipedia, "Joseph Marie Jacquard", quoting the 1911 Britannica); Vaucanson's loom replaced by cards, "generally similar to Vaucanson's arrangement" (Wikipedia, "Jacquard machine"); the Digesting Duck, 1738 (Wikipedia, "Jacques de Vaucanson"); 11,000 looms in France by 1812 (Encyclopedia.com, "Jacquard's Loom"). His father Jean Charles Jacquard, a master weaver of Lyon (Wikipedia, "Joseph Marie Jacquard"; ERIH).
+- **Left out:** Vaucanson's year (1745 in most sources, 1740 in some), hence no year. The silk weavers' fight against the loom (it was hanged in effigy, a crowd resolved to break the looms), Napoleon handing the patent to the city of Lyon in 1805 with a pension for Jacquard: true, but a fourth sentence too many.
+
+### Chapter 4, The Looking Glass: The Woven Portrait (1839)
+- **Text:** In 1839 a Lyon workshop wove a portrait of Jacquard on one of his own looms, from some 24,000 cards. It was silk in black, white and every grey between, and so fine that two members of London's Royal Academy took it for an engraving. Charles Babbage, who was designing a calculating machine that would read cards, hung a copy in his home and showed it to his visitors.
+- **Picture:** a framed grey portrait of a man in a dark coat, hung on a nail, with a few punched cards tucked behind the frame.
+- **Checked:** 1839, woven by Michel-Marie Carquillat for Didier, Petit et Cie of Lyon, about 24,000 cards (Linda Hall Library; Metropolitan Museum, via Bonhams; History of Information); "mistaken for such by two members of the Royal Academy", Babbage's own words in *Passages from the Life of a Philosopher*, 1864 (quoted in Essinger, *Jacquard's Web*); Babbage wanted a copy for his London home in December 1839 and showed it to the Duke of Wellington and Prince Albert around 1842 (Science History Institute, "The French Connection"); the Analytical Engine read punched cards. The greys: from the portrait itself (it imitates an engraving); no source checked says it in words.
+- **Left out:** Wellington taking it for an engraving and Prince Albert putting him right: a magazine's telling, with no primary source found. That the portrait gave Babbage his cards: he chose cards before 1839, so the text only says he was designing a machine that read them.
+
+### Chapter 5, Asking Questions *(provisional)*: Weaving Patterns of Numbers (1843)
+- **Text:** In 1843 Ada Lovelace wrote about Charles Babbage's Analytical Engine, a machine he had designed to follow punched cards as Jacquard's loom does. "The Analytical Engine weaves algebraical patterns," she wrote, "just as the Jacquard-loom weaves flowers and leaves." She saw that it could work on more than numbers: given the rules of music, it might even compose. The engine was never built, but her notes are still read today.
+- **Picture:** an open notebook with a quill, a lace of punched cards for a bookmark.
+- **Checked:** 1843, her notes to her translation of Menabrea's article on the Analytical Engine; the quotation (Note A; "We may say most aptly, that ..." before it in full; public domain); the engine's use of cards for numbers and instructions (Columbia University Computing History); composing music, Note A ("might compose elaborate and scientific pieces of music of any degree of complexity or extent", if the rules of harmony could be written in its notation; Yale, "Ada Lovelace's Notes").
+- **Left out:** her program for the Bernoulli numbers (Note G), often called the first program: true, but needs explaining. "Algebraical" is a hard word for a young player; the quotation could stop at "weaves patterns ... just as the Jacquard-loom weaves flowers and leaves".
+- **Fit:** weak for Asking Questions. A better fit for the chapter (the engine looking at a result and choosing its next cards) is Babbage's, and Chromaton 2's frame; revisit when chapter 5 is planned.
+
+### Chapter 6, Choosing *(provisional)*: The Sorting Box (1890)
+- **Text:** Counting the people of the United States in 1880 took clerks about eight years. For 1890 Herman Hollerith punched each person's answers into a card: their age, their work, where they lived. His machine read a card in a moment and opened the lid of one box in its sorting cabinet, choosing where that card should go. The count of 62,622,250 people was finished that same year.
+- **Picture:** a wooden cabinet of small boxes, one lid standing open, a punched card halfway in.
+- **Checked:** the 1880 census took eight years (Wikipedia, "Tabulating machine"); the sorter, an oak box of 26 compartments with brass lids held shut by electric catches, one opening when its card was read (Smithsonian, "Hollerith Card Sorter"); the 1890 count finished on 12 December 1890 at 62,622,250 (Franklin Institute, "Case Files: Herman Hollerith").
+- **Left out:** that the first rough count was ready in about six weeks (often told, not checked). That Hollerith's company grew into IBM.
+
+### Chapter 7, Plates *(open)*
+- To choose when Plates is planned (several looms, one machine sharing its parts between them). Candidates, unchecked: Henry Babbage, Charles's son, building part of the Analytical Engine's mill around 1910; punched cards everywhere in the 20th century. Neither is checked yet.
+
+### Chapter 8, Counting *(provisional)*: The Engine That Waited (1991)
+- **Text:** By 1849 Charles Babbage had drawn his Difference Engine No. 2, a machine that works out long tables of numbers by nothing but adding. It was never built while he lived. In 1991, two hundred years after his birth, London's Science Museum built it from his drawings: 4,000 parts of iron, steel and bronze. It worked.
+- **Picture:** a tall frame of brass columns of number wheels, a crank handle on its side.
+- **Checked:** designed 1847 to 1849; the calculating section finished in 1991 for the bicentenary of his birth (born 1791), 4,000 parts, 2.6 tonnes, iron, steel and bronze; the printer added later (Science Museum Group collection, "Difference Engine No. 2"; Computer History Museum, "A Modern Sequel"). "Nothing but adding": the method of differences, "a difference engine only needs to be able to add" (Wikipedia, "Difference engine"). "It worked": "The completed machine works as Babbage intended" (Computer History Museum).
+- **Left out:** the museum had to draw new plans for each part, Babbage's twenty drawings not being detailed enough to make parts from (Computer History Museum). The printer's year (2000 or 2002, sources differ). The first Difference Engine (1822 on) and the piece of it finished in 1832.

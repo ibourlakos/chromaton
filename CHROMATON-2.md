@@ -87,7 +87,7 @@ All (proposal) unless marked.
    - Critters need voices. DESIGN.md §7.4 only lists royalty-free sources. 🟡 Cheap enough to ship in 1.
 4. **A light cast and a voice.**
    - Answer the open question of a workshop cast (§7.2, §12): three or four characters give **commissions** with constraints. That turns the parked rush-orders mode (§5.6) into a calm one: a budget, a palette, no timer. Real-time pressure fights the thoughtful-puzzler mindset (§5.6's own warning).
-   - **Historical notes** (designer, R3): rewards on how looms relate to automation through history, one snapshot per reward. ❓ How rewards map to levels (their own chapter, or spread). Optional, never blocking. 2's themes (Hollerith, punched cards, Lovelace's comparison of the Analytical Engine to the Jacquard loom) fit.
+   - **Historical notes** (designer, R3): rewards on how looms relate to automation through history, one snapshot per reward. 1 answered how they map (2026-10-18, DESIGN.md §5.7): one per chapter, unlocked by its quilt, never blocking; 2 can follow suit. 1's line-up runs from Bouchon (1725) to the Difference Engine built in 1991 and provisionally takes Lovelace and Hollerith, so 2 picks up from the Analytical Engine itself (cards that control the machine).
 5. **The first minute shows a picture.** 2 opens on a loom weaving something. Single-colour levels, if any, become a later tutorial, not the front door.
    - Avoid, as defaults: the "re-earn this pot cheaper" pattern and the mirror-twin chapter structure. Elegant on paper, repetitive in play.
 
@@ -133,7 +133,7 @@ All (proposal) unless marked.
 5. ❓ Is an on-ramp (recap levels, imported inventions) needed? (§4)
 6. ❓ Which bench constraint: bridges or tube cost? (§5.1)
 7. ❓ Where the Studio ships: free update to 1 or 2? (§5.2)
-8. ❓ How historical-note rewards map to levels. (§5.4)
+8. 🟡 How historical-note rewards map to levels: 1 decided one per chapter (DESIGN.md §5.7); likely the same in 2. (§5.4)
 9. ❓ Price and bundle. (§7)
 10. ❓ Greek and later RTL font coverage. (§7)
 11. ❓ The workshop cast: how many, and whose voice. (§5.4; DESIGN.md §7.2, §12)
