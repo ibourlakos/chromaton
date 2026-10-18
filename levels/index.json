@@ -1,12 +1,23 @@
 [
 	{
 		"name": "The Paint Box",
-		"levels": ["one_pot", "yellow", "blue", "orange", "purple", "green_mix", "black", "green", "orange_opposite", "purple_opposite", "black_short_way", "white"],
+		"levels": ["one_pot", "yellow", "blue", "orange", "purple", "green_mix", "black", "white"],
 		"note": {
 			"title": "The Paper Strip",
 			"year": 1725,
 			"picture": "paper_strip",
 			"text": "In the silk town of Lyon, weaving a pattern was slow: before every pass of the shuttle, a helper had to pull the cords of the right threads by hand. In 1725 Basile Bouchon, whose father built organs, gave the loom a long strip of paper punched with holes instead. The holes chose which threads would lift, one row of holes for each row of cloth. For the first time, a loom read its own pattern."
+		}
+	},
+	{
+		"name": "Bargain Pots",
+		"quilt_order": "paint",
+		"levels": ["green", "orange_opposite", "purple_opposite", "yellow_opposite", "blue_opposite", "red_opposite", "black_short_way", "white_cheaper"],
+		"note": {
+			"title": "A Cheap Purple",
+			"year": 1856,
+			"picture": "mauve",
+			"text": "For two thousand years purple was the dearest dye there was: Tyrian purple was squeezed from thousands of sea snails, and only emperors could afford to wear it. In 1856 William Henry Perkin, an 18-year-old student trying to make a medicine at home, found a purple dye in coal tar instead. He called it mauve, and his factory made it by the barrel, cheaply. Within a few years anyone could wear purple, and chemists set out to make every dye that way."
 		}
 	},
 	{

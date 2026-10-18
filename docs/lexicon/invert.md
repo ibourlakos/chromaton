@@ -3,7 +3,7 @@
 - **Tags:** gameplay, design, implementation
 - **Status:** ✅ two names (designer, 2026-10-05): the term is the algebra's and the code's name; the player sees the critter's name; the player word built 2026-10-05 (first decided as Flip Tub, changed the same day: a pan that flips paint like an omelette)
 - **Player word:** Flip Pan
-- **Journal:** unlocks in A Cheaper Green Pot, where the Flip Pan comes in; page on the Pieces tab (Opposites fills it at once)
+- **Journal:** unlocks in The White Pot, where the Flip Pan comes in; page on the Pieces tab (Opposites fills it at once)
 
 ## Gameplay
 

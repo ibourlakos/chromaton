@@ -1,0 +1,56 @@
+{
+	"id": "red_opposite",
+	"name": "Red Without the Red Pot",
+	"cloth": "Red",
+	"machine": "Red Without the Red Pot",
+	"goal": "Weave a red cloth, with the red pot and the Shift Wheel put away.",
+	"hint": "Even red has an opposite: green, across the paint card. Flip your green pot.",
+	"pieces": [
+		"red_pot",
+		"mix",
+		"invert"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 3,
+		"best": 2
+	},
+	"target": [
+		"RRRRRRRR"
+	],
+	"card_rule": "",
+	"cards": [],
+	"reference": {
+		"pieces": [
+			{
+				"id": "g",
+				"kind": "invention",
+				"invention": "pot_green",
+				"x": 4,
+				"y": 3
+			},
+			{
+				"id": "h",
+				"kind": "invert",
+				"x": 8,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"g",
+				"h"
+			],
+			[
+				"h",
+				"loom"
+			]
+		]
+	},
+	"hold_pots": [
+		"red_pot"
+	],
+	"star_needs": {
+		"pot_green": 1
+	}
+}

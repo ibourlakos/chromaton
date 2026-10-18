@@ -18,45 +18,49 @@ godot_console --headless --path . --script res://tools/level_solver.gd
 | 2. The Yellow Pot | 8 | 0 | 1 | – | 2 | 10 | 2 | `Shift(Red)` | 3 | 2 | – | – |
 | 3. The Blue Pot | 8 | 0 | 1 | – | 2 | 10 | 2 | `Shift(YellowPot)` | 3 | 2 | – | Yellow pot at 1 |
 | 4. The Orange Pot | 8 | 0 | 1 | – | 3 | 10 | 3 | `Mix(Red, YellowPot)` | 4 | 3 | – | Yellow pot at 1 |
-| 5. The Purple Pot | 8 | 0 | 1 | – | 4 | 27 | 4 | `Mix(Red, Shift(Shift(Red)))` | 5 | 4 | – | – |
-| 6. The Green Pot | 8 | 0 | 1 | – | 3 | 10 | 3 | `Mix(YellowPot, Shift(YellowPot))` | 4 | 3 | – | – |
+| 5. The Purple Pot | 8 | 0 | 1 | – | 3 | 10 | 3 | `Mix(Red, BluePot)` | 4 | 3 | – | Blue pot at 1 |
+| 6. The Green Pot | 8 | 0 | 1 | – | 3 | 10 | 3 | `Mix(YellowPot, BluePot)` | 4 | 3 | – | – |
 | 7. The Black Pot | 8 | 0 | 1 | – | 4 | 10 | 4 | `Mix(Red, GreenPot)` | 5 | 4 | – | – |
-| 8. A Cheaper Green Pot | 8 | 0 | 1 | – | 2 | 10 | 2 | `Invert(Red)` | 4 | 2 | – | – |
-| 9. A Cheaper Orange Pot | 8 | 0 | 1 | – | 2 | 10 | 2 | `Invert(BluePot)` | 3 | 2 | – | Blue pot at 1 |
-| 10. A Cheaper Purple Pot | 8 | 0 | 1 | – | 2 | 10 | 2 | `Invert(YellowPot)` | 3 | 2 | – | – |
-| 11. A Cheaper Black Pot | 8 | 0 | 1 | – | 3 | 10 | 3 | `Mix(Red, Invert(Red))` | 4 | 3 | – | – |
-| 12. The White Pot | 8 | 0 | 1 | – | 3 | 10 | 3 | `Invert(BlackPot)` | 5 | 3 | – | Black pot at 2 |
-| 13. The Sailboat | 48 | 1 | 6 | 4 | 0 | 49 | 0 | `A` | 0 | 0 | – | – |
-| 14. The Wheel Swatch | 48 | 1 | 8 | 4 | 1 | 50 | 1 | `Shift(A)` | 2 | 1 | – | – |
-| 15. The Opposites Swatch | 48 | 1 | 8 | 4 | 1 | 50 | 1 | `Invert(A)` | 2 | 1 | – | – |
-| 16. The Orange Sun | 48 | 1 | 4 | 4 | 2 | 50 | 2 | `Mix(A, YellowPot)` | 3 | 2 | – | Yellow pot at 1 |
-| 17. The Parrot | 48 | 1 | 4 | 4 | 2 | 99 | 2 | `Mix(A, Shift(A))` | 3 | 2 | – | – |
-| 18. The Mixing Table | 48 | 2 | 48 | 9 | 1 | 50 | 1 | `Mix(A, B)` | 2 | 1 | – | – |
-| 19. The Lighthouse | 48 | 2 | 22 | 5 | 1 | 50 | 1 | `Mix(A, B)` | 2 | 1 | – | – |
-| 20. The Sieve Table | 48 | 2 | 48 | 10 | 1 | 50 | 1 | `Filter(A, B)` | 2 | 1 | – | – |
-| 21. Sandy Crab | 48 | 1 | 4 | 4 | 2 | 50 | 2 | `Filter(A, Red)` | 3 | 2 | – | – |
-| 22. The Rock Pool | 48 | 2 | 11 | 4 | 1 | 50 | 1 | `Filter(A, B)` | 2 | 1 | – | – |
-| 23. The Fish | 48 | 2 | 17 | 10 | 2 | 51 | 2 | `Filter(A, Invert(B))` | 3 | 2 | – | – |
-| 24. The Harbour Cat | 48 | 1 | 2 | 4 | 4 | 148 | 4 | `Mix(Shift(Shift(A)), Mix(A, Shift(A)))` | 6 | 4 | – | – |
-| 25. The Pawn | 64 | 2 | 24 | 4 | 2 | 67 | 2 | `Invert(Mix(A, B))` | 3 | 2 | – | – |
-| 26. The Chess Clock | 64 | 2 | 5 | 4 | 1 | 66 | 1 | `ThirdPaint(A, B)` | 2 | 1 | third_paint | Third Paint at 1 |
-| 27. The Rook | 64 | 1 | 4 | 4 | 1 | 67 | 1 | `ThirdPaint(A, A)` | 2 | 1 | third_paint | Third Paint at 1 |
-| 28. The Queen | 64 | 2 | 24 | 8 | 3 | 68 | 3 | `ThirdPaint(Filter(A, B), ThirdPaint(A, B))` | 5 | 3 | – | Third Paint at 1 |
-| 29. The Chessboard | 64 | 2 | 6 | 4 | 2 | 66 | 2 | `ExtremeMix(A, B)` | 3 | 2 | contrast | Extreme Mix at 2 |
-| 30. The Knight | 64 | 2 | 12 | 4 | 2 | 68 | 2 | `ThirdPaint(ThirdPaint(A, B), ThirdPaint(A, B))` | 4 | 2 | third_paint | Third Paint at 1 |
-| 31. The Bishop | 64 | 2 | 25 | 5 | 3 | 67 | 3 | `ThirdPaint(Invert(A), Invert(B))` | 5 | 3 | – | Third Paint at 1 |
-| 32. The Trophy | 64 | 1 | 4 | 8 | 3 | 66 | 3 | `ExtremeMix(A, BluePot)` | 5 | 3 | – | Blue pot at 1, Extreme Mix at 2 |
-| 33. The King | 64 | 2 | 24 | 4 | 4 | 196 | 4 | `ThirdPaint(ThirdPaint(A, ThirdPaint(A, B)), ThirdPaint(B, ThirdPaint(A, B)))` | 6 | 4 | third_paint | Third Paint at 1 |
-| 34. The Black Pawn | 64 | 2 | 23 | 4 | 2 | 67 | 2 | `Invert(Filter(A, B))` | 3 | 2 | – | – |
-| 35. The Black Chess Clock | 64 | 2 | 5 | 4 | 1 | 66 | 1 | `MissingFromEither(A, B)` | 2 | 1 | missing_from_either | Missing From Either at 1 |
-| 36. The Black Rook | 64 | 1 | 4 | 4 | 1 | 67 | 1 | `MissingFromEither(A, A)` | 2 | 1 | missing_from_either | Missing From Either at 1 |
-| 37. The Black Queen | 64 | 2 | 25 | 8 | 4 | 100 | 4 | `Mix(Filter(A, B), Invert(Mix(A, B)))` | 6 | 4 | – | – |
-| 38. The Looking-Glass Board | 64 | 2 | 6 | 4 | 3 | 66 | 3 | `SamePaint(A, B)` | 4 | 3 | same_paint | Same Paint at 3 |
-| 39. The Black Knight | 64 | 2 | 11 | 4 | 2 | 68 | 2 | `MissingFromEither(MissingFromEither(A, B), MissingFromEither(A, B))` | 4 | 2 | missing_from_either | Missing From Either at 1 |
-| 40. The Black Bishop | 64 | 2 | 25 | 5 | 3 | 67 | 3 | `MissingFromEither(Invert(A), Invert(B))` | 5 | 3 | – | Missing From Either at 1 |
-| 41. The Black Trophy | 64 | 1 | 4 | 8 | 4 | 66 | 4 | `MissingFromEither(Mix(A, OrangePot), MissingFromEither(A, OrangePot))` | 6 | 4 | – | – |
-| 42. The Black King | 64 | 2 | 24 | 4 | 4 | 196 | 4 | `MissingFromEither(MissingFromEither(A, MissingFromEither(A, B)), MissingFromEither(B, MissingFromEither(A, B)))` | 6 | 4 | missing_from_either | Missing From Either at 1 |
+| 8. The White Pot | 8 | 0 | 1 | – | 4 | 10 | 4 | `Invert(BlackPot)` | 5 | 4 | – | Black pot at 3 |
+| 9. A Cheaper Green Pot | 8 | 0 | 1 | – | 2 | 10 | 2 | `Invert(Red)` | 4 | 2 | – | – |
+| 10. A Cheaper Orange Pot | 8 | 0 | 1 | – | 2 | 10 | 2 | `Invert(BluePot)` | 3 | 2 | – | Blue pot at 1 |
+| 11. A Cheaper Purple Pot | 8 | 0 | 1 | – | 2 | 10 | 2 | `Invert(YellowPot)` | 3 | 2 | – | – |
+| 12. Yellow Without the Wheel | 8 | 0 | 1 | – | 2 | 10 | 2 | `Invert(PurplePot)` | 3 | 2 | – | Purple pot at 1 |
+| 13. Blue Without the Wheel | 8 | 0 | 1 | – | 2 | 10 | 2 | `Invert(OrangePot)` | 3 | 2 | – | Orange pot at 1 |
+| 14. Red Without the Red Pot | 8 | 0 | 1 | – | 2 | 10 | 2 | `Invert(GreenPot)` | 3 | 2 | – | Green pot at 1 |
+| 15. A Cheaper Black Pot | 8 | 0 | 1 | – | 3 | 19 | 3 | `Mix(Red, Invert(Red))` | 4 | 3 | – | – |
+| 16. A Cheaper White Pot | 8 | 0 | 1 | – | 3 | 10 | 3 | `Invert(BlackPot)` | 4 | 3 | – | Black pot at 2 |
+| 17. The Sailboat | 48 | 1 | 6 | 4 | 0 | 49 | 0 | `A` | 0 | 0 | – | – |
+| 18. The Wheel Swatch | 48 | 1 | 8 | 4 | 1 | 50 | 1 | `Shift(A)` | 2 | 1 | – | – |
+| 19. The Opposites Swatch | 48 | 1 | 8 | 4 | 1 | 50 | 1 | `Invert(A)` | 2 | 1 | – | – |
+| 20. The Orange Sun | 48 | 1 | 4 | 4 | 2 | 50 | 2 | `Mix(A, YellowPot)` | 3 | 2 | – | Yellow pot at 1 |
+| 21. The Parrot | 48 | 1 | 4 | 4 | 2 | 99 | 2 | `Mix(A, Shift(A))` | 3 | 2 | – | – |
+| 22. The Mixing Table | 48 | 2 | 48 | 9 | 1 | 50 | 1 | `Mix(A, B)` | 2 | 1 | – | – |
+| 23. The Lighthouse | 48 | 2 | 22 | 5 | 1 | 50 | 1 | `Mix(A, B)` | 2 | 1 | – | – |
+| 24. The Sieve Table | 48 | 2 | 48 | 10 | 1 | 50 | 1 | `Filter(A, B)` | 2 | 1 | – | – |
+| 25. Sandy Crab | 48 | 1 | 4 | 4 | 2 | 50 | 2 | `Filter(A, Red)` | 3 | 2 | – | – |
+| 26. The Rock Pool | 48 | 2 | 11 | 4 | 1 | 50 | 1 | `Filter(A, B)` | 2 | 1 | – | – |
+| 27. The Fish | 48 | 2 | 17 | 10 | 2 | 51 | 2 | `Filter(A, Invert(B))` | 3 | 2 | – | – |
+| 28. The Harbour Cat | 48 | 1 | 2 | 4 | 4 | 148 | 4 | `Mix(Shift(Shift(A)), Mix(A, Shift(A)))` | 6 | 4 | – | – |
+| 29. The Pawn | 64 | 2 | 24 | 4 | 2 | 67 | 2 | `Invert(Mix(A, B))` | 3 | 2 | – | – |
+| 30. The Chess Clock | 64 | 2 | 5 | 4 | 1 | 66 | 1 | `ThirdPaint(A, B)` | 2 | 1 | third_paint | Third Paint at 1 |
+| 31. The Rook | 64 | 1 | 4 | 4 | 1 | 67 | 1 | `ThirdPaint(A, A)` | 2 | 1 | third_paint | Third Paint at 1 |
+| 32. The Queen | 64 | 2 | 24 | 8 | 3 | 68 | 3 | `ThirdPaint(Filter(A, B), ThirdPaint(A, B))` | 5 | 3 | – | Third Paint at 1 |
+| 33. The Chessboard | 64 | 2 | 6 | 4 | 2 | 66 | 2 | `ExtremeMix(A, B)` | 3 | 2 | contrast | Extreme Mix at 2 |
+| 34. The Knight | 64 | 2 | 12 | 4 | 2 | 68 | 2 | `ThirdPaint(ThirdPaint(A, B), ThirdPaint(A, B))` | 4 | 2 | third_paint | Third Paint at 1 |
+| 35. The Bishop | 64 | 2 | 25 | 5 | 3 | 67 | 3 | `ThirdPaint(Invert(A), Invert(B))` | 5 | 3 | – | Third Paint at 1 |
+| 36. The Trophy | 64 | 1 | 4 | 8 | 3 | 66 | 3 | `ExtremeMix(A, BluePot)` | 5 | 3 | – | Blue pot at 1, Extreme Mix at 2 |
+| 37. The King | 64 | 2 | 24 | 4 | 4 | 196 | 4 | `ThirdPaint(ThirdPaint(A, ThirdPaint(A, B)), ThirdPaint(B, ThirdPaint(A, B)))` | 6 | 4 | third_paint | Third Paint at 1 |
+| 38. The Black Pawn | 64 | 2 | 23 | 4 | 2 | 67 | 2 | `Invert(Filter(A, B))` | 3 | 2 | – | – |
+| 39. The Black Chess Clock | 64 | 2 | 5 | 4 | 1 | 66 | 1 | `MissingFromEither(A, B)` | 2 | 1 | missing_from_either | Missing From Either at 1 |
+| 40. The Black Rook | 64 | 1 | 4 | 4 | 1 | 67 | 1 | `MissingFromEither(A, A)` | 2 | 1 | missing_from_either | Missing From Either at 1 |
+| 41. The Black Queen | 64 | 2 | 25 | 8 | 4 | 100 | 4 | `Mix(Filter(A, B), Invert(Mix(A, B)))` | 6 | 4 | – | – |
+| 42. The Looking-Glass Board | 64 | 2 | 6 | 4 | 3 | 66 | 3 | `SamePaint(A, B)` | 4 | 3 | same_paint | Same Paint at 3 |
+| 43. The Black Knight | 64 | 2 | 11 | 4 | 2 | 68 | 2 | `MissingFromEither(MissingFromEither(A, B), MissingFromEither(A, B))` | 4 | 2 | missing_from_either | Missing From Either at 1 |
+| 44. The Black Bishop | 64 | 2 | 25 | 5 | 3 | 67 | 3 | `MissingFromEither(Invert(A), Invert(B))` | 5 | 3 | – | Missing From Either at 1 |
+| 45. The Black Trophy | 64 | 1 | 4 | 8 | 4 | 66 | 4 | `MissingFromEither(Mix(A, OrangePot), MissingFromEither(A, OrangePot))` | 6 | 4 | – | – |
+| 46. The Black King | 64 | 2 | 24 | 4 | 4 | 196 | 4 | `MissingFromEither(MissingFromEither(A, MissingFromEither(A, B)), MissingFromEither(B, MissingFromEither(A, B)))` | 6 | 4 | missing_from_either | Missing From Either at 1 |
 
 ---
 
-Checks: all passed. Run time 22.7 s.
+Checks: all passed. Run time 34.9 s.

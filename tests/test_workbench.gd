@@ -210,7 +210,7 @@ func locked_kinds(level) -> Array:
 ## A tray shows earlier levels' pieces locked, in the order the campaign
 ## first offers them, so a piece keeps its slot (and number key) everywhere.
 func test_locked_tray(levels: Array, by_id: Dictionary) -> void:
-	var order := ["red_pot", "shift", "mix", "split", "invert", "filter"]
+	var order := ["red_pot", "shift", "mix", "invert", "split", "filter"]
 	check(by_id["smudges"].tray == order, "the full tray is in the order pieces arrive: %s" % str(by_id["smudges"].tray))
 	var slot := {}
 	var seen := {}
@@ -222,8 +222,8 @@ func test_locked_tray(levels: Array, by_id: Dictionary) -> void:
 			var kind: String = level.tray[i]
 			check(slot.get(kind, i) == i, "%s: %s keeps slot %d" % [level.id, kind, slot.get(kind, i) + 1])
 			slot[kind] = i
-	check(locked_kinds(by_id["pattern_card"]) == ["red_pot", "shift", "mix", "split", "invert"], "The Pattern Card shows every known piece locked")
-	check(locked_kinds(by_id["orange_sun"]) == ["split", "invert"], "Orange Sun locks Split and Invert")
+	check(locked_kinds(by_id["pattern_card"]) == ["red_pot", "shift", "mix", "invert", "split"], "The Pattern Card shows every known piece locked")
+	check(locked_kinds(by_id["orange_sun"]) == ["invert", "split"], "Orange Sun locks Invert and Split")
 	for id in ["opposites", "turn_the_wheel", "mix_table", "lighthouse", "filter_table", "smudges", "either_not_both", "missing_from_either", "same_paint"]:
 		check(locked_kinds(by_id[id]).is_empty(), "%s has no locks" % id)
 	check(locked_kinds(by_id["keep_what_they_share"]) == ["filter"], "Keep What They Share locks Filter, which it rebuilds")
@@ -238,16 +238,16 @@ func test_locked_tray(levels: Array, by_id: Dictionary) -> void:
 	root.add_child(wb)
 	wb._ready()
 	var split := tray_point(wb, "split")
-	check(wb.tray[3]["locked"] and not wb.tray[0]["locked"], "Orange Sun's Split slot is locked, the pot's isn't")
+	check(wb.tray[4]["locked"] and not wb.tray[0]["locked"], "Orange Sun's Split slot is locked, the pot's isn't")
 	var start: int = wb.machine.nodes.size()
 	tap(wb, split)
-	check(wb.carrying == -1 and wb.wiggle_slot == 3, "tapping a locked piece picks nothing up; its lock wiggles")
+	check(wb.carrying == -1 and wb.wiggle_slot == 4, "tapping a locked piece picks nothing up; its lock wiggles")
 	drag(wb, split, wb.cell_center(5, 3))
 	check(wb.machine.nodes.size() == start, "dragging a locked piece places nothing")
 	key(wb, KEY_1)
 	check(wb.carrying == 0, "1 still picks up the pot")
-	key(wb, KEY_4)
-	check(wb.carrying == -1 and wb.wiggle_slot == 3, "a locked piece's key wiggles its lock and empties the hand")
+	key(wb, KEY_5)
+	check(wb.carrying == -1 and wb.wiggle_slot == 4, "a locked piece's key wiggles its lock and empties the hand")
 	tap(wb, wb.cell_center(5, 3))
 	check(wb.machine.nodes.size() == start, "and nothing lands on the bench")
 	wb.free()
@@ -1250,7 +1250,7 @@ func _default_keys(action: String) -> Array:
 ## a solved level.
 func test_guides(levels: Array) -> void:
 	var guided := levels.filter(func(l): return not l.steps.is_empty()).map(func(l): return l.id)
-	check(guided == ["one_pot", "yellow", "blue", "orange", "purple", "green", "pattern_card", "mix_table", "filter_table", "two_pawns"], "ten guided levels (%s)" % str(guided))
+	check(guided == ["one_pot", "yellow", "blue", "orange", "white", "black_short_way", "pattern_card", "mix_table", "filter_table", "two_pawns"], "ten guided levels (%s)" % str(guided))
 	var p = Progress.new()
 	for l in levels:
 		if not l.invention.is_empty():

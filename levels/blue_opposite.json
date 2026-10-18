@@ -1,0 +1,56 @@
+{
+	"id": "blue_opposite",
+	"name": "Blue Without the Wheel",
+	"cloth": "Blue",
+	"machine": "Blue Without the Wheel",
+	"goal": "Weave a blue cloth, with the Shift Wheel put away.",
+	"hint": "Blue sits across from orange on the paint card. Flip your orange pot.",
+	"pieces": [
+		"red_pot",
+		"mix",
+		"invert"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 3,
+		"best": 2
+	},
+	"target": [
+		"BBBBBBBB"
+	],
+	"card_rule": "",
+	"cards": [],
+	"reference": {
+		"pieces": [
+			{
+				"id": "o",
+				"kind": "invention",
+				"invention": "pot_orange",
+				"x": 4,
+				"y": 3
+			},
+			{
+				"id": "h",
+				"kind": "invert",
+				"x": 8,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"o",
+				"h"
+			],
+			[
+				"h",
+				"loom"
+			]
+		]
+	},
+	"hold_pots": [
+		"pot_blue"
+	],
+	"star_needs": {
+		"pot_orange": 1
+	}
+}

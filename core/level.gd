@@ -17,8 +17,8 @@
 ## optional steps (a guided
 ## level's guide: [{line, do: [actions]}], see ui/guide.gd), pieces (the kinds it
 ## offers; the tray also shows earlier levels' pieces, locked), inventions
-## (invention ids allowed in the tray), optional hold_pots (earned pots this
-## level holds back; see _lay_trays), optional waits_for (invention ids the
+## (invention ids allowed in the tray), optional hold_pots (earned pots, or
+## the red pot itself, this level holds back; see _lay_trays), optional waits_for (invention ids the
 ## level can't be built without: it stays locked until the player owns them,
 ## proven by tools/level_solver.gd), optional star_needs ({invention id:
 ## price}: the dearest price of each pot or invention at which ★★★ is still
@@ -73,6 +73,7 @@ var number := 0  # position in the campaign, from 1 (0 when loaded on its own)
 var chapter := 0  # index into Level.chapters()
 var chapter_name := ""
 var quilt_across := 0  # the chapter's patches across in its quilt (index.json; 0: as fits)
+var quilt_order := ""  # "paint": the quilt stacks its threads in paint order, not level order (index.json)
 var chapter_note := {}  # the chapter's historical note (index.json): {title, year, picture, text}, or {}
 var name := ""  # the primary title
 var cloth_phrase := ""
@@ -107,6 +108,8 @@ var error := ""
 
 ## The campaign's chapters from levels/index.json, in order:
 ## [{"name": String, "levels": [level ids], optional "quilt_across": int,
+## optional "quilt_order": "paint" (a chapter of one-row cloths stacks them in
+## paint order, so its quilt matches another row for row),
 ## optional "note": {"title", "year", "picture", "text"}}]
 ## (how many patches across the chapter's quilt is; every chapter but the
 ## paint box, whose threads stack, has a multiple of it so the quilt fills)
@@ -154,6 +157,7 @@ static func load_all() -> Array:
 			level.chapter = c
 			level.chapter_name = str(index[c]["name"])
 			level.quilt_across = int(index[c].get("quilt_across", 0))
+			level.quilt_order = str(index[c].get("quilt_order", ""))
 			level.chapter_note = index[c].get("note", {})
 			out.append(level)
 	_lay_trays(out)
@@ -171,7 +175,9 @@ static func load_all() -> Array:
 ## Pots are pieces too: a level that offers the red pot also offers every
 ## pot an earlier level earns (in the pot slot's fan, in paint order), from
 ## Blue on, except the ones its hold_pots holds back and the pot it earns
-## itself (a cheaper pot is made, not placed), which show locked. A level
+## itself (a cheaper pot is made, not placed), which show locked. hold_pots
+## may also hold back the red pot itself ("red_pot"): the pot slot still fans
+## out the earned pots, the red pot among them locked (red_held()). A level
 ## that offers only named pieces (no red pot) offers no pots. Worked out from
 ## the campaign, like the tray, so the solver and tests see what a player
 ## who got here has; the workbench shows only the pots the player owns.
@@ -397,6 +403,12 @@ func offers_invention(inv_id: String) -> bool:
 ## A piece the tray shows that this level doesn't offer.
 func is_locked(kind: String) -> bool:
 	return kind in tray and not kind in pieces
+
+
+## Whether the level holds back the red pot itself (hold_pots "red_pot"):
+## its slot fans out the earned pots, the red pot locked among them.
+func red_held() -> bool:
+	return "red_pot" in hold_pots
 
 
 ## Lost Levels, loaded on their own (unnumbered, no chapter's tray).

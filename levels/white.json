@@ -5,12 +5,58 @@
 	"machine": "The White Pot",
 	"goal": "Weave a white cloth, and earn the white pot.",
 	"hint": "White is the empty cloth, the opposite of black. Flip your black pot.",
+	"steps": [
+		{
+			"line": "White sits across from black on the paint card.",
+			"do": []
+		},
+		{
+			"line": "The Flip Pan flips a paint to its opposite.",
+			"do": [
+				[
+					"place",
+					"h"
+				]
+			]
+		},
+		{
+			"line": "Take your black pot from the shelf.",
+			"do": [
+				[
+					"fan"
+				],
+				[
+					"place",
+					"k"
+				]
+			]
+		},
+		{
+			"line": "Tube it into the Flip Pan.",
+			"do": [
+				[
+					"tube",
+					"k",
+					"h"
+				]
+			]
+		},
+		{
+			"line": "To the loom: black flipped is white.",
+			"do": [
+				[
+					"tube",
+					"h",
+					"loom"
+				]
+			]
+		}
+	],
 	"pieces": [
 		"red_pot",
 		"shift",
 		"mix",
-		"invert",
-		"split"
+		"invert"
 	],
 	"inventions": [],
 	"invention": {
@@ -20,7 +66,7 @@
 	},
 	"stars": {
 		"budget": 5,
-		"best": 3
+		"best": 4
 	},
 	"target": [
 		"WWWWWWWW"
@@ -55,6 +101,6 @@
 		]
 	},
 	"star_needs": {
-		"pot_black": 2
+		"pot_black": 3
 	}
 }
