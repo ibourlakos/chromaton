@@ -117,6 +117,7 @@ var landed_at := -9.0  # clock when the last stitch landed (for the puff)
 var undo_stack := []
 var selected_tube := -1
 var selected_piece := -1  # a placed piece (only one of the two is selected)
+var group_sel := []  # placed pieces selected together by a rectangle (two or more); never mutated, replaced
 var hover_pos := Vector2(-1, -1)  # last pointer position over the bench (for keys)
 var carrying := -1  # tray index of a picked-up piece that follows the pointer
 var outcome := ""  # "", "solved", "wrong", "stalled", "unused", "not_general"
@@ -158,7 +159,7 @@ var loom_cs := 20.0
 var loom_port := Vector2.ZERO
 var tube_paths := {}  # Vector4(from end, to end) -> curve (see _tube_path)
 
-var drag := ""  # "", "new", "move", "card", "tube", "tube_in"
+var drag := ""  # "", "new", "move", "card", "tube", "tube_in", "box"
 var card_wiggle := {}  # card node id -> clock when a refused slide sent it back
 var drag_kind := ""
 var drag_index := -1  # tray index of a "new" drag
@@ -503,7 +504,85 @@ func spot_taken(spot: Vector2i, except := -1) -> bool:
 	return _card_spot(spot) >= 0
 
 
-## The card a piece on this spot would overlap, or -1. A card covers the
+## Pieces selected together by a rectangle on the bench (two or more):
+## they move as one, go to the tray as one, and one delete removes them all.
+func _group_selected() -> bool:
+	return group_sel.size() >= 2
+
+
+## A piece of the group is being dragged: the whole group goes with it.
+func _group_moving() -> bool:
+	return drag == "move" and _group_selected() and drag_node in group_sel
+
+
+## Whether every piece of the group fits shifted by delta spots: on the
+## bench, clear of the other pieces and of the cards.
+func _group_fits(delta: Vector2i) -> bool:
+	for id in group_sel:
+		var s := Vector2i(int(machine.nodes[id]["x"]), int(machine.nodes[id]["y"])) + delta
+		if s.x < 0 or s.y < 0 or s.x >= SPOTS.x or s.y >= SPOTS.y or _card_spot(s) >= 0:
+			return false
+		for other in machine.nodes:
+			if other in group_sel or machine.is_fixed(other):
+				continue
+			var n: Dictionary = machine.nodes[other]
+			if absi(int(n["x"]) - s.x) < 2 and absi(int(n["y"]) - s.y) < 2:
+				return false
+	return true
+
+
+## How far the dragged group would shift, in spots ((0, 0) off the bench).
+func _group_delta() -> Vector2i:
+	var spot := spot_at(drag_pos - grab)
+	if spot.x < 0:
+		return Vector2i.ZERO
+	var n: Dictionary = machine.nodes[drag_node]
+	return spot - Vector2i(int(n["x"]), int(n["y"]))
+
+
+## The rectangle a box drag has drawn, kept on the bench.
+func _box_rect() -> Rect2:
+	return Rect2(press_pos, Vector2.ZERO).expand(drag_pos).intersection(BENCH)
+
+
+## The placed pieces whose middles lie in a rectangle.
+func _pieces_in(r: Rect2) -> Array:
+	return machine.nodes.keys().filter(func(id): return not machine.is_fixed(id) and r.has_point(node_center(id)))
+
+
+## A box drag ends: two or more pieces in it are selected together, one is
+## selected as a tap would, none clears the selection.
+func _select_box() -> void:
+	var ids := _pieces_in(_box_rect())
+	group_sel = ids if ids.size() >= 2 else []
+	selected_piece = ids[0] if ids.size() == 1 else -1
+	selected_tube = -1
+
+
+## A dragged group lands: on the tray it goes (all of it), on the journal
+## nothing happens, and on the bench it moves where every piece fits (or
+## stays put). It stays selected, to move again.
+func _finish_group_move(pos: Vector2) -> void:
+	if PEEK.has_point(pos):
+		return
+	if TRAY.has_point(pos):
+		_push_undo()
+		for id in group_sel:
+			machine.remove_node(id)
+		group_sel = []
+		_edited()
+		return
+	var delta := _group_delta()
+	if delta == Vector2i.ZERO or not _group_fits(delta):
+		return
+	_push_undo()
+	for id in group_sel:
+		machine.move_node(id, int(machine.nodes[id]["x"]) + delta.x, int(machine.nodes[id]["y"]) + delta.y)
+		placed_at[id] = clock
+	_edited()
+
+
+## The card a piece on this spot would overlap), or -1. A card covers the
 ## cells under its body, and a piece's own size beside it: the first spots
 ## across (_card_last_spot), _card_reach spots up and down.
 func _card_spot(spot: Vector2i) -> int:
@@ -547,6 +626,8 @@ func node_center(id: int) -> Vector2:
 	var n: Dictionary = machine.nodes[id]
 	if drag == "move" and drag_node == id:
 		return drag_pos - grab
+	if drag == "move" and _group_moving() and id in group_sel:  # moving with the dragged piece
+		return spot_center(int(n["x"]), int(n["y"])) + drag_pos - press_pos
 	match n["kind"]:
 		Pieces.CARD:
 			var c := _card_center(int(n["card"]))
@@ -666,6 +747,7 @@ func _clear_armed() -> bool:
 ## cards and the loom stay. Undo brings it all back.
 func _clear_all() -> void:
 	clear_armed_at = -99.0
+	group_sel = []
 	if not _has_parts():
 		return
 	_push_undo()
@@ -687,6 +769,7 @@ func _push_undo() -> void:
 func _undo() -> void:
 	if undo_stack.is_empty():
 		return
+	group_sel = []
 	machine = Machine.from_dict(undo_stack.pop_back())
 	_edited()
 
@@ -1088,6 +1171,7 @@ func _key(act: String, event: InputEventKey) -> bool:
 			elif _has_selection():
 				selected_tube = -1
 				selected_piece = -1
+				group_sel = []
 			elif paint_card != null:
 				_show_paints(false)
 			elif editing:
@@ -1118,10 +1202,11 @@ func _pick(i: int) -> void:
 	carrying = -1 if carrying == i else i
 	selected_tube = -1
 	selected_piece = -1
+	group_sel = []
 
 
 func _has_selection() -> bool:
-	return (selected_piece >= 0 and machine.nodes.has(selected_piece)) or (selected_tube >= 0 and selected_tube < machine.tubes.size())
+	return _group_selected() or (selected_piece >= 0 and machine.nodes.has(selected_piece)) or (selected_tube >= 0 and selected_tube < machine.tubes.size())
 
 
 func _card_selected() -> bool:
@@ -1130,6 +1215,14 @@ func _card_selected() -> bool:
 
 func _delete_selected() -> void:
 	if _card_selected():  # a card is never removed
+		return
+	if _group_selected():
+		_push_undo()
+		for id in group_sel:
+			machine.remove_node(id)
+		group_sel = []
+		_edited()
+		_sync_buttons()
 		return
 	if selected_piece >= 0 and machine.nodes.has(selected_piece):
 		_push_undo()
@@ -1150,7 +1243,7 @@ func _press(pos: Vector2) -> void:
 	if _title_parts()["hit"].has_point(pos):
 		show_note()
 		return
-	if _has_selection() and pos.distance_to(_book_button_pos()) < 22:
+	if _has_selection() and not _group_selected() and pos.distance_to(_book_button_pos()) < 22:
 		_peek()
 		return
 	if _has_selection() and not _card_selected() and pos.distance_to(_delete_button_pos()) < 26:
@@ -1165,6 +1258,8 @@ func _press(pos: Vector2) -> void:
 		elif _has_parts():
 			clear_armed_at = clock
 		return
+	if not _piece_at_pos(pos) in group_sel:  # pressing one of the group keeps it, to drag
+		group_sel = []
 	selected_piece = -1
 	for i in tray.size():
 		if _slot_live(i) and tray[i]["rect"].has_point(pos):
@@ -1220,7 +1315,10 @@ func _press(pos: Vector2) -> void:
 		grab = pos - node_center(cid)
 		selected_tube = -1
 		return
-	selected_tube = _tube_at(pos)
+	if BENCH.has_point(pos):
+		drag = "box"  # a drag draws a selection rectangle; a tap selects the tube under it
+	else:
+		selected_tube = -1
 
 
 func _release(pos: Vector2) -> void:
@@ -1236,6 +1334,11 @@ func _release(pos: Vector2) -> void:
 			_finish_move(pos)
 		"card":
 			_finish_card(pos)
+		"box":
+			if drag_moved:
+				_select_box()
+			else:
+				selected_tube = _tube_at(pos)
 		"tube":
 			var target := _port_at(pos, "in", drag_node)
 			if not target.is_empty():
@@ -1338,10 +1441,15 @@ func _card_at_pos(pos: Vector2) -> int:
 
 func _finish_move(pos: Vector2) -> void:
 	var id := drag_node
+	var group := _group_moving()
 	drag = ""
 	if not drag_moved:
-		selected_piece = id  # a tap selects the piece
+		group_sel = []
+		selected_piece = id  # a tap selects the piece (just this one)
 		selected_tube = -1
+		return
+	if group:
+		_finish_group_move(pos)
 		return
 	if PEEK.has_point(pos):  # the journal isn't a bin: the piece stays put
 		return
@@ -1419,6 +1527,9 @@ func _tube_at(pos: Vector2) -> int:
 func _delete_button_pos() -> Vector2:
 	var c := _selection_center()
 	var off := 52.0 if selected_piece >= 0 else 32.0
+	if _group_selected():  # below the group, clear of all of it (above it where the bench ends)
+		off = _group_rect().size.y / 2 + 30
+		return c + Vector2(0, off if c.y + off + 24 <= BENCH.end.y else -off)
 	if c.y + off + 24 > BENCH.end.y:
 		return c + Vector2(off + 4, 0)
 	return c + Vector2(0, off)
@@ -1439,7 +1550,17 @@ func _book_button_pos() -> Vector2:
 	return c + Vector2(0, -off)
 
 
+## The cells the group covers, as one rectangle.
+func _group_rect() -> Rect2:
+	var r := Rect2(node_center(group_sel[0]) - CELL / 2, CELL)
+	for id in group_sel:
+		r = r.merge(Rect2(node_center(id) - CELL / 2, CELL))
+	return r
+
+
 func _selection_center() -> Vector2:
+	if _group_selected():
+		return _group_rect().get_center()
 	if selected_piece >= 0:
 		return node_center(selected_piece)
 	return K.along(tube_points(selected_tube), 0.5)
@@ -1487,10 +1608,10 @@ func _refresh_layers() -> void:
 	# Ports stay put while a piece or tube is dragged (the dragged piece's go
 	# with it); tubes follow the pointer.
 	var editing := [bench_gen, drag, drag_node, drag_moved, _cards_look()]
-	ports.show_look(editing)
+	ports.show_look(editing + ([drag_pos] if _group_moving() else []))  # a group's ports go with it
 	if drag in ["move", "card", "tube", "tube_in"]:
 		editing.append(drag_pos)
-	wiring.show_look(editing + [selected_tube, selected_piece, drag_port, drag_detach])
+	wiring.show_look(editing + [selected_tube, selected_piece, group_sel, drag_port, drag_detach])
 	loom_layer.show_look([bench_gen, sim.tick, outcome, _loom_shown()])
 	critters.queue_redraw()
 	queue_redraw()
@@ -1521,6 +1642,17 @@ func _draw() -> void:
 		_draw_piece_kind(tray[carrying]["kind"], hover_pos, -1)
 	if drag == "move":
 		_draw_piece(drag_node, node_center(drag_node))
+	if drag == "box" and drag_moved:
+		_draw_box()
+
+
+## The selection rectangle as it is drawn, the pieces it holds lit.
+func _draw_box() -> void:
+	var r := _box_rect()
+	for id in _pieces_in(r):
+		K.fill(self, K.round_rect(Rect2(node_center(id) - CELL / 2, CELL).grow(-3), 12), Color(P.HOOP, 0.2))
+	K.fill(self, K.round_rect(r, 8), Color(P.HOOP, 0.08))
+	K.dashed(self, K.closed(K.round_rect(r, 8)), Color(P.INK, 0.55), 2, 8, 6)
 
 
 ## A soft breathing halo round the title's "?" after a failed run.
@@ -1630,7 +1762,7 @@ func _trash_lit() -> bool:
 ## The journal lights up while there's something to read about: a selected
 ## piece or tube, or a piece picked up from the tray.
 func _peek_lit() -> bool:
-	return carrying >= 0 or _has_selection()
+	return carrying >= 0 or (_has_selection() and not _group_selected())
 
 
 ## The still layer: top bar, bench and grid, design card.
@@ -1793,6 +1925,13 @@ func _aim_cell() -> Vector2i:
 ## The aim layer: the cell a dragged or carried piece would cover, lit if
 ## it is free.
 func _draw_aim() -> void:
+	if _group_moving() and drag_moved:  # every piece of the group, lit if all of them fit
+		var delta := _group_delta()
+		var ok := delta != Vector2i.ZERO and _group_fits(delta)
+		for id in group_sel:
+			var s := Vector2i(int(machine.nodes[id]["x"]), int(machine.nodes[id]["y"])) + delta
+			K.fill(aim_layer, K.round_rect(Rect2(GRID_ORIGIN + Vector2(s) * CELL / 2, CELL).grow(-4), 10), Color(P.HOOP, 0.22) if ok else Color(P.INK, 0.08))
+		return
 	var spot := _aim_cell()
 	if spot.x >= 0:
 		var ok: bool = not spot_taken(spot, drag_node if drag == "move" else -1)
@@ -1846,6 +1985,12 @@ func _draw_wiring() -> void:
 		if _card_selected():  # a card: the usual outline round its body
 			r = _card_rect(selected_piece).grow(6)
 		K.shape(ci, K.round_rect(r, 12), Color(P.HOOP, 0.25), Color(P.INK, 0.5), 2)
+	if drag == "" or (drag == "move" and not _group_moving()):
+		for id in group_sel:  # a group: each piece's cell lit
+			if machine.nodes.has(id):
+				K.shape(ci, K.round_rect(Rect2(node_center(id) - CELL / 2, CELL).grow(-3), 12), Color(P.HOOP, 0.25), Color(P.INK, 0.5), 2)
+		if _group_selected():  # and a dashed frame round all of it
+			K.dashed(ci, K.closed(K.round_rect(_group_rect().grow(6), 14)), Color(P.INK, 0.45), 2, 8, 6)
 	for id in machine.nodes:
 		if machine.is_fixed(id) or (drag == "move" and id == drag_node):
 			continue
@@ -1893,7 +2038,7 @@ func _draw_drops() -> void:
 ## The delete button for the selected tube or piece, and the book button
 ## beside it (alone on a card), drawn the same way.
 func _draw_delete_button() -> void:
-	if not _has_selection():
+	if not _has_selection() or _group_moving():
 		return
 	if not _card_selected():
 		var b := _delete_button_pos()
@@ -1901,6 +2046,8 @@ func _draw_delete_button() -> void:
 		K.shape(self, K.ellipse(b, 22, 22), P.TAG, P.INK, 2.5)
 		K.icon(self, "trash", b, 1.0, P.INK)
 		Keys.cap(self, b + Vector2(0, 24), Keys.label("delete"))
+	if _group_selected():  # a group has no one page to read
+		return
 	var k := _book_button_pos()
 	K.fill(self, K.ellipse(k + Vector2(0, 3), 20, 20), P.SHADOW)
 	K.shape(self, K.ellipse(k, 20, 20), P.TAG, P.INK, 2.5)

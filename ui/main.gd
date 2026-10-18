@@ -397,7 +397,9 @@ func _screenshot(args: Dictionary) -> void:
 				screen.fast_forward(int(args.get("ticks", levels[i].size())), float(args.get("phase", 0.5)))
 			if args.has("fan"):  # a group fanned out: the pots, or --fan=inventions
 				screen._show_fan(str(args["fan"]) if str(args["fan"]) == "inventions" else "pots")
-			if args.has("select"):  # the first placed piece selected, or a card (--select=card)
+			if str(args.get("select", "")) == "group":  # every placed piece selected together, as a rectangle round them would
+				screen.group_sel = screen.machine.nodes.keys().filter(func(id): return not screen.machine.is_fixed(id))
+			elif args.has("select"):  # the first placed piece selected, or a card (--select=card)
 				var want := Pieces.CARD if str(args["select"]) == "card" else ""
 				for id in screen.machine.nodes:
 					var kind: String = screen.machine.nodes[id]["kind"]
