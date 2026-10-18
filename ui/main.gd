@@ -395,8 +395,8 @@ func _screenshot(args: Dictionary) -> void:
 						screen.show_news(func(): pass)
 			else:
 				screen.fast_forward(int(args.get("ticks", levels[i].size())), float(args.get("phase", 0.5)))
-			if args.has("fan"):  # the pot slot's pots fanned out
-				screen._show_fan(true)
+			if args.has("fan"):  # a group fanned out: the pots, or --fan=inventions
+				screen._show_fan(str(args["fan"]) if str(args["fan"]) == "inventions" else "pots")
 			if args.has("select"):  # the first placed piece selected, or a card (--select=card)
 				var want := Pieces.CARD if str(args["select"]) == "card" else ""
 				for id in screen.machine.nodes:

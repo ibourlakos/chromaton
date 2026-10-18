@@ -150,6 +150,7 @@ var tray := []  # [{"kind": String, "locked": bool, "rect": Rect2}], plus
 # "pots" on the pot slot and "fan" on the pots it fans out (see _build_tray)
 var shelf_size := 0  # the tray entries on the shelf; the fanned-out pots follow
 var fan_open := false
+var fan_group := ""  # the open fan: "pots", "inventions" or ""
 var wiggle_slot := -1  # the locked tray slot last tapped, whose lock wiggles
 var wiggled_at := -9.0
 var loom_cloth := Rect2()
@@ -331,36 +332,63 @@ func _show_paints(on: bool) -> void:
 # ---------------------------------------------------------------------------
 
 ## The level's tray (Level._lay_trays): what it offers, and earlier levels'
-## pieces locked in their usual slots, then the owned inventions it lists.
+## pieces locked in their usual slots, with the Inventions slot in its place.
 ##
-## Where the level opens earned pots and the player owns some, the red pot's
-## slot is the pot slot ("pots"): a tap fans the pots out above the shelf
-## (the red pot among them, in paint order; held-back pots locked), and
-## dragging the slot itself places the red pot. The fanned-out pots are tray
-## entries too ("fan"), after the shelf's slots, so a carried pot is a tray
-## index like any piece; they take taps only while the fan is open.
+## Two slots are groups ("group") that fan their pieces out on a card above
+## the shelf: a tap or the slot's key opens the fan, one fan at a time.
+## - The pot slot ("pots"), where the level opens earned pots and the player
+##   owns some: the red pot among them, in paint order, held-back pots
+##   locked. Dragging the slot itself places the red pot.
+## - The Inventions slot ("inventions"), from the first invention earned on,
+##   at the same place on every level (key 7): the inventions the player
+##   owns from earlier levels, in the order earned, the ones the level
+##   doesn't list locked. Dragging the slot itself places its face, the
+##   first one the level lists. Owning only one, the slot is that invention.
+## The fanned-out pieces are tray entries too ("fan", and their "group"),
+## after the shelf's slots, so a carried one is a tray index like any piece;
+## they take taps only while their fan is open.
 func _build_tray() -> void:
 	var kinds: Array = level.tray.duplicate()
-	for inv_id in level.inventions:
-		if inventions.has(inv_id):
-			kinds.append("inv:" + inv_id)
 	tray.clear()
-	fan_open = false
+	_show_fan()
+	var invs := _invention_kinds()
+	var at: int = mini(level.inventions_at if level.inventions_at >= 0 else kinds.size(), kinds.size())
+	if not invs.is_empty():
+		var face: Array = invs[0]
+		for e in invs:
+			if not e[1]:
+				face = e
+				break
+		kinds.insert(at, face[0])
 	var left := TRAY.position.x + 8
 	var w := minf(118.0, (PEEK.position.x - 8 - left) / maxf(1, kinds.size()))
 	for i in kinds.size():
-		tray.append({"kind": kinds[i], "locked": level.is_locked(kinds[i]), "rect": Rect2(left + i * w, TRAY.position.y + 8, w - 8, TRAY.size.y - 16)})
+		var locked: bool = level.is_locked(kinds[i])
+		if i == at and not invs.is_empty():
+			locked = invs.all(func(e): return e[1])
+		tray.append({"kind": kinds[i], "locked": locked, "rect": Rect2(left + i * w, TRAY.position.y + 8, w - 8, TRAY.size.y - 16)})
 	shelf_size = tray.size()
-	var fan := _fan_kinds()
+	var pots := _fan_kinds()
 	var slot := kinds.find("red_pot")
-	if fan.size() < 2 or slot < 0 or tray[slot]["locked"]:
-		return
-	tray[slot]["pots"] = true
+	if pots.size() >= 2 and slot >= 0 and not tray[slot]["locked"]:
+		_add_fan(slot, "pots", pots)
+	if invs.size() >= 2 and not tray[at]["locked"]:
+		_add_fan(at, "inventions", invs)
+	elif invs.size() >= 2:  # every one held back: the same slot, locked, no fan
+		tray[at]["group"] = "inventions"
+		tray[at]["inventions"] = true
+
+
+## Makes a shelf slot a group and lays its fan out above the shelf, centred
+## over the slot as far as the bench allows.
+func _add_fan(slot: int, group: String, entries: Array) -> void:
+	tray[slot]["group"] = group
+	tray[slot][group] = true
 	var step := FAN_SLOT.x + 8
-	var x := clampf(tray[slot]["rect"].get_center().x - step * fan.size() / 2.0, BENCH.position.x + 12, BENCH.end.x - 12 - step * fan.size())
-	for k in fan.size():
+	var x := clampf(tray[slot]["rect"].get_center().x - step * entries.size() / 2.0, BENCH.position.x + 12, BENCH.end.x - 12 - step * entries.size())
+	for k in entries.size():
 		var r := Rect2(Vector2(x + k * step + 4, TRAY.position.y - FAN_SLOT.y - 22), FAN_SLOT)
-		tray.append({"kind": fan[k][0], "locked": fan[k][1], "rect": r, "fan": true})
+		tray.append({"kind": entries[k][0], "locked": entries[k][1], "rect": r, "fan": true, "group": group})
 
 
 ## The pots in the pot slot's fan, in paint order: [kind, locked]. The red
@@ -377,15 +405,44 @@ func _fan_kinds() -> Array:
 	return out
 
 
-## Opens or closes the pot slot's fan.
-func _show_fan(on: bool) -> void:
-	fan_open = on
+## The Inventions slot's inventions, in the order earned: [kind, locked].
+## Each one the player owns that an earlier level earns, locked unless the
+## level lists it, then any other the level lists (a level on its own).
+func _invention_kinds() -> Array:
+	var ids: Array = level.earned_inventions.duplicate()
+	for inv_id in level.inventions:
+		if not inv_id in ids:
+			ids.append(inv_id)
+	var out := []
+	for inv_id in ids:
+		if inventions.has(inv_id):
+			out.append(["inv:" + inv_id, not inv_id in level.inventions])
+	return out
 
 
-## Whether a tray entry takes taps now: the shelf's slots always, the
-## fanned-out pots while the fan is open.
+## Opens a group's fan ("pots" or "inventions"), or folds it ("").
+func _show_fan(group := "") -> void:
+	fan_group = group
+	fan_open = group != ""
+
+
+## Whether a tray entry takes taps now: the shelf's slots always, a fan's
+## pieces while their fan is open.
 func _slot_live(i: int) -> bool:
-	return fan_open or not tray[i].get("fan", false)
+	return not tray[i].get("fan", false) or tray[i]["group"] == fan_group
+
+
+## The open fan's pieces, as tray indices in order.
+func _open_fan() -> Array:
+	return range(shelf_size, tray.size()).filter(func(i): return tray[i]["group"] == fan_group)
+
+
+## The shelf slot of the open fan (or of a group), or -1.
+func _group_slot(group := fan_group) -> int:
+	for i in shelf_size:
+		if tray[i].get("group", "") == group and group != "":
+			return i
+	return -1
 
 
 ## The first tray slot that isn't locked, or -1 when there's nothing to place.
@@ -911,7 +968,7 @@ func open_options() -> void:
 		return
 	running = false
 	carrying = -1
-	_show_fan(false)
+	_show_fan()
 	_sync_buttons()
 	options_view = Options.new()
 	options_view.overlay = true
@@ -986,11 +1043,12 @@ func _key(act: String, event: InputEventKey) -> bool:
 	var editing := drag == ""  # keys don't edit under a finger mid-drag
 	if act.begins_with("piece_"):
 		if editing:
-			# With the pots fanned out, the keys pick from the fan.
+			# With a group fanned out, the keys pick from its fan.
 			var n := int(act.substr(6)) - 1
 			if fan_open:
-				if shelf_size + n < tray.size():
-					_pick(shelf_size + n)
+				var fan := _open_fan()
+				if n < fan.size():
+					_pick(fan[n])
 			elif n < shelf_size:
 				_pick(n)
 		return true
@@ -1026,7 +1084,7 @@ func _key(act: String, event: InputEventKey) -> bool:
 			if carrying >= 0:
 				carrying = -1
 			elif fan_open:
-				_show_fan(false)
+				_show_fan()
 			elif _has_selection():
 				selected_tube = -1
 				selected_piece = -1
@@ -1041,22 +1099,22 @@ func _key(act: String, event: InputEventKey) -> bool:
 
 ## Picks up a tray piece (a tap on it or its key): it follows the pointer
 ## until a click on a free cell puts it down. Picking it again puts it back.
-## A locked piece places nothing: its lock wiggles and the hand empties. The
-## pot slot fans its pots out instead (or folds them away); picking a pot
-## from the fan folds it.
+## A locked piece places nothing: its lock wiggles and the hand empties. A
+## group slot (the pots, the inventions) fans its pieces out instead (or
+## folds them away); picking one from the fan folds it.
 func _pick(i: int) -> void:
 	if i >= tray.size():
-		return
-	if tray[i].get("pots", false):
-		_show_fan(not fan_open)
-		carrying = -1
 		return
 	if tray[i]["locked"]:
 		_wiggle(i)
 		carrying = -1
 		return
+	if tray[i].has("group") and not tray[i].get("fan", false):
+		_show_fan("" if fan_group == tray[i]["group"] else tray[i]["group"])
+		carrying = -1
+		return
 	if tray[i].get("fan", false):
-		_show_fan(false)
+		_show_fan()
 	carrying = -1 if carrying == i else i
 	selected_tube = -1
 	selected_piece = -1
@@ -1119,7 +1177,7 @@ func _press(pos: Vector2) -> void:
 			drag_index = i
 			selected_tube = -1
 			return
-	_show_fan(false)  # a tap anywhere else folds the pots away
+	_show_fan()  # a tap anywhere else folds the fan away
 	if carrying >= 0:
 		# A click puts the carried piece down on a free cell; anywhere else
 		# it goes back to the tray.
@@ -1171,7 +1229,7 @@ func _release(pos: Vector2) -> void:
 		"new":
 			if drag_moved:
 				_place_new(pos)
-				_show_fan(false)
+				_show_fan()
 			else:
 				_pick(drag_index)  # a tap picks the piece up
 		"move":
@@ -1421,7 +1479,7 @@ func _refresh_layers() -> void:
 	if still == null:
 		return
 	still.show_look(_still_look())
-	shelf.show_look([carrying, fan_open, _trash_lit(), _peek_lit(), _clear_armed()])
+	shelf.show_look([carrying, fan_group, _trash_lit(), _peek_lit(), _clear_armed()])
 	tray_layer.show_look([level, tray.size()])
 	aim_layer.show_look([_aim_cell(), bench_gen, drag, drag_node])
 	cards_layer.show_look([level, _cards_look()])
@@ -1488,34 +1546,33 @@ func _draw_locks() -> void:
 		K.icon(self, "lock", c, 0.9, Color(P.INK, 0.55))
 
 
-## The pot slot's fan, while it is open: the pots on a paper card above the
-## shelf, pointing down at their slot, each with its paint and price (a lock
-## on one the level holds back) and, with key labels on, the key that picks
-## it up.
+## The open group's fan: its pieces on a paper card above the shelf,
+## pointing down at their slot, each with its price (a lock on one the level
+## holds back), a pot with its paint's name (an invention's sticker carries
+## its own), and, with key labels on, the key that picks it up.
 func _draw_fan() -> void:
-	if not fan_open or shelf_size >= tray.size():
+	var fan := _open_fan()
+	if fan.is_empty():
 		return
-	var first: Rect2 = tray[shelf_size]["rect"]
-	var last: Rect2 = tray[tray.size() - 1]["rect"]
+	var first: Rect2 = tray[fan[0]]["rect"]
+	var last: Rect2 = tray[fan[-1]]["rect"]
 	var card := Rect2(first.position - Vector2(10, 10), last.end - first.position + Vector2(20, 20))
-	var slot := Vector2.ZERO
-	for i in shelf_size:
-		if tray[i].get("pots", false):
-			slot = tray[i]["rect"].get_center()
+	var slot: Vector2 = tray[_group_slot()]["rect"].get_center()
 	var tip := Vector2(slot.x, TRAY.position.y + 6)
 	var tail := PackedVector2Array([Vector2(tip.x - 14, card.end.y - 1), tip, Vector2(tip.x + 14, card.end.y - 1)])
 	K.fill(self, K.round_rect(Rect2(card.position + Vector2(3, 5), card.size), 14), P.SHADOW)
 	K.shape(self, tail, P.PAPER, Color(P.INK, 0.5), 2)
 	K.shape(self, K.round_rect(card, 14), P.PAPER, Color(P.INK, 0.5), 2)
 	K.fill(self, PackedVector2Array([tail[0] + Vector2(2, -3), tip + Vector2(0, -3), tail[2] + Vector2(-2, -3)]), P.PAPER)
-	for k in range(shelf_size, tray.size()):
+	for n in fan.size():
+		var k: int = fan[n]
 		var item: Dictionary = tray[k]
 		var r: Rect2 = item["rect"]
 		var lit := k == carrying or (drag == "new" and drag_index == k)
 		K.shape(self, K.round_rect(r, 10), Color(P.HOOP, 0.3) if lit else P.TAG, P.INK if lit else Color(P.INK, 0.5), 3 if lit else 1.5)
 		_draw_piece_kind(item["kind"], r.get_center() + Vector2(0, -8), -1, 0.78, self, 0.0)
-		var label := "Red"
-		if item["kind"] != "red_pot":
+		var label := "Red" if item["kind"] == "red_pot" else ""
+		if item["group"] == "pots" and item["kind"] != "red_pot":
 			label = Paint.name_of(Invention.paint_of(inventions[item["kind"].substr(4)]))
 		if item["locked"]:
 			K.fill(self, K.round_rect(r.grow(-2), 9), Color(P.TAG, 0.72))
@@ -1524,8 +1581,8 @@ func _draw_fan() -> void:
 			continue
 		K.text(self, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, P.INK_SOFT)
 		_cost_chip(self, r, _price(item["kind"]), false)
-		if k - shelf_size < 9:
-			Keys.cap(self, r.position + Vector2(16, 16), Keys.label("piece_%d" % (k - shelf_size + 1)))
+		if n < 9:
+			Keys.cap(self, r.position + Vector2(16, 16), Keys.label("piece_%d" % (n + 1)))
 
 
 ## What a tray kind costs the player: a piece its table price, an invention
@@ -1664,10 +1721,11 @@ func _title_parts() -> Dictionary:
 ## put down) and the trash (lit while a piece is dragged over the tray).
 func _draw_shelf() -> void:
 	K.shape(shelf, K.round_rect(TRAY, 14), Color(P.PAPER_DK, 0.9), Color(P.INK, 0.35), 2)
-	var carried_pot := carrying >= shelf_size  # a pot from the fan
+	var carried_from: String = tray[carrying]["group"] if carrying >= shelf_size else ""  # a piece from a fan
 	for i in shelf_size:
 		var r: Rect2 = tray[i]["rect"]
-		if i == carrying or (tray[i].get("pots", false) and (fan_open or carried_pot)):
+		var group: String = tray[i].get("group", "")
+		if i == carrying or (group != "" and (fan_group == group or carried_from == group)):
 			K.shape(shelf, K.round_rect(r, 10), Color(P.HOOP, 0.3), P.INK, 3)
 		else:
 			K.shape(shelf, K.round_rect(r, 10), P.TAG, Color(P.INK, 0.5), 1.5)
@@ -1693,24 +1751,29 @@ func _draw_tray() -> void:
 		var kind: String = item["kind"]
 		if item.get("pots", false):
 			# The pot slot: two of the earned pots peek out behind the red one.
-			var behind := tray.slice(shelf_size).filter(func(e): return e["kind"] != "red_pot")
+			var behind := tray.slice(shelf_size).filter(func(e): return e["group"] == "pots" and e["kind"] != "red_pot")
 			for k in mini(2, behind.size()):
 				var pot: Dictionary = behind[behind.size() - 1 - k]
 				_draw_piece_kind(pot["kind"], r.get_center() + Vector2(-22 if k == 0 else 22, -16), -1, 0.56, ci, 0.0)
 			label = "Pots"
+		elif item.get("inventions", false):
+			# The Inventions slot: two blank stickers peek out behind its face.
+			for k in 2:
+				K.sticker(ci, r.get_center() + Vector2(-8 + 15 * k, -15 + 6 * k), 0.66, "", IDLE_AGE, 0.0, 0.3 + k)
+			label = "Inventions"
 		elif not kind.begins_with("inv:"):  # an invention's sticker carries its name
 			label = Pieces.display_name(kind)
-		_draw_piece_kind(kind, r.get_center() + Vector2(0, -8), -1, 0.82, ci, 0.0)
+		_draw_piece_kind(kind, r.get_center() + Vector2(0, -8 if label != "Inventions" else 0), -1, 0.82, ci, 0.0)
 		if item["locked"]:
 			# Under a paper veil, its lock (drawn live, so it can wiggle)
 			# where the key cap sits.
 			K.fill(ci, K.round_rect(r.grow(-2), 9), Color(P.TAG, 0.72))
 			K.text(ci, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, Color(P.INK_SOFT, 0.45))
-			if not item.get("pots", false):
+			if not item.has("group"):
 				_cost_chip(ci, r, _price(kind), true)
 			continue
 		K.text(ci, P.ui(700), Vector2(r.get_center().x, r.end.y - 11), label, 13, P.INK_SOFT)
-		if not item.get("pots", false):  # one number on the folded pots would read as every pot's
+		if not item.has("group"):  # one number on a folded group would read as every piece's
 			_cost_chip(ci, r, _price(kind), false)
 		if i < 9:
 			Keys.cap(ci, r.position + Vector2(16, 16), Keys.label("piece_%d" % (i + 1)))
@@ -2047,8 +2110,9 @@ func _guide() -> Dictionary:
 			var kind: String = p["kind"] if p["kind"] != Pieces.INVENTION else "inv:" + str(p["invention"])
 			var target := cell_center(int(p["x"]), int(p["y"]))
 			var slot := _slot_of(kind)
-			if kind.begins_with("inv:pot_") and not fan_open:
-				slot = _slot_of("red_pot")  # the pot slot: open its fan first
+			var folded := _folded_in(kind)
+			if slot < 0 and folded >= 0:
+				slot = folded  # a group's slot: open its fan first
 				out["tap"] = true
 				out["from"] = tray[slot]["rect"].get_center() if slot >= 0 else target
 				out["to"] = out["from"]
@@ -2075,6 +2139,14 @@ func _guide() -> Dictionary:
 			out["to"] = out["from"]
 			out["tap"] = true
 	return out
+
+
+## The slot of the folded group whose fan holds this kind (unlocked), or -1.
+func _folded_in(kind: String) -> int:
+	for i in range(shelf_size, tray.size()):
+		if tray[i]["kind"] == kind and not tray[i]["locked"] and not _slot_live(i):
+			return _group_slot(tray[i]["group"])
+	return -1
 
 
 ## The live tray slot (shelf or open fan) that holds this kind, or -1.

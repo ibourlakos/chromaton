@@ -75,6 +75,8 @@ var tray: Array = []  # the tray's piece kinds in order, offered or locked (see 
 var inventions: Array = []
 var pots: Array = []  # the earned pots open in the pot slot's fan (see _lay_trays)
 var held_pots: Array = []  # earned pots this level holds back: in the fan, locked
+var earned_inventions: Array = []  # inventions (not pots) earlier levels earn, in that order: the Inventions slot's fan (see _lay_trays)
+var inventions_at := -1  # the Inventions slot's place on the shelf, or -1 before any invention is earned
 var hold_pots: Array = []  # the level file's hold_pots
 var waits_for: Array = []  # invention ids the level can't be built without
 var invention := {}
@@ -149,6 +151,12 @@ static func load_all() -> Array:
 ## that offers only named pieces (no red pot) offers no pots. Worked out from
 ## the campaign, like the tray, so the solver and tests see what a player
 ## who got here has; the workbench shows only the pots the player owns.
+##
+## Inventions other than pots share one slot too, the Inventions slot: it
+## joins the shelf where the campaign earns its first one (after the six
+## critters, key 7) and keeps that place, its fan listing every invention
+## earlier levels earn, in the order they are earned. The workbench shows the
+## ones the player owns, locked where the level doesn't list them.
 static func _lay_trays(levels: Array) -> void:
 	var order := []
 	for level in levels:
@@ -157,10 +165,14 @@ static func _lay_trays(levels: Array) -> void:
 				order.append(kind)
 	var seen := {}
 	var earned := []  # pot ids, in paint order
+	var earned_inventions := []  # other inventions, in the order earned
+	var inventions_at := -1
 	for level in levels:
 		for kind in level.pieces:
 			seen[kind] = true
 		level.tray = order.filter(func(kind): return seen.has(kind))
+		level.earned_inventions = earned_inventions.duplicate()
+		level.inventions_at = inventions_at if not earned_inventions.is_empty() else -1
 		level.pots = []
 		level.held_pots = []
 		if "red_pot" in level.pieces:
@@ -168,6 +180,10 @@ static func _lay_trays(levels: Array) -> void:
 				var held: bool = pot in level.hold_pots or pot == level.invention.get("id", "")
 				(level.held_pots if held else level.pots).append(pot)
 		var paint := Invention.paint_of(level.invention)
+		if paint < 0 and not level.invention.is_empty() and not level.invention["id"] in earned_inventions:
+			if earned_inventions.is_empty():
+				inventions_at = level.tray.size()
+			earned_inventions.append(level.invention["id"])
 		if paint >= 0 and not level.invention["id"] in earned:
 			earned.append(level.invention["id"])
 			earned.sort_custom(func(a, b): return _pot_paint(a) < _pot_paint(b))
