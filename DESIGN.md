@@ -542,7 +542,8 @@ Done:
 4. ✅ **Live on itch.io** (§9), released after every round.
 5. ✅ **Playtest round 2, four work packages, one release each** (2026-10-05): WP1 the new campaign in the players' words (the one save break), WP2 the bench, WP3 teaching (guided levels, the journal's growth), WP4 art and players (the critter redraw, profiles). Every "call the build made" was folded into the sections above; the packages' text is in [docs/design-history.md](docs/design-history.md).
 6. ✅ **Playtest R3** (2026-10-06): the picture card (Path B, §4), chapters 3 and 4 at nine levels, the R3 quick wins.
-. ✅ **Package B, tray and bench** (2026-10-18): the Inventions slot (key 7 on every level), the selection rectangle on the bench, the paint card's Shift arcs (§9.1). Not yet released.
+7. ✅ **Playtest R4 quick wins** (2026-10-08): the price wording, the ★★★ price line, the loom's shuttle, the little boards centred.
+8. ✅ **Package B, tray and bench** (2026-10-18): the Inventions slot (key 7 on every level), the selection rectangle on the bench, the paint card's Shift arcs (§9.1). Not yet released.
 
 Next: the playtest notes (PLAYTEST-NOTES.md, local) hold what's still to do, grouped in packages, and the proposal for **Chromaton 1** (chapters 1–8, every machine a pure function of its cards) with the sequel in [CHROMATON-2.md](CHROMATON-2.md). Chapters 5 and 6 are planned (§5.1).
 
