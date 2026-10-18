@@ -1307,7 +1307,7 @@ static func quilt(ci: CanvasItem, r: Rect2, patches: Array, stack_cols := 0, acr
 # ---------------------------------------------------------------------------
 
 ## The pictures a chapter's historical note can name (levels/index.json).
-const HISTORY_PICTURES := ["paper_strip", "card_chain", "jacquard_loom", "woven_portrait"]
+const HISTORY_PICTURES := ["paper_strip", "mauve", "card_chain", "jacquard_loom", "woven_portrait"]
 
 
 ## A historical note's picture, centred on c, about 90 across at s = 1 (as
@@ -1367,6 +1367,23 @@ static func history_picture(ci: CanvasItem, id: String, c: Vector2, s: float) ->
 				for i in 3:
 					if (k + i) % 2 == 0:
 						disc(ci, at + Vector2(-5 + i * 5, 0), 1.4, Color(P.INK, 0.7))
+		"mauve":
+			# Perkin's flask of dye, a dyed skein of silk hung to dry beside it.
+			# Ink-dark, never purple: the picture keeps to the workshop's tones.
+			var dye := P.TAG.lerp(P.INK, 0.62)
+			line(ci, Vector2(6, -40), Vector2(44, -40), P.WOOD_DK, 3)  # the drying rod
+			for k in 3:  # the skein: loops of thread hanging from the rod
+				var x := 14.0 + k * 9
+				shape(ci, ellipse(Vector2(x, -12), 4.5, 26, 0, 20), Color(dye, 0.0), dye, 3)
+			for k in 2:
+				line(ci, Vector2(10 + k * 22, 12), Vector2(14 + k * 18, 18), dye, 2.5)
+			var flask := PackedVector2Array([Vector2(-26, -34), Vector2(-14, -34), Vector2(-14, -12), Vector2(0, 26), Vector2(-2, 32), Vector2(-38, 32), Vector2(-40, 26), Vector2(-26, -12)])
+			shape(ci, flask, P.GLASS, P.INK, 2)
+			fill(ci, PackedVector2Array([Vector2(-31.5, 4), Vector2(-8.5, 4), Vector2(0, 26), Vector2(-2, 30), Vector2(-38, 30), Vector2(-40, 26)]), dye)
+			line(ci, Vector2(-31, 4), Vector2(-9, 4), Color(P.INK, 0.5), 1.2)
+			line(ci, Vector2(-23, -28), Vector2(-23, -14), Color(P.SHINE_MID, 0.8), 2)  # the glass's glint
+			shape(ci, round_rect(Rect2(-28, -40, 16, 7), 2), P.WOOD_LT, P.INK, 1.6)  # the cork
+			ci.draw_line(Vector2(-46, 33), Vector2(48, 33), Color(P.INK, 0.25), 1.5, true)  # the bench
 		"woven_portrait":
 			# The silk portrait of Jacquard, framed on a nail, cards tucked behind.
 			for k in 2:  # two cards, laced, peeking out from behind

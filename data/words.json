@@ -160,13 +160,6 @@
 			"word": "Mixing Tub"
 		},
 		{
-			"id": "split",
-			"level": "purple",
-			"tab": "pieces",
-			"text": "Split copies paint: one drop goes in, and the same paint comes out of both spouts. It's free, so it never counts toward your pieces.",
-			"word": "Split"
-		},
-		{
 			"id": "brown",
 			"level": "black",
 			"tab": "paint",
@@ -175,7 +168,7 @@
 		},
 		{
 			"id": "invert",
-			"level": "green",
+			"level": "white",
 			"tab": "pieces",
 			"text": "The Flip Pan flips a paint to its opposite. Red becomes green, yellow becomes purple, blue becomes orange, and white becomes black. Flip it again and you're back where you started.",
 			"word": "Flip Pan"
@@ -186,6 +179,13 @@
 			"tab": "cloths",
 			"text": "Weave every cloth in a chapter and they're sewn together into a quilt. Your quilts hang beside your cloths in the journal.",
 			"word": "Quilt"
+		},
+		{
+			"id": "split",
+			"level": "black_short_way",
+			"tab": "pieces",
+			"text": "Split copies paint: one drop goes in, and the same paint comes out of both spouts. It's free, so it never counts toward your pieces.",
+			"word": "Split"
 		},
 		{
 			"id": "pattern-card",

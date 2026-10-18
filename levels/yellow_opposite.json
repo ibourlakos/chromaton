@@ -1,0 +1,56 @@
+{
+	"id": "yellow_opposite",
+	"name": "Yellow Without the Wheel",
+	"cloth": "Yellow",
+	"machine": "Yellow Without the Wheel",
+	"goal": "Weave a yellow cloth, with the Shift Wheel put away.",
+	"hint": "Yellow sits across from purple on the paint card. Flip your purple pot.",
+	"pieces": [
+		"red_pot",
+		"mix",
+		"invert"
+	],
+	"inventions": [],
+	"stars": {
+		"budget": 3,
+		"best": 2
+	},
+	"target": [
+		"YYYYYYYY"
+	],
+	"card_rule": "",
+	"cards": [],
+	"reference": {
+		"pieces": [
+			{
+				"id": "p",
+				"kind": "invention",
+				"invention": "pot_purple",
+				"x": 4,
+				"y": 3
+			},
+			{
+				"id": "h",
+				"kind": "invert",
+				"x": 8,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"p",
+				"h"
+			],
+			[
+				"h",
+				"loom"
+			]
+		]
+	},
+	"hold_pots": [
+		"pot_yellow"
+	],
+	"star_needs": {
+		"pot_purple": 1
+	}
+}

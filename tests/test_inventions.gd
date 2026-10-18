@@ -221,9 +221,9 @@ func test_pots(inventions: Dictionary) -> void:
 	check(sim.status == S.SOLVED and sim.tick == level.size() + 1, "the orange pot weaves an orange cloth, one drop a tick (%d ticks)" % sim.tick)
 	check(m.cost(all) == 2, "and costs its price")
 	check(Invention.price(1) == 1 and Invention.price(0) == 1 and Invention.price(5) == 4, "the discount is one piece, never below 1")
-	var paint_box := campaign.filter(func(l): return l.chapter == 0 and not l.invention.is_empty())
+	var paint_box := campaign.filter(func(l): return l.chapter <= 1 and not l.invention.is_empty())  # and Bargain Pots
 	var prices := paint_box.map(func(l): return Invention.package(l, l.reference_machine(), refs[l.number - 1])["cost"])
-	check(prices == [1, 1, 2, 3, 2, 3, 1, 1, 1, 2, 2], "the paint box earns Yellow 1, Blue 1, Orange 2, Purple 3, Green 2, Black 3, then Green, Orange and Purple at 1, Black 2, White 2 (%s)" % str(prices))
+	check(prices == [1, 1, 2, 2, 2, 3, 3, 1, 1, 1, 2, 2], "the paint box earns Yellow 1, Blue 1, Orange 2, Purple 2, Green 2, Black 3, White 3; Bargain Pots Green, Orange and Purple at 1, Black 2, White 2 (%s)" % str(prices))
 
 	var p = Progress.new()
 	p.add_invention(pot)

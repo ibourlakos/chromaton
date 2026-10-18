@@ -1076,6 +1076,10 @@ func _draw_cloths() -> void:
 		aspect = 1.0
 	var has_note: bool = not list[0].chapter_note.is_empty()
 	var room := side.size.y - 96 - (NOTE_ROOM if has_note else 0.0)
+	if threads and list[0].quilt_order == "paint":  # rows in the paint box's order, to match it row for row
+		var order := range(list.size())
+		order.sort_custom(func(a, b): return PAINT_ROWS.find(list[a].target[0]) < PAINT_ROWS.find(list[b].target[0]))
+		patches = order.map(func(k): return patches[k])
 	var edge := K.quilt(self, Rect2(side.position + Vector2(0, 36), Vector2(side.size.x, room)), patches, list[0].cols if threads else 0, list[0].quilt_across, aspect)
 	var done := patches.filter(func(p): return not p.is_empty()).size()
 	var line := "Every cloth sewn in!" if done == list.size() else "%d of %d cloths woven" % [done, list.size()]
@@ -1094,6 +1098,9 @@ func _draw_cloths() -> void:
 # Enter) opens the note over the page. Any tap, Back or an arrow puts it away.
 
 const NOTE_ROOM := 112.0  # what the tag takes from under the quilt
+## The paint box's rows, top to bottom: a quilt with quilt_order "paint" stacks
+## its one-row cloths this way (levels/index.json).
+const PAINT_ROWS := [Paint.RED, Paint.YELLOW, Paint.BLUE, Paint.ORANGE, Paint.PURPLE, Paint.GREEN, Paint.BLACK, Paint.WHITE]
 const NOTE_CARD_W := 860.0
 
 

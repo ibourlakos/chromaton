@@ -365,7 +365,7 @@ func _dfs_tree(signals: Array, used: int, limit: int) -> bool:
 static func level_ops(level, inventions: Dictionary) -> Array:
 	var out := []
 	for kind in level.pieces:
-		if kind in ["red_pot", "mix", "filter", "invert", "shift"]:
+		if kind in ["red_pot", "mix", "filter", "invert", "shift"] and not (kind == "red_pot" and level.red_held()):
 			out.append({"op": kind, "cost": 1, "name": kind.capitalize()})
 	for pot_id in level.pots:
 		if inventions.has(pot_id):

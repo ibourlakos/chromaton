@@ -399,7 +399,7 @@ func _fan_kinds() -> Array:
 	var out := []
 	for paint in 8:
 		if paint == 1:
-			out.append(["red_pot", false])
+			out.append(["red_pot", level.red_held()])
 			continue
 		for pot_id in level.pots + level.held_pots:
 			if inventions.has(pot_id) and Invention.paint_of(inventions[pot_id]) == paint:
@@ -1259,7 +1259,8 @@ func _press(pos: Vector2) -> void:
 	selected_piece = -1
 	for i in tray.size():
 		if _slot_live(i) and tray[i]["rect"].has_point(pos):
-			if tray[i]["locked"]:  # no drag either
+			# Locked, or the pot slot when the red pot is held back: no drag either.
+			if tray[i]["locked"] or (level.red_held() and tray[i].get("group", "") == "pots" and not tray[i].get("fan", false)):
 				_pick(i)
 				selected_tube = -1
 				return

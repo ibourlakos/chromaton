@@ -4,13 +4,81 @@
 	"cloth": "Black",
 	"machine": "A Cheaper Black Pot",
 	"goal": "Weave a black cloth. Three stars make your black pot cheaper.",
-	"hint": "A paint and its opposite hold every paint between them. Mix red with your green pot.",
+	"hint": "A paint and its opposite hold every paint between them. Split the red pot's drop, flip one copy and mix it back with the other.",
+	"steps": [
+		{
+			"line": "Only red today.",
+			"do": [
+				[
+					"place",
+					"pot"
+				]
+			]
+		},
+		{
+			"line": "Split copies one drop into two.",
+			"do": [
+				[
+					"place",
+					"s"
+				],
+				[
+					"tube",
+					"pot",
+					"s"
+				]
+			]
+		},
+		{
+			"line": "Flip one copy to green.",
+			"do": [
+				[
+					"place",
+					"i"
+				],
+				[
+					"tube",
+					"s",
+					"i"
+				]
+			]
+		},
+		{
+			"line": "Mix it back with the other copy.",
+			"do": [
+				[
+					"place",
+					"m"
+				],
+				[
+					"tube",
+					"s",
+					"m"
+				],
+				[
+					"tube",
+					"i",
+					"m"
+				]
+			]
+		},
+		{
+			"line": "To the loom: a paint and its opposite make black.",
+			"do": [
+				[
+					"tube",
+					"m",
+					"loom"
+				]
+			]
+		}
+	],
 	"pieces": [
 		"red_pot",
 		"shift",
 		"mix",
-		"split",
-		"invert"
+		"invert",
+		"split"
 	],
 	"inventions": [],
 	"invention": {
@@ -30,16 +98,21 @@
 	"reference": {
 		"pieces": [
 			{
-				"id": "p",
+				"id": "pot",
 				"kind": "red_pot",
 				"x": 2,
-				"y": 2
+				"y": 3
 			},
 			{
-				"id": "g",
-				"kind": "invention",
-				"invention": "pot_green",
-				"x": 2,
+				"id": "s",
+				"kind": "split",
+				"x": 4,
+				"y": 3
+			},
+			{
+				"id": "i",
+				"kind": "invert",
+				"x": 6,
 				"y": 4
 			},
 			{
@@ -51,11 +124,19 @@
 		],
 		"tubes": [
 			[
-				"p",
+				"pot",
+				"s"
+			],
+			[
+				"s.0",
 				"m.0"
 			],
 			[
-				"g",
+				"s.1",
+				"i"
+			],
+			[
+				"i",
 				"m.1"
 			],
 			[
@@ -63,5 +144,13 @@
 				"loom"
 			]
 		]
-	}
+	},
+	"hold_pots": [
+		"pot_yellow",
+		"pot_blue",
+		"pot_orange",
+		"pot_purple",
+		"pot_green",
+		"pot_white"
+	]
 }

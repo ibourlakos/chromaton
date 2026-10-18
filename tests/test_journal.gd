@@ -393,10 +393,10 @@ func test_history_notes() -> void:
 		check(banned.search(text + " " + str(note["title"])) == null, "%s's note speaks of paint and thread, not bits or colors" % name)
 		check(levels.filter(func(l): return l.chapter == c).all(func(l): return l.chapter_note == note), "%s's levels carry its note" % name)
 	# Opens with a full quilt, not before.
-	check(not Journal.note_open(levels, solved(11), 0), "the paint box's note waits for its last cloth")
-	var p = solved(12)
+	check(not Journal.note_open(levels, solved(7), 0), "the paint box's note waits for its last cloth")
+	var p = solved(8)
 	check(Journal.note_open(levels, p, 0) and not Journal.note_open(levels, p, 1), "a full quilt opens its own note only")
-	var j = journal(solved(11), "cloths")
+	var j = journal(solved(7), "cloths")
 	j.chapter = 0
 	var tag: Vector2 = j._note_tag_rect().get_center()
 	tap(j, tag)
@@ -422,9 +422,9 @@ func test_history_notes() -> void:
 	check(j.tab == "cloths" and j.chapter == 0 and j.reading, "\"note:0\" opens the journal at the paint box's note")
 	j.free()
 	# The solve that fills the quilt says so, once.
-	var q = solved(11)
+	var q = solved(7)
 	q.know_levels(levels)
-	for l in levels.slice(0, 11):  # the pots its machine is built of
+	for l in levels.slice(0, 7):  # the pots its machine is built of
 		if not l.invention.is_empty():
 			q.add_invention(Invention.package(l, l.reference_machine(), q.inventions))
 	var wb = open_bench(by_id["white"], q)
@@ -545,7 +545,7 @@ func test_news_entries() -> void:
 	var news = JournalNews.new()
 	news.setup([], [], func(ci, id, c, s): pass, wb.news_extra)
 	check(news.rows[0]["title"] == "The Third Paint opens {level:two_pawns} and {level:neither_twice}.", "in those words (%s)" % news.rows[0]["title"])
-	check(Level.plain(news.rows[0]["title"]) == "The Third Paint opens 26. The Chess Clock and 27. The Rook.", "the markers read as level references (%s)" % Level.plain(news.rows[0]["title"]))
+	check(Level.plain(news.rows[0]["title"]) == "The Third Paint opens %s and %s." % [by_id["two_pawns"].ref_name(), by_id["neither_twice"].ref_name()], "the markers read as level references (%s)" % Level.plain(news.rows[0]["title"]))
 	news.free()
 	wb.queue_free()
 	# A cheaper pot: both prices, only when the price drops.

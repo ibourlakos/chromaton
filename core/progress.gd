@@ -40,6 +40,8 @@ extends RefCounted
 
 const PATH := "user://chromaton_save.json"
 const VERSION := 4
+## How far _machine_problems checks a saved machine.
+enum {SHAPE, KNOWN, FIT}
 const Machine = preload("res://core/machine.gd")
 const Pieces = preload("res://core/pieces.gd")
 const Invention = preload("res://core/invention.gd")
@@ -247,7 +249,10 @@ static func from_dict(d: Dictionary, levels := []):
 		for id in lv.keys():
 			if not _record_problems(id, lv[id], by_id, inv).is_empty():
 				lv.erase(id)
-			elif lv[id] is Dictionary and lv[id].get("solved", false):
+			elif lv[id] is Dictionary and lv[id].has("machine") and not _machine_problems(lv[id]["machine"], by_id[id], inv).is_empty():
+				lv[id] = lv[id].duplicate()  # a bench that no longer fits its level: cleared, the record kept
+				lv[id].erase("machine")
+			if lv.has(id) and lv[id] is Dictionary and lv[id].get("solved", false):
 				# An invention level whose invention didn't fit reads unsolved,
 				# so solving it earns the invention again (the bench is kept).
 				var earns: String = by_id[id].invention.get("id", "")
@@ -335,9 +340,13 @@ static func back_up(path := PATH) -> String:
 # ---------------------------------------------------------------------------
 
 ## Why saved data doesn't fit this build: another version, missing keys,
-## unknown level or invention ids, machines with pieces their level doesn't
-## offer. Empty when it fits. The reasons are for the log and tests; the
-## player only hears that the save is from an older build.
+## unknown level or invention ids, a malformed machine, an invention built of
+## pieces the game doesn't know. Empty when it fits. A stored bench with a
+## piece its level no longer offers doesn't make it stale: loading clears that
+## bench, keeping the level's record (designer, 2026-10-18: the re-org in fours
+## moves pieces between levels, and testers keep their saves). The reasons
+## are for the log and tests; the player only hears that the save is from an
+## older build.
 static func problems(d, levels: Array) -> Array:
 	if not d is Dictionary:
 		return ["the file is not a save"]
@@ -371,7 +380,7 @@ static func _record_problems(id, rec, by_id: Dictionary, inventions: Dictionary)
 			if not _is_number(rec.get(k)):
 				out.append("level %s: solved without \"%s\"" % [id, k])
 	if rec.has("machine"):
-		for p in _machine_problems(rec["machine"], by_id[id], inventions):
+		for p in _machine_problems(rec["machine"], by_id[id], inventions, SHAPE):
 			out.append("level %s: %s" % [id, p])
 	return out
 
@@ -388,15 +397,18 @@ static func _invention_problems(id, inv, by_id: Dictionary, inventions: Dictiona
 	if not (_is_number(inv["inputs"]) and _is_number(inv["cost"]) and inv["counts"] is Dictionary):
 		return ["invention %s: bad ports, price or counts" % id]
 	var out := []
-	for p in _machine_problems(inv["machine"], level, inventions):
+	for p in _machine_problems(inv["machine"], level, inventions, KNOWN):
 		out.append("invention %s: %s" % [id, p])
 	return out
 
 
-## Whether a saved machine could be on this level's bench: its pieces are
-## offered, its cards exist, its inventions are allowed and saved, and its
-## tubes join pieces that are there.
-static func _machine_problems(m, level, inventions: Dictionary) -> Array:
+## What keeps a saved machine off this level's bench, checked as far as
+## `how` asks: SHAPE, well formed (every piece has an id and a kind, its tubes
+## join pieces that are there); KNOWN, also every piece one the game knows and
+## every invention saved (an invention's own machine: it was made in some
+## build, so its price stands); FIT, also everything offered by the level now,
+## its cards there (a stored bench that can load).
+static func _machine_problems(m, level, inventions: Dictionary, how := FIT) -> Array:
 	if not (m is Dictionary and m.get("nodes") is Array and m.get("tubes") is Array):
 		return ["machine without nodes or tubes"]
 	var out := []
@@ -410,17 +422,19 @@ static func _machine_problems(m, level, inventions: Dictionary) -> Array:
 			Pieces.LOOM:
 				pass
 			Pieces.CARD:
-				if not (_is_number(n.get("card")) and int(n["card"]) < level.cards.size()):
+				if how == FIT and not (_is_number(n.get("card")) and int(n["card"]) < level.cards.size()):
 					out.append("a card the level doesn't have")
 			Pieces.INVENTION:
 				var inv_id := str(n.get("invention", ""))
-				if not level.offers_invention(inv_id):
+				if how == FIT and not level.offers_invention(inv_id):
 					out.append("invention %s isn't offered" % inv_id)
-				elif not inventions.has(inv_id):
+				elif how != SHAPE and not inventions.has(inv_id):
 					out.append("invention %s isn't saved" % inv_id)
 			_:
-				if not kind in level.pieces:
+				if how == FIT and not kind in level.pieces:
 					out.append("piece %s isn't offered" % kind)
+				elif how == KNOWN and not Pieces.is_piece(kind):
+					out.append("piece %s is unknown" % kind)
 	for t in m["tubes"]:
 		var ok: bool = t is Dictionary
 		for k in ["from", "fp", "to", "tp"]:

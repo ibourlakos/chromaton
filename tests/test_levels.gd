@@ -47,9 +47,9 @@ func _init() -> void:
 ## hand, which would go stale when levels move.
 func test_level_refs(levels: Array) -> void:
 	var pawn = levels.filter(func(l): return l.id == "third_color")[0]
-	check(pawn.ref_name() == "25. The Pawn", "a reference is the number and name, unbreakable (%s)" % pawn.ref_name())
+	check(pawn.ref_name() == "%d.%sThe%sPawn" % [pawn.number, Level.NBSP, Level.NBSP], "a reference is the number and name, unbreakable (%s)" % pawn.ref_name())
 	check(pawn.ref() == "{level:third_color}", "a level's marker names its id")
-	check(Level.spans("Earn it in {level:third_color}.") == [["Earn it in ", Level.TEXT], ["25.", Level.REF_NUMBER], [" ", Level.REF_GAP], ["The Pawn", Level.REF_NAME], [".", Level.TEXT]],
+	check(Level.spans("Earn it in {level:third_color}.") == [["Earn it in ", Level.TEXT], ["%d." % pawn.number, Level.REF_NUMBER], [" ", Level.REF_GAP], ["The Pawn", Level.REF_NAME], [".", Level.TEXT]],
 		"a marker is three runs: the number, the gap and the name")
 	check(Level.plain("{level:nowhere} and {level:third_color}") == "{level:nowhere} and " + pawn.ref_name(), "an unknown marker stays as written")
 	var ids := levels.map(func(l): return l.id)
@@ -66,8 +66,8 @@ func test_level_refs(levels: Array) -> void:
 
 
 func test_loading(levels: Array) -> void:
-	check(levels.size() == 42, "forty-two campaign levels (got %d)" % levels.size())
-	check(Level.chapters().map(func(c): return c["levels"].size()) == [12, 12, 9, 9], "four chapters of 12, 12, 9 and 9 levels, each quilt full")
+	check(levels.size() == 46, "forty-six campaign levels (got %d)" % levels.size())
+	check(Level.chapters().map(func(c): return c["levels"].size()) == [8, 8, 12, 9, 9], "five chapters of 8, 8, 12, 9 and 9 levels, each quilt full")
 	var ids := {}
 	for level in levels:
 		check(level.error == "", "level loads cleanly: %s %s" % [level.id, level.error])
@@ -104,10 +104,11 @@ func test_loading(levels: Array) -> void:
 		check(Level.letters(t.cards[1], 8) == ["WRYOBPGK", "WRYOBPGK", "WRYOBPGK", "WRYOBPGK", "WRYOBPGK", "WRYOBPGK"], "%s: card B is every paint on every row" % t.id)
 		check(Level.letters(t.cards[0], 8) == ["RRRRRRRR", "YYYYYYYY", "BBBBBBBB", "OOOOOOOO", "PPPPPPPP", "GGGGGGGG"], "%s: card A is one paint a row" % t.id)
 	var inv_levels := levels.filter(func(l): return not l.invention.is_empty())
-	var pot_ids := inv_levels.filter(func(l): return l.chapter == 0).map(func(l): return l.invention["id"])
-	check(pot_ids == ["pot_yellow", "pot_blue", "pot_orange", "pot_purple", "pot_green", "pot_black", "pot_green", "pot_orange", "pot_purple", "pot_black", "pot_white"], "paint-box levels 2 to 12 each earn a pot, then green, orange, purple and black again, cheaper (%s)" % str(pot_ids))
-	var others := inv_levels.filter(func(l): return l.chapter > 0).map(func(l): return l.invention["id"])
-	check(others == ["third_paint", "contrast", "missing_from_either", "same_paint"], "two inventions a chapter after the paint box (%s)" % str(others))
+	var pot_ids := inv_levels.filter(func(l): return l.chapter <= 1).map(func(l): return l.invention["id"])
+	check(pot_ids == ["pot_yellow", "pot_blue", "pot_orange", "pot_purple", "pot_green", "pot_black", "pot_white", "pot_green", "pot_orange", "pot_purple", "pot_black", "pot_white"], "the paint box earns a pot a level from 2 to 8; Bargain Pots makes green, orange, purple, black and white cheaper (%s)" % str(pot_ids))
+	check(levels.filter(func(l): return l.chapter == 1 and l.invention.is_empty()).map(func(l): return l.id) == ["yellow_opposite", "blue_opposite", "red_opposite"], "three Bargain Pots levels earn nothing: the Flip Pan does the Wheel's job")
+	var others := inv_levels.filter(func(l): return l.chapter > 1).map(func(l): return l.invention["id"])
+	check(others == ["third_paint", "contrast", "missing_from_either", "same_paint"], "two inventions a chapter after the pots (%s)" % str(others))
 	test_pots_in_trays(levels)
 
 
@@ -251,8 +252,18 @@ func test_stale_saves(levels: Array, inventions: Dictionary) -> void:
 
 	bad = good.duplicate(true)
 	bad["levels"]["one_pot"]["machine"]["nodes"].append({"id": 99, "kind": "filter", "x": 5, "y": 5})
-	check(not Progress.problems(bad, levels).is_empty(), "a machine with a piece the level doesn't offer is stale")
-	check(not Progress.from_dict(bad, levels).levels.has("one_pot"), "loading drops that level's record")
+	# The re-org in fours moves pieces between levels: a stored bench that no
+	# longer fits is cleared, its record kept, and the save stays (2026-10-18).
+	check(Progress.problems(bad, levels).is_empty(), "a bench with a piece the level no longer offers isn't stale")
+	var cleared = Progress.from_dict(bad, levels)
+	check(cleared.is_solved("one_pot") and not cleared.levels["one_pot"].has("machine"), "loading clears that bench and keeps the record")
+	bad["levels"]["one_pot"]["machine"]["tubes"].append({"from": 99, "fp": 0, "to": 98, "tp": 0})
+	check(not Progress.problems(bad, levels).is_empty(), "a malformed bench is stale")
+	bad = good.duplicate(true)
+	bad["inventions"]["contrast"]["machine"]["nodes"].append({"id": 99, "kind": "shift", "x": 9, "y": 6})
+	check(Progress.problems(bad, levels).is_empty() and Progress.from_dict(bad, levels).inventions.has("contrast"), "an invention made of pieces its level no longer offers keeps its price")
+	bad["inventions"]["contrast"]["machine"]["nodes"].append({"id": 98, "kind": "no_such_piece", "x": 9, "y": 2})
+	check(not Progress.problems(bad, levels).is_empty(), "one made of a piece the game doesn't know is stale")
 
 	bad = good.duplicate(true)
 	bad["levels"]["one_pot"].erase("stars")
@@ -265,7 +276,7 @@ func test_stale_saves(levels: Array, inventions: Dictionary) -> void:
 	bad["levels"]["third_color"]["machine"]["nodes"].append({"id": 99, "kind": "invention", "invention": "contrast", "x": 9, "y": 6})
 	check(Progress.problems(bad, levels).is_empty(), "an offered, saved invention on the bench fits")
 	bad["inventions"].erase("contrast")
-	check(not Progress.problems(bad, levels).is_empty(), "a machine with an invention the save lacks is stale")
+	check(Progress.problems(bad, levels).is_empty() and not Progress.from_dict(bad, levels).levels["third_color"].has("machine"), "a bench with an invention the save lacks is cleared on load")
 	host.inventions.erase("contrast")
 
 	bad = good.duplicate(true)
@@ -298,9 +309,13 @@ func test_pots_in_trays(levels: Array) -> void:
 		by_id[level.id] = level
 	var all := ["pot_white", "pot_yellow", "pot_orange", "pot_blue", "pot_purple", "pot_green", "pot_black"]
 	check(by_id["one_pot"].pots.is_empty() and by_id["yellow"].pots.is_empty() and by_id["blue"].pots == ["pot_yellow"], "pots open from Blue on: its tray offers the yellow pot")
-	check(by_id["purple"].pots.is_empty() and by_id["purple"].held_pots == ["pot_yellow", "pot_orange", "pot_blue"], "Purple holds every pot back")
+	check(by_id["purple"].pots == ["pot_yellow", "pot_orange", "pot_blue"], "Purple offers the pots so far")
+	check(by_id["black_short_way"].pots.is_empty() and by_id["black_short_way"].held_pots.size() == 7, "A Cheaper Black Pot holds every pot back: Split earns its star")
+	for id in ["yellow_opposite", "blue_opposite"]:
+		check(by_id[id].is_locked("shift") and not by_id[id].red_held(), "%s locks the Shift Wheel" % id)
+	check(by_id["red_opposite"].is_locked("shift") and by_id["red_opposite"].red_held() and "pot_green" in by_id["red_opposite"].pots, "Red Without the Red Pot holds back the red pot, its earned pots still offered")
 	check(not "pot_green" in by_id["green"].pots and "pot_green" in by_id["green"].held_pots and not "pot_black" in by_id["black_short_way"].pots, "a level holds back the pot it earns")
-	check(by_id["white"].pots == ["pot_yellow", "pot_orange", "pot_blue", "pot_purple", "pot_green", "pot_black"], "the white pot level offers every pot but white")
+	check(by_id["white"].pots == ["pot_yellow", "pot_orange", "pot_blue", "pot_purple", "pot_green", "pot_black"] and by_id["white_cheaper"].held_pots == ["pot_white"], "the white pot levels offer every pot but white")
 	check(by_id["orange_sun"].pots == all, "Orange Sun offers every earned pot, in paint order: %s" % str(by_id["orange_sun"].pots))
 	check(by_id["orange_sun"].offers_invention("pot_yellow") and not by_id["orange_sun"].offers_invention("contrast"), "an earned pot counts as offered")
 	check(by_id["pattern_card"].pots.is_empty() and by_id["neither_twice"].pots.is_empty() and by_id["only_missing"].pots.is_empty(), "levels without the red pot offer no pots")

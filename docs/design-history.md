@@ -295,6 +295,33 @@ The Third Paint left chapter 2 for chapter 3.
 
 ---
 
+## §5.1 The 12-level paint box
+
+*Replaced on 2026-10-18, when the paint box split into The Paint Box (8) and Bargain Pots (8) (DESIGN.md §5.1, the re-org in fours, release 2). The campaign intro and the chapter table, word for word as they stood:*
+
+✅ **The campaign today** (42 levels in four chapters: the designer's chapter plan and playtest round 2, built 2026-10-05; chapters 3 and 4 grown to nine levels, playtest R3, 2026-10-06; reordered so the little boards centre their quilts, playtest R4, 2026-10-08). Order and chapters live in `levels/index.json`, each level in `levels/<id>.json` (format at the top of `core/level.gd`). Every level's reference solution solves it at exactly its ★★★ count, and every ★★★ count is proven minimal by `tools/level_solver.gd` ([docs/level-report.md](docs/level-report.md), which also lists each level's decode depth, what it waits for and what its ★★★ counts on). In the tables, **G** marks a guided level (§5.7), **waits** a level that stays locked until the player owns its invention, and the machine is a cheapest one, as the solver writes it.
+
+**Chapter 1, The Paint Box** (12 levels): no cards; each level weaves one row of 8 stitches of one paint, so the rows stack into the chapter's quilt, and earns that paint's pot. The first half has no Flip Pan; the second brings it in by making the pots cheaper.
+
+| # | Level | Teaches | Earns | ★★ | ★★★ | Machine |
+|---|---|---|---|---|---|---|
+| 1 | One Pot of Red | G: the pot and a tube | | 1 | 1 | `Red` |
+| 2 | The Yellow Pot | G: Shift Wheel | Yellow 1 | 3 | 2 | `Shift(Red)` |
+| 3 | The Blue Pot | G: an earned pot as a piece | Blue 1 | 3 | 2 | `Shift(Yellow)` |
+| 4 | The Orange Pot | G: Mixing Tub | Orange 2 | 4 | 3 | `Mix(Red, Yellow)` |
+| 5 | The Purple Pot | G: Split (every pot held back) | Purple 3 | 5 | 4 | `Mix(Red, Shift(Shift(Red)))` |
+| 6 | The Green Pot | yellow and blue | Green 2 | 4 | 3 | `Mix(Yellow, Shift(Yellow))` |
+| 7 | The Black Pot | every paint together is black | Black 3 | 5 | 4 | `Mix(Red, Green)` |
+| 8 | A Cheaper Green Pot | G: Flip Pan | Green 1 | 4 | 2 | `Invert(Red)` |
+| 9 | A Cheaper Orange Pot | a mix is a primary's opposite | Orange 1 | 3 | 2 | `Invert(Blue)` |
+| 10 | A Cheaper Purple Pot | | Purple 1 | 3 | 2 | `Invert(Yellow)` |
+| 11 | A Cheaper Black Pot | a paint and its opposite | Black 2 | 4 | 3 | `Mix(Red, Invert(Red))` |
+| 12 | The White Pot | white is black flipped | White 2 | 5 | 3 | `Invert(Black)` |
+
+*Why it changed:* chapters hold a multiple of 4 levels (2026-10-18). Inventing the paints and making them cheaper are two ideas, so the box split in two; Split moved to A Cheaper Black Pot (the thrift tool, one pot two tubes) and the Flip Pan to The White Pot, and three Wheel-less levels plus A Cheaper White Pot fill Bargain Pots to eight. The Purple Pot became `Mix(Red, Blue)` (Purple 2, was 3).
+
+---
+
 ## §5.7 The Journal, before the consolidation
 
 *DESIGN.md lines 440–471 as of c369c4d; DESIGN.md now folds in the WP3 calls and drops the 'today' wording.*
