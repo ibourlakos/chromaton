@@ -1,4 +1,5 @@
-## Shown over the workbench after a solve: stars, Price and Ticks, and the
+## Shown over the workbench after a solve: stars, Price and Ticks, the level's
+## objectives with the stars the player has (as on the hint panel), and the
 ## new invention on invention levels.
 extends Control
 
@@ -7,6 +8,7 @@ const K = preload("res://ui/draw_kit.gd")
 const ToyButton = preload("res://ui/toy_button.gd")
 const Keys = preload("res://ui/keys.gd")
 const Invention = preload("res://core/invention.gd")
+const LevelNote = preload("res://ui/level_note.gd")
 
 signal replay
 signal levels
@@ -21,9 +23,10 @@ var stars := 0
 var better := {}
 var invention := {}
 var has_next := false
-var dear_line := ""  # which pots or inventions cost too much for ★★★, and where they get cheaper (Level.dear_line)
-var dear_extra := 0.0  # how much taller the card grows for it
-const DEAR_W := 314.0  # the line's width, under the metrics
+var rows: Array = []  # the level's objectives (Level.objectives), without the hint
+var _items: Array = []  # the rows, laid out (LevelNote.lay_out)
+var rows_h := 0.0
+const ROWS_Y := 344.0  # the rows' top, under the tapestry
 var t := 0.0
 var card := Rect2()
 var space_up := not Input.is_key_pressed(KEY_SPACE)  # released since the panel opened
@@ -31,9 +34,13 @@ var space_up := not Input.is_key_pressed(KEY_SPACE)  # released since the panel 
 const SPACE_DELAY := 0.5
 
 
-func setup(p_level, p_pieces: int, p_ticks: int, p_stars: int, p_better: Dictionary, p_invention: Dictionary, p_has_next: bool, p_dear_line := "") -> void:
+## `p_rows` are the level's objectives as they stand after this solve
+## (Level.objectives): which stars the player has, and the ★★★ note.
+func setup(p_level, p_pieces: int, p_ticks: int, p_stars: int, p_better: Dictionary, p_invention: Dictionary, p_has_next: bool, p_rows := []) -> void:
 	level = p_level
-	dear_line = p_dear_line
+	rows = p_rows.duplicate(true)
+	if not rows.is_empty():
+		rows[0]["note"] = ""  # the hint stays on the hint panel
 	pieces = p_pieces
 	ticks = p_ticks
 	stars = p_stars
@@ -45,12 +52,11 @@ func setup(p_level, p_pieces: int, p_ticks: int, p_stars: int, p_better: Diction
 func _ready() -> void:
 	size = DESIGN
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	# The ★★★ line has room for two lines under the metrics; past that the
-	# card grows (two sentences on The Trophy).
-	var line_h := P.ui(700).get_height(14)
-	if stars < 3 and dear_line != "":
-		dear_extra = maxf(0, P.ui(700).get_multiline_string_size(dear_line, HORIZONTAL_ALIGNMENT_LEFT, DEAR_W, 14).y - 2 * line_h)
-	var h := (440.0 if invention.is_empty() else 540.0) + dear_extra
+	# The card grows to fit the objectives, and the new invention under them.
+	var laid := LevelNote.lay_out(rows, 620 - 72 - LevelNote.STARS_W, 16, 16, 14)
+	_items = laid["items"]
+	rows_h = float(laid["h"])
+	var h := ROWS_Y + rows_h + 24 + (110.0 if not invention.is_empty() else 0.0) + 84
 	card = Rect2(DESIGN.x / 2 - 310, DESIGN.y / 2 - h / 2 - 10, 620, h)
 	var buttons := [["reset", replay, Keys.label("replay")], ["levels", levels, Keys.label("back")]]
 	if has_next:
@@ -118,7 +124,7 @@ func _draw() -> void:
 	var font := P.ui(800)
 	var bx := card.position.x + 282
 	var y := card.position.y + 196
-	for row in [["pieces", "Price", pieces, better.get("pieces", false)], ["ticks", "Ticks", ticks, better.get("ticks", false)]]:
+	for row in [["pieces", "Cost", pieces, better.get("pieces", false)], ["ticks", "Ticks", ticks, better.get("ticks", false)]]:
 		K.icon(self, row[0], Vector2(bx, y), 1.2, P.INK)
 		K.text(self, font, Vector2(bx + 22, y), row[1], 22, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 		K.text(self, P.display(600), Vector2(bx + 210, y), str(row[2]), 28, P.INK, HORIZONTAL_ALIGNMENT_RIGHT)
@@ -127,18 +133,11 @@ func _draw() -> void:
 			K.shape(self, K.round_rect(badge, 13), P.WOOD_LT, P.INK, 2)
 			K.text(self, P.ui(800), badge.get_center(), "best!", 14, P.INK)
 		y += 44
-	# How to earn more stars
-	if stars < 3:
-		var want := stars + 1
-		for s in want:
-			K.star(self, Vector2(bx + 4 + s * 20, y + 4), 8, true)
-		K.text(self, P.ui(700), Vector2(bx + 4 + want * 20, y + 4), "for a price of %d or less" % (level.best if want == 3 else level.budget), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
-		# ★★★ counts on a pot or invention cheaper than this player's: say
-		# which, and where it gets cheaper.
-		if want == 3 and dear_line != "":
-			draw_multiline_string(P.ui(700), Vector2(bx - 4, y + 30), dear_line, HORIZONTAL_ALIGNMENT_LEFT, DEAR_W, 14, -1, P.INK_SOFT)
+	# The objectives, as the hint panel shows them: the stars the player has
+	# filled, and under ★★★ why it's out of reach, if a dear invention is why.
+	LevelNote.draw_rows(self, _items, card.position + Vector2(36, ROWS_Y), Rect2(Vector2.ZERO, DESIGN), 1.0, cx)
 	if not invention.is_empty():
-		var sy := card.position.y + 380 + dear_extra
+		var sy := card.position.y + ROWS_Y + rows_h + 54
 		var paint := Invention.paint_of(invention)
 		if paint >= 0:
 			K.pot(self, Vector2(cx - 60, sy + 4), 0.55, clampf(t - 1.2, 0, 99), t, 0.3, paint)

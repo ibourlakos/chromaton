@@ -3,7 +3,7 @@
 	"name": "The Blue Pot",
 	"cloth": "Blue",
 	"machine": "The Blue Pot",
-	"goal": "Weave a blue cloth.",
+	"goal": "Weave a blue cloth, and earn the blue pot.",
 	"hint": "Your yellow pot is a piece now, and cheaper than a red pot with a wheel. Turn its yellow once more on the Shift Wheel.",
 	"steps": [
 		{

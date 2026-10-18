@@ -3,7 +3,7 @@
 	"name": "The Black Queen",
 	"cloth": "The Black Queen",
 	"machine": "Same Paint",
-	"goal": "Weave the black queen.",
+	"goal": "Weave the black queen, and invent Same Paint.",
 	"hint": "In the looking glass, the queen wears paint where the cards agree. Mix what the cards share with the opposite of their mix.",
 	"pieces": [
 		"red_pot",

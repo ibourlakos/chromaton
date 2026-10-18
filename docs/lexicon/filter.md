@@ -20,7 +20,7 @@ The Sieve takes two paints and keeps only what they share. Orange and purple sha
 - A fussy, heavy-lidded tub with a sieve in its rim that shakes when it fires; grains of held-back paint hop on the rim.
 - With a pot it works as a mask: Filter a card with Red and only the card's red is left (Sandy Crab, where the yellow on the card is sand).
 - A starting critter (the middle kit, DESIGN.md §2.5). First offered in Sandy Crab (level 16). Keep What They Share holds it back so the player rebuilds it from Invert and the Third Paint; Back to Filter rebuilds it from two Missing From Eithers.
-- Price 1.
+- Cost 1.
 
 ## Implementation
 

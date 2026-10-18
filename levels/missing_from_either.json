@@ -3,7 +3,7 @@
 	"name": "The Black Pawn",
 	"cloth": "The Black Pawn",
 	"machine": "Missing From Either",
-	"goal": "Weave the black pawn.",
+	"goal": "Weave the black pawn, and invent Missing From Either.",
 	"hint": "In the looking glass, mixing turns to sieving and black turns to white. Sieve the two cards, then flip what they share.",
 	"pieces": [
 		"red_pot",

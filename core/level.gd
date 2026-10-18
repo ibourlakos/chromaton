@@ -10,7 +10,10 @@
 ## Mix": what the cloth is, then what the machine does; machine "" for the
 ## cloth alone; name is the cloth phrase, or in the paint box the machine
 ## phrase), goal (what to weave) and hint (the rule in paint, then how),
-## both shown in the hint panel (ui/level_note.gd), optional steps (a guided
+## both shown in the hint panel (ui/level_note.gd) as the ★ objective,
+## optional star_hint (a nudge toward the ★★★ machine, where the hint describes
+## a dearer one; shown under the ★★★ objective once the player has ★★),
+## optional steps (a guided
 ## level's guide: [{line, do: [actions]}], see ui/guide.gd), pieces (the kinds it
 ## offers; the tray also shows earlier levels' pieces, locked), inventions
 ## (invention ids allowed in the tray), optional hold_pots (earned pots this
@@ -66,6 +69,7 @@ var cloth_phrase := ""
 var machine_phrase := ""
 var goal := ""
 var hint := ""
+var star_hint := ""  # the ★★★ objective's nudge, shown once the player has ★★
 var steps: Array = []  # a guided level's steps (ui/guide.gd): [{"line", "do"}]
 var cols := 0
 var rows := 0
@@ -268,6 +272,30 @@ static func dear_line(dear: Array) -> String:
 	return "\n".join(said)
 
 
+## The level's objectives, as the hint panel and the success panel show them
+## (DESIGN.md 5.1, "Level objectives"): [{"stars", "text", "note", "reached"}].
+## ★ is the goal, with the hint as its note; ★★ and ★★★ are prices (one row
+## when the two counts are equal). The ★★★ note is the hint ladder's next
+## rung: `dear` (Level.dear_line) when a dear invention blocks it, otherwise
+## star_hint once the player has ★★ (not on the success panel: `nudge`
+## false). `have` is the player's best stars here.
+func objectives(have: int, dear := "", nudge := true) -> Array:
+	var rows := [{"stars": 1, "text": goal, "note": hint}]
+	if budget > best:
+		rows.append({"stars": 2, "text": cost_text(budget), "note": ""})
+	var note := dear
+	if note == "" and have >= 2 and nudge:
+		note = star_hint
+	rows.append({"stars": 3, "text": cost_text(best), "note": note})
+	for r in rows:
+		r["reached"] = have >= int(r["stars"])
+	return rows
+
+
+static func cost_text(cost: int) -> String:
+	return "A cost of %d or less." % cost if cost > 0 else "A cost of 0: no pieces at all."
+
+
 ## The critter this level rebuilds from other pieces ("" if none): its card
 ## rule is the critter's, and its tray holds that critter back.
 func rebuilds() -> String:
@@ -309,6 +337,7 @@ static func from_dict(d: Dictionary):
 	level.machine_phrase = str(d.get("machine", ""))
 	level.goal = str(d.get("goal", ""))
 	level.hint = str(d.get("hint", ""))
+	level.star_hint = str(d.get("star_hint", ""))
 	level.steps = d.get("steps", []).duplicate(true)
 	var rows_in: Array = d.get("target", [])
 	level.rows = rows_in.size()

@@ -19,7 +19,7 @@ The Mixing Tub takes two paints and gives back everything in either one. Red and
 
 - A wooden tub that stirs with a spoon; the paint swirls into the new paint.
 - First offered in Orange (level 4). Back to Mix rebuilds it from two Third Paints; Mix Without Mix holds it back so the player rebuilds it from Invert and Missing From Either.
-- Price 1.
+- Cost 1.
 
 ## Implementation
 

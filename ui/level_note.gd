@@ -1,12 +1,13 @@
 ## The hint panel (the level's note): pops up over the workshop as an
-## unsolved level opens, with the whole title, the goal (what to weave) and
-## the hint (the rule in paint, then how), and flies home into the title's
-## "?" when tapped (or on any key). Tapping the title brings it back.
-## DESIGN.md 5.1, "The title says what you do, the hint says how". Under the
-## hint, when a pot or invention costs this player too much for ★★★ here, the
-## success panel's line says so before the run (Level.dear_line, DESIGN.md 9.1).
+## unsolved level opens, with the whole title and the level's objectives
+## (Level.objectives, DESIGN.md 5.1 "Level objectives"), and flies home into
+## the title's "?" when tapped (or on any key). Tapping the title brings it
+## back. Each objective is a row: its stars (filled once the player has
+## them), what to do, and a note under it: under ★ (weave the cloth) the hint,
+## the rule in paint then how; under ★★★ the hint ladder's next rung (a dear
+## invention's line, or the level's star_hint once ★★ is earned).
 ##
-## It grows to fit its text up to MAX_H; past that the hint scrolls (drag,
+## It grows to fit its text up to MAX_H; past that the rows scroll (drag,
 ## the wheel, or the up and down keys), and a tap that doesn't drag sends it
 ## home.
 extends Control
@@ -20,39 +21,41 @@ signal landed
 const DESIGN := Vector2(1280, 800)
 const POP := 0.25  # seconds to pop up
 const LAND := 0.45  # seconds to fly home into the "?"
-const WIDTH := 640.0
-const TEXT_W := 540.0
-const HINT_SIZE := 22
-const MAX_H := 600.0
+const WIDTH := 720.0
+const PAD := 40.0  # the rows' margin inside the card
+const STARS_W := 64.0  # the stars' column
+const TEXT_W := WIDTH - 2 * PAD - STARS_W
+const ROW_SIZE := 20  # what to do
+const HINT_SIZE := 20  # the hint, under ★
+const NOTE_SIZE := 16  # the ★★★ note
+const MAX_H := 620.0
 const TITLE_SIZE := 32
-const DEAR_SIZE := 17
 const DRAG := 8.0  # how far a press moves before it scrolls instead of tapping
 
 var level
+var have := 0  # the player's best stars on this level
 var dear := ""  # Level.dear_line: why ★★★ is out of reach before the run ("" if it isn't)
+var rows: Array = []  # Level.objectives
 var home := Rect2()  # the title's "?", where the note lands
 var t := 0.0
 var leaving := -1.0  # seconds since it was sent home (-1: still up)
 var card := Rect2()
 var scroll := 0.0
 var max_scroll := 0.0
+var _items: Array = []  # what the rows draw, laid out from the top of the view
 var _press := Vector2(-1, -1)
 var _dragged := false
 
 
-## `p_home` is the title's "?" badge, where the note flies home to; `p_dear`
-## the line on a pot or invention too dear for ★★★ (Level.dear_line).
-func setup(p_level, p_home: Rect2, p_dear := "") -> void:
+## `p_home` is the title's "?" badge, where the note flies home to; `p_have`
+## the player's best stars here; `p_dear` the line on a pot or invention too
+## dear for ★★★ (Level.dear_line).
+func setup(p_level, p_home: Rect2, p_have := 0, p_dear := "") -> void:
 	level = p_level
 	home = p_home
+	have = p_have
 	dear = p_dear
-
-
-## The ★★★ line's height on the note: a row of stars, then the text.
-func dear_height() -> float:
-	if dear == "":
-		return 0.0
-	return 40.0 + P.ui(700).get_multiline_string_size(dear, HORIZONTAL_ALIGNMENT_CENTER, TEXT_W, DEAR_SIZE).y
+	rows = level.objectives(have, dear)
 
 
 static func title_size(p_level) -> int:
@@ -67,21 +70,69 @@ static func _title(p_level) -> String:
 	return "%d · %s" % [p_level.number, p_level.title()]
 
 
-## The hint's height on the note, at its width.
-static func hint_height(p_level) -> float:
-	if p_level.hint == "":
-		return 0.0
-	return P.ui(700).get_multiline_string_size(p_level.hint, HORIZONTAL_ALIGNMENT_CENTER, TEXT_W, HINT_SIZE).y
-
-
 func _ready() -> void:
 	size = DESIGN
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var goal_h := P.ui(700).get_multiline_string_size(level.goal, HORIZONTAL_ALIGNMENT_CENTER, TEXT_W, 20).y
-	var want := 150.0 + goal_h + (hint_height(level) + 34.0 if level.hint != "" else 0.0) + (dear_height() + 16.0 if dear != "" else 0.0)
+	var laid := lay_out(rows, TEXT_W, ROW_SIZE, HINT_SIZE, NOTE_SIZE)
+	_items = laid["items"]
+	var want: float = 140.0 + laid["h"]
 	var h := minf(want, MAX_H)
 	max_scroll = want - h
 	card = Rect2(DESIGN.x / 2 - WIDTH / 2, DESIGN.y / 2 - h / 2 - 10, WIDTH, h)
+
+
+## Lays objective rows (Level.objectives) out from y 0, one item per stars,
+## rule or line of text, so a scrolled line is drawn whole or not at all: the
+## stars in a column STARS_W wide, the text right of it, `text_w` wide. The ★
+## row's note (the hint) is set at `hint_size` in ink, other notes at
+## `note_size` in soft ink; a row already reached is soft. The success panel
+## draws the same rows. Returns {"items", "h"}.
+static func lay_out(p_rows: Array, text_w: float, row_size: int, hint_size: int, note_size: int) -> Dictionary:
+	var items := []
+	var y := 0.0
+	for k in p_rows.size():
+		var row: Dictionary = p_rows[k]
+		if k == 1:  # a dotted rule between weaving the cloth and its prices
+			items.append({"kind": "rule", "y": y + 2})
+			y += 22
+		var ink: Color = P.INK if not row["reached"] else P.INK_SOFT
+		items.append({"kind": "stars", "y": y + P.ui(800).get_height(row_size) / 2, "n": row["stars"], "filled": row["reached"]})
+		y = _paragraph(items, row["text"], P.ui(800), row_size, ink, y, text_w)
+		if row["note"] != "":
+			var hint: bool = row["stars"] == 1
+			y = _paragraph(items, row["note"], P.ui(700), hint_size if hint else note_size, P.INK if hint else P.INK_SOFT, y + 6, text_w)
+		y += 14
+	return {"items": items, "h": y - 14}
+
+
+static func _paragraph(items: Array, text: String, font: Font, size_px: int, col: Color, y: float, text_w: float) -> float:
+	var para := TextParagraph.new()
+	para.add_string(text, font, size_px)
+	para.width = text_w
+	var line_h := font.get_height(size_px)
+	for i in para.get_line_count():
+		items.append({"kind": "line", "para": para, "i": i, "y": y, "h": line_h, "col": col})
+		y += line_h
+	return y
+
+
+## Draws lay_out's items with their top left at `origin` (the stars' column
+## starts there), each only where it fits inside `view`; `words` fades them.
+static func draw_rows(ci: CanvasItem, items: Array, origin: Vector2, view: Rect2, words: float, rule_x: float) -> void:
+	for it in items:
+		var y: float = origin.y + it["y"]
+		match it["kind"]:
+			"rule":
+				if y > view.position.y - 4 and y < view.end.y:
+					for i in 9:
+						K.disc(ci, Vector2(rule_x - 64 + i * 16, y), 2, Color(P.HOOP, words))
+			"stars":  # K.star has no fade: shown while the words are
+				if words > 0.6 and y - 10 >= view.position.y and y + 10 <= view.end.y:
+					for s in it["n"]:
+						K.star(ci, Vector2(origin.x + STARS_W - 14 - s * 18, y), 8, it["filled"])
+			"line":
+				if y >= view.position.y - 2 and y + it["h"] <= view.end.y + 2:
+					it["para"].draw_line(ci.get_canvas_item(), Vector2(origin.x + STARS_W, y), it["i"], Color(it["col"], words))
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -155,64 +206,12 @@ func _draw() -> void:
 	K.shape(self, K.round_rect(r, corner), Color(P.TAG, a), Color(P.INK, a), 3)
 	if words <= 0:
 		return
-	var font := P.ui(700)
 	var cx := r.get_center().x
 	var top := r.position.y
-	var x0 := cx - TEXT_W / 2
 	K.text(self, P.display(600), Vector2(cx, top + 46), _title(level), title_size(level), Color(P.INK, words))
-	# The goal and the hint scroll under the title, clipped above the foot.
+	# The rows scroll under the title, clipped above the foot.
 	var view := Rect2(r.position.x + 10, top + 80, r.size.x - 20, r.size.y - 124)
-	var y := view.position.y + 4 - scroll
-	var goal_h := font.get_multiline_string_size(level.goal, HORIZONTAL_ALIGNMENT_CENTER, TEXT_W, 20).y
-	if y >= view.position.y - 2 and y + goal_h <= view.end.y + 2:
-		draw_multiline_string(font, Vector2(x0, y + font.get_ascent(20)), level.goal, HORIZONTAL_ALIGNMENT_CENTER, TEXT_W, 20, -1, Color(P.INK_SOFT, words))
-	y += goal_h + 16
-	if level.hint != "":
-		if y > view.position.y - 4 and y < view.end.y:
-			for i in 9:  # a dotted rule between the goal and the hint
-				K.disc(self, Vector2(cx - 64 + i * 16, y), 2, Color(P.HOOP, words))
-		y += 18
-		_hint_lines(font, x0, y, view, Color(P.INK, words))
-		y += hint_height(level) + 16
-	if dear != "":
-		_dear_lines(font, cx, x0, y, view, words)
+	draw_rows(self, _items, Vector2(cx - WIDTH / 2 + PAD, view.position.y + 4 - scroll), view, words, cx)
 	if max_scroll > 0 and scroll < max_scroll - 1:
 		K.text(self, P.ui(700), Vector2(cx, r.end.y - 46), "more below ↓", 13, Color(P.INK_SOFT, words))
 	K.text(self, P.ui(700), Vector2(cx, r.end.y - 24), "Tap anywhere to start", 14, Color(P.INK_SOFT, words))
-
-
-## The ★★★ line under a dotted rule: three small stars, then why ★★★ is out
-## of reach and where the price comes down, in soft ink; clipped to the view
-## as the hint is.
-func _dear_lines(font: Font, cx: float, x0: float, y: float, view: Rect2, words: float) -> void:
-	if y > view.position.y - 4 and y < view.end.y:
-		for i in 9:
-			K.disc(self, Vector2(cx - 64 + i * 16, y), 2, Color(P.HOOP, words))
-	y += 22
-	if words > 0.6 and y - 10 >= view.position.y and y + 10 <= view.end.y:
-		for s in 3:
-			K.star(self, Vector2(cx - 22 + s * 22, y), 9, true)
-	y += 18
-	var para := TextParagraph.new()
-	para.add_string(dear, font, DEAR_SIZE)
-	para.width = TEXT_W
-	para.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var line_h := font.get_height(DEAR_SIZE)
-	for i in para.get_line_count():
-		var ly := y + i * line_h
-		if ly >= view.position.y - 2 and ly + line_h <= view.end.y + 2:
-			para.draw_line(get_canvas_item(), Vector2(x0, ly), i, Color(P.INK_SOFT, words))
-
-
-## The hint, wrapped, each line drawn only where it is inside the view (so
-## a scrolled hint never spills over the title or the foot).
-func _hint_lines(font: Font, x0: float, y: float, view: Rect2, col: Color) -> void:
-	var para := TextParagraph.new()
-	para.add_string(level.hint, font, HINT_SIZE)
-	para.width = TEXT_W
-	para.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var line_h := font.get_height(HINT_SIZE)
-	for i in para.get_line_count():
-		var ly := y + i * line_h
-		if ly >= view.position.y - 2 and ly + line_h <= view.end.y + 2:
-			para.draw_line(get_canvas_item(), Vector2(x0, ly), i, col)
