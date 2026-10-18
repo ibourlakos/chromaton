@@ -751,7 +751,7 @@ func _draw_invention_page(id: String, area: Rect2) -> void:
 	var name := str(inv.get("name", invention_name(levels, id)))
 	K.sticker(self, area.position + Vector2(84, 62), 1.1, name, 99, t, 0.4)
 	K.icon(self, "pieces", Vector2(area.position.x + 56, area.position.y + 126), 1.0, P.INK_SOFT)
-	K.text(self, P.ui(800), Vector2(area.position.x + 70, area.position.y + 126), "Price %d" % int(inv["cost"]), 18, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+	K.text(self, P.ui(800), Vector2(area.position.x + 70, area.position.y + 126), "Cost %d" % int(inv["cost"]), 18, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	var x := area.position.x + 184
 	K.text(self, P.display(600), Vector2(x, area.position.y + 26), name, 34, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 	var w := Words.find(id.replace("_", "-"))
@@ -953,7 +953,7 @@ func _pots() -> Array:
 ## earns it.
 func _draw_shelf(r: Rect2) -> void:
 	K.text(self, P.display(600), Vector2(r.position.x, r.position.y + 12), "The paint shelf", 22, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-	K.text(self, P.ui(700), Vector2(r.position.x, r.position.y + 42), "Every pot you earn is an invention, with its own price.", 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+	K.text(self, P.ui(700), Vector2(r.position.x, r.position.y + 42), "Every pot you earn is an invention, with its own cost.", 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	var y := r.position.y + 130
 	var plank := Rect2(r.position.x + 10, y + 30, r.size.x - 20, 14)
 	K.fill(self, K.round_rect(Rect2(plank.position + Vector2(2, 4), plank.size), 6), P.SHADOW)
@@ -1061,7 +1061,7 @@ func _draw_scores() -> void:
 	K.text(self, P.ui(800), Vector2(cols[0], y), "Level", 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	K.text(self, P.ui(800), Vector2(cols[1] + 40, y), "Stars", 16, P.INK_SOFT)
 	K.icon(self, "pieces", Vector2(cols[2] - 30, y), 1.0, P.INK_SOFT)
-	K.text(self, P.ui(800), Vector2(cols[2] - 14, y), "Price", 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+	K.text(self, P.ui(800), Vector2(cols[2] - 14, y), "Cost", 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	K.icon(self, "ticks", Vector2(cols[3] - 22, y), 1.0, P.INK_SOFT)
 	K.text(self, P.ui(800), Vector2(cols[3] - 6, y), "Ticks", 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	y += 22

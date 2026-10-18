@@ -2145,9 +2145,11 @@ func _draw_loom_motion() -> void:
 ## a limit. One line divides it, after the three-star count: three stars over
 ## the part before it, two over the part up to the two-star count; they light
 ## while the bench is within. Past two stars the bar goes on, paler, with room
-## for two more pieces, and it stretches for a bench that holds more.
+## for two more pieces, and it stretches for a bench that holds more. Under
+## it, the word and the number: "Cost 3" (designer, 2026-10-18).
 func _draw_piece_bar(ci: CanvasItem, bar: Rect2, pieces: int) -> void:
 	K.icon(ci, "pieces", Vector2(bar.position.x - 20, bar.get_center().y), 1.0, P.INK)
+	K.text(ci, P.ui(800), Vector2(bar.position.x, bar.end.y + 13), "Cost %d" % pieces, 14, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	var span: int = maxi(level.budget + 2, pieces + 1)
 	var w := bar.size.x / span
 	var two := Rect2(bar.position, Vector2(level.budget * w, bar.size.y))

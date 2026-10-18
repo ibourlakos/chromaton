@@ -49,7 +49,7 @@ Files are named after the term in lower-case kebab-case (`paint-card.md`) and li
 | [Paint](paint.md) | gameplay, design, implementation | ✅ | One of the eight paints, from white (none) to black (all three primaries). |
 | [Paint card](paint-card.md) | gameplay, design, implementation | ✅ | The cheat sheet of the eight paints, up over the workshop. |
 | [Pattern card](pattern-card.md) | gameplay, design, implementation | ✅ | Holds a picture as paint and lets it out one drop at a time. |
-| [Piece](piece.md) | gameplay, design, implementation | 🟡 | Anything put in the workshop from the tray; its price counts toward the Pieces score. |
+| [Piece](piece.md) | gameplay, design, implementation | 🟡 | Anything put in the workshop from the tray; its cost counts toward the Cost score. |
 | [Quilt](quilt.md) | gameplay, design, implementation | ✅ | A chapter's cloths sewn together. |
 | [Red pot](red-pot.md) | gameplay, design, implementation | ✅ | The one pot of red paint every other paint starts from. |
 | [Same Paint](same-paint.md) | gameplay, design, implementation | 🟡 | An invention: what two paints agree on, what both have and both lack. |

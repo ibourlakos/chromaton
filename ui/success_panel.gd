@@ -124,7 +124,7 @@ func _draw() -> void:
 	var font := P.ui(800)
 	var bx := card.position.x + 282
 	var y := card.position.y + 196
-	for row in [["pieces", "Price", pieces, better.get("pieces", false)], ["ticks", "Ticks", ticks, better.get("ticks", false)]]:
+	for row in [["pieces", "Cost", pieces, better.get("pieces", false)], ["ticks", "Ticks", ticks, better.get("ticks", false)]]:
 		K.icon(self, row[0], Vector2(bx, y), 1.2, P.INK)
 		K.text(self, font, Vector2(bx + 22, y), row[1], 22, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 		K.text(self, P.display(600), Vector2(bx + 210, y), str(row[2]), 28, P.INK, HORIZONTAL_ALIGNMENT_RIGHT)

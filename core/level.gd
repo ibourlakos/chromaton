@@ -282,18 +282,18 @@ static func dear_line(dear: Array) -> String:
 func objectives(have: int, dear := "", nudge := true) -> Array:
 	var rows := [{"stars": 1, "text": goal, "note": hint}]
 	if budget > best:
-		rows.append({"stars": 2, "text": price_text(budget), "note": ""})
+		rows.append({"stars": 2, "text": cost_text(budget), "note": ""})
 	var note := dear
 	if note == "" and have >= 2 and nudge:
 		note = star_hint
-	rows.append({"stars": 3, "text": price_text(best), "note": note})
+	rows.append({"stars": 3, "text": cost_text(best), "note": note})
 	for r in rows:
 		r["reached"] = have >= int(r["stars"])
 	return rows
 
 
-static func price_text(price: int) -> String:
-	return "A price of %d or less." % price if price > 0 else "A price of 0: no pieces at all."
+static func cost_text(cost: int) -> String:
+	return "A cost of %d or less." % cost if cost > 0 else "A cost of 0: no pieces at all."
 
 
 ## The critter this level rebuilds from other pieces ("" if none): its card

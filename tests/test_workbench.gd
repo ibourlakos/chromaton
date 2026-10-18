@@ -424,7 +424,7 @@ func test_not_general(inv_level) -> void:
 func test_objectives(by_id: Dictionary) -> void:
 	var cat = by_id["black_cat"]
 	var rows: Array = cat.objectives(0)
-	check(rows.size() == 3 and rows[0]["text"] == cat.goal and rows[0]["note"] == cat.hint and rows[1]["text"] == "A price of 6 or less." and rows[2]["text"] == "A price of 4 or less.",
+	check(rows.size() == 3 and rows[0]["text"] == cat.goal and rows[0]["note"] == cat.hint and rows[1]["text"] == "A cost of 6 or less." and rows[2]["text"] == "A cost of 4 or less.",
 		"Harbour Cat: weave it, then 6, then 4 (%s)" % [rows])
 	check(rows.all(func(r): return not r["reached"]) and rows[2]["note"] == "", "unsolved: nothing reached, no nudge yet")
 	rows = cat.objectives(2)
@@ -432,7 +432,7 @@ func test_objectives(by_id: Dictionary) -> void:
 	check(cat.objectives(2, "", false)[2]["note"] == "", "but not on the success panel")
 	check(cat.objectives(2, "Your Third Paint costs 2.")[2]["note"] == "Your Third Paint costs 2.", "a dear invention's line comes first")
 	check(by_id["one_pot"].objectives(0).size() == 2, "one row of price where ★★ and ★★★ are the same count")
-	check(by_id["pattern_card"].objectives(0)[1]["text"] == "A price of 0: no pieces at all.", "a price of 0 reads as no pieces")
+	check(by_id["pattern_card"].objectives(0)[1]["text"] == "A cost of 0: no pieces at all.", "a cost of 0 reads as no pieces")
 	# A first ★★: a machine one piece dearer than the reference (an extra
 	# Shift Wheel standing by) makes the "?" glow once.
 	var spec: Dictionary = cat.reference.duplicate(true)
