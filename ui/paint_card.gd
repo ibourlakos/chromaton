@@ -77,28 +77,36 @@ func _draw() -> void:
 	K.disc(self, pin + Vector2(-1.5, -1.5), 1.6, P.PIN_GLINT)
 
 
-## Small ink arrows outside the triangle, one along each edge, turning the
-## way the Shift Wheel does: red to yellow to blue, and the mixes with them
-## (orange to green to purple). Ink, never a paint's hue.
+## Bold ink arrows outside the triangle, one along each edge from a corner
+## toward the next, turning the way the Shift Wheel does: red to yellow to
+## blue, and the mixes with them (orange to green to purple). The Shift
+## Wheel stands in the top-left corner under an arrow of its own, so the
+## arrows read as its turn (playtest R3: the thin grey ones went unseen).
+## Ink, never a paint's hue.
 func _draw_shift_arrows(at: Dictionary) -> void:
 	var mid: Vector2 = at[7]
 	for edge in [[1, 2], [2, 4], [4, 1]]:
 		var a: Vector2 = at[edge[0]]
 		var b: Vector2 = at[edge[1]]
-		var along := (b - a).normalized()
 		var out := (a.lerp(b, 0.5) - mid).normalized()
-		var from := a.lerp(b, 0.16) + out * 17
-		var to := a.lerp(b, 0.36) + out * 17
-		var bend := (from + to) / 2 + out * 5
-		var pts := PackedVector2Array()
-		for i in 9:
-			var u := i / 8.0
-			pts.append(from.lerp(bend, u).lerp(bend.lerp(to, u), u))
-		K.stroke(self, pts, Color(P.INK, 0.55), 2)
-		var tip := pts[pts.size() - 1]
-		var back := (tip - pts[pts.size() - 3]).normalized()
-		var side := Vector2(-back.y, back.x)
-		K.fill(self, PackedVector2Array([tip + back * 4, tip - back * 5 + side * 4, tip - back * 5 - side * 4]), Color(P.INK, 0.55))
+		var from := a.lerp(b, 0.13) + out * 19
+		var to := a.lerp(b, 0.37) + out * 19
+		_arrow(K.quad(from, (from + to) / 2 + out * 7, to, 10))
+	var wheel := Vector2(50, 46)  # its hub
+	K.hamster(self, wheel + Vector2(0, 1), 0.46, -1, 99.0, 0, 0.0)
+	_arrow(K.arc(wheel, 24, -PI * 0.92, -PI * 0.22, 12))
+	K.text(self, P.ui(700), wheel + Vector2(0, 38), "Shift Wheel", 13, P.INK)
+
+
+## An ink arrow along pts, its head at the end.
+func _arrow(pts: PackedVector2Array) -> void:
+	var ink := Color(P.INK, 0.85)
+	var tip := pts[pts.size() - 1]
+	var back := (tip - pts[pts.size() - 2]).normalized()
+	var side := Vector2(-back.y, back.x)
+	pts[pts.size() - 1] = tip - back * 6  # the line stops inside the head
+	K.stroke(self, pts, ink, 3, false)
+	K.fill(self, PackedVector2Array([tip + back * 3, tip - back * 8 + side * 6, tip - back * 8 - side * 6]), ink)
 
 
 ## A paint's name on a scrap of tag paper, so the lines pass behind it.
