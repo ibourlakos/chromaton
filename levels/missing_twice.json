@@ -79,5 +79,8 @@
 	"waits_for": [
 		"missing_from_either"
 	],
-	"card_shows": 4
+	"card_shows": 4,
+	"star_needs": {
+		"missing_from_either": 1
+	}
 }

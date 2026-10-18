@@ -7,7 +7,8 @@
 ## machine cheaper than its three-star count exists, a wrong machine within
 ## its two-star budget gets past its decode depth, card_shows (check_decode), or
 ## its waits_for doesn't match the inventions it can't be built without
-## (check_waits).
+## (check_waits). It also writes each level's star_needs into its file
+## (check_star_needs).
 ##
 ## Why a search is enough: with one-drop tubes every piece takes one drop per
 ## input and gives one per output, and loops can never start (a loop waits on
@@ -61,7 +62,7 @@ func _init() -> void:
 	lines.append("")
 	lines.append("**Fails within** is the decode depth (`card_shows`): every wrong machine within the ★★ budget weaves a wrong stitch within that many stitches, so the cards decode the level and a wrong machine shows itself early (the card shows its whole picture). **Waits for** names the inventions a level can't be built without (proven: no machine of the rest of its tray weaves it); the level stays locked until the player owns them.")
 	lines.append("")
-	lines.append("**★★★ needs** names the inventions and pots whose cheapest price the level's ★★★ count counts on: earned at only ★★ (the price of a machine at its level's budget), each on its own, no machine weaves the level at its ★★★ count. A player who earned one at ★★ can't reach ★★★ here, so the level's text should say so.")
+	lines.append("**★★★ needs** names the inventions and pots whose price the level's ★★★ count counts on, each with the dearest price at which a machine still weaves the level at its ★★★ count (each on its own, the rest at their cheapest so far). The solver writes it into the level's file as `star_needs`; a player whose price is dearer is told so on the hint panel and the success panel, with the level whose ★★★ brings it down.")
 	lines.append("")
 	lines.append("| Level | Stitches | Cards | Card combos | Fails within | Reference | Ticks | Cheapest | Cheapest machine | ★★ budget | ★★★ best | Waits for | ★★★ needs |")
 	lines.append("|---|---|---|---|---|---|---|---|---|---|---|---|---|")
@@ -88,12 +89,16 @@ func _init() -> void:
 			_fail("%s: no machine of up to %d pieces found" % [level.id, level.best])
 		var waits := check_waits(level, inventions)
 		check_decode(level, inventions)
-		var needs := check_star_needs(level, inventions, levels)
+		var needs := check_star_needs(level, inventions)
+		write_star_needs(level, needs)
+		var said := PackedStringArray()
+		for inv_id in needs:
+			said.append("%s at %d" % [inventions[inv_id]["name"], needs[inv_id]])
 		lines.append("| %d. %s | %d | %d | %d | %s | %d | %d | %s | `%s` | %d | %d | %s | %s |" % [
 			level.number, level.name, level.size(), level.cards.size(), res["combos"],
 			str(level.card_shows) if not level.cards.is_empty() else "–", ref_cost, sim.tick,
 			cheapest, res["program"], level.budget, level.best, ", ".join(waits) if not waits.is_empty() else "–",
-			", ".join(needs) if not needs.is_empty() else "–"])
+			", ".join(said) if not said.is_empty() else "–"])
 		print("%s: cheapest %s  %s  (%d states)" % [level.id, cheapest, res["program"], res["states"]])
 	lines.append("")
 	lines.append("---")
@@ -137,29 +142,57 @@ func check_waits(level, inventions: Dictionary) -> Array:
 	return needed
 
 
-## The inventions and pots whose cheapest price this level's ★★★ counts on:
-## priced as if earned at only ★★ (a machine at its level's budget), each on
-## its own, no machine reaches the level's three-star count. Returns their
-## names. Only direct: an invention made with another one inside keeps its
-## own price here.
-func check_star_needs(level, inventions: Dictionary, levels: Array) -> Array:
-	var budgets := {}
-	for l in levels:
-		budgets[l.id] = l.budget
-	var needs := []
+## The inventions and pots whose cheapest price this level's ★★★ counts on,
+## each on its own (the rest at their cheapest so far): {id: the dearest price
+## at which a machine still reaches the three-star count}, for each one where
+## some dearer price rules ★★★ out. Past the three-star count itself no machine
+## can use it, so the prices tried stop there. Only direct: an invention made
+## with another one inside keeps its own price here. Written into the level
+## file as star_needs, which the hint panel and the success panel read.
+func check_star_needs(level, inventions: Dictionary) -> Dictionary:
+	var needs := {}
 	for inv_id in level.pots + level.inventions:
 		if not inventions.has(inv_id):
 			continue
 		var inv: Dictionary = inventions[inv_id]
-		var at_two := Invention.price(int(budgets.get(inv.get("from_level", ""), 0)))
-		if at_two <= int(inv["cost"]):
-			continue
-		var dearer := inventions.duplicate()
-		dearer[inv_id] = inv.duplicate()
-		dearer[inv_id]["cost"] = at_two
-		if solve(level, dearer, level.best)["cost"] < 0:
-			needs.append(inv["name"])
+		for p in range(int(inv["cost"]) + 1, level.best + 2):
+			var dearer := inventions.duplicate()
+			dearer[inv_id] = inv.duplicate()
+			dearer[inv_id]["cost"] = p
+			if solve(level, dearer, level.best)["cost"] < 0:
+				needs[inv_id] = p - 1
+				break
 	return needs
+
+
+## Writes star_needs into the level's file where it changed (none: no key).
+func write_star_needs(level, needs: Dictionary) -> void:
+	var have: Dictionary = level.raw.get("star_needs", {})
+	if JSON.stringify(_ints(have), "", true) == JSON.stringify(needs, "", true):
+		return
+	var path := "res://levels/%s.json" % level.id
+	var d: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(path))
+	if needs.is_empty():
+		d.erase("star_needs")
+	else:
+		d["star_needs"] = needs
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	f.store_string(JSON.stringify(_ints(d), "\t", false) + "\n")
+	print("%s: star_needs written: %s" % [level.id, needs])
+
+
+## JSON numbers come back as floats; whole ones go back as ints.
+static func _ints(v):
+	if v is float and v == floorf(v):
+		return int(v)
+	if v is Array:
+		return v.map(func(e): return _ints(e))
+	if v is Dictionary:
+		var out := {}
+		for k in v:
+			out[k] = _ints(v[k])
+		return out
+	return v
 
 
 const CLOSURE_CAP := 20000

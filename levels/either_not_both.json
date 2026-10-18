@@ -139,5 +139,8 @@
 			]
 		]
 	},
-	"card_shows": 8
+	"card_shows": 8,
+	"star_needs": {
+		"third_paint": 1
+	}
 }

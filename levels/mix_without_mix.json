@@ -103,5 +103,8 @@
 			]
 		]
 	},
-	"card_shows": 5
+	"card_shows": 5,
+	"star_needs": {
+		"missing_from_either": 1
+	}
 }

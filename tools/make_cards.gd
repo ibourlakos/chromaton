@@ -99,7 +99,7 @@ func _init() -> void:
 		d["cards"] = cards
 		d["card_shows"] = res["shows"]
 		var f := FileAccess.open(path, FileAccess.WRITE)
-		f.store_string(JSON.stringify(_ints(d), "\t", false) + "\n")
+		f.store_string(JSON.stringify(Solver._ints(d), "\t", false) + "\n")
 		print("%s: %d card(s) written, decoding within %d stitches (%s)" % [level_id, cards.size(), res["shows"], res["note"]])
 	quit(1 if failures > 0 else 0)
 
@@ -322,17 +322,3 @@ static func derive(rule: String, t: int, i: int, salt: int) -> Array:
 					out[k] |= p
 			return out
 	return []
-
-
-## JSON numbers come back as floats; write whole numbers as ints.
-static func _ints(v):
-	if v is float and v == floor(v):
-		return int(v)
-	if v is Array:
-		return v.map(func(e): return _ints(e))
-	if v is Dictionary:
-		var out := {}
-		for k in v:
-			out[k] = _ints(v[k])
-		return out
-	return v

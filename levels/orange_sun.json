@@ -68,5 +68,8 @@
 			]
 		]
 	},
-	"card_shows": 4
+	"card_shows": 4,
+	"star_needs": {
+		"pot_yellow": 1
+	}
 }

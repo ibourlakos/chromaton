@@ -52,7 +52,7 @@ func _initialize() -> void:
 	test_inventions_slot(levels, by_id)
 	test_box_select(by_id["third_color"])
 	test_not_general(by_id["either_not_both"])
-	test_dearer(by_id["third_color"], by_id["either_not_both"])
+	test_dearer(by_id)
 	test_unused_card(by_id["third_color"])
 	test_note(by_id["green"])
 	test_title(levels)
@@ -415,23 +415,51 @@ func test_not_general(inv_level) -> void:
 	wb.queue_free()
 
 
-## The Queen's ★★★ counts on a Third Paint at its lowest price (1): a player
-## whose Third Paint costs 2 is told which invention and where it gets
-## cheaper (playtest R4); at its lowest price nothing is said.
-func test_dearer(pawn, queen) -> void:
+## The Queen's ★★★ counts on a Third Paint at 1 (its star_needs, from the
+## solver): a player whose Third Paint costs 2 is told which invention and
+## where it gets cheaper, on the hint panel before the run and on the success
+## panel after it (playtest R4, decision 9); at its lowest price nothing is
+## said. A pot is named in lowercase. The Black Trophy's reference uses Same
+## Paint, but its ★★★ needs nothing cheaper, so a dear Same Paint says nothing.
+func test_dearer(by_id: Dictionary) -> void:
+	var pawn = by_id["third_color"]
+	var queen = by_id["either_not_both"]
 	var progress = Progress.new()
 	var inv: Dictionary = Invention.package(pawn, pawn.reference_machine(), {})
 	inv["cost"] = 2  # earned at two stars
 	progress.add_invention(inv)
 	var wb = open(queen, progress)
 	var dearer: Array = wb._dearer_inventions()
-	check(dearer.size() == 1 and dearer[0]["id"] == "third_paint" and dearer[0]["yours"] == 2 and dearer[0]["lowest"] == 1 and dearer[0]["from"] == pawn.name,
-		"a dearer Third Paint is named, with The Pawn as the way down (%s)" % [dearer])
+	check(dearer.size() == 1 and dearer[0]["id"] == "third_paint" and dearer[0]["yours"] == 2 and dearer[0]["lowest"] == 1 and dearer[0]["from"] == pawn.ref_name(),
+		"a dearer Third Paint is named, with 25. The Pawn as the way down (%s)" % [dearer])
+	var line: String = Level.dear_line(dearer)
+	check(line == "Your Third Paint costs 2. Three stars on %s bring it down to 1." % pawn.ref_name(), "the line reads as the success panel's (%s)" % line)
+	wb.show_note()
+	check(wb.note != null and wb.note.dear == line, "the hint panel carries the line before the run")
 	wb.queue_free()
 	progress.add_invention(Invention.package(pawn, pawn.reference_machine(), {}))
 	wb = open(queen, progress)
 	check(wb._dearer_inventions().is_empty(), "at its lowest price nothing is said")
+	wb.show_note()
+	check(wb.note != null and wb.note.dear == "", "nor on the hint panel")
 	wb.queue_free()
+	# A pot: The Blue Pot's ★★★ needs the yellow pot at 1.
+	var yellow = by_id["yellow"]
+	var pots = Progress.new()
+	var pot: Dictionary = Invention.package(yellow, yellow.reference_machine(), {})
+	pot["cost"] = 2
+	pots.add_invention(pot)
+	wb = open(by_id["blue"], pots)
+	line = Level.dear_line(wb._dearer_inventions())
+	check(line == "Your yellow pot costs 2. Three stars on %s bring it down to 1." % yellow.ref_name(), "a pot is named in lowercase (%s)" % line)
+	wb.queue_free()
+	# The Black Trophy: the reference's Same Paint, dear, still says nothing.
+	var trophy = by_id["the_black_crown"]
+	var all := Level.load_all()
+	var owned: Dictionary = Invention.reference_inventions_by_level(all)[trophy.number - 1].duplicate(true)
+	check(owned.has("same_paint"), "Same Paint is owned by The Black Trophy")
+	owned["same_paint"]["cost"] = int(owned["same_paint"]["cost"]) + 1
+	check(trophy.dear_inventions(owned, all).is_empty(), "a dear Same Paint says nothing where ★★★ needs nothing cheaper")
 
 
 ## The level's note pops up, any key (or a tap) lands it under the title
