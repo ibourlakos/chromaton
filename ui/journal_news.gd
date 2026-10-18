@@ -263,9 +263,9 @@ func _draw_row(row: Dictionary, r: Rect2) -> void:
 	var title_y := r.position.y + 22
 	if row["line"] == "" and r.size.y <= 70:
 		title_y = r.get_center().y
-	K.paragraph(row["title"], font, 19, r.size.x - 130, HORIZONTAL_ALIGNMENT_LEFT, 2).draw(view.get_canvas_item(), Vector2(x, title_y - 12), P.INK)
+	K.draw_paragraph(view, K.paragraph(row["title"], font, 19, r.size.x - 130, HORIZONTAL_ALIGNMENT_LEFT, 2), Vector2(x, title_y - 12), P.INK)
 	if row["line"] != "":
-		K.paragraph(row["line"], P.ui(700), 15, r.size.x - 130, HORIZONTAL_ALIGNMENT_LEFT, 4).draw(view.get_canvas_item(), Vector2(x, r.position.y + 38), P.INK_SOFT)
+		K.draw_paragraph(view, K.paragraph(row["line"], P.ui(700), 15, r.size.x - 130, HORIZONTAL_ALIGNMENT_LEFT, 4), Vector2(x, r.position.y + 38), P.INK_SOFT)
 
 
 ## A frame row's drops: what went in, what came out, the first few.

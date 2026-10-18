@@ -91,7 +91,7 @@ static func ui(weight := 700) -> Font:
 
 
 ## The level-title font: every level name, and a level referred to in text
-## ("25.The Pawn"). One weight.
+## ("25. The Pawn"). One weight.
 static func title() -> Font:
 	return _font(BREE, 400)
 

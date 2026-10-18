@@ -7,7 +7,7 @@ Decided by the designer, 2026-10-05 (DESIGN.md §5.1, "Level text"). Written int
 - **Level objectives** (2026-10-18, DESIGN.md §5.1): the hint panel shows the goal as the ★ objective with the hint under it, then the ★★ and ★★★ costs. A goal says what the level earns ("and invent the Third Paint", "and earn the yellow pot"; level 1 "with the red pot"; the cheaper-pot levels "Three stars make your green pot cheaper."). A **★★★ nudge** (`star_hint`) is written only where the hint describes a dearer machine than ★★★ (24, 28); it shows once the player has ★★. The goals and nudges marked *(draft, 2026-10-18)* wait for the designer's markup; the level files already carry them.
 - **Guided levels:** one step line per step, shown beside the hand. ★ marks a guided level.
 - Never bits, binary or bytes. No "A paint shows where ...".
-- **A level's name** (its primary title, for tags, Cloths and Scores) is the cloth phrase, or in the paint box the machine phrase. Text that refers to a level gives its number and primary title with no space between, in the level-title font: "2.The Yellow Pot" (designer, 2026-10-05; no space and Bree Serif since 2026-10-18; DESIGN.md §5.1). The level files write a marker, `{level:yellow}`, never the number and name; this file writes what the player reads.
+- **A level's name** (its primary title, for tags, Cloths and Scores) is the cloth phrase, or in the paint box the machine phrase. Text that refers to a level gives its number and primary title in the level-title font, the number and its dot in stamp brown and a narrow gap before the name: "2. The Yellow Pot" (designer, 2026-10-05; Bree Serif and the stamp-brown number since 2026-10-18; DESIGN.md §5.1). The level files write a marker, `{level:yellow}`, never the number and name; this file writes what the player reads.
 
 Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today"). *Italic* titles are new levels.
 
@@ -163,7 +163,7 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today
 ### 28 The Queen · Extreme Mix (`either_not_both`, invention)
 - **Goal:** Weave the queen, and invent Extreme Mix. *(draft, 2026-10-18: was "Weave the queen.")*
 - **Hint:** The queen wears only the paint that comes from one card alone. Mix the cards, then sieve the mix with the opposite of what they share.
-- **★★★ nudge** *(draft, 2026-10-18)*: The Third Paint from 25.The Pawn gives what neither of two paints has, in one piece. Try the queen with Third Paints and one Sieve.
+- **★★★ nudge** *(draft, 2026-10-18)*: The Third Paint from 25. The Pawn gives what neither of two paints has, in one piece. Try the queen with Third Paints and one Sieve.
 - Notes: the invention's player name is **Extreme Mix** (designer, 2026-10-05; the title was "Either, Not Both"); Contrast stays its internal name. ★★★ with the discount is `Third Paint(Third Paint(A, B), Sieve(A, B))`; the hint describes the clearer ★★ route (4) on purpose; at the rebuild, `.make solve` must keep its ★★ budget at 4 or more.
 
 ### 29 *The Chessboard · Stripes Crossed* (`little_board`, new 2026-10-06, showcase)
@@ -246,10 +246,10 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today
 
 ## Text outside the level files (decided 2026-10-05)
 
-- **Locked tag** (a level waiting for an invention): "Earn the Third Paint in 25.The Pawn." (26, 27, 30, 33); "Earn Extreme Mix in 28.The Queen." (29); "Earn Missing From Either in 34.The Black Pawn." (35, 36, 39, 42); "Earn Same Paint in 37.The Black Queen." (38).
-- **The ★★★ price line** (decision 9, designer 2026-10-18; DESIGN.md §9.1): on the hint panel under the hint, and on the success panel after a run that misses ★★★, where a pot or invention costs the player more than the level's ★★★ allows (`star_needs`, written by `.\make solve`): "Your Third Paint costs 2. Three stars on 25.The Pawn bring it down to 1." A line per invention; a pot in lowercase ("Your yellow pot costs 2. Three stars on 2.The Yellow Pot bring it down to 1."). Levels with `star_needs` today: 3, 4, 9, 12, 16, 26 to 33, 35, 36, 38 to 40, 42.
+- **Locked tag** (a level waiting for an invention): "Earn the Third Paint in 25. The Pawn." (26, 27, 30, 33); "Earn Extreme Mix in 28. The Queen." (29); "Earn Missing From Either in 34. The Black Pawn." (35, 36, 39, 42); "Earn Same Paint in 37. The Black Queen." (38).
+- **The ★★★ price line** (decision 9, designer 2026-10-18; DESIGN.md §9.1): on the hint panel under the hint, and on the success panel after a run that misses ★★★, where a pot or invention costs the player more than the level's ★★★ allows (`star_needs`, written by `.\make solve`): "Your Third Paint costs 2. Three stars on 25. The Pawn bring it down to 1." A line per invention; a pot in lowercase ("Your yellow pot costs 2. Three stars on 2. The Yellow Pot bring it down to 1."). Levels with `star_needs` today: 3, 4, 9, 12, 16, 26 to 33, 35, 36, 38 to 40, 42.
 - **"★★★ needs the invention" notice:** dropped. 28 and 29 open only from 26 or 27, and 34 only from 32 or 33, which all wait for the invention, so the player always owns it there (a cheat lends it).
-- **"New in your journal":** cheaper: "Orange pot: cheaper, 2 → 1". A new chapter: "A new chapter: Invent What You Know", with its first level's tag. Opens: "The Third Paint opens 26.The Chess Clock and 27.The Rook." (levels the invention opens beyond the usual next two).
+- **"New in your journal":** cheaper: "Orange pot: cheaper, 2 → 1". A new chapter: "A new chapter: Invent What You Know", with its first level's tag. Opens: "The Third Paint opens 26. The Chess Clock and 27. The Rook." (levels the invention opens beyond the usual next two).
 - **The paint-card line on each piece page** (DESIGN.md §9.1), unlocking with the page:
   - Mixing Tub: "On the paint card, a mix sits between its two paints: red and yellow meet at orange."
   - Sieve: "On the paint card, the Sieve keeps the corners two paints share: orange and purple share red."

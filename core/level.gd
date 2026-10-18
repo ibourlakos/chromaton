@@ -5,7 +5,7 @@
 ## Cards are read and the loom is woven row by row, left to right.
 ##
 ## JSON fields: id, name (the level's primary title: what tags, Cloths and
-## Scores show, and what text refers to it by, "2.The Yellow Pot"), cloth
+## Scores show, and what text refers to it by, "2. The Yellow Pot"), cloth
 ## and machine (the two title phrases the top bar shows, "The Queen · Extreme
 ## Mix": what the cloth is, then what the machine does; machine "" for the
 ## cloth alone; name is the cloth phrase, or in the paint box the machine
@@ -62,8 +62,10 @@ const CARD_ROWS_MAX := 9
 ## A level in text: "{level:<id>}" (ref()).
 const REF_OPEN := "{level:"
 const NBSP := " "
+## The runs Level.spans() cuts text into.
+enum {TEXT, REF_NUMBER, REF_GAP, REF_NAME}
 
-## Every campaign level's ref_name() by id (_ref_names()).
+## Every campaign level's reference by id, [number, name] (_ref_names()).
 static var _refs := {}
 
 var id := ""
@@ -151,7 +153,7 @@ static func load_all() -> Array:
 			out.append(level)
 	_lay_trays(out)
 	for level in out:
-		_refs[level.id] = level.ref_name()
+		_refs[level.id] = [level.ref_number(), level.name.replace(" ", NBSP)]
 	return out
 
 
@@ -217,23 +219,30 @@ func title() -> String:
 	return cloth_phrase if machine_phrase == "" else "%s · %s" % [cloth_phrase, machine_phrase]
 
 
-## How text refers to a level: its number and primary title with no space
-## between, "2.The Yellow Pot" (DESIGN.md 5.1), no-break spaces inside so a
-## line never breaks it.
+## How text refers to a level: its number and primary title, "2. The Yellow
+## Pot" (DESIGN.md 5.1), no-break spaces between so a line never breaks it.
+## The drawers set the number in stamp brown and the gap narrow (spans()).
 func ref_name() -> String:
-	return "%d.%s" % [number, name.replace(" ", NBSP)]
+	return "%s%s%s" % [ref_number(), NBSP, name.replace(" ", NBSP)]
+
+
+## The reference's number with its dot, "2.".
+func ref_number() -> String:
+	return "%d." % number
 
 
 ## The marker that stands for this level in text, "{level:yellow}". Text
 ## carries markers, not names, so a level that moves or is renamed is never
-## referred to wrongly; the drawers set each one as its ref_name() in the
+## referred to wrongly; the drawers set each one as its reference in the
 ## level-title font (spans(); ui/draw_kit.gd add_spans).
 func ref() -> String:
 	return "%s%s}" % [REF_OPEN, id]
 
 
-## `text` cut into runs, [[text, is_ref]], each marker replaced by its level's
-## ref_name() (an unknown id is left as written).
+## `text` cut into runs, [[text, kind]], each marker replaced by its level's
+## reference as three runs: REF_NUMBER ("25."), REF_GAP (a no-break space)
+## and REF_NAME ("The Pawn", no-break spaces inside). Other text is TEXT; an
+## unknown marker is left as written.
 static func spans(text: String) -> Array:
 	var out := []
 	var at := 0
@@ -243,13 +252,18 @@ static func spans(text: String) -> Array:
 		if end < 0:
 			break
 		if start > at:
-			out.append([text.substr(at, start - at), false])
+			out.append([text.substr(at, start - at), TEXT])
 		var level_id := text.substr(start + REF_OPEN.length(), end - start - REF_OPEN.length())
-		var names := _ref_names()
-		out.append([names[level_id], true] if names.has(level_id) else [text.substr(start, end + 1 - start), false])
+		var refs := _ref_names()
+		if refs.has(level_id):
+			out.append([refs[level_id][0], REF_NUMBER])
+			out.append([NBSP, REF_GAP])
+			out.append([refs[level_id][1], REF_NAME])
+		else:
+			out.append([text.substr(start, end + 1 - start), TEXT])
 		at = end + 1
 	if at < text.length():
-		out.append([text.substr(at), false])
+		out.append([text.substr(at), TEXT])
 	return out
 
 
@@ -271,7 +285,7 @@ static func ref_ids(text: String) -> Array:
 	return out
 
 
-## Every campaign level's ref_name() by id, from the last load_all() (which
+## Every campaign level's reference by id, [number, name], from the last load_all() (which
 ## it runs once if none has).
 static func _ref_names() -> Dictionary:
 	if _refs.is_empty():
@@ -288,7 +302,7 @@ static func earning_level(levels: Array, inv_id: String):
 
 
 ## The locked tag's line for a level waiting for inventions: where to earn
-## the first one it waits for ("Earn the Third Paint in 25.The Pawn."), its
+## the first one it waits for ("Earn the Third Paint in 25. The Pawn."), its
 ## level a marker (ref()).
 static func waiting_line(levels: Array, inv_ids: Array) -> String:
 	if inv_ids.is_empty():
@@ -325,7 +339,7 @@ func dear_inventions(owned: Dictionary, levels: Array) -> Array:
 
 
 ## What the hint panel and the success panel say about dear_inventions(), a
-## line each: "Your Third Paint costs 2. Three stars on 25.The Pawn bring it
+## line each: "Your Third Paint costs 2. Three stars on 25. The Pawn bring it
 ## down to 1." (DESIGN.md 9.1). A no-break space keeps the new price on the
 ## line with "to".
 static func dear_line(dear: Array) -> String:

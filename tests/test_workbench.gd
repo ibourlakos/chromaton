@@ -482,7 +482,7 @@ func test_dearer(by_id: Dictionary) -> void:
 	var wb = open(queen, progress)
 	var dearer: Array = wb._dearer_inventions()
 	check(dearer.size() == 1 and dearer[0]["id"] == "third_paint" and dearer[0]["yours"] == 2 and dearer[0]["lowest"] == 1 and dearer[0]["from"] == pawn.ref(),
-		"a dearer Third Paint is named, with 25.The Pawn as the way down (%s)" % [dearer])
+		"a dearer Third Paint is named, with 25. The Pawn as the way down (%s)" % [dearer])
 	var line: String = Level.dear_line(dearer)
 	check(line == "Your Third Paint costs 2. Three stars on %s bring it down to 1." % pawn.ref(), "the line reads as the success panel's (%s)" % line)
 	wb.show_note()

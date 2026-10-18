@@ -240,7 +240,7 @@ func _paint_tag(b: Control, r: Rect2, down: bool, i: int, open: bool) -> void:
 		var line := Level.waiting_line(levels, progress.waiting_for(level.id))
 		K.icon(b, "lock", body.get_center() + Vector2(0, 4 if line != "" else 16), 1.6, Color(P.INK, 0.4))
 		if line != "":
-			K.paragraph(line, P.ui(700), 14, body.size.x - 32, HORIZONTAL_ALIGNMENT_CENTER, 2).draw(b.get_canvas_item(), body.position + Vector2(16, 104), Color(P.INK, 0.6))
+			K.draw_paragraph(b, K.paragraph(line, P.ui(700), 14, body.size.x - 32, HORIZONTAL_ALIGNMENT_CENTER, 2), body.position + Vector2(16, 104), Color(P.INK, 0.6))
 
 
 ## An open, unsolved level's mark over its tag's top edge, as an RPG marks its

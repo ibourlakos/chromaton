@@ -132,7 +132,7 @@ static func draw_rows(ci: CanvasItem, items: Array, origin: Vector2, view: Rect2
 						K.star(ci, Vector2(origin.x + STARS_W - 14 - s * 18, y), 8, it["filled"])
 			"line":
 				if y >= view.position.y - 2 and y + it["h"] <= view.end.y + 2:
-					it["para"].draw_line(ci.get_canvas_item(), Vector2(origin.x + STARS_W, y), it["i"], Color(it["col"], words))
+					K.draw_paragraph(ci, it["para"], Vector2(origin.x + STARS_W, y), Color(it["col"], words), it["i"])
 
 
 func _gui_input(event: InputEvent) -> void:

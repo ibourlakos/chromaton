@@ -462,7 +462,7 @@ func test_news_entries() -> void:
 	var news = JournalNews.new()
 	news.setup([], [], func(ci, id, c, s): pass, wb.news_extra)
 	check(news.rows[0]["title"] == "The Third Paint opens {level:two_pawns} and {level:neither_twice}.", "in those words (%s)" % news.rows[0]["title"])
-	check(Level.plain(news.rows[0]["title"]) == "The Third Paint opens 26.The Chess Clock and 27.The Rook.", "the markers read as level references (%s)" % Level.plain(news.rows[0]["title"]))
+	check(Level.plain(news.rows[0]["title"]) == "The Third Paint opens 26. The Chess Clock and 27. The Rook.", "the markers read as level references (%s)" % Level.plain(news.rows[0]["title"]))
 	news.free()
 	wb.queue_free()
 	# A cheaper pot: both prices, only when the price drops.

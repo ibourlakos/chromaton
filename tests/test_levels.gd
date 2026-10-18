@@ -42,14 +42,15 @@ func _init() -> void:
 	quit(1 if failures > 0 else 0)
 
 
-## Text refers to a level by a marker, {level:<id>}, set as "25.The Pawn"
+## Text refers to a level by a marker, {level:<id>}, set as "25. The Pawn"
 ## in the level-title font (DESIGN.md 5.1): never a number and name typed by
 ## hand, which would go stale when levels move.
 func test_level_refs(levels: Array) -> void:
 	var pawn = levels.filter(func(l): return l.id == "third_color")[0]
-	check(pawn.ref_name() == "25.The Pawn", "a reference is the number and name, no space between, unbreakable (%s)" % pawn.ref_name())
+	check(pawn.ref_name() == "25. The Pawn", "a reference is the number and name, unbreakable (%s)" % pawn.ref_name())
 	check(pawn.ref() == "{level:third_color}", "a level's marker names its id")
-	check(Level.spans("Earn it in {level:third_color}.") == [["Earn it in ", false], [pawn.ref_name(), true], [".", false]], "a marker is a run of its own")
+	check(Level.spans("Earn it in {level:third_color}.") == [["Earn it in ", Level.TEXT], ["25.", Level.REF_NUMBER], [" ", Level.REF_GAP], ["The Pawn", Level.REF_NAME], [".", Level.TEXT]],
+		"a marker is three runs: the number, the gap and the name")
 	check(Level.plain("{level:nowhere} and {level:third_color}") == "{level:nowhere} and " + pawn.ref_name(), "an unknown marker stays as written")
 	var ids := levels.map(func(l): return l.id)
 	for level in levels:
