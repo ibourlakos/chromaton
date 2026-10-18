@@ -73,6 +73,7 @@ var number := 0  # position in the campaign, from 1 (0 when loaded on its own)
 var chapter := 0  # index into Level.chapters()
 var chapter_name := ""
 var quilt_across := 0  # the chapter's patches across in its quilt (index.json; 0: as fits)
+var chapter_note := {}  # the chapter's historical note (index.json): {title, year, picture, text}, or {}
 var name := ""  # the primary title
 var cloth_phrase := ""
 var machine_phrase := ""
@@ -105,9 +106,12 @@ var error := ""
 
 
 ## The campaign's chapters from levels/index.json, in order:
-## [{"name": String, "levels": [level ids], optional "quilt_across": int}]
+## [{"name": String, "levels": [level ids], optional "quilt_across": int,
+## optional "note": {"title", "year", "picture", "text"}}]
 ## (how many patches across the chapter's quilt is; every chapter but the
-## paint box, whose threads stack, has a multiple of it so the quilt fills).
+## paint box, whose threads stack, has a multiple of it so the quilt fills)
+## and the chapter's historical note, read once the quilt is full (DESIGN.md
+## 5.7; its picture is drawn by DrawKit.history_picture).
 static func chapters() -> Array:
 	return _index().filter(func(c): return not c.get("lost", false))
 
@@ -150,6 +154,7 @@ static func load_all() -> Array:
 			level.chapter = c
 			level.chapter_name = str(index[c]["name"])
 			level.quilt_across = int(index[c].get("quilt_across", 0))
+			level.chapter_note = index[c].get("note", {})
 			out.append(level)
 	_lay_trays(out)
 	for level in out:

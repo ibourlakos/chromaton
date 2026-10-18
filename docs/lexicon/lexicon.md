@@ -39,6 +39,7 @@ Files are named after the term in lower-case kebab-case (`paint-card.md`) and li
 | [Contrast](contrast.md) | gameplay, design, implementation | ✅ | An invention: mixes two paints, but what they share washes out. Player word: Extreme Mix. |
 | [Critter](critter.md) | gameplay, design, implementation | 🟡 | A piece drawn as a character that does one thing to paint. |
 | [Filter](filter.md) | gameplay, design, implementation | ✅ | Keeps only what two paints share. Player word: Sieve. |
+| [Historical note](historical-note.md) | design, implementation | 🟡 | A chapter's reward for a full quilt: a snapshot of how looms led to machines that follow cards, a tag on the quilt on Cloths. |
 | [Invert](invert.md) | gameplay, design, implementation | ✅ | Turns a paint into its opposite. Player word: Flip Pan. |
 | [Invention](invention.md) | gameplay, design, implementation | ✅ | A machine the player built, kept as one piece to use again. |
 | [Journal](journal.md) | gameplay, design, implementation | ✅ | The player's book of everything learned, made and woven. |

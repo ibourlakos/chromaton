@@ -1264,8 +1264,8 @@ static func _stitches(ci: CanvasItem, o: Vector2, cols: int, cs: float, target: 
 ## stitches wide (the paint box's nine threads); otherwise each cloth is sewn
 ## into an equal patch, aspect wide to 1 high (the chapter's pictures share a
 ## shape), across of them to a row (0: whatever grid makes them biggest).
-## Unwoven places stay bare, stitched round.
-static func quilt(ci: CanvasItem, r: Rect2, patches: Array, stack_cols := 0, across := 0, aspect := 1.0) -> void:
+## Unwoven places stay bare, stitched round. Returns the quilt's outer edge.
+static func quilt(ci: CanvasItem, r: Rect2, patches: Array, stack_cols := 0, across := 0, aspect := 1.0) -> Rect2:
 	var stacked := stack_cols > 0
 	var n := patches.size()
 	var grid := Vector2i(1, n)
@@ -1299,6 +1299,112 @@ static func quilt(ci: CanvasItem, r: Rect2, patches: Array, stack_cols := 0, acr
 			_stitches(ci, b.get_center() - Vector2(cols, rows) * cs / 2, cols, cs, target)
 		dashed(ci, closed(round_rect(b.grow(-1.5), 2)), Color(P.HOOP, 0.8), 1.2, 4, 3)
 	ci.draw_rect(Rect2(o, size), Color(P.INK, 0.45), false, 1.5)
+	return edge
+
+
+# ---------------------------------------------------------------------------
+# Historical notes' pictures
+# ---------------------------------------------------------------------------
+
+## The pictures a chapter's historical note can name (levels/index.json).
+const HISTORY_PICTURES := ["paper_strip", "card_chain", "jacquard_loom", "woven_portrait"]
+
+
+## A historical note's picture, centred on c, about 90 across at s = 1 (as
+## the journal's word pictures). Wood, paper, thread and ink only: never a
+## paint's hue (CLAUDE.md, reserved colours).
+static func history_picture(ci: CanvasItem, id: String, c: Vector2, s: float) -> void:
+	set_xf(ci, c, Vector2(s, s))
+	match id:
+		"paper_strip":
+			# Bouchon's strip of punched paper, unrolling off its wooden roller.
+			var strip := PackedVector2Array([Vector2(-16, -24), Vector2(16, -24), Vector2(21, 24), Vector2(-11, 24)])
+			shape(ci, strip, P.TAG, P.INK, 2)
+			_holes(ci, strip, [[1, 0, 1, 1], [0, 1, 1, 0], [1, 1, 0, 1], [0, 1, 0, 0], [1, 0, 1, 0]])
+			shape(ci, ellipse(Vector2(5, 27), 17, 6, 0, 24), P.PAPER_DK, P.INK, 2)  # the end curling up
+			for x in [-43.0, 43.0]:
+				shape(ci, ellipse(Vector2(x, -31), 5, 9, 0, 16), P.WOOD_DK, P.INK, 2)
+			shape(ci, round_rect(Rect2(-40, -38, 80, 14), 7), P.WOOD, P.INK, 2)
+			line(ci, Vector2(-30, -34), Vector2(26, -34), Color(P.WOOD_LT, 0.8), 2)
+		"card_chain":
+			# Falcon's cards, laced edge to edge into a chain that folds.
+			var cards := [Vector2(-4, -29), Vector2(4, 0), Vector2(-4, 29)]
+			var holes := [[1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1], [0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1], [1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0]]
+			for k in 3:
+				var at: Vector2 = cards[k]
+				var pts := round_rect(Rect2(at - Vector2(32, 10), Vector2(64, 20)), 3)
+				shape(ci, pts, P.TAG, P.INK, 2)
+				for i in 12:  # two rows of six
+					if holes[k][i] == 1:
+						disc(ci, at + Vector2(-15 + (i % 6) * 6, -4 + (i / 6) * 8), 1.9, Color(P.INK, 0.75))
+				for side in [-1.0, 1.0]:  # a lace hole at each end
+					ring(ci, at + Vector2(side * 26, 0), 2.2, Color(P.INK, 0.6), 1.2)
+			for k in 2:  # the lacing: a crossed stitch between each pair, at both ends
+				for side in [-1.0, 1.0]:
+					var a: Vector2 = cards[k] + Vector2(side * 26, 0)
+					var b: Vector2 = cards[k + 1] + Vector2(side * 26, 0)
+					line(ci, a + Vector2(-3, 0), b + Vector2(3, 0), P.HOOP, 1.6)
+					line(ci, a + Vector2(3, 0), b + Vector2(-3, 0), P.HOOP, 1.6)
+		"jacquard_loom":
+			# The Jacquard head on top of a loom, its chain of cards hanging beside.
+			for i in 7:  # the warp, down from the head to the cloth
+				line(ci, Vector2(-21 + i * 7, -16), Vector2(-21 + i * 7, 8), Color(P.HOOP, 0.7), 1.2)
+			ci.draw_rect(Rect2(-28, 6, 56, 24), P.CLOTH)
+			for i in 6:
+				line(ci, Vector2(-26, 9 + i * 4), Vector2(26, 9 + i * 4), Color(P.WARP, 1.0) if i % 2 == 0 else Color(P.HOOP, 0.45), 1.6)
+			ci.draw_rect(Rect2(-28, 6, 56, 24), Color(P.INK, 0.35), false, 1.5)
+			for x in [-38.0, 30.0]:
+				shape(ci, round_rect(Rect2(x, -20, 8, 60), 3), P.WOOD, P.INK, 2)
+			shape(ci, round_rect(Rect2(-42, -24, 84, 9), 4), P.WOOD_DK, P.INK, 2)
+			shape(ci, round_rect(Rect2(-42, 31, 84, 8), 4), P.WOOD_DK, P.INK, 2)
+			shape(ci, round_rect(Rect2(-17, -46, 34, 22), 4), P.WOOD, P.INK, 2)
+			for i in 5:
+				line(ci, Vector2(-10 + i * 5, -41), Vector2(-10 + i * 5, -30), Color(P.INK, 0.45), 1.4)
+			for k in 5:  # the cards, draping from the head down past the post
+				var at := Vector2(24 + k * 4.5, -40 + k * 11)
+				var card := Rect2(at - Vector2(9, 4), Vector2(18, 8))
+				shape(ci, round_rect(card, 2), P.TAG, P.INK, 1.6)
+				for i in 3:
+					if (k + i) % 2 == 0:
+						disc(ci, at + Vector2(-5 + i * 5, 0), 1.4, Color(P.INK, 0.7))
+		"woven_portrait":
+			# The silk portrait of Jacquard, framed on a nail, cards tucked behind.
+			for k in 2:  # two cards, laced, peeking out from behind
+				var at := Vector2(30 + k * 4, -14 + k * 13)
+				var tilt := 0.25 - k * 0.2
+				var pts := round_rect(Rect2(at - Vector2(13, 5.5), Vector2(26, 11)), 2)
+				for i in pts.size():
+					pts[i] = at + (pts[i] - at).rotated(tilt)
+				shape(ci, pts, P.TAG, P.INK, 1.6)
+				for i in 4:
+					if (i + k) % 3 != 0:
+						disc(ci, at + Vector2(-1 + i * 4.5, 0).rotated(tilt), 1.3, Color(P.INK, 0.7))
+			line(ci, Vector2(0, -42), Vector2(-20, -27), Color(P.HOOP, 0.9), 1.5)
+			line(ci, Vector2(0, -42), Vector2(20, -27), Color(P.HOOP, 0.9), 1.5)
+			shape(ci, round_rect(Rect2(-30, -28, 60, 72), 4), P.WOOD, P.INK, 2.2)
+			var silk := Rect2(-23, -21, 46, 58)
+			ci.draw_rect(silk, P.TAG.lerp(P.INK, 0.12))
+			for i in 5:  # an engraving's hatching, woven
+				line(ci, Vector2(-23, -14 + i * 7), Vector2(-14 + i * 2, -21), Color(P.INK, 0.1), 1)
+			shape(ci, PackedVector2Array([Vector2(-21, 37), Vector2(-19, 24), Vector2(-8, 15), Vector2(8, 15), Vector2(19, 24), Vector2(21, 37)]), P.TAG.lerp(P.INK, 0.72), Color(P.INK, 0.6), 1.2)
+			fill(ci, PackedVector2Array([Vector2(-5, 15), Vector2(5, 15), Vector2(0, 23)]), P.TAG)
+			fill(ci, ellipse(Vector2(0, -5), 10, 9, 0, 20), P.TAG.lerp(P.INK, 0.6))
+			shape(ci, ellipse(Vector2(1, 0), 7.5, 9.5, 0, 20), P.TAG.lerp(P.INK, 0.28), Color(P.INK, 0.45), 1)
+			ci.draw_rect(silk, Color(P.INK, 0.4), false, 1.2)
+			disc(ci, Vector2(0, -42), 3, P.IRON)
+	reset_xf(ci)
+
+
+## Punched holes in rows across a strip of four corners (top left, top right,
+## bottom right, bottom left): a 1 is a hole.
+static func _holes(ci: CanvasItem, strip: PackedVector2Array, rows: Array) -> void:
+	for r in rows.size():
+		var f := (r + 0.6) / rows.size()
+		var left := strip[0].lerp(strip[3], f)
+		var right := strip[1].lerp(strip[2], f)
+		for k in rows[r].size():
+			if rows[r][k] == 1:
+				disc(ci, left.lerp(right, (k + 1.0) / (rows[r].size() + 1)), 2.4, Color(P.INK, 0.75))
 
 
 # ---------------------------------------------------------------------------

@@ -14,7 +14,8 @@
 ##   rule, case rows (drop + drop → drop, and why) and what the player made
 ##   it of. The red pot's page holds the paint shelf, the earned pots.
 ## - Cloths hangs every level's cloth, one chapter per page, empty until
-##   woven, with the chapter's quilt beside them.
+##   woven, with the chapter's quilt beside them. A full quilt has its
+##   historical note pinned to it, a paper tag a tap opens (DESIGN.md 5.7).
 ## - Scores is the scoreboard: best stars, Pieces and Ticks per level.
 ## - Words is the player's lexicon. A word unlocks when the level that brings
 ##   it in is solved; a locked word is an empty frame naming that level.
@@ -55,6 +56,7 @@ var progress
 var words: Array = []
 var tab := "paint"
 var chapter := 0  # the Cloths and Scores page
+var reading := false  # the Cloths page's historical note is open
 var piece := 0  # the Pieces page
 var word := 0  # the word picked on the Words tab
 var overlay := false  # over the workbench: draws its own paper
@@ -73,7 +75,8 @@ var _pressed := ""
 
 
 ## focus: a piece kind ("mix", "inv:<id>"; a pot opens the red pot's page),
-## "tube" or "card", for a peek, or "word:<id>" for a word; tab_id "" for the
+## "tube" or "card", for a peek, "word:<id>" for a word, or "note:<chapter>"
+## for a chapter's historical note, open; tab_id "" for the
 ## tab last open.
 func setup(p_levels: Array, p_progress, tab_id := "", focus := "") -> void:
 	levels = p_levels if not p_levels.is_empty() else Level.load_all()
@@ -97,6 +100,10 @@ func setup(p_levels: Array, p_progress, tab_id := "", focus := "") -> void:
 	if tab_id != "":
 		tab = tab_id
 	chapter = _first_unfinished_chapter()
+	if focus.begins_with("note:"):  # "New in your journal": a chapter's note, open on its quilt
+		tab = "cloths"
+		chapter = int(focus.substr(5))
+		reading = note_open(levels, progress, chapter)
 
 
 func _ready() -> void:
@@ -135,6 +142,7 @@ func _ready() -> void:
 func show_tab(id: String) -> void:
 	if id != tab:
 		article_scroll = 0.0
+		reading = false
 	tab = id
 	last_tab = id
 	if article_view != null:
@@ -155,7 +163,7 @@ func show_tab(id: String) -> void:
 
 
 func _sync_arrows() -> void:
-	var paged := tab in ["cloths", "scores"]
+	var paged := tab in ["cloths", "scores"] and not reading
 	prev_button.visible = paged and chapter > 0
 	next_button.visible = paged and chapter < _chapter_count() - 1
 
@@ -164,6 +172,9 @@ func _sync_arrows() -> void:
 func turn(by: int) -> void:
 	match tab:
 		"cloths", "scores":
+			if reading:  # the note covers the page: an arrow puts it away first
+				read_note(false)
+				return
 			chapter = clampi(chapter + by, 0, _chapter_count() - 1)
 		"pieces":
 			piece = clampi(piece + by, 0, pieces.size() - 1)
@@ -188,6 +199,14 @@ func open_word_page() -> void:
 		show_tab(w["tab"])
 
 
+## Opens or puts away the Cloths page's historical note (only once its quilt
+## is full).
+func read_note(open: bool) -> void:
+	reading = open and tab == "cloths" and note_open(levels, progress, chapter)
+	_sync_arrows()
+	queue_redraw()
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if not (event is InputEventKey and event.pressed):
 		return
@@ -196,7 +215,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	match act:
 		"back", "close_journal":
-			back.emit()
+			if reading:  # the note first, then the journal
+				read_note(false)
+			else:
+				back.emit()
 		"next_tab":
 			show_tab(TABS[(_tab_index() + 1) % TABS.size()][0])
 		"page_back":
@@ -210,6 +232,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		"open_page":
 			if tab == "words":
 				open_word_page()
+			elif tab == "cloths":
+				read_note(not reading)
 		_:
 			if act.begins_with("tab_"):
 				show_tab(TABS[int(act.substr(4)) - 1][0])
@@ -256,6 +280,10 @@ func _gui_input(event: InputEvent) -> void:
 			open_word_page()
 		"more":  # the chip scrolls on by most of a page
 			scroll_article(_article_rect().size.y - 80)
+		"note":
+			read_note(true)
+		"close_note":
+			read_note(false)
 	queue_redraw()
 
 
@@ -302,14 +330,21 @@ func _open_rect() -> Rect2:
 	return Rect2(panel.get_center().x - 110, panel.end.y - 76, 220, 52)
 
 
-## What a tap at pos lands on: "tab:<id>", "piece:<i>", "word:<i>", "open" or "".
+## What a tap at pos lands on: "tab:<id>", "piece:<i>", "word:<i>", "open",
+## "note" (a full quilt's tag), "close_note" (anywhere but a tab while the
+## note is open) or "".
 func _target_at(pos: Vector2) -> String:
 	for i in TABS.size():
 		if _tab_rect(i).has_point(pos):
 			return "tab:" + TABS[i][0]
+	if reading:
+		return "close_note"
 	if _more_rect().has_point(pos):
 		return "more"
 	match tab:
+		"cloths":
+			if _note_tag_rect().has_point(pos) and note_open(levels, progress, chapter):
+				return "note"
 		"pieces":
 			var list := _article_rect()
 			if list.has_point(pos):
@@ -339,6 +374,18 @@ func _chapter_count() -> int:
 
 func _chapter_levels(c: int) -> Array:
 	return levels.filter(func(l): return l.chapter == c)
+
+
+## Every cloth of chapter c woven: its quilt is full.
+static func quilt_full(p_levels: Array, p_progress, c: int) -> bool:
+	var list := p_levels.filter(func(l): return l.chapter == c)
+	return not list.is_empty() and list.all(func(l): return p_progress.is_solved(l.id))
+
+
+## Chapter c's historical note can be read: it has one and its quilt is full.
+static func note_open(p_levels: Array, p_progress, c: int) -> bool:
+	var list := p_levels.filter(func(l): return l.chapter == c)
+	return not list.is_empty() and not list[0].chapter_note.is_empty() and quilt_full(p_levels, p_progress, c)
 
 
 func _first_unfinished_chapter() -> int:
@@ -1027,10 +1074,98 @@ func _draw_cloths() -> void:
 	var aspect: float = float(list[0].cols) / list[0].rows
 	if not list.all(func(l): return is_equal_approx(float(l.cols) / l.rows, aspect)):
 		aspect = 1.0
-	K.quilt(self, Rect2(side.position + Vector2(0, 36), Vector2(side.size.x, side.size.y - 96)), patches, list[0].cols if threads else 0, list[0].quilt_across, aspect)
+	var has_note: bool = not list[0].chapter_note.is_empty()
+	var room := side.size.y - 96 - (NOTE_ROOM if has_note else 0.0)
+	var edge := K.quilt(self, Rect2(side.position + Vector2(0, 36), Vector2(side.size.x, room)), patches, list[0].cols if threads else 0, list[0].quilt_across, aspect)
 	var done := patches.filter(func(p): return not p.is_empty()).size()
 	var line := "Every cloth sewn in!" if done == list.size() else "%d of %d cloths woven" % [done, list.size()]
 	K.text(self, P.ui(700), Vector2(side.get_center().x, side.end.y - 30), line, 16, P.INK_SOFT)
+	if has_note:
+		_draw_note_tag(list[0].chapter_note, edge, done == list.size())
+	if reading:
+		_draw_note(list[0])
+
+
+# --- Historical notes ----------------------------------------------------------
+#
+# A chapter's note (levels/index.json) hangs from its quilt as a paper tag on a
+# string. Until the quilt is full the tag is a dashed outline that says how
+# to earn it; then it shows the note's picture, year and title, and a tap (or
+# Enter) opens the note over the page. Any tap, Back or an arrow puts it away.
+
+const NOTE_ROOM := 112.0  # what the tag takes from under the quilt
+const NOTE_CARD_W := 860.0
+
+
+func _note_tag_rect() -> Rect2:
+	var side := Rect2(PAGE.position.x + 846, PAGE.position.y + 66, PAGE.size.x - 876, 524)
+	return Rect2(side.get_center().x - 128, side.end.y - 144, 256, 68)
+
+
+func _draw_note_tag(note: Dictionary, edge: Rect2, open: bool) -> void:
+	var r := _note_tag_rect()
+	var hole := Vector2(r.position.x + 22, r.get_center().y)
+	var pin := Vector2(edge.get_center().x - 40, edge.end.y - 7)
+	var string := Color(P.HOOP, 0.9 if open else 0.4)
+	K.line(self, pin, hole, string, 1.6)
+	var tilt := -0.03
+	K.set_xf(self, r.get_center(), Vector2.ONE, tilt)
+	var body := Rect2(-r.size / 2, r.size)
+	# A luggage tag: its left end cut to a point round the hole.
+	var pts := K.round_rect(body, 10)
+	var cut := PackedVector2Array()
+	for p in pts:
+		p.x = maxf(p.x, body.position.x + 16 * absf(p.y) / (body.size.y / 2))
+		cut.append(p)
+	var at_hole := hole - r.get_center()
+	if open:
+		K.fill(self, K.round_rect(Rect2(body.position + Vector2(3, 4), body.size), 10), P.SHADOW)
+		K.shape(self, cut, P.TAG, P.INK, 2)
+		var x := body.position.x + 106
+		K.text(self, P.display(700), Vector2(x, -13), str(int(note["year"])), 15, P.WOOD_DK, HORIZONTAL_ALIGNMENT_LEFT)
+		_fit_left(Vector2(x, 11), str(note["title"]), body.end.x - x - 28, 19, P.INK, P.title())
+		K.icon(self, "next", Vector2(body.end.x - 16, 0), 0.6, P.INK_SOFT)
+	else:
+		K.fill(self, cut, Color(P.PAPER_DK, 0.6))
+		K.dashed(self, K.closed(cut), Color(P.INK, 0.3), 1.5, 6, 5)
+		K.text(self, P.display(600), Vector2(body.position.x + 50, 0), "?", 26, Color(P.INK, 0.3))
+		K.draw_paragraph(self, K.paragraph("Sew in every cloth to read this note.", P.ui(700), 14, body.size.x - 100), Vector2(body.position.x + 78, -17), Color(P.INK, 0.45))
+	K.ring(self, at_hole, 5, Color(P.INK, 0.8 if open else 0.3), 1.6)
+	K.reset_xf(self)
+	if open:  # the picture places itself, so it goes on after the tag's tilt
+		K.history_picture(self, str(note["picture"]), r.get_center() + Vector2(-r.size.x / 2 + 66, 1), 0.5)
+	K.disc(self, pin, 4, P.HOOP)
+	K.disc(self, pin + Vector2(-1.2, -1.2), 1.4, P.PIN_GLINT)
+	if open:
+		Keys.cap(self, Vector2(r.get_center().x, r.end.y + 2), Keys.label("open_page"))
+
+
+## The note, open over the Cloths page: its picture large on the left; year,
+## title and text on the right.
+func _draw_note(level) -> void:
+	var note: Dictionary = level.chapter_note
+	var text_w := NOTE_CARD_W - 400
+	var h := maxf(400.0, 150.0 + _para_height(text_w, str(note["text"]), 19) + 50)
+	var card := Rect2(DESIGN.x / 2 - NOTE_CARD_W / 2, PAGE.get_center().y - h / 2 + 10, NOTE_CARD_W, h)
+	draw_rect(Rect2(PAGE.position, PAGE.size), Color(P.VEIL, 0.75))
+	K.fill(self, K.round_rect(Rect2(card.position + Vector2(5, 8), card.size), 20), P.SHADOW)
+	K.shape(self, K.round_rect(card, 20), P.TAG, P.INK, 3)
+	var frame := Rect2(card.position + Vector2(30, 30), Vector2(310, card.size.y - 60))
+	K.shape(self, K.round_rect(frame, 14), P.PAPER, Color(P.INK, 0.35), 1.5)
+	K.history_picture(self, str(note["picture"]), frame.get_center(), 2.7)
+	var x := frame.end.x + 36
+	K.text(self, P.display(700), Vector2(x, card.position.y + 52), str(int(note["year"])), 22, P.WOOD_DK, HORIZONTAL_ALIGNMENT_LEFT)
+	K.text(self, P.title(), Vector2(x, card.position.y + 88), str(note["title"]), 34, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+	K.line(self, Vector2(x, card.position.y + 118), Vector2(card.end.x - 36, card.position.y + 118), Color(P.INK, 0.2), 2)
+	_para(Vector2(x, card.position.y + 134), text_w, str(note["text"]), 19)
+	K.text(self, P.ui(700), Vector2(x, card.end.y - 32), "Pinned to the quilt of %s." % level.chapter_name, 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+
+
+## Text from its left middle, smaller until it fits in width.
+func _fit_left(pos: Vector2, s: String, width: float, size: int, col: Color, font: Font) -> void:
+	while size > 11 and font.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x > width:
+		size -= 1
+	K.text(self, font, pos, s, size, col, HORIZONTAL_ALIGNMENT_LEFT)
 
 
 ## Centred text, smaller until it fits in width.
@@ -1137,6 +1272,9 @@ func _tab_name(id: String) -> String:
 
 ## A word's small picture, centred on c (about 90 across at s = 1).
 static func picture(ci: CanvasItem, id: String, c: Vector2, s: float, t: float, levels: Array) -> void:
+	if id.begins_with("history:"):  # a historical note's picture ("New in your journal")
+		K.history_picture(ci, id.substr(8), c, s)
+		return
 	match id:
 		"pattern-card":
 			# a small picture card, three drops read
