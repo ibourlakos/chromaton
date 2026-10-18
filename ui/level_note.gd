@@ -165,9 +165,10 @@ func scroll_by(dy: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed:
-		var k := Keys.normalize(event.keycode)
-		if max_scroll > 0 and k in [KEY_UP, KEY_W, KEY_DOWN, KEY_S]:
-			scroll_by(-60.0 if k in [KEY_UP, KEY_W] else 60.0)
+		# It scrolls on the journal's scroll keys, whatever they are bound to.
+		var act := Keys.action(event, "Journal")
+		if max_scroll > 0 and act in ["scroll_up", "scroll_down"]:
+			scroll_by(-60.0 if act == "scroll_up" else 60.0)
 		elif not event.echo:
 			dismiss()
 		Keys.handled(self)

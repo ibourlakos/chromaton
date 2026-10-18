@@ -69,6 +69,29 @@ func edit(id: int, badge: String, name := "") -> void:
 		e["name"] = name.strip_edges()
 
 
+## Takes a profile off the roster: never the one playing, so the last one
+## never goes. True if it went; its save file is the caller's to put away
+## (put_away_save).
+func remove(id: int) -> bool:
+	var e := find(id)
+	if e.is_empty() or id == current:
+		return false
+	list.erase(e)
+	return true
+
+
+## A removed profile's save: moved to a .bak beside it in a development
+## release (DESIGN.md 9: nothing is deleted), deleted for good otherwise.
+static func put_away_save(id: int) -> void:
+	var path := save_path(id)
+	if not FileAccess.file_exists(path):
+		return
+	if Progress.development_release():
+		Progress.back_up(path)
+	else:
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
 ## The profile's save file: the first keeps the save from before profiles.
 static func save_path(id: int) -> String:
 	return Progress.PATH if id == 1 else "user://chromaton_save_%d.json" % id

@@ -311,6 +311,13 @@ static func read(path := PATH) -> Variant:
 	return d if d != null else text
 
 
+## A development release (the project setting chromaton/development_release,
+## on while the game is in development): what a player removes is kept as a
+## .bak instead of deleted (a removed profile's save).
+static func development_release() -> bool:
+	return bool(ProjectSettings.get_setting("chromaton/development_release", false))
+
+
 ## Moves a save file aside to <path>.bak (or .2.bak, .3.bak... so an older
 ## backup is never overwritten). Returns the backup's path, "" on failure.
 static func back_up(path := PATH) -> String:

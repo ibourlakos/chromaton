@@ -377,3 +377,15 @@ func test_profiles() -> void:
 	var q = Profiles.load_from(path)
 	check(q.list.size() == 2 and q.current == 2 and q.find(2)["badge"] == "shift", "the roster survives a save")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+	# A removed profile's save: a .bak in a development release, gone otherwise.
+	var save := Profiles.save_path(99)
+	for dev in [true, false]:
+		ProjectSettings.set_setting("chromaton/development_release", dev)
+		var f := FileAccess.open(save, FileAccess.WRITE)
+		f.store_string("{}")
+		f.close()
+		Profiles.put_away_save(99)
+		check(not FileAccess.file_exists(save) and FileAccess.file_exists(save + ".bak") == dev, "a removed save goes to .bak in a development release" if dev else "and is deleted in any other")
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(save + ".bak"))
+	ProjectSettings.set_setting("chromaton/development_release", true)
+	check(Progress.development_release(), "this build is a development release")

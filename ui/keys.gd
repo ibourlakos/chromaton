@@ -19,8 +19,9 @@ const GROUP := "key_hints"  # nodes that draw caps and must redraw on a toggle
 const PATH := "user://chromaton_settings.json"
 ## Bumped when the default keys change: a settings file with older keys keeps
 ## its other settings and takes the new defaults (2: the level select's
-## journal on J, Space as every Continue's second key; DESIGN.md 9.1).
-const KEYS_VERSION := 2
+## journal on J, Space as every Continue's second key; 3: Step on → or D
+## and Step back on ← or A, a pager's keys; DESIGN.md 9.1).
+const KEYS_VERSION := 3
 const EVERYWHERE := "Everywhere"
 const GROUPS := [EVERYWHERE, "Workbench", "Woven", "Levels", "Journal"]
 
@@ -30,8 +31,8 @@ const ACTIONS := [
 	["back", EVERYWHERE, "Back", [KEY_ESCAPE]],
 	["hints", EVERYWHERE, "Show key labels", [KEY_SLASH, KEY_H]],
 	["run", "Workbench", "Run / pause", [KEY_SPACE]],
-	["step", "Workbench", "Step", [KEY_S, KEY_RIGHT]],
-	["step_back", "Workbench", "Step back", [KEY_A, KEY_LEFT]],
+	["step", "Workbench", "Step", [KEY_RIGHT, KEY_D]],
+	["step_back", "Workbench", "Step back", [KEY_LEFT, KEY_A]],
 	["reset", "Workbench", "Reset", [KEY_R]],
 	["undo", "Workbench", "Undo", [KEY_Z]],
 	["slower", "Workbench", "Slower", [KEY_MINUS]],

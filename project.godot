@@ -10,6 +10,11 @@ config/name="Chromaton"
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
+[chromaton]
+
+; A development release keeps what a player removes as a .bak (DESIGN.md 9).
+development_release=true
+
 [display]
 
 window/size/viewport_width=1280

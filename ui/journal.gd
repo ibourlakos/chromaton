@@ -1065,7 +1065,7 @@ func _draw_cloths() -> void:
 			K.dashed(self, K.closed(K.round_rect(Rect2(pic.get_center() + Vector2(0, 5) - size / 2, size), 4)), Color(P.INK, 0.25), 1.5, 6, 5)
 		var open: bool = progress.is_unlocked(ids, level.number - 1)
 		var ink := P.INK if woven else Color(P.INK, 0.5 if open else 0.3)
-		_fit_text(Vector2(r.get_center().x, r.end.y - 34), "%d" % level.number, w - 16, 15, ink, P.display(600))
+		_fit_text(Vector2(r.get_center().x, r.end.y - 34), "%d" % level.number, w - 16, 15, ink, P.title())
 		_fit_text(Vector2(r.get_center().x, r.end.y - 16), level.name, w - 16, 15, ink, P.title())
 	# The chapter's quilt
 	var side := Rect2(PAGE.position.x + 846, PAGE.position.y + 66, PAGE.size.x - 876, 524)
@@ -1208,7 +1208,7 @@ func _draw_scores() -> void:
 		var done: bool = rec.get("solved", false)
 		var open: bool = progress.is_unlocked(ids, level.number - 1)
 		var ink := P.INK if done else Color(P.INK, 0.5 if open else 0.3)
-		K.text(self, P.display(600), Vector2(cols[0] - 14, y - 22), str(level.number), 18, ink, HORIZONTAL_ALIGNMENT_RIGHT)
+		K.text(self, P.title(), Vector2(cols[0] - 14, y - 22), str(level.number), 18, ink, HORIZONTAL_ALIGNMENT_RIGHT)
 		K.text(self, P.title(), Vector2(cols[0], y - 22), level.name, 20, ink, HORIZONTAL_ALIGNMENT_LEFT)
 		for s in 3:
 			K.star(self, Vector2(cols[1] + 12 + s * 28, y - 22), 11, s < int(rec.get("stars", 0)))

@@ -299,4 +299,5 @@ func _tag(c: Vector2, level) -> void:
 	K.fill(view, K.round_rect(Rect2(r.position + Vector2(2, 3), r.size), 10), P.SHADOW)
 	K.shape(view, K.round_rect(r, 10), P.TAG, P.INK, 2)
 	K.ring(view, c, 17, Color(P.WOOD_DK, 0.9), 2)
-	K.text(view, P.display(700), c + Vector2(0, 1), str(level.number), 18, P.INK)
+	for dx in [-0.4, 0.4]:  # pressed in thick, as the level select's stamps
+		K.text(view, P.title(), c + Vector2(dx, 1), str(level.number), 18, P.INK)

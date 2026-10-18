@@ -276,7 +276,7 @@ func _stamp(b: Control, c: Vector2, number: int, open: bool) -> void:
 	K.ring(b, Vector2.ZERO, 15, Color(ink, ink.a * 0.6), 1.2)
 	var digits := Color(P.INK, 0.85) if open else ink
 	for dx in [-0.4, 0.4]:  # pressed in thick, like a well-inked stamp
-		K.text(b, P.display(700), Vector2(dx, 1), str(number), 19, digits)
+		K.text(b, P.title(), Vector2(dx, 1), str(number), 19, digits)
 	K.reset_xf(b)
 
 
