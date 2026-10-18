@@ -10,7 +10,8 @@
 		"shift",
 		"mix",
 		"split",
-		"invert"
+		"invert",
+		"filter"
 	],
 	"inventions": [],
 	"stars": {

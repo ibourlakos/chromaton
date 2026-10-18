@@ -67,7 +67,7 @@ func test_level_refs(levels: Array) -> void:
 
 func test_loading(levels: Array) -> void:
 	check(levels.size() == 46, "forty-six campaign levels (got %d)" % levels.size())
-	check(Level.chapters().map(func(c): return c["levels"].size()) == [8, 8, 12, 9, 9], "five chapters of 8, 8, 12, 9 and 9 levels, each quilt full")
+	check(Level.chapters().map(func(c): return c["levels"].size()) == [8, 8, 4, 8, 9, 9], "six chapters of 8, 8, 4, 8, 9 and 9 levels, each quilt full")
 	var ids := {}
 	for level in levels:
 		check(level.error == "", "level loads cleanly: %s %s" % [level.id, level.error])

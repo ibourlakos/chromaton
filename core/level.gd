@@ -110,7 +110,8 @@ var error := ""
 ## [{"name": String, "levels": [level ids], optional "quilt_across": int,
 ## optional "quilt_order": "paint" (a chapter of one-row cloths stacks them in
 ## paint order, so its quilt matches another row for row),
-## optional "note": {"title", "year", "picture", "text"}}]
+## optional "note": {"title", "year" (negative before the common era),
+## "picture", "text"}}]
 ## (how many patches across the chapter's quilt is; every chapter but the
 ## paint box, whose threads stack, has a multiple of it so the quilt fills)
 ## and the chapter's historical note, read once the quilt is full (DESIGN.md

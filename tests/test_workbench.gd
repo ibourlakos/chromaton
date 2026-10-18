@@ -42,7 +42,7 @@ func _initialize() -> void:
 	test_keys(by_id["third_color"])
 	test_paint_card(by_id["third_color"])
 	test_bindings()
-	test_card_hint(by_id["pattern_card"])
+	test_card_hint(by_id["turn_the_wheel"])
 	test_left_edge(by_id["orange"])
 	for i in levels.size():
 		play_level(levels[i], progress, i)
@@ -222,9 +222,9 @@ func test_locked_tray(levels: Array, by_id: Dictionary) -> void:
 			var kind: String = level.tray[i]
 			check(slot.get(kind, i) == i, "%s: %s keeps slot %d" % [level.id, kind, slot.get(kind, i) + 1])
 			slot[kind] = i
-	check(locked_kinds(by_id["pattern_card"]) == ["red_pot", "shift", "mix", "invert", "split"], "The Pattern Card shows every known piece locked")
-	check(locked_kinds(by_id["orange_sun"]) == ["invert", "split"], "Orange Sun locks Invert and Split")
-	for id in ["opposites", "turn_the_wheel", "mix_table", "lighthouse", "filter_table", "smudges", "either_not_both", "missing_from_either", "same_paint"]:
+	check(locked_kinds(by_id["pattern_card"]) == ["red_pot", "shift", "mix", "invert", "split", "filter"], "The Pattern Card shows every known piece locked")
+	check(locked_kinds(by_id["orange_sun"]) == ["invert", "split", "filter"], "Orange Sun locks Invert, Split and the Sieve")
+	for id in ["opposites", "turn_the_wheel", "mix_table", "filter_table", "parrot", "lighthouse", "smudges", "either_not_both", "missing_from_either", "same_paint"]:
 		check(locked_kinds(by_id[id]).is_empty(), "%s has no locks" % id)
 	check(locked_kinds(by_id["keep_what_they_share"]) == ["filter"], "Keep What They Share locks Filter, which it rebuilds")
 	check(locked_kinds(by_id["mix_without_mix"]) == ["mix"], "Mix Without Mix locks Mix")
@@ -268,17 +268,23 @@ func test_left_edge(level) -> void:
 	wb.queue_free()
 
 
-## With nothing in the tray, the guide's hand shows the tube from the card
-## to the loom, then points at Run.
+## The pattern card's guide (The Wheel Swatch): a line-only step leads into
+## the next, the Shift Wheel's slot lights, then the hand lays the card's
+## tube into the wheel and the wheel's to the loom, then points at Run.
 func test_card_hint(level) -> void:
 	var wb = open(level, Progress.new())
 	if wb.still == null:
 		wb._ready()
 	var card: int = wb.machine.find_kind(Pieces.CARD, 0)
 	var g: Dictionary = wb._guide()
-	check(g["from"] == wb.out_port(card, 0) and g["to"] == wb.loom_port, "%s: the guide lays the card's tube" % level.id)
-	check(g["lines"] == ["This card holds the whole picture.", "Tube it to the loom."], "%s: a line-only step leads into the next (%s)" % [level.id, str(g["lines"])])
-	drag(wb, wb.out_port(card, 0), wb.loom_port)
+	check(g["lines"] == ["This card holds a paint for every stitch.", "One turn of the Shift Wheel turns every paint on it."], "%s: a line-only step leads into the next (%s)" % [level.id, str(g["lines"])])
+	check(g["slot"] >= 0 and wb.tray[g["slot"]]["kind"] == "shift", "%s: the Shift Wheel's slot lights" % level.id)
+	drag(wb, tray_point(wb, "shift"), wb.cell_center(5, 3))
+	var sh: int = wb.piece_in_cell(5, 3)
+	g = wb._guide()
+	check(sh >= 0 and g["from"] == wb.out_port(card, 0) and g["to"] == wb.in_port(sh, 0), "%s: the guide lays the card's tube into the wheel" % level.id)
+	drag(wb, wb.out_port(card, 0), wb.in_port(sh, 0))
+	drag(wb, wb.out_port(sh, 0), wb.loom_port)
 	g = wb._guide()
 	check(g["tap"] and g["lines"][-1].begins_with("Run"), "%s: once the loom is fed it points at Run" % level.id)
 	wb._toggle_run()
@@ -1250,7 +1256,7 @@ func _default_keys(action: String) -> Array:
 ## a solved level.
 func test_guides(levels: Array) -> void:
 	var guided := levels.filter(func(l): return not l.steps.is_empty()).map(func(l): return l.id)
-	check(guided == ["one_pot", "yellow", "blue", "orange", "white", "black_short_way", "pattern_card", "mix_table", "filter_table", "two_pawns"], "ten guided levels (%s)" % str(guided))
+	check(guided == ["one_pot", "yellow", "blue", "orange", "white", "black_short_way", "turn_the_wheel", "mix_table", "filter_table", "two_pawns"], "ten guided levels (%s)" % str(guided))
 	var p = Progress.new()
 	for l in levels:
 		if not l.invention.is_empty():

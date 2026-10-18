@@ -109,51 +109,61 @@ Every paint is another's opposite (re-org in fours, 2026-10-18): the Flip Pan ma
 
 ---
 
-## Chapter 3, Pattern Cards
+## Chapter 3, Swatches
 
-### 17 ★ The Sailboat · Straight from the Card (`pattern_card`)
-- **Goal:** Weave the sailboat.
-- **Hint:** A card holds a paint for every stitch and lets them out one drop at a time. Tube it straight to the loom.
-- **Steps:** 1. "This card holds the whole picture." 2. "Tube it to the loom." 3. "Run, and watch the drops come out in order."
+The pieces on every paint (re-org in fours, 2026-10-19): the pattern card comes in on The Wheel Swatch, the second card on The Mixing Table, the Sieve on The Sieve Table. Quilt 2 × 2.
 
-### 18 The Wheel Swatch · Turn the Wheel (`turn_the_wheel`)
+### 17 ★ The Wheel Swatch · Turn the Wheel (`turn_the_wheel`)
 - **Goal:** Weave the swatch.
 - **Hint:** Tube the card through the Shift Wheel and watch what one turn does to every paint.
+- **Steps:** 1. "This card holds a paint for every stitch." 2. "One turn of the Shift Wheel turns every paint on it." (the Shift Wheel in) 3. "Tube the card into the wheel." 4. "Then to the loom." 5. "Run, and watch every paint take one turn." *(draft, 2026-10-19, from The Sailboat's steps)*
 - Notes: designer's note: drop the first part. No story sentence: a showing level (swatches and tables; DESIGN.md §5.1, designer, 2026-10-05).
+- Guided since 2026-10-19: the pattern card comes in here, Swatches being first.
 
-### 19 The Opposites Swatch · Every Paint Flipped (`opposites`)
+### 18 The Opposites Swatch · Every Paint Flipped (`opposites`)
 - **Goal:** Weave the swatch.
 - **Hint:** Tube the card through the Flip Pan: each paint lands on the one across the paint card.
 
-### 20 The Orange Sun (`orange_sun`)
-- **Goal:** Weave the orange sun.
-- **Hint:** The card holds the sun's red. Mix in yellow from your yellow pot.
-- Notes: hint kept as it was (designer: "very well stated"). The cloth alone: any machine phrase ("Add the Yellow") gives the puzzle away (designer, 2026-10-05).
-
-### 21 The Parrot · Each Paint and the Next (`parrot`)
-- **Goal:** Weave the parrot.
-- **Hint:** The parrot's red feathers glow orange where the sun turns them. Split the card, turn one tube on the Shift Wheel, and mix both tubes back together.
-- Notes: says Split, tube and Shift Wheel instead of fork, half and wheel (designer's note).
-
-### 22 ★ *The Mixing Table · Every Pair Mixed* (`mix_table`, new)
+### 19 ★ *The Mixing Table · Every Pair Mixed* (`mix_table`, new)
 - **Goal:** Weave the table.
 - **Hint:** Card A holds one paint a row, card B every paint. Mix them drop by drop, and the cloth becomes the table of every mix.
 - **Steps:** 1. "Two cards this time." 2. "The Mixing Tub takes one drop from each." 3. "Tube card A and card B into the tub." 4. "To the loom: every mix, row by row."
 - Notes: guided for the second card.
 
-### 23 The Lighthouse · Two Cards Mixed (`lighthouse`)
-- **Goal:** Weave the lighthouse.
-- **Hint:** At dusk the tower and its lamp are painted on two cards. Mix them, drop by drop.
-
-### 24 ★ *The Sieve Table · What Every Pair Shares* (`filter_table`, new)
+### 20 ★ *The Sieve Table · What Every Pair Shares* (`filter_table`, new)
 - **Goal:** Weave the table.
 - **Hint:** The Sieve keeps only the paint both drops share. Sieve card A with card B, and the cloth becomes the table of every share.
 - **Steps:** 1. "The Sieve keeps what two paints share." (the Sieve in) 2. "Tube one card into each side." 3. "To the loom: what every pair shares."
 
-### 25 Sandy Crab · Keep the Red (`smudges`)
+---
+
+## Chapter 4, Pictures
+
+Seaside pictures, 8×6 (re-org in fours, 2026-10-19): the one-card levels first, then two cards, The Harbour Cat the capstone. Quilt 4 across × 2 down.
+
+### 21 The Sailboat · Straight from the Card (`pattern_card`)
+- **Goal:** Weave the sailboat.
+- **Hint:** A card holds a paint for every stitch and lets them out one drop at a time. Tube it straight to the loom.
+- Notes: the opening picture since 2026-10-19, unguided: its steps (the pattern card's guide) moved to The Wheel Swatch.
+
+### 22 The Orange Sun (`orange_sun`)
+- **Goal:** Weave the orange sun.
+- **Hint:** The card holds the sun's red. Mix in yellow from your yellow pot.
+- Notes: hint kept as it was (designer: "very well stated"). The cloth alone: any machine phrase ("Add the Yellow") gives the puzzle away (designer, 2026-10-05).
+
+### 23 The Parrot · Each Paint and the Next (`parrot`)
+- **Goal:** Weave the parrot.
+- **Hint:** The parrot's red feathers glow orange where the sun turns them. Split the card, turn one tube on the Shift Wheel, and mix both tubes back together.
+- Notes: says Split, tube and Shift Wheel instead of fork, half and wheel (designer's note).
+
+### 24 Sandy Crab · Keep the Red (`smudges`)
 - **Goal:** Weave the crab.
 - **Hint:** The sand washes out. Sieve the card down to its red.
 - Notes: the designer's example, its sentences swapped, then "Keep only" made "Sieve ... down to" (designer, 2026-10-05: sieve is also a verb, so the how names the piece without giving away the red pot as the mask).
+
+### 25 The Lighthouse · Two Cards Mixed (`lighthouse`)
+- **Goal:** Weave the lighthouse.
+- **Hint:** At dusk the tower and its lamp are painted on two cards. Mix them, drop by drop.
 
 ### 26 The Rock Pool · Where They Meet (`where_they_meet`)
 - **Goal:** Weave the rock pool.
@@ -172,7 +182,7 @@ Every paint is another's opposite (re-org in fours, 2026-10-18): the Flip Pan ma
 
 ---
 
-## Chapter 4, Invent What You Know
+## Chapter 5, Invent What You Know
 
 ### 29 The Pawn · Third Paint (`third_color`, invention)
 - **Goal:** Weave the pawn, and invent the Third Paint. *(draft, 2026-10-18: was "Weave the pawn.")*
@@ -220,7 +230,7 @@ Every paint is another's opposite (re-org in fours, 2026-10-18): the Flip Pan ma
 
 ---
 
-## Chapter 5, The Looking Glass
+## Chapter 6, The Looking Glass
 
 ### 38 The Black Pawn · Missing From Either (`missing_from_either`, invention)
 - **Goal:** Weave the black pawn, and invent Missing From Either. *(draft, 2026-10-18: was "Weave the black pawn.")*
@@ -276,7 +286,7 @@ Every paint is another's opposite (re-org in fours, 2026-10-18): the Flip Pan ma
 ## Text outside the level files (decided 2026-10-05)
 
 - **Locked tag** (a level waiting for an invention): "Earn the Third Paint in 29. The Pawn." (30, 31, 34, 37); "Earn Extreme Mix in 32. The Queen." (33); "Earn Missing From Either in 38. The Black Pawn." (39, 40, 43, 46); "Earn Same Paint in 41. The Black Queen." (42).
-- **The ★★★ price line** (decision 9, designer 2026-10-18; DESIGN.md §9.1): on the hint panel under the hint, and on the success panel after a run that misses ★★★, where a pot or invention costs the player more than the level's ★★★ allows (`star_needs`, written by `.\make solve`): "Your Third Paint costs 2. Three stars on 29. The Pawn bring it down to 1." A line per invention; a pot in lowercase ("Your yellow pot costs 2. Three stars on 2. The Yellow Pot bring it down to 1."). Levels with `star_needs` today: 3, 4, 5, 8, 10, 12 to 14, 16, 20, 30 to 37, 39, 40, 42 to 44, 46.
+- **The ★★★ price line** (decision 9, designer 2026-10-18; DESIGN.md §9.1): on the hint panel under the hint, and on the success panel after a run that misses ★★★, where a pot or invention costs the player more than the level's ★★★ allows (`star_needs`, written by `.\make solve`): "Your Third Paint costs 2. Three stars on 29. The Pawn bring it down to 1." A line per invention; a pot in lowercase ("Your yellow pot costs 2. Three stars on 2. The Yellow Pot bring it down to 1."). Levels with `star_needs` today: 3, 4, 5, 8, 10, 12 to 14, 16, 22, 30 to 37, 39, 40, 42 to 44, 46.
 - **"★★★ needs the invention" notice:** dropped. 32 and 33 open only from 30 or 31, and 38 only from 36 or 37, which all wait for the invention, so the player always owns it there (a cheat lends it).
 - **"New in your journal":** cheaper: "Orange pot: cheaper, 2 → 1". A new chapter: "A new chapter: Invent What You Know", with its first level's tag. Opens: "The Third Paint opens 30. The Chess Clock and 31. The Rook." (levels the invention opens beyond the usual next two).
 - **The paint-card line on each piece page** (DESIGN.md §9.1), unlocking with the page:
@@ -309,19 +319,25 @@ Each note has a title (the tag's line), a year, the text, and the picture. The p
 - **Checked:** not yet. The draft goes by well-known facts (Perkin, aged 18, looking for a way to make quinine in his home laboratory in 1856; mauveine from aniline, a coal-tar product; his works at Greenford; Tyrian purple from murex snails, worn by emperors). The history notes pass checks each against sources.
 - **Fit:** a bargain pot exactly: the dearest paint made cheap by a new way of making it.
 
-### Chapter 3, Pattern Cards: Cards on a Chain (1728)
+### Chapter 3, Swatches: Cards on a Chain (1728)
 - **Text:** A paper strip is hard to change once it's punched. In 1728 Jean-Baptiste Falcon, who worked with Bouchon, cut the pattern into cards and laced them together in a chain. A card could be mended, swapped or moved without punching the whole pattern again. Your pattern cards carry the same idea: the picture comes into the machine on a card.
 - **Picture:** a chain of punched cards laced at their edges, folding over itself like a paper fan.
 - **Checked:** 1728, a chain of punched cards in place of Bouchon's tape, "to make the input of instructions more flexible" (Wikipedia, "Basile Bouchon"; Grace's Guide, "Jean-Baptiste Falcon"); Jacquard later used "Falcon's individual pasteboard cards" (Wikipedia, "Jacquard machine").
 - **Left out:** whether Falcon was Bouchon's assistant or his colleague (sources differ, hence "worked with").
 
-### Chapter 4, Invent What You Know: Jacquard's Loom (1804)
+### Chapter 4, Pictures: The Drawloom (about 150 BC) *(draft, 2026-10-19; out of date order until the history notes pass)*
+- **Text:** Long before cards, weavers in China wove pictures into silk on the drawloom. A helper sat high on the loom and pulled cords, one bundle for each row, to lift the threads the picture needed. In 2013 archaeologists in Chengdu found four small wooden models of such looms in a tomb more than 2,000 years old. The picture lived in the loom's cords, as yours lives on a card.
+- **Picture:** a tall wooden frame, the pattern's cords hanging from its top beam, one bundle pulled down and its threads lifted over a cloth with a picture growing in it (ink and paper tones).
+- **Checked:** not yet. The draft goes by what I recall of the Laoguanshan tomb finds (Chengdu, Western Han, excavated 2012 to 2013: four model pattern looms). To check in the history notes pass: the year (the tomb's date), whether the models are drawlooms or multi-shaft pattern looms (if the latter, the helper on top belongs to later Chinese drawlooms and the sentence needs to change), and the number of models. The tag and card show the year as "150 BC" (negative in `levels/index.json`).
+- **Fit:** the oldest way of weaving a picture: the cords hold it as the cards will.
+
+### Chapter 5, Invent What You Know: Jacquard's Loom (1804)
 - **Text:** Joseph-Marie Jacquard, a Lyon weaver's son, built his loom out of what others had found. In Paris he studied a loom by Jacques de Vaucanson, the maker of a famous mechanical duck, and joined its ideas to Falcon's chain of cards. His loom of 1804 let one weaver weave the richest pattern with no helper at the cords. By 1812 some 11,000 of them were working in France.
 - **Picture:** the Jacquard head, a wooden box on top of a loom, with its chain of cards draping down beside it.
 - **Checked:** patented 1804 (Wikipedia, "Jacquard machine"); attached to the Conservatoire des Arts et Métiers in Paris in 1803, where Vaucanson's loom "suggested various improvements" (Wikipedia, "Joseph Marie Jacquard", quoting the 1911 Britannica); Vaucanson's loom replaced by cards, "generally similar to Vaucanson's arrangement" (Wikipedia, "Jacquard machine"); the Digesting Duck, 1738 (Wikipedia, "Jacques de Vaucanson"); 11,000 looms in France by 1812 (Encyclopedia.com, "Jacquard's Loom"). His father Jean Charles Jacquard, a master weaver of Lyon (Wikipedia, "Joseph Marie Jacquard"; ERIH).
 - **Left out:** Vaucanson's year (1745 in most sources, 1740 in some), hence no year. The silk weavers' fight against the loom (it was hanged in effigy, a crowd resolved to break the looms), Napoleon handing the patent to the city of Lyon in 1805 with a pension for Jacquard: true, but a fourth sentence too many.
 
-### Chapter 5, The Looking Glass: The Woven Portrait (1839)
+### Chapter 6, The Looking Glass: The Woven Portrait (1839)
 - **Text:** In 1839 a Lyon workshop wove a portrait of Jacquard on one of his own looms, from some 24,000 cards. It was silk in black, white and every grey between, and so fine that two members of London's Royal Academy took it for an engraving. Charles Babbage, who was designing a calculating machine that would read cards, hung a copy in his home and showed it to his visitors.
 - **Picture:** a framed grey portrait of a man in a dark coat, hung on a nail, with a few punched cards tucked behind the frame.
 - **Checked:** 1839, woven by Michel-Marie Carquillat for Didier, Petit et Cie of Lyon, about 24,000 cards (Linda Hall Library; Metropolitan Museum, via Bonhams; History of Information); "mistaken for such by two members of the Royal Academy", Babbage's own words in *Passages from the Life of a Philosopher*, 1864 (quoted in Essinger, *Jacquard's Web*); Babbage wanted a copy for his London home in December 1839 and showed it to the Duke of Wellington and Prince Albert around 1842 (Science History Institute, "The French Connection"); the Analytical Engine read punched cards. The greys: from the portrait itself (it imitates an engraving); no source checked says it in words.

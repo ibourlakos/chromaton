@@ -322,6 +322,31 @@ The Third Paint left chapter 2 for chapter 3.
 
 ---
 
+## §5.1 Pattern Cards, 12 levels
+
+*Replaced on 2026-10-19, when Pattern Cards split into Swatches (4) and Pictures (8) (DESIGN.md §5.1, the re-org in fours, release 3), level numbers as of 2026-10-18. Word for word as it stood:*
+
+**Chapter 3, Pattern Cards** (12 levels, quilt 4 across): seaside pictures, 8×6.
+
+| # | Level · machine phrase | Teaches | Cards | ★★ | ★★★ | Machine |
+|---|---|---|---|---|---|---|
+| 17 | The Sailboat · Straight from the Card | G: the pattern card | 1 | – | 0 | `A` |
+| 18 | The Wheel Swatch · Turn the Wheel | Shift's swatch | 1 | 2 | 1 | `Shift(A)` |
+| 19 | The Opposites Swatch · Every Paint Flipped | Invert's swatch | 1 | 2 | 1 | `Invert(A)` |
+| 20 | The Orange Sun | a card and a pot | 1 | 3 | 2 | `Mix(A, Yellow)` |
+| 21 | The Parrot · Each Paint and the Next | the fork: Split a card | 1 | 3 | 2 | `Mix(A, Shift(A))` |
+| 22 | The Mixing Table · Every Pair Mixed | G: a second card; Mix's table | 2 | 2 | 1 | `Mix(A, B)` |
+| 23 | The Lighthouse · Two Cards Mixed | two cards mixed | 2 | 2 | 1 | `Mix(A, B)` |
+| 24 | The Sieve Table · What Every Pair Shares | G: Sieve; its table | 2 | 2 | 1 | `Filter(A, B)` |
+| 25 | Sandy Crab · Keep the Red | the Sieve with a pot as a mask | 1 | 3 | 2 | `Filter(A, Red)` |
+| 26 | The Rock Pool · Where They Meet | two cards sieved | 2 | 2 | 1 | `Filter(A, B)` |
+| 27 | The Fish · One Has Something the Other Hasn't | Bleach's job, early: `Filter(A, Invert B)` | 2 | 3 | 2 | `Filter(A, Invert(B))` |
+| 28 | The Harbour Cat · Convert to Black and White | the closer: a fork three ways | 1 | 6 | 4 | `Mix(Shift(Shift(A)), Mix(A, Shift(A)))` |
+
+*Why it changed:* chapters hold a multiple of 4 levels (2026-10-18). Swatches and tables (each piece on every paint) and pictures (the pieces put to use) are two ideas; Swatches came first because the Mixing and Sieve Tables guide in what the pictures need.
+
+---
+
 ## §5.7 The Journal, before the consolidation
 
 *DESIGN.md lines 440–471 as of c369c4d; DESIGN.md now folds in the WP3 calls and drops the 'today' wording.*

@@ -1307,7 +1307,7 @@ static func quilt(ci: CanvasItem, r: Rect2, patches: Array, stack_cols := 0, acr
 # ---------------------------------------------------------------------------
 
 ## The pictures a chapter's historical note can name (levels/index.json).
-const HISTORY_PICTURES := ["paper_strip", "mauve", "card_chain", "jacquard_loom", "woven_portrait"]
+const HISTORY_PICTURES := ["paper_strip", "mauve", "card_chain", "drawloom", "jacquard_loom", "woven_portrait"]
 
 
 ## A historical note's picture, centred on c, about 90 across at s = 1 (as
@@ -1384,6 +1384,27 @@ static func history_picture(ci: CanvasItem, id: String, c: Vector2, s: float) ->
 			line(ci, Vector2(-23, -28), Vector2(-23, -14), Color(P.SHINE_MID, 0.8), 2)  # the glass's glint
 			shape(ci, round_rect(Rect2(-28, -40, 16, 7), 2), P.WOOD_LT, P.INK, 1.6)  # the cork
 			ci.draw_line(Vector2(-46, 33), Vector2(48, 33), Color(P.INK, 0.25), 1.5, true)  # the bench
+		"drawloom":
+			# A drawloom: a tall frame, the pattern's cords hanging from the top
+			# beam, one bundle pulled down, lifting its threads over the cloth.
+			for x in [-38.0, 30.0]:
+				shape(ci, round_rect(Rect2(x, -44, 8, 84), 3), P.WOOD, P.INK, 2)
+			shape(ci, round_rect(Rect2(-42, -48, 84, 9), 4), P.WOOD_DK, P.INK, 2)
+			shape(ci, round_rect(Rect2(-42, 32, 84, 8), 4), P.WOOD_DK, P.INK, 2)
+			for i in 9:  # the cords, from the top beam down to the warp
+				var x := -24.0 + i * 6
+				var pulled := i in [2, 3, 6]
+				line(ci, Vector2(x, -39), Vector2(x, -6 if pulled else -14), Color(P.HOOP, 0.9 if pulled else 0.55), 1.4 if pulled else 1.0)
+			shape(ci, ellipse(Vector2(-6, -4), 15, 4, 0, 20), Color(P.TAG, 0.0), P.INK, 1.6)  # the bundle in a hand's loop
+			ci.draw_rect(Rect2(-28, 6, 56, 24), P.CLOTH)
+			for i in 9:  # the warp, some threads lifted by their cords
+				var x := -24.0 + i * 6
+				line(ci, Vector2(x, 0.0 if i in [2, 3, 6] else 6.0), Vector2(x, 30), Color(P.WARP, 1.0), 1.3)
+			for r in 3:  # a picture growing in the cloth, in ink and paper
+				for k in 7:
+					if (r + k) % 3 != 0:
+						ci.draw_rect(Rect2(-21 + k * 6, 20 + r * 3.2, 5, 2.6), Color(P.INK, 0.25 + 0.15 * r))
+			ci.draw_rect(Rect2(-28, 6, 56, 24), Color(P.INK, 0.35), false, 1.5)
 		"woven_portrait":
 			# The silk portrait of Jacquard, framed on a nail, cards tucked behind.
 			for k in 2:  # two cards, laced, peeking out from behind

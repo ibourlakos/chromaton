@@ -382,6 +382,13 @@ static func quilt_full(p_levels: Array, p_progress, c: int) -> bool:
 	return not list.is_empty() and list.all(func(l): return p_progress.is_solved(l.id))
 
 
+## A note's year as the tag and the card show it: "1725", or "150 BC" for a
+## year before the common era (written negative in levels/index.json).
+static func year_text(note: Dictionary) -> String:
+	var y := int(note.get("year", 0))
+	return str(y) if y > 0 else "%d BC" % -y
+
+
 ## Chapter c's historical note can be read: it has one and its quilt is full.
 static func note_open(p_levels: Array, p_progress, c: int) -> bool:
 	var list := p_levels.filter(func(l): return l.chapter == c)
@@ -1129,7 +1136,7 @@ func _draw_note_tag(note: Dictionary, edge: Rect2, open: bool) -> void:
 		K.fill(self, K.round_rect(Rect2(body.position + Vector2(3, 4), body.size), 10), P.SHADOW)
 		K.shape(self, cut, P.TAG, P.INK, 2)
 		var x := body.position.x + 106
-		K.text(self, P.display(700), Vector2(x, -13), str(int(note["year"])), 15, P.WOOD_DK, HORIZONTAL_ALIGNMENT_LEFT)
+		K.text(self, P.display(700), Vector2(x, -13), year_text(note), 15, P.WOOD_DK, HORIZONTAL_ALIGNMENT_LEFT)
 		_fit_left(Vector2(x, 11), str(note["title"]), body.end.x - x - 28, 19, P.INK, P.title())
 		K.icon(self, "next", Vector2(body.end.x - 16, 0), 0.6, P.INK_SOFT)
 	else:
@@ -1161,7 +1168,7 @@ func _draw_note(level) -> void:
 	K.shape(self, K.round_rect(frame, 14), P.PAPER, Color(P.INK, 0.35), 1.5)
 	K.history_picture(self, str(note["picture"]), frame.get_center(), 2.7)
 	var x := frame.end.x + 36
-	K.text(self, P.display(700), Vector2(x, card.position.y + 52), str(int(note["year"])), 22, P.WOOD_DK, HORIZONTAL_ALIGNMENT_LEFT)
+	K.text(self, P.display(700), Vector2(x, card.position.y + 52), year_text(note), 22, P.WOOD_DK, HORIZONTAL_ALIGNMENT_LEFT)
 	K.text(self, P.title(), Vector2(x, card.position.y + 88), str(note["title"]), 34, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 	K.line(self, Vector2(x, card.position.y + 118), Vector2(card.end.x - 36, card.position.y + 118), Color(P.INK, 0.2), 2)
 	_para(Vector2(x, card.position.y + 134), text_w, str(note["text"]), 19)

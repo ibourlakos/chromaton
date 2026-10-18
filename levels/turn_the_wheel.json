@@ -5,6 +5,49 @@
 	"machine": "Turn the Wheel",
 	"goal": "Weave the swatch.",
 	"hint": "Tube the card through the Shift Wheel and watch what one turn does to every paint.",
+	"steps": [
+		{
+			"line": "This card holds a paint for every stitch.",
+			"do": []
+		},
+		{
+			"line": "One turn of the Shift Wheel turns every paint on it.",
+			"do": [
+				[
+					"place",
+					"sh"
+				]
+			]
+		},
+		{
+			"line": "Tube the card into the wheel.",
+			"do": [
+				[
+					"tube",
+					"card0",
+					"sh"
+				]
+			]
+		},
+		{
+			"line": "Then to the loom.",
+			"do": [
+				[
+					"tube",
+					"sh",
+					"loom"
+				]
+			]
+		},
+		{
+			"line": "Run, and watch every paint take one turn.",
+			"do": [
+				[
+					"run"
+				]
+			]
+		}
+	],
 	"pieces": [
 		"red_pot",
 		"shift",
