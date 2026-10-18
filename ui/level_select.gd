@@ -213,8 +213,8 @@ func _paint_tag(b: Control, r: Rect2, down: bool, i: int, open: bool) -> void:
 			K.pot(b, body.position + Vector2(body.size.x - 30, 30), 0.3, 1.0, t, 0.2, paint)
 		else:
 			K.sticker(b, body.position + Vector2(body.size.x - 40, body.size.y - 24), 0.45, level.invention["name"], 99, t, 0.2)
-	if open and not progress.in_progress(level.id):
-		_quest_mark(b, Vector2(body.get_center().x, body.position.y + 1))
+	if open and not progress.is_solved(level.id):
+		_quest_mark(b, Vector2(body.get_center().x, body.position.y + 1), progress.in_progress(level.id))
 	if open:
 		# The picture this level weaves
 		var pic := Rect2(body.position + Vector2(16, 50), Vector2(136, 80))
@@ -244,19 +244,23 @@ func _paint_tag(b: Control, r: Rect2, down: bool, i: int, open: bool) -> void:
 			b.draw_multiline_string(font, body.position + Vector2(16, 104 + font.get_ascent(14)), line, HORIZONTAL_ALIGNMENT_CENTER, body.size.x - 32, 14, 2, Color(P.INK, 0.6))
 
 
-## A level open but not started (unsolved, nothing placed and no tube on its
-## stored bench: Progress.in_progress) wears a "!" over its top edge, as an RPG
-## marks a quest to pick up (designer, 2026-10-18). Opening it and leaving the
-## bench empty keeps the mark. On the bench the title's "?" stays: the
-## quest is taken. A wooden roundel with an ink "!", bobbing gently; wood and
-## ink, not a saturated gold, which is a reserved paint.
-func _quest_mark(b: Control, c: Vector2) -> void:
-	c.y += sin(t * 3.0) * 2.0
+## An open, unsolved level's mark over its tag's top edge, as an RPG marks its
+## quests (designer, 2026-10-18): a "!" while it isn't started (nothing placed
+## and no tube on its stored bench: Progress.in_progress; opening it and
+## leaving the bench empty keeps it), a quest to pick up, on a wooden roundel
+## that bobs gently; a "?" once `started`, a quest taken and not done, on a
+## quieter paper roundel that holds still, as the bench's own "?" does. A
+## solved level has none. Wood, paper and ink, not an RPG's saturated gold,
+## which is a reserved paint.
+func _quest_mark(b: Control, c: Vector2, started: bool) -> void:
+	if not started:
+		c.y += sin(t * 3.0) * 2.0
 	K.fill(b, K.ellipse(c + Vector2(1.5, 3), 14, 14, 0, 24), P.SHADOW)
-	K.shape(b, K.ellipse(c, 14, 14, 0, 24), P.WOOD_LT, P.INK, 2.5)
-	K.fill(b, K.ellipse(c + Vector2(-4.5, -5), 3, 5, -0.6, 12), P.SHINE_MID)
+	K.shape(b, K.ellipse(c, 14, 14, 0, 24), P.TAG if started else P.WOOD_LT, Color(P.INK, 0.6) if started else P.INK, 2.5)
+	if not started:
+		K.fill(b, K.ellipse(c + Vector2(-4.5, -5), 3, 5, -0.6, 12), P.SHINE_MID)
 	for dx in [-0.5, 0.5]:  # pressed in thick, as the number stamps are
-		K.text(b, P.display(700), c + Vector2(dx, 1), "!", 21, P.INK)
+		K.text(b, P.display(700), c + Vector2(dx, 1), "?" if started else "!", 21, P.INK_SOFT if started else P.INK)
 
 
 ## The level's number as a rubber stamp in wood-brown ink: a scalloped ring

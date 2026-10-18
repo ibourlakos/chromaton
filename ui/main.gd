@@ -355,6 +355,9 @@ func _screenshot(args: Dictionary) -> void:
 		"levels":
 			for k in 6:
 				progress.record_solve(levels[k].id, levels[k].best + (k % 2), 40 + k, 3 - (k % 2))
+			# The seventh started, not solved: its tag shows the "?" (the
+			# eighth, open and untouched, the "!").
+			progress.store_machine(levels[6].id, levels[6].reference_machine().to_dict())
 			select_page = int(args.get("page", 0))
 			show_level_select()
 		"journal", "book":
