@@ -284,6 +284,17 @@ The Third Paint left chapter 2 for chapter 3.
 
 ---
 
+## §5.1 Chapters in threes and the centred board
+
+*Replaced on 2026-10-18, when the designer changed the campaign rule to a multiple of 4 levels a chapter (DESIGN.md §5.1, the re-org in fours). Word for word as they stood:*
+
+- ✅ **Chapters 3 and 4 stay at nine levels** (designer, 2026-10-17). Only a grid with an odd number of patches each way has a centre, and up to 12 levels only 3×3 does, so growing to 12 would cost the centred board. Recreational ideas go elsewhere (the playtest notes keep them).
+- From the campaign rules (designer, playtest round 2, 2026-10-05): **A chapter holds together:** one world and one thing to learn about the algebra, a quilt that reads as one piece, **at most 12 levels**, and a multiple of 3 (with its `quilt_across`, the quilt fills its grid). A chapter that grows too big is split; one short of a multiple of 3 gets a level made for it, or pushes one on to the next chapter.
+
+*Why it changed:* splitting the paint box (inventing the paints, then making them cheaper) and Pattern Cards (swatches, then pictures) fits fours: Pattern Cards splits 4 + 8 with no new level. The chess pair gives up its centre; the two 4 × 2 quilts hung together read as the board instead.
+
+---
+
 ## §5.7 The Journal, before the consolidation
 
 *DESIGN.md lines 440–471 as of c369c4d; DESIGN.md now folds in the WP3 calls and drops the 'today' wording.*
