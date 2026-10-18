@@ -3,7 +3,7 @@
 	"name": "The White Pot",
 	"cloth": "White",
 	"machine": "The White Pot",
-	"goal": "Weave a white cloth, and earn your white pot.",
+	"goal": "Weave a white cloth, and earn the white pot.",
 	"hint": "White is the empty cloth, the opposite of black. Flip your black pot.",
 	"pieces": [
 		"red_pot",

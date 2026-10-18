@@ -4,7 +4,7 @@ Decided by the designer, 2026-10-05 (DESIGN.md §5.1, "Level text"). Written int
 
 - **Title:** two phrases side by side in the top bar, `cloth · machine`. The machine phrase says what the machine does, never how it's built; on an invention level it's the invention's name (with the sticker mark); in the paint box, the pot it makes.
 - **Hint panel:** the goal, then the hint: a world-story sentence, then the how, naming pieces by their player words (red pot, Shift Wheel, Mixing Tub, Flip Pan, Sieve, Split). Invention names are today's (their names and personalities come later).
-- **Level objectives** (2026-10-18, DESIGN.md §5.1): the hint panel shows the goal as the ★ objective with the hint under it, then the ★★ and ★★★ prices. A goal says what the level earns ("and invent the Third Paint", "and earn your yellow pot"; the cheaper-pot levels "Three stars make your green pot cheaper."). A **★★★ nudge** (`star_hint`) is written only where the hint describes a dearer machine than ★★★ (24, 28); it shows once the player has ★★. The goals and nudges marked *(draft, 2026-10-18)* wait for the designer's markup; the level files already carry them.
+- **Level objectives** (2026-10-18, DESIGN.md §5.1): the hint panel shows the goal as the ★ objective with the hint under it, then the ★★ and ★★★ prices. A goal says what the level earns ("and invent the Third Paint", "and earn the yellow pot"; level 1 "with the red pot"; the cheaper-pot levels "Three stars make your green pot cheaper."). A **★★★ nudge** (`star_hint`) is written only where the hint describes a dearer machine than ★★★ (24, 28); it shows once the player has ★★. The goals and nudges marked *(draft, 2026-10-18)* wait for the designer's markup; the level files already carry them.
 - **Guided levels:** one step line per step, shown beside the hand. ★ marks a guided level.
 - Never bits, binary or bytes. No "A paint shows where ...".
 - **A level's name** (its primary title, for tags, Cloths and Scores) is the cloth phrase, or in the paint box the machine phrase. Text that refers to a level gives its number and primary title: "2. The Yellow Pot" (designer, 2026-10-05; DESIGN.md §5.1).
@@ -16,41 +16,41 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today
 ## Chapter 1, The Paint Box
 
 ### 1 ★ Red · One Pot of Red (`one_pot`)
-- **Goal:** Weave a red cloth.
+- **Goal:** Weave a red cloth with the red pot. *(draft, 2026-10-18: was "Weave a red cloth.")*
 - **Hint:** Every paint in the box starts from this one pot of red. Tube it straight to the loom.
 - **Steps:** 1. "This is your red pot." (pot onto the bench) 2. "Tube its paint to the loom." (the tube) 3. "Press Run and watch it weave." (Run)
 - Notes: hint kept; it already is story, then how.
 
 ### 2 ★ Yellow · The Yellow Pot (`yellow`)
-- **Goal:** Weave a yellow cloth, and earn your yellow pot. *(draft, 2026-10-18: was "Weave a yellow cloth.")*
+- **Goal:** Weave a yellow cloth, and earn the yellow pot. *(draft, 2026-10-18: was "Weave a yellow cloth.")*
 - **Hint:** The hamster runs, and its wheel turns red into yellow. Tube the red pot through the Shift Wheel.
 - **Steps:** 1. "We only have red now." (the red pot in) 2. "One turn of the Shift Wheel makes red yellow." (the Shift Wheel in) 3. "Tube the red into the wheel." 4. "Send the new paint to the loom."
 - Notes: steps are the designer's R2 example.
 
 ### 3 ★ Blue · The Blue Pot (`blue`)
-- **Goal:** Weave a blue cloth, and earn your blue pot. *(draft, 2026-10-18: was "Weave a blue cloth.")*
+- **Goal:** Weave a blue cloth, and earn the blue pot. *(draft, 2026-10-18: was "Weave a blue cloth.")*
 - **Hint:** Your yellow pot is a piece now, and cheaper than a red pot with a wheel. Turn its yellow once more on the Shift Wheel.
 - **Steps:** 1. "Your yellow pot is on the shelf now." (tap the pot slot; the fan opens) 2. "Take it out." (the yellow pot in) 3. "One more turn makes blue." (the Shift Wheel in, tube) 4. "To the loom."
 - Notes: teaches an earned pot as a piece.
 
 ### 4 ★ Orange · The Orange Pot (`orange`)
-- **Goal:** Weave an orange cloth, and earn your orange pot. *(draft, 2026-10-18: was "Weave an orange cloth.")*
+- **Goal:** Weave an orange cloth, and earn the orange pot. *(draft, 2026-10-18: was "Weave an orange cloth.")*
 - **Hint:** Paint on paint makes a darker paint: red and yellow make orange. Mix the red pot with your yellow pot.
 - **Steps:** 1. "Red and yellow make orange." (the red pot in) 2. "Bring your yellow pot." 3. "The Mixing Tub stirs two paints into one." (the tub in) 4. "Tube both paints into the tub." 5. "Send the orange to the loom."
 - Notes: carries the colour rule where it first shows (item 4).
 
 ### 5 ★ Purple · The Purple Pot (`purple`)
-- **Goal:** Weave a purple cloth, and earn your purple pot. *(draft, 2026-10-18: was "Weave a purple cloth.")*
+- **Goal:** Weave a purple cloth, and earn the purple pot. *(draft, 2026-10-18: was "Weave a purple cloth.")*
 - **Hint:** Today the shelf is shut: only the red pot. Split its red, turn one copy twice to blue, and mix it back with the other.
 - **Steps:** 1. "Only red today." 2. "Split copies one drop into two." (Split in, tube) 3. "Turn one copy twice to make blue." (two Shift Wheels) 4. "Mix it back with the other copy." 5. "To the loom."
 - Notes: every earned pot held back (`hold_pots`).
 
 ### 6 Green · The Green Pot (`green_mix`, new)
-- **Goal:** Weave a green cloth, and earn your green pot. *(draft, 2026-10-18: was "Weave a green cloth.")*
+- **Goal:** Weave a green cloth, and earn the green pot. *(draft, 2026-10-18: was "Weave a green cloth.")*
 - **Hint:** Yellow and blue make green, as every painter knows. Mix your yellow pot with your blue pot.
 
 ### 7 Black · The Black Pot (`black`)
-- **Goal:** Weave a black cloth, and earn your black pot. *(draft, 2026-10-18: was "Weave a black cloth.")*
+- **Goal:** Weave a black cloth, and earn the black pot. *(draft, 2026-10-18: was "Weave a black cloth.")*
 - **Hint:** Pour every paint into one tub and it turns black. Mix a pot that holds red and yellow with your blue pot.
 - Notes: the second colour-rule moment (item 4). Machine phrase: the pot it earns (designer, 2026-10-05; was "All the Paint").
 
@@ -75,7 +75,7 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today
 - Notes: machine phrase the pot it re-earns (designer, 2026-10-05; was "The Short Way", from the old title "Black, the Short Way"). `Mix(Red, Invert(Red))` with a Split ties.
 
 ### 12 White · The White Pot (`white`)
-- **Goal:** Weave a white cloth, and earn your white pot. *(draft, 2026-10-18: was "Weave a white cloth.")*
+- **Goal:** Weave a white cloth, and earn the white pot. *(draft, 2026-10-18: was "Weave a white cloth.")*
 - **Hint:** White is the empty cloth, the opposite of black. Flip your black pot.
 
 ---
@@ -138,7 +138,7 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today
 ### 24 The Harbour Cat · Convert to Black and White (`black_cat`)
 - **Goal:** Weave the cat.
 - **Hint:** Wherever the card has any paint at all, the cat is black. Split the card three ways, turn one copy once and another twice on the Shift Wheel, and mix all three.
-- **★★★ nudge** *(draft, 2026-10-18)*: Split the copy you turned once: one half goes to the mix, the other turns again. Two Shift Wheels do the work of three.
+- **★★★ nudge** *(draft, 2026-10-18)*: Turning a paint twice is turning it once, then once more. A copy already turned once is halfway there.
 - Notes: says the three copies and the turns outright (the old hint was "misleading or vague"). The hint's route is 5 (three Shift Wheels), within ★★ (6); ★★★ (4) splits the once-turned copy and turns it again, the player's find.
 
 ---
@@ -163,7 +163,7 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today
 ### 28 The Queen · Extreme Mix (`either_not_both`, invention)
 - **Goal:** Weave the queen, and invent Extreme Mix. *(draft, 2026-10-18: was "Weave the queen.")*
 - **Hint:** The queen wears only the paint that comes from one card alone. Mix the cards, then sieve the mix with the opposite of what they share.
-- **★★★ nudge** *(draft, 2026-10-18)*: Your Third Paint does a Mixing Tub and a Flip Pan in one piece. Ask it what neither card has, then ask it again, of that answer and of what the cards share.
+- **★★★ nudge** *(draft, 2026-10-18)*: The Third Paint from 25. The Pawn gives what neither of two paints has, in one piece. Try the queen with Third Paints and one Sieve.
 - Notes: the invention's player name is **Extreme Mix** (designer, 2026-10-05; the title was "Either, Not Both"); Contrast stays its internal name. ★★★ with the discount is `Third Paint(Third Paint(A, B), Sieve(A, B))`; the hint describes the clearer ★★ route (4) on purpose; at the rebuild, `.make solve` must keep its ★★ budget at 4 or more.
 
 ### 29 *The Chessboard · Stripes Crossed* (`little_board`, new 2026-10-06, showcase)

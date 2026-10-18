@@ -5,7 +5,7 @@
 	"machine": "Extreme Mix",
 	"goal": "Weave the queen, and invent Extreme Mix.",
 	"hint": "The queen wears only the paint that comes from one card alone. Mix the cards, then sieve the mix with the opposite of what they share.",
-	"star_hint": "Your Third Paint does a Mixing Tub and a Flip Pan in one piece. Ask it what neither card has, then ask it again, of that answer and of what the cards share.",
+	"star_hint": "The Third Paint from 25. The Pawn gives what neither of two paints has, in one piece. Try the queen with Third Paints and one Sieve.",
 	"pieces": [
 		"red_pot",
 		"shift",

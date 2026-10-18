@@ -3,7 +3,7 @@
 	"name": "The Black Pot",
 	"cloth": "Black",
 	"machine": "The Black Pot",
-	"goal": "Weave a black cloth, and earn your black pot.",
+	"goal": "Weave a black cloth, and earn the black pot.",
 	"hint": "Pour every paint into one tub and it turns black. Mix a pot that holds red and yellow with your blue pot.",
 	"pieces": [
 		"red_pot",
