@@ -7,7 +7,9 @@
 ##                               save a PNG and quit. <id> may also be
 ##                               "levels", "journal" (or "book"), "options",
 ##                               "profiles" (--add: a new one, --edit:
-##                               the one playing)
+##                               the one playing, --edit=<id> another
+##                               (with --players), --remove its confirm
+##                               card)
 ##                               or "intro".
 ##   --tab=<id>                  the journal's tab (paint, loom, pieces,
 ##                               cloths, scores, words)
@@ -287,6 +289,11 @@ func show_profiles() -> void:
 		if not throwaway:
 			profiles.save()
 		show_profiles())
+	pk.removed.connect(func(id):
+		if profiles.remove(id) and not throwaway:
+			Profiles.put_away_save(id)
+			profiles.save()
+		show_profiles())
 	pk.back.connect(show_level_select)
 	_set_screen(pk)
 
@@ -355,8 +362,11 @@ func _screenshot(args: Dictionary) -> void:
 			if args.has("add"):
 				screen.adding = true
 				screen._build()
-			elif args.has("edit"):
-				screen.edit(profiles.current)
+			elif args.has("edit"):  # --edit=<id> for another player's page
+				screen.edit(int(args["edit"]) if str(args["edit"]).is_valid_int() else profiles.current)
+				if args.has("remove"):  # its confirm card
+					screen.removing = screen.editing
+					screen._build()
 		"levels":
 			# The first --solved levels solved (default 6); the next started, not
 			# solved: its tag shows the "?" (the one after, open and untouched,

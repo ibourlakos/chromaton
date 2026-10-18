@@ -1319,7 +1319,7 @@ func test_profile_screens() -> void:
 	pk.adding = true
 	pk.badge = "invert"
 	pk._build()
-	check(pk.name_edit != null and pk.name_edit.placeholder_text == "Flip Pan", "a new player's name defaults to their critter's")
+	check(pk.name_edit != null and pk.name_edit.placeholder_text == "Type a name" and pk.name_edit.caret_blink, "a new player's name field is ready for typing")
 	pk.name_edit.text = "mia"
 	pk._make()
 	check(got == [["invert", "mia"]], "the check makes the player")
@@ -1331,7 +1331,7 @@ func test_profile_screens() -> void:
 	pk.edited.connect(func(i, b, n): changed.append([i, b, n]))
 	pk._ready()
 	var pens: Array = pk.buttons.filter(func(b): return b.icon == "pencil")
-	check(pens.size() == 1, "a pencil under the one playing")
+	check(pens.size() == 1, "a pencil under the badge")
 	pens[0].pressed.emit()
 	check(pk.adding and pk.editing == 1 and pk.badge == "mix", "the pencil opens its badge and name")
 	pk.badge = "shift"
@@ -1342,3 +1342,30 @@ func test_profile_screens() -> void:
 	roster.edit(1, "shift", "leo")
 	check(Profiles.display_name(roster.find(1)) == "leo" and roster.find(1)["badge"] == "shift", "the roster keeps the change")
 	pk.free()
+	# A pencil under every badge; another player's page can remove them,
+	# after a confirm card. The one playing has no Remove, so the last never goes.
+	roster.list.append({"id": 2, "badge": "shift", "name": "andrew"})
+	pk = load("res://ui/profile_picker.gd").new()
+	pk.setup(roster)
+	var gone := []
+	pk.removed.connect(func(i): gone.append(i))
+	pk._ready()
+	pens = pk.buttons.filter(func(b): return b.icon == "pencil")
+	check(pens.size() == 2, "a pencil under every badge")
+	pens[0].pressed.emit()
+	check(pk.buttons.filter(func(b): return b.position == pk.REMOVE.position).is_empty(), "the one playing has no Remove")
+	pk._back()
+	pk._back()
+	check(not pk.adding, "Back leaves the page")
+	pk.buttons.filter(func(b): return b.icon == "pencil")[1].pressed.emit()
+	var rm: Array = pk.buttons.filter(func(b): return b.position == pk.REMOVE.position)
+	check(pk.editing == 2 and rm.size() == 1, "another player's page has Remove")
+	rm[0].pressed.emit()
+	check(pk.removing == 2 and gone.is_empty(), "Remove asks on a card first")
+	key(pk, KEY_ESCAPE)
+	check(pk.removing == -1 and pk.editing == 2, "Back puts the card away, on the player's page")
+	pk.buttons.filter(func(b): return b.position == pk.REMOVE.position)[0].pressed.emit()
+	pk.buttons.filter(func(b): return b.icon == "trash")[0].pressed.emit()
+	check(gone == [2], "the card's bin removes them")
+	pk.free()
+	check(not roster.remove(1) and roster.remove(2) and roster.list.size() == 1, "the roster never removes the one playing")
