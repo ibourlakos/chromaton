@@ -378,6 +378,7 @@ An in-game book that explains how the game works and keeps what the player has m
   - **Playtest R3 release** (2026-10-06): 2026.10.06-c2ef50b (build #2077666), the R3 quick wins and chapters 3 and 4 at nine levels each (§5.1, 42 campaign levels). Main is ahead of `origin/main`; nothing pushed to GitHub.
   - **Playtest R4 quick wins release** (2026-10-08): 2026.10.08-5e6a128 (build #2089297): the score called Price, the success panel's ★★★ price line, the loom's shuttle before its slot, The Little Board and its twin centred in their quilts (§5.1, §9.1). Pushed to GitHub too; `main` is the only branch, local and remote.
   - **Package B release** (2026-10-18): 2026.10.18-0027698 (build #2150318): the Inventions slot (key 7 on every level), the selection rectangle on the bench, the paint card's Shift arcs (§9.1). Main is ahead of `origin/main`; nothing pushed to GitHub.
+   - **Package C release, so far** (2026-10-18): 2026.10.18-de568e8 (build #2150902): the ★★★ price line read from the solver's `star_needs` (decision 9), level objectives on the hint panel and the success panel, Cost for Price everywhere, the quest marks on the level select, level names in Bree Serif with references drawn "25. The Pawn", brown's word on the Paint tab. Main is ahead of `origin/main`; nothing pushed to GitHub.
 
 ---
 
