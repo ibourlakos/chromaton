@@ -377,6 +377,7 @@ An in-game book that explains how the game works and keeps what the player has m
   - **Round 2 releases** (`.\make release itch`, one per work package): WP1, the new campaign, 2026.10.05-d0c2aca-dirty (the content of d0c2aca; "dirty" only because the export generated an untracked `tools/functions.gd.uid`, now tracked). WP2, the bench, 2026.10.05-6d6b2d4. WP3, teaching, 2026.10.05-a7539cb. WP4, art and players, 2026.10.05-90f2467.
   - **Playtest R3 release** (2026-10-06): 2026.10.06-c2ef50b (build #2077666), the R3 quick wins and chapters 3 and 4 at nine levels each (§5.1, 42 campaign levels). Main is ahead of `origin/main`; nothing pushed to GitHub.
   - **Playtest R4 quick wins release** (2026-10-08): 2026.10.08-5e6a128 (build #2089297): the score called Price, the success panel's ★★★ price line, the loom's shuttle before its slot, The Little Board and its twin centred in their quilts (§5.1, §9.1). Pushed to GitHub too; `main` is the only branch, local and remote.
+  - **Package B release** (2026-10-18): 2026.10.18-0027698 (build #2150318): the Inventions slot (key 7 on every level), the selection rectangle on the bench, the paint card's Shift arcs (§9.1). Main is ahead of `origin/main`; nothing pushed to GitHub.
 
 ---
 
