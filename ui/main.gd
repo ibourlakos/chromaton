@@ -33,6 +33,8 @@
 ##                               on (star_needs) one dearer, so the note and
 ##                               the success panel say so
 ##   --page=<n>                  the level select's chapter page (from 0)
+##   --solved=<n>                on the level select, the first n levels solved
+##                               (default 6) and only what they earn owned
 ##   --stale                     the intro as it reads for a stale save
 ##   --grid                      the bench grid on (Options)
 ##   --paints                    the paint card up on the workbench
@@ -353,11 +355,19 @@ func _screenshot(args: Dictionary) -> void:
 			elif args.has("edit"):
 				screen.edit(profiles.current)
 		"levels":
-			for k in 6:
+			# The first --solved levels solved (default 6); the next started, not
+			# solved: its tag shows the "?" (the one after, open and untouched,
+			# the "!"). With --solved, only what those levels earn is owned, so a
+			# level waiting for a later invention shows its locked tag's line.
+			var solved := clampi(int(args.get("solved", 6)), 0, levels.size() - 1)
+			if args.has("solved"):
+				var earned := levels.slice(0, solved).map(func(l): return l.invention.get("id", ""))
+				for inv_id in progress.inventions.keys():
+					if not inv_id in earned:
+						progress.inventions.erase(inv_id)
+			for k in solved:
 				progress.record_solve(levels[k].id, levels[k].best + (k % 2), 40 + k, 3 - (k % 2))
-			# The seventh started, not solved: its tag shows the "?" (the
-			# eighth, open and untouched, the "!").
-			progress.store_machine(levels[6].id, levels[6].reference_machine().to_dict())
+			progress.store_machine(levels[solved].id, levels[solved].reference_machine().to_dict())
 			select_page = int(args.get("page", 0))
 			show_level_select()
 		"journal", "book":

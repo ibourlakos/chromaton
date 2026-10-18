@@ -34,7 +34,7 @@ Files are named after the term in lower-case kebab-case (`paint-card.md`) and li
 
 | Term | Tags | Status | In short |
 |---|---|---|---|
-| [Brown](brown.md) | design | 🟡 | The paint that is not one of the eight: mixing all three primaries makes black here, and brown's hues dress the interface. |
+| [Brown](brown.md) | gameplay, design | ✅ | The paint that is not one of the eight: mixing all three primaries makes black here, and brown's hues dress the interface. A word on the Paint tab. |
 | [Cloth](cloth.md) | gameplay, design, implementation | 🟡 | The picture a machine weaves on the loom. |
 | [Contrast](contrast.md) | gameplay, design, implementation | ✅ | An invention: mixes two paints, but what they share washes out. Player word: Extreme Mix. |
 | [Critter](critter.md) | gameplay, design, implementation | 🟡 | A piece drawn as a character that does one thing to paint. |

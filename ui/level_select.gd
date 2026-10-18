@@ -204,9 +204,9 @@ func _paint_tag(b: Control, r: Rect2, down: bool, i: int, open: bool) -> void:
 	# The primary title, smaller where it would run into the invention's icon.
 	var room := body.size.x - 57 - (56.0 if not level.invention.is_empty() else 14.0)
 	var name_size := 19
-	while name_size > 13 and P.display(600).get_string_size(level.name, HORIZONTAL_ALIGNMENT_LEFT, -1, name_size).x > room:
+	while name_size > 13 and P.title().get_string_size(level.name, HORIZONTAL_ALIGNMENT_LEFT, -1, name_size).x > room:
 		name_size -= 1
-	K.text(b, P.display(600), body.position + Vector2(57, 27), level.name, name_size, ink, HORIZONTAL_ALIGNMENT_LEFT)
+	K.text(b, P.title(), body.position + Vector2(57, 27), level.name, name_size, ink, HORIZONTAL_ALIGNMENT_LEFT)
 	if not level.invention.is_empty():
 		var paint := Invention.paint_of(level.invention)
 		if paint >= 0:
@@ -240,8 +240,7 @@ func _paint_tag(b: Control, r: Rect2, down: bool, i: int, open: bool) -> void:
 		var line := Level.waiting_line(levels, progress.waiting_for(level.id))
 		K.icon(b, "lock", body.get_center() + Vector2(0, 4 if line != "" else 16), 1.6, Color(P.INK, 0.4))
 		if line != "":
-			var font := P.ui(700)
-			b.draw_multiline_string(font, body.position + Vector2(16, 104 + font.get_ascent(14)), line, HORIZONTAL_ALIGNMENT_CENTER, body.size.x - 32, 14, 2, Color(P.INK, 0.6))
+			K.paragraph(line, P.ui(700), 14, body.size.x - 32, HORIZONTAL_ALIGNMENT_CENTER, 2).draw(b.get_canvas_item(), body.position + Vector2(16, 104), Color(P.INK, 0.6))
 
 
 ## An open, unsolved level's mark over its tag's top edge, as an RPG marks its

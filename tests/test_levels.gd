@@ -27,6 +27,7 @@ func check(ok: bool, what: String) -> void:
 func _init() -> void:
 	var levels := Level.load_all()
 	test_loading(levels)
+	test_level_refs(levels)
 	var by_level := Invention.reference_inventions_by_level(levels)
 	var inventions: Dictionary = by_level[by_level.size() - 1]
 	test_references(levels, by_level)
@@ -39,6 +40,28 @@ func _init() -> void:
 	if failures == 0:
 		print("test_levels: all %d checks passed" % checks)
 	quit(1 if failures > 0 else 0)
+
+
+## Text refers to a level by a marker, {level:<id>}, set as "25.The Pawn"
+## in the level-title font (DESIGN.md 5.1): never a number and name typed by
+## hand, which would go stale when levels move.
+func test_level_refs(levels: Array) -> void:
+	var pawn = levels.filter(func(l): return l.id == "third_color")[0]
+	check(pawn.ref_name() == "25.The Pawn", "a reference is the number and name, no space between, unbreakable (%s)" % pawn.ref_name())
+	check(pawn.ref() == "{level:third_color}", "a level's marker names its id")
+	check(Level.spans("Earn it in {level:third_color}.") == [["Earn it in ", false], [pawn.ref_name(), true], [".", false]], "a marker is a run of its own")
+	check(Level.plain("{level:nowhere} and {level:third_color}") == "{level:nowhere} and " + pawn.ref_name(), "an unknown marker stays as written")
+	var ids := levels.map(func(l): return l.id)
+	for level in levels:
+		var texts := [level.goal, level.hint, level.star_hint]
+		for step in level.steps:
+			texts.append(str(step.get("line", "")))
+		for text in texts:
+			for ref_id in Level.ref_ids(text):
+				check(ref_id in ids, "%s refers to a campaign level (%s)" % [level.id, ref_id])
+			for other in levels:
+				var typed := RegEx.create_from_string("\\d+\\. ?" + other.name.replace(".", "\\.") + "\\b")
+				check(typed.search(text) == null, "%s refers to %s by marker, not by hand" % [level.id, other.name])
 
 
 func test_loading(levels: Array) -> void:
@@ -308,7 +331,7 @@ func test_locks_and_loans(levels: Array, inventions: Dictionary) -> void:
 	var rook: int = ids.find("neither_twice")
 	p.record_solve("third_color", 2, 70, 3)
 	check(not p.is_unlocked(ids, rook), "The Rook stays locked after The Pawn until the Third Paint is owned")
-	check(Level.waiting_line(levels, p.waiting_for("neither_twice")) == "Earn the Third Paint in %s." % by_id["third_color"].ref_name(), "its tag says where to earn it")
+	check(Level.waiting_line(levels, p.waiting_for("neither_twice")) == "Earn the Third Paint in %s." % by_id["third_color"].ref(), "its tag says where to earn it")
 	p.add_invention(inventions["third_paint"])
 	check(p.is_unlocked(ids, rook) and p.waiting_for("neither_twice").is_empty(), "owning the Third Paint opens it")
 	check(not p.is_unlocked(ids, ids.find("only_third_paint")), "the rule of two still holds for the rest")

@@ -449,7 +449,7 @@ func _locked(r: Rect2, w: Dictionary, ci: CanvasItem = null) -> void:
 	var level = _level_by_id(str(w["level"]))
 	K.text(on, P.display(600), Vector2(r.position.x + 40, r.get_center().y), "?", 34, Color(P.INK, 0.3))
 	if level != null:
-		K.text(on, P.ui(700), Vector2(r.position.x + 74, r.get_center().y), "Weave %s to read this." % level.ref_name(), 16, Color(P.INK, 0.45), HORIZONTAL_ALIGNMENT_LEFT)
+		K.text(on, P.ui(700), Vector2(r.position.x + 74, r.get_center().y), "Weave %s to read this." % level.ref(), 16, Color(P.INK, 0.45), HORIZONTAL_ALIGNMENT_LEFT)
 
 
 # --- Articles (Paint, Loom) ----------------------------------------------------
@@ -705,7 +705,7 @@ func _draw_pieces() -> void:
 		_para(Vector2(area.position.x + 150, area.position.y + 50), area.size.x - 160, w["text"], 17)
 	elif not w.is_empty():
 		var level = _level_by_id(str(w["level"]))
-		K.text(self, P.ui(700), Vector2(area.position.x + 150, area.position.y + 66), "Weave %s to read about it. Till then, watch it work." % level.ref_name(), 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+		K.text(self, P.ui(700), Vector2(area.position.x + 150, area.position.y + 66), "Weave %s to read about it. Till then, watch it work." % level.ref(), 16, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
 	var top := area.position.y + 170
 	match kind:
 		"shift", "invert":
@@ -746,7 +746,7 @@ func _draw_invention_page(id: String, area: Rect2) -> void:
 				at = slot[0]
 		K.text(self, P.display(600), area.get_center() + Vector2(0, -20), "?", 64, Color(P.INK, 0.25))
 		if at >= 0:
-			K.text(self, P.ui(700), area.get_center() + Vector2(0, 40), "Weave %s to invent it." % levels[at].ref_name(), 18, Color(P.INK, 0.45))
+			K.text(self, P.ui(700), area.get_center() + Vector2(0, 40), "Weave %s to invent it." % levels[at].ref(), 18, Color(P.INK, 0.45))
 		return
 	var name := str(inv.get("name", invention_name(levels, id)))
 	K.sticker(self, area.position + Vector2(84, 62), 1.1, name, 99, t, 0.4)
@@ -761,7 +761,7 @@ func _draw_invention_page(id: String, area: Rect2) -> void:
 	y += _draw_cases(w.get("cases", []), Rect2(area.position.x + 20, y, area.size.x - 40, 0), 16.0)
 	var level = _level_by_id(str(inv.get("from_level", "")))
 	K.text(self, P.display(600), Vector2(area.position.x + 20, y + 22), "Made of", 22, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
-	_made_of_row(Rect2(area.position.x + 20, y + 44, minf(area.size.x - 40, 620), 56), level.ref_name() if level != null else "", _machine_parts(inv.get("machine", {})))
+	_made_of_row(Rect2(area.position.x + 20, y + 44, minf(area.size.x - 40, 620), 56), level.ref() if level != null else "", _machine_parts(inv.get("machine", {})))
 
 
 ## Case rows: two paints, what they make and why, one row per kind of pair
@@ -802,7 +802,7 @@ func _draw_made_of(kind: String, r: Rect2) -> void:
 		if not progress.is_solved(level.id):
 			_locked(row, {"level": level.id})
 			continue
-		_made_of_row(row, level.ref_name(), _machine_parts(progress.stored_machine(level.id)))
+		_made_of_row(row, level.ref(), _machine_parts(progress.stored_machine(level.id)))
 
 
 ## One "Made of" row: the level, then each piece with how many.
@@ -1019,7 +1019,7 @@ func _draw_cloths() -> void:
 		var open: bool = progress.is_unlocked(ids, level.number - 1)
 		var ink := P.INK if woven else Color(P.INK, 0.5 if open else 0.3)
 		_fit_text(Vector2(r.get_center().x, r.end.y - 34), "%d" % level.number, w - 16, 15, ink, P.display(600))
-		_fit_text(Vector2(r.get_center().x, r.end.y - 16), level.name, w - 16, 15, ink, P.ui(700))
+		_fit_text(Vector2(r.get_center().x, r.end.y - 16), level.name, w - 16, 15, ink, P.title())
 	# The chapter's quilt
 	var side := Rect2(PAGE.position.x + 846, PAGE.position.y + 66, PAGE.size.x - 876, 524)
 	K.text(self, P.display(600), Vector2(side.get_center().x, side.position.y + 10), "Quilt", 24, P.INK)
@@ -1074,7 +1074,7 @@ func _draw_scores() -> void:
 		var open: bool = progress.is_unlocked(ids, level.number - 1)
 		var ink := P.INK if done else Color(P.INK, 0.5 if open else 0.3)
 		K.text(self, P.display(600), Vector2(cols[0] - 14, y - 22), str(level.number), 18, ink, HORIZONTAL_ALIGNMENT_RIGHT)
-		K.text(self, P.display(600), Vector2(cols[0], y - 22), level.name, 20, ink, HORIZONTAL_ALIGNMENT_LEFT)
+		K.text(self, P.title(), Vector2(cols[0], y - 22), level.name, 20, ink, HORIZONTAL_ALIGNMENT_LEFT)
 		for s in 3:
 			K.star(self, Vector2(cols[1] + 12 + s * 28, y - 22), 11, s < int(rec.get("stars", 0)))
 		K.text(self, P.ui(800), Vector2(cols[2] + 30, y - 22), str(rec["best_pieces"]) if done else "–", 18, ink)
@@ -1110,7 +1110,7 @@ func _draw_words() -> void:
 	if not Words.is_unlocked(w, progress):
 		var level = _level_by_id(str(w["level"]))
 		K.text(self, P.display(600), panel.get_center() + Vector2(0, -40), "?", 64, Color(P.INK, 0.25))
-		K.text(self, P.ui(700), panel.get_center() + Vector2(0, 30), "Weave %s" % level.ref_name(), 18, P.INK_SOFT)
+		K.text(self, P.ui(700), panel.get_center() + Vector2(0, 30), "Weave %s" % level.ref(), 18, P.INK_SOFT)
 		K.text(self, P.ui(700), panel.get_center() + Vector2(0, 56), "to find this word.", 18, P.INK_SOFT)
 		return
 	picture(self, str(w["id"]), Vector2(panel.get_center().x, panel.position.y + 86), 1.4, t, levels)
@@ -1149,6 +1149,15 @@ static func picture(ci: CanvasItem, id: String, c: Vector2, s: float, t: float, 
 			for k in 3:
 				var a := -PI / 2 + k * TAU / 3
 				K.drop(ci, c + Vector2(cos(a), sin(a)) * 20 * s + Vector2(0, 4) * s, 13 * s, [Paint.RED, Paint.YELLOW, Paint.BLUE][k])
+		"brown":
+			# Brown went into the wood: a plank with its grain, and on it the
+			# black drop that took its place. Never a brown drop: it isn't paint.
+			var plank := Rect2(c + Vector2(-38, 4) * s, Vector2(76, 22) * s)
+			K.shape(ci, K.round_rect(plank, 6 * s), P.WOOD, P.INK, 2)
+			for k in 3:
+				var gy := plank.position.y + (6 + k * 5) * s
+				ci.draw_line(Vector2(plank.position.x + (8 + k * 9) * s, gy), Vector2(plank.end.x - (12 + (2 - k) * 7) * s, gy), P.WOOD_DK, 1.5 * s)
+			K.drop(ci, c + Vector2(4, -14) * s, 14 * s, Paint.BLACK)
 		"paint-card":
 			var at := PaintCard.spots()
 			var mid: Vector2 = at[7]

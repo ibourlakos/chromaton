@@ -59,7 +59,7 @@ func setup(p_level, p_home: Rect2, p_have := 0, p_dear := "") -> void:
 
 
 static func title_size(p_level) -> int:
-	var font := P.display(600)
+	var font := P.title()
 	var s := TITLE_SIZE
 	while s > 20 and font.get_string_size(_title(p_level), HORIZONTAL_ALIGNMENT_LEFT, -1, s).x > WIDTH - 60:
 		s -= 1
@@ -107,7 +107,7 @@ static func lay_out(p_rows: Array, text_w: float, row_size: int, hint_size: int,
 
 static func _paragraph(items: Array, text: String, font: Font, size_px: int, col: Color, y: float, text_w: float) -> float:
 	var para := TextParagraph.new()
-	para.add_string(text, font, size_px)
+	K.add_spans(para, text, font, size_px)
 	para.width = text_w
 	var line_h := font.get_height(size_px)
 	for i in para.get_line_count():
@@ -208,7 +208,7 @@ func _draw() -> void:
 		return
 	var cx := r.get_center().x
 	var top := r.position.y
-	K.text(self, P.display(600), Vector2(cx, top + 46), _title(level), title_size(level), Color(P.INK, words))
+	K.text(self, P.title(), Vector2(cx, top + 46), _title(level), title_size(level), Color(P.INK, words))
 	# The rows scroll under the title, clipped above the foot.
 	var view := Rect2(r.position.x + 10, top + 80, r.size.x - 20, r.size.y - 124)
 	draw_rows(self, _items, Vector2(cx - WIDTH / 2 + PAD, view.position.y + 4 - scroll), view, words, cx)

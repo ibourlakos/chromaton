@@ -481,10 +481,10 @@ func test_dearer(by_id: Dictionary) -> void:
 	progress.add_invention(inv)
 	var wb = open(queen, progress)
 	var dearer: Array = wb._dearer_inventions()
-	check(dearer.size() == 1 and dearer[0]["id"] == "third_paint" and dearer[0]["yours"] == 2 and dearer[0]["lowest"] == 1 and dearer[0]["from"] == pawn.ref_name(),
-		"a dearer Third Paint is named, with 25. The Pawn as the way down (%s)" % [dearer])
+	check(dearer.size() == 1 and dearer[0]["id"] == "third_paint" and dearer[0]["yours"] == 2 and dearer[0]["lowest"] == 1 and dearer[0]["from"] == pawn.ref(),
+		"a dearer Third Paint is named, with 25.The Pawn as the way down (%s)" % [dearer])
 	var line: String = Level.dear_line(dearer)
-	check(line == "Your Third Paint costs 2. Three stars on %s bring it down to 1." % pawn.ref_name(), "the line reads as the success panel's (%s)" % line)
+	check(line == "Your Third Paint costs 2. Three stars on %s bring it down to 1." % pawn.ref(), "the line reads as the success panel's (%s)" % line)
 	wb.show_note()
 	check(wb.note != null and wb.note.dear == line, "the hint panel carries the line before the run")
 	wb.queue_free()
@@ -502,7 +502,7 @@ func test_dearer(by_id: Dictionary) -> void:
 	pots.add_invention(pot)
 	wb = open(by_id["blue"], pots)
 	line = Level.dear_line(wb._dearer_inventions())
-	check(line == "Your yellow pot costs 2. Three stars on %s bring it down to 1." % yellow.ref_name(), "a pot is named in lowercase (%s)" % line)
+	check(line == "Your yellow pot costs 2. Three stars on %s bring it down to 1." % yellow.ref(), "a pot is named in lowercase (%s)" % line)
 	wb.queue_free()
 	# The Black Trophy: the reference's Same Paint, dear, still says nothing.
 	var trophy = by_id["the_black_crown"]

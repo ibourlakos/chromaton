@@ -1787,16 +1787,17 @@ func _draw_frame(ci: CanvasItem) -> void:
 	ci.draw_line(Vector2(0, TOP_H), Vector2(DESIGN.x, TOP_H), Color(P.INK, 0.15), 2)
 	# The title: the level's number, what the cloth is, then what the machine
 	# is (on an invention level the piece it becomes, with a sticker mark),
-	# then the "?" that brings the hint panel back.
+	# then the "?" that brings the hint panel back. The phrases are in the
+	# level-title font, the number in stamp brown.
 	var parts := _title_parts()
 	var font := P.display(600)
 	var size: int = parts["size"]
 	var y := TOP_H / 2
 	K.text(ci, font, Vector2(parts["number_x"], y), str(level.number), size, Color(P.WOOD_DK, 0.95), HORIZONTAL_ALIGNMENT_LEFT)
-	K.text(ci, font, Vector2(parts["cloth_x"], y), level.cloth_phrase, size, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+	K.text(ci, P.title(), Vector2(parts["cloth_x"], y), level.cloth_phrase, size, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 	if level.machine_phrase != "":
-		K.text(ci, font, Vector2(parts["dot_x"], y), "·", size, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
-		K.text(ci, font, Vector2(parts["machine_x"], y), level.machine_phrase, size, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
+		K.text(ci, P.title(), Vector2(parts["dot_x"], y), "·", size, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
+		K.text(ci, P.title(), Vector2(parts["machine_x"], y), level.machine_phrase, size, P.INK, HORIZONTAL_ALIGNMENT_LEFT)
 	if parts["mark_x"] > 0:
 		K.sticker_mark(ci, Vector2(parts["mark_x"], y))
 	var badge: Vector2 = parts["badge"]
@@ -1810,12 +1811,13 @@ func _draw_frame(ci: CanvasItem) -> void:
 func _title_parts() -> Dictionary:
 	var font := P.display(600)
 	var mark: bool = not level.invention.is_empty() and level.machine_phrase != ""
+	var w := func(s: String, sz: int) -> float: return P.title().get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x
+	var w_num := func(s: String, sz: int) -> float: return font.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x
 	var size := 24
-	var w := func(s: String, sz: int) -> float: return font.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, sz).x
 	var total := 0.0
 	while true:
 		var gap := size * 0.45
-		total = w.call(str(level.number), size) + gap + w.call(level.cloth_phrase, size)
+		total = w_num.call(str(level.number), size) + gap + w.call(level.cloth_phrase, size)
 		if level.machine_phrase != "":
 			total += gap + w.call("·", size) + gap + w.call(level.machine_phrase, size)
 		total += (30.0 if mark else 0.0) + 34.0
@@ -1824,7 +1826,7 @@ func _title_parts() -> Dictionary:
 		size -= 1
 	var gap := size * 0.45
 	var out := {"size": size, "number_x": TITLE_X}
-	var x: float = TITLE_X + w.call(str(level.number), size) + gap
+	var x: float = TITLE_X + w_num.call(str(level.number), size) + gap
 	out["cloth_x"] = x
 	x += w.call(level.cloth_phrase, size)
 	if level.machine_phrase != "":

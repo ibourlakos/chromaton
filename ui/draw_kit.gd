@@ -233,6 +233,13 @@ static func reset_xf(ci: CanvasItem) -> void:
 
 static func text(ci: CanvasItem, font: Font, pos: Vector2, s: String, size: int, col: Color, align := HORIZONTAL_ALIGNMENT_CENTER, width := -1.0) -> void:
 	# pos is the middle of the text line (centered) or its left middle.
+	if s.contains(Level.REF_OPEN):  # a level referred to: set in the title font
+		var line := TextLine.new()
+		add_spans(line, s, font, size)
+		var w := line.get_size().x
+		var x := pos.x - (w / 2 if align == HORIZONTAL_ALIGNMENT_CENTER else w if align == HORIZONTAL_ALIGNMENT_RIGHT else 0.0)
+		line.draw(ci.get_canvas_item(), Vector2(x, pos.y - line.get_size().y / 2), col)
+		return
 	var asc := font.get_ascent(size)
 	var desc := font.get_descent(size)
 	var y := pos.y + (asc - desc) / 2
@@ -244,6 +251,25 @@ static func text(ci: CanvasItem, font: Font, pos: Vector2, s: String, size: int,
 		ci.draw_string(font, Vector2(pos.x - w, y), s, HORIZONTAL_ALIGNMENT_LEFT, -1, size, col)
 	else:
 		ci.draw_string(font, Vector2(pos.x, y), s, HORIZONTAL_ALIGNMENT_LEFT, width, size, col)
+
+
+## Adds `s` to a TextLine or TextParagraph in `font`, each level it refers to
+## ({level:<id>}, Level.ref()) as "25.The Pawn" in the level-title font
+## (DESIGN.md 5.1).
+static func add_spans(to: Object, s: String, font: Font, size: int) -> void:
+	for span in Level.spans(s):
+		to.add_string(span[0], P.title() if span[1] else font, size)
+
+
+## `s` as a paragraph `width` wide, wrapped, its level references in the
+## level-title font (add_spans); draw it with its draw() or draw_line().
+static func paragraph(s: String, font: Font, size: int, width: float, align := HORIZONTAL_ALIGNMENT_LEFT, max_lines := -1) -> TextParagraph:
+	var para := TextParagraph.new()
+	add_spans(para, s, font, size)
+	para.width = width
+	para.alignment = align
+	para.max_lines_visible = max_lines
+	return para
 
 
 # ---------------------------------------------------------------------------
