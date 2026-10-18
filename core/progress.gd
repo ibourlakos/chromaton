@@ -185,6 +185,18 @@ func stored_machine(level_id: String) -> Dictionary:
 	return levels.get(level_id, {}).get("machine", {})
 
 
+## True once the player has started on the level: it is solved, or its stored
+## bench holds a placed piece or a tube (cards and the loom don't count). The
+## level select marks an open level that isn't with a "!".
+func in_progress(level_id: String) -> bool:
+	if is_solved(level_id):
+		return true
+	var m := stored_machine(level_id)
+	if not m.get("tubes", []).is_empty():
+		return true
+	return m.get("nodes", []).any(func(n): return n is Dictionary and not str(n.get("kind", "")) in [Pieces.CARD, Pieces.LOOM])
+
+
 func to_dict() -> Dictionary:
 	var seen_lists := {}
 	for kind in seen:

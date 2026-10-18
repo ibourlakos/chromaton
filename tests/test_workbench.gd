@@ -54,6 +54,7 @@ func _initialize() -> void:
 	test_not_general(by_id["either_not_both"])
 	test_dearer(by_id)
 	test_objectives(by_id)
+	test_quest_mark(by_id)
 	test_unused_card(by_id["third_color"])
 	test_note(by_id["green"])
 	test_title(levels)
@@ -443,6 +444,26 @@ func test_objectives(by_id: Dictionary) -> void:
 	wb._finish_solve()
 	check(wb.progress.stars(cat.id) == 2 and wb.hint_glow, "a first ★★ makes the \"?\" glow for the nudge (stars %d)" % wb.progress.stars(cat.id))
 	wb.queue_free()
+
+
+## The level select's "!" marks an open level not started: unsolved, with no
+## piece or tube on its stored bench. Opening it and leaving the bench empty
+## keeps the mark; a placed piece, a tube alone (The Sailboat's machine) or a
+## solve takes it away.
+func test_quest_mark(by_id: Dictionary) -> void:
+	var cat = by_id["black_cat"]
+	var p = Progress.new()
+	check(not p.in_progress(cat.id), "a level never opened isn't started")
+	p.store_machine(cat.id, cat.new_machine().to_dict())
+	check(not p.in_progress(cat.id), "opened with an empty bench, it still isn't")
+	p.store_machine(cat.id, cat.machine_from_spec({"pieces": [{"id": "h", "kind": "shift", "x": 4, "y": 3}], "tubes": []}).to_dict())
+	check(p.in_progress(cat.id), "a placed piece starts it")
+	var boat = by_id["pattern_card"]
+	p.store_machine(boat.id, boat.machine_from_spec({"pieces": [], "tubes": [["card0", "loom"]]}).to_dict())
+	check(p.in_progress(boat.id), "so does a tube alone")
+	var q = Progress.new()
+	q.record_solve(cat.id, 4, 40, 3)
+	check(q.in_progress(cat.id), "a solved level is past its \"!\"")
 
 
 ## The Queen's ★★★ counts on a Third Paint at 1 (its star_needs, from the
