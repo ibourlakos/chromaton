@@ -133,7 +133,7 @@ var news: Control  # "New in your journal", after the success panel
 var levels: Array = []  # the campaign, for the journal
 var fresh := []  # [piece kind, input colors] first seen here, not yet in the news
 var new_words := []  # words the last solve unlocked, not yet in the news
-var news_extra := {}  # what else the last solve brought: a new chapter, levels opened, cheaper (journal_news.gd)
+var news_extra := {}  # what else the last solve brought: a historical note, a new chapter, levels opened, cheaper (journal_news.gd)
 # The layers the bench is drawn in, back to front (see Drawing).
 var still: Layer
 var shelf: Layer
@@ -931,7 +931,11 @@ func _finish_solve() -> void:
 		new_words = Words.unlocked_by(level.id)
 	var opened_before := _open_levels()
 	var owned_before: Dictionary = progress.inventions.get(level.invention.get("id", ""), {})
+	var note_before := Journal.note_open(_levels(), progress, level.chapter)
 	var better: Dictionary = progress.record_solve(level.id, pieces, ticks, stars)
+	if level.number > 0 and not note_before and Journal.note_open(_levels(), progress, level.chapter):
+		# The chapter's last cloth woven: its quilt's historical note is there to read.
+		news_extra["note"] = {"chapter": level.chapter, "name": level.chapter_name, "note": level.chapter_note}
 	var invention := {}
 	if not level.invention.is_empty():
 		invention = progress.add_invention(Invention.package(level, machine, inventions))

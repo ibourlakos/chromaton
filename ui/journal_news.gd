@@ -4,7 +4,8 @@
 ##
 ## One row kind for every entry: an icon as the thing looks in the game, a
 ## title and one line. Most important first: the level's new words (with
-## their text when there are up to three), what opened (a new chapter, the
+## their text when there are up to three), a historical note (the solve
+## filled its chapter's quilt), what opened (a new chapter, the
 ## levels an invention opens), inventions made cheaper (both prices), then
 ## the frames the player's runs filled on piece pages.
 ##
@@ -45,7 +46,8 @@ var _dragged := false
 
 
 ## words: the level's new words; frames: [piece kind, input colors] the
-## player's runs showed; extra: {"chapter": {"name", "level"}, "opens":
+## player's runs showed; extra: {"note": {"chapter", "name", "note"},
+## "chapter": {"name", "level"}, "opens":
 ## {"what", "levels"}, "cheaper": [{"inv", "old", "new"}]} (levels are
 ## Level objects; what is the invention's name in a sentence).
 func setup(words: Array, frames: Array, p_picture: Callable, extra := {}) -> void:
@@ -54,6 +56,9 @@ func setup(words: Array, frames: Array, p_picture: Callable, extra := {}) -> voi
 	for w in words:
 		var text: String = str(w["text"]).replace("\n\n", " ") if words.size() <= FULL_TEXT else ""
 		rows.append({"kind": "word", "id": w["id"], "title": w["word"], "line": text})
+	if extra.has("note"):
+		var n: Dictionary = extra["note"]
+		rows.append({"kind": "note", "chapter": n["chapter"], "picture": n["note"]["picture"], "title": "A note from history: %s" % n["note"]["title"], "line": "Pinned to the quilt of %s, on Cloths." % n["name"]})
 	if extra.has("chapter"):
 		var c: Dictionary = extra["chapter"]
 		rows.append({"kind": "level", "level": c["level"], "title": "A new chapter: %s" % c["name"], "line": c["level"].ref()})
@@ -97,6 +102,8 @@ func first_entry() -> Array:
 			return ["pieces", row["piece"]]
 		"invention":
 			return ["pieces", "inv:" + str(row["inv"]["id"])]
+		"note":
+			return ["cloths", "note:%d" % row["chapter"]]
 	return ["cloths", ""]
 
 
@@ -254,6 +261,8 @@ func _draw_row(row: Dictionary, r: Rect2) -> void:
 				K.sticker(view, icon, 0.55, str(inv["name"]), 99, t, 0.2)
 		"frames":
 			picture.call(view, str(row["piece"]).replace("_", "-"), icon, 0.62)
+		"note":
+			picture.call(view, "history:" + str(row["picture"]), icon, 0.62)
 	var x := r.position.x + 110
 	var font := P.display(600)
 	if row["kind"] == "frames":

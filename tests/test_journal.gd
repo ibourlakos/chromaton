@@ -1,7 +1,8 @@
 ## The journal: its Words data matches the lexicon, words unlock with their
 ## levels, piece pages fill from what the player's machines do (and survive a
 ## save), tabs and pages turn by tap and key, peek opens a piece's page from
-## the workbench, and a first solve brings "New in your journal".
+## the workbench, a first solve brings "New in your journal", and a full
+## quilt opens its chapter's historical note.
 ## Run: godot_console --headless --path . --script res://tests/test_journal.gd
 extends SceneTree
 
@@ -14,6 +15,7 @@ const Words = preload("res://core/words.gd")
 const Paint = preload("res://core/paint.gd")
 const Lexicon = preload("res://tools/lexicon.gd")
 const Journal = preload("res://ui/journal.gd")
+const K = preload("res://ui/draw_kit.gd")
 const JournalNews = preload("res://ui/journal_news.gd")
 const Workbench = preload("res://ui/workbench.gd")
 const Options = preload("res://ui/options.gd")
@@ -50,6 +52,7 @@ func _initialize() -> void:
 	test_articles()
 	test_news()
 	test_news_entries()
+	test_history_notes()
 	test_options_fit()
 	if failures == 0:
 		print("test_journal: all %d checks passed" % checks)
@@ -363,6 +366,86 @@ func test_news() -> void:
 	check(wb.new_words.is_empty() and wb.fresh.is_empty(), "a second solve brings nothing new")
 	wb.panel.next.emit()
 	check(wb.news == null and went.size() == 2, "so Next goes straight on")
+	wb.queue_free()
+
+
+## Historical notes (DESIGN.md 5.7): every chapter has one, short and in
+## paint; it opens once the chapter's quilt is full, from its tag on Cloths
+## (a tap or Enter; a tap, Back or Enter puts it away), and the solve that
+## fills the quilt announces it in "New in your journal".
+func test_history_notes() -> void:
+	var banned := RegEx.new()
+	banned.compile("(?i)\\b(bits?|binary|bytes?|colou?rs?)\\b")
+	var stop := RegEx.new()
+	stop.compile("[.!?](\\s|$)")
+	var chapters := Level.chapters()
+	for c in chapters.size():
+		var note: Dictionary = chapters[c].get("note", {})
+		var name: String = chapters[c]["name"]
+		check(str(note.get("title", "")) != "" and str(note.get("text", "")) != "", "%s has a historical note" % name)
+		if note.is_empty():
+			continue
+		check(int(note.get("year", 0)) >= 1700 and int(note.get("year", 0)) <= 2000, "%s's note has a year (%s)" % [name, note.get("year")])
+		check(str(note.get("picture", "")) in K.HISTORY_PICTURES, "%s's note names a picture the draw kit draws" % name)
+		var text := str(note["text"])
+		var sentences := stop.search_all(text).size()
+		check(sentences >= 3 and sentences <= 4, "%s's note is 3 or 4 sentences (%d)" % [name, sentences])
+		check(banned.search(text + " " + str(note["title"])) == null, "%s's note speaks of paint and thread, not bits or colors" % name)
+		check(levels.filter(func(l): return l.chapter == c).all(func(l): return l.chapter_note == note), "%s's levels carry its note" % name)
+	# Opens with a full quilt, not before.
+	check(not Journal.note_open(levels, solved(11), 0), "the paint box's note waits for its last cloth")
+	var p = solved(12)
+	check(Journal.note_open(levels, p, 0) and not Journal.note_open(levels, p, 1), "a full quilt opens its own note only")
+	var j = journal(solved(11), "cloths")
+	j.chapter = 0
+	var tag: Vector2 = j._note_tag_rect().get_center()
+	tap(j, tag)
+	check(not j.reading, "a dashed tag doesn't open")
+	j.free()
+	j = journal(p, "cloths")
+	j.chapter = 0
+	var closed := []
+	j.back.connect(func(): closed.append(true))
+	tap(j, tag)
+	check(j.reading and not j.prev_button.visible and not j.next_button.visible, "a tap on the tag opens the note over the page")
+	key(j, KEY_ESCAPE)
+	check(not j.reading and closed.is_empty(), "Back puts the note away first, the journal stays")
+	key(j, KEY_ENTER)
+	check(j.reading, "Enter opens it too")
+	tap(j, Vector2(640, 420))
+	check(not j.reading, "any tap puts it away")
+	key(j, KEY_ENTER)
+	j.show_tab("scores")
+	check(not j.reading, "another tab puts it away")
+	j.free()
+	j = journal(p, "", "note:0")
+	check(j.tab == "cloths" and j.chapter == 0 and j.reading, "\"note:0\" opens the journal at the paint box's note")
+	j.free()
+	# The solve that fills the quilt says so, once.
+	var q = solved(11)
+	q.know_levels(levels)
+	for l in levels.slice(0, 11):  # the pots its machine is built of
+		if not l.invention.is_empty():
+			q.add_invention(Invention.package(l, l.reference_machine(), q.inventions))
+	var wb = open_bench(by_id["white"], q)
+	wb.levels = levels
+	wb.load_machine(by_id["white"].reference_machine())
+	wb.fast_forward(100000, 1.0)
+	wb._on_tick_shown()
+	var n: Dictionary = wb.news_extra.get("note", {})
+	check(n.get("chapter", -1) == 0 and n.get("note", {}).get("title", "") == "The Paper Strip", "the last cloth of the paint box brings its note")
+	var news = JournalNews.new()
+	news.setup([], [], func(ci, id, c, s): pass, wb.news_extra)
+	check(news.rows[0]["kind"] == "note" and news.rows[0]["title"] == "A note from history: The Paper Strip", "in those words (%s)" % news.rows[0]["title"])
+	check(news.first_entry() == ["cloths", "note:0"], "the book opens it")
+	news.free()
+	wb.panel.next.emit()
+	if wb.news != null:
+		wb.news.done.emit()
+	wb._rebuild()
+	wb.fast_forward(100000, 1.0)
+	wb._on_tick_shown()
+	check(not wb.news_extra.has("note"), "weaving it again brings no note")
 	wb.queue_free()
 
 

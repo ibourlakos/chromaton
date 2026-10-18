@@ -19,6 +19,8 @@
 ##   --options                   a level with Options open over it (the gear)
 ##   --select[=card]             the first placed piece selected (or card A)
 ##   --news                      with --finish: "New in your journal" next
+##   --read                      the journal's Cloths page with its chapter's
+##                               historical note open (with --page)
 ##   --ticks=<n>                 ticks to run before the screenshot
 ##                               (default: one per stitch)
 ##   --phase=<0..1>              how far drops are along their tubes
@@ -33,7 +35,8 @@
 ##                               on (star_needs) one dearer, so the note and
 ##                               the success panel say so
 ##   --page=<n>                  the level select's chapter page (from 0)
-##   --solved=<n>                on the level select, the first n levels solved
+##   --solved=<n>                on a level, the first n levels solved before;
+##                               on the level select, the first n levels solved
 ##                               (default 6) and only what they earn owned
 ##   --stale                     the intro as it reads for a stale save
 ##   --grid                      the bench grid on (Options)
@@ -379,6 +382,8 @@ func _screenshot(args: Dictionary) -> void:
 			if args.has("page"):
 				screen.chapter = int(args["page"])
 				screen.turn(0)
+			if args.has("read"):  # the Cloths page's historical note, open
+				screen.read_note(true)
 			if args.has("word"):
 				screen.word = int(args["word"])
 		"intro":
@@ -392,6 +397,9 @@ func _screenshot(args: Dictionary) -> void:
 				printerr("unknown level: " + what)
 				get_tree().quit(1)
 				return
+			if args.has("solved"):  # the first n levels solved before (the last of a chapter fills its quilt: --finish --news)
+				for k in mini(int(args["solved"]), i):
+					progress.record_solve(levels[k].id, levels[k].best, 40, 3)
 			if args.has("stars"):  # solved before at that many stars: the objectives show them
 				var have := int(args["stars"])
 				progress.record_solve(levels[i].id, levels[i].best if have >= 3 else (levels[i].budget if have == 2 else levels[i].budget + 1), 99, have)

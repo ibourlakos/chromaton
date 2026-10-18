@@ -257,13 +257,14 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today
   - Shift Wheel: "On the paint card, follow one arrow: every paint moves one corner on."
   - The red pot and Split: none (one rule each).
 - **The lexicon's Gameplay texts in critter names:** written at the rebuild, when the rename is built, then `.\make words`.
+- **Historical notes** (2026-10-18; DESIGN.md §5.7): the dashed tag on a quilt not yet full, "Sew in every cloth to read this note."; the open note's foot, "Pinned to the quilt of The Paint Box."; "New in your journal", "A note from history: The Paper Strip" over "Pinned to the quilt of The Paint Box, on Cloths." The notes' own texts are in "Historical notes" below.
 - **Lost Levels**, the line under its name: "Levels that wandered off the campaign. They still weave." How it's found and laid out stays open (DESIGN.md §5.1).
 
 ---
 
-## Historical notes *(draft, 2026-10-18)*
+## Historical notes *(first draft, 2026-10-18)*
 
-The shape is decided (designer, 2026-10-18; DESIGN.md §5.7): one note per chapter, unlocked by completing the chapter's quilt (never blocking), pinned to the quilt on the Cloths tab as a paper tag and announced by "New in your journal"; 3 or 4 sentences and one picture drawn in code. The line-up keeps the dates in order and matches a note to its chapter's idea where it can. The texts below wait for the designer's markup; nothing is built.
+The shape is decided (designer, 2026-10-18; DESIGN.md §5.7): one note per chapter, unlocked by completing the chapter's quilt (never blocking), pinned to the quilt on the Cloths tab as a paper tag and announced by "New in your journal"; 3 or 4 sentences and one picture drawn in code. The line-up keeps the dates in order and matches a note to its chapter's idea where it can. The designer took the texts as they are for now (2026-10-18), to improve in a later round. Notes 1 to 4 are built: `levels/index.json` carries them as the game uses them (a `note` per chapter), as the level files carry the level text.
 
 Each note has a title (the tag's line), a year, the text, and the picture. The pictures are wood, paper, thread and ink in the workshop's neutrals, never the eight paints' hues (CLAUDE.md, reserved colours). Under each, **Checked** lists the facts and where they were checked; **Left out** is what was true but didn't fit. Notes 5 to 8 are provisional until their chapters are planned; 7 is open.
 
