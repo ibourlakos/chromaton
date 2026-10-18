@@ -70,6 +70,7 @@ const LOOK_BACK := Color(0.886, 0.851, 0.776, 0.75)
 
 const FREDOKA := "res://fonts/Fredoka.ttf"
 const NUNITO := "res://fonts/Nunito.ttf"
+const BREE := "res://fonts/BreeSerif.ttf"
 
 static var _fonts := {}
 static var _paper: Texture2D
@@ -79,13 +80,20 @@ static func is_dark(color: int) -> bool:
 	return color == 7 or color == 4 or color == 5
 
 
-## Fredoka for display text, Nunito for small UI text.
+## Fredoka for display text, Nunito for small UI text, Bree Serif for level
+## names (DESIGN.md 5.1).
 static func display(weight := 600) -> Font:
 	return _font(FREDOKA, weight)
 
 
 static func ui(weight := 700) -> Font:
 	return _font(NUNITO, weight)
+
+
+## The level-title font: every level name, and a level referred to in text
+## ("25. The Pawn"). One weight.
+static func title() -> Font:
+	return _font(BREE, 400)
 
 
 static func _font(path: String, weight: int) -> Font:

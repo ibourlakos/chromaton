@@ -21,6 +21,7 @@ const ToyButton = preload("res://ui/toy_button.gd")
 const Keys = preload("res://ui/keys.gd")
 const Pieces = preload("res://core/pieces.gd")
 const Invention = preload("res://core/invention.gd")
+const Level = preload("res://core/level.gd")
 
 signal done
 signal open_journal(tab: String, focus: String)
@@ -55,10 +56,10 @@ func setup(words: Array, frames: Array, p_picture: Callable, extra := {}) -> voi
 		rows.append({"kind": "word", "id": w["id"], "title": w["word"], "line": text})
 	if extra.has("chapter"):
 		var c: Dictionary = extra["chapter"]
-		rows.append({"kind": "level", "level": c["level"], "title": "A new chapter: %s" % c["name"], "line": c["level"].ref_name()})
+		rows.append({"kind": "level", "level": c["level"], "title": "A new chapter: %s" % c["name"], "line": c["level"].ref()})
 	if extra.has("opens"):
 		var o: Dictionary = extra["opens"]
-		var refs: Array = o["levels"].map(func(l): return l.ref_name())
+		var refs: Array = o["levels"].map(func(l): return l.ref())
 		var listed: String = refs[0] if refs.size() == 1 else ", ".join(refs.slice(0, refs.size() - 1)) + " and " + refs[refs.size() - 1]
 		var what: String = o["what"]
 		rows.append({"kind": "level", "level": o["levels"][0], "title": "%s opens %s." % [what.substr(0, 1).to_upper() + what.substr(1), listed], "line": ""})
@@ -77,7 +78,7 @@ func setup(words: Array, frames: Array, p_picture: Callable, extra := {}) -> voi
 		var h := 70.0
 		if row["line"] != "" and row["kind"] == "word":
 			h = maxf(84.0, 44.0 + font.get_multiline_string_size(row["line"], HORIZONTAL_ALIGNMENT_LEFT, WIDTH - 170, 15).y)
-		elif font.get_string_size(row["title"], HORIZONTAL_ALIGNMENT_LEFT, -1, 19).x > WIDTH - 170:
+		elif font.get_string_size(Level.plain(row["title"]), HORIZONTAL_ALIGNMENT_LEFT, -1, 19).x > WIDTH - 170:
 			h = 84.0  # a long title wraps
 		row["h"] = h
 	var card_h := minf(HEAD + _rows_height() + FOOT, MAX_H)
@@ -262,10 +263,9 @@ func _draw_row(row: Dictionary, r: Rect2) -> void:
 	var title_y := r.position.y + 22
 	if row["line"] == "" and r.size.y <= 70:
 		title_y = r.get_center().y
-	view.draw_multiline_string(font, Vector2(x, title_y - 12 + font.get_ascent(19)), row["title"], HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 130, 19, 2, P.INK)
+	K.draw_paragraph(view, K.paragraph(row["title"], font, 19, r.size.x - 130, HORIZONTAL_ALIGNMENT_LEFT, 2), Vector2(x, title_y - 12), P.INK)
 	if row["line"] != "":
-		var ui := P.ui(700)
-		view.draw_multiline_string(ui, Vector2(x, r.position.y + 38 + ui.get_ascent(15)), row["line"], HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 130, 15, 4, P.INK_SOFT)
+		K.draw_paragraph(view, K.paragraph(row["line"], P.ui(700), 15, r.size.x - 130, HORIZONTAL_ALIGNMENT_LEFT, 4), Vector2(x, r.position.y + 38), P.INK_SOFT)
 
 
 ## A frame row's drops: what went in, what came out, the first few.

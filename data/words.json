@@ -167,6 +167,13 @@
 			"word": "Split"
 		},
 		{
+			"id": "brown",
+			"level": "black",
+			"tab": "paint",
+			"text": "In a real paint box, red, yellow and blue stirred together make a muddy brown. Here they make black, so brown gave its place to black. It didn't go far: it's the wood of every tub, bench and shelf in the workshop.",
+			"word": "Brown"
+		},
+		{
 			"id": "invert",
 			"level": "green",
 			"tab": "pieces",

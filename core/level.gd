@@ -12,7 +12,8 @@
 ## phrase), goal (what to weave) and hint (the rule in paint, then how),
 ## both shown in the hint panel (ui/level_note.gd) as the ★ objective,
 ## optional star_hint (a nudge toward the ★★★ machine, where the hint describes
-## a dearer one; shown under the ★★★ objective once the player has ★★),
+## a dearer one; shown under the ★★★ objective once the player has ★★; text
+## refers to a level by the marker {level:<id>}, see ref()),
 ## optional steps (a guided
 ## level's guide: [{line, do: [actions]}], see ui/guide.gd), pieces (the kinds it
 ## offers; the tray also shows earlier levels' pieces, locked), inventions
@@ -58,6 +59,14 @@ const CARD_COLS_MIN := 4
 const CARD_COLS_MAX := 12
 const CARD_ROWS_MIN := 1
 const CARD_ROWS_MAX := 9
+## A level in text: "{level:<id>}" (ref()).
+const REF_OPEN := "{level:"
+const NBSP := " "
+## The runs Level.spans() cuts text into.
+enum {TEXT, REF_NUMBER, REF_GAP, REF_NAME}
+
+## Every campaign level's reference by id, [number, name] (_ref_names()).
+static var _refs := {}
 
 var id := ""
 var number := 0  # position in the campaign, from 1 (0 when loaded on its own)
@@ -143,6 +152,8 @@ static func load_all() -> Array:
 			level.quilt_across = int(index[c].get("quilt_across", 0))
 			out.append(level)
 	_lay_trays(out)
+	for level in out:
+		_refs[level.id] = [level.ref_number(), level.name.replace(" ", NBSP)]
 	return out
 
 
@@ -209,9 +220,77 @@ func title() -> String:
 
 
 ## How text refers to a level: its number and primary title, "2. The Yellow
-## Pot" (DESIGN.md 5.1).
+## Pot" (DESIGN.md 5.1), no-break spaces between so a line never breaks it.
+## The drawers set the number in stamp brown and the gap narrow (spans()).
 func ref_name() -> String:
-	return "%d. %s" % [number, name]
+	return "%s%s%s" % [ref_number(), NBSP, name.replace(" ", NBSP)]
+
+
+## The reference's number with its dot, "2.".
+func ref_number() -> String:
+	return "%d." % number
+
+
+## The marker that stands for this level in text, "{level:yellow}". Text
+## carries markers, not names, so a level that moves or is renamed is never
+## referred to wrongly; the drawers set each one as its reference in the
+## level-title font (spans(); ui/draw_kit.gd add_spans).
+func ref() -> String:
+	return "%s%s}" % [REF_OPEN, id]
+
+
+## `text` cut into runs, [[text, kind]], each marker replaced by its level's
+## reference as three runs: REF_NUMBER ("25."), REF_GAP (a no-break space)
+## and REF_NAME ("The Pawn", no-break spaces inside). Other text is TEXT; an
+## unknown marker is left as written.
+static func spans(text: String) -> Array:
+	var out := []
+	var at := 0
+	while true:
+		var start := text.find(REF_OPEN, at)
+		var end := text.find("}", start) if start >= 0 else -1
+		if end < 0:
+			break
+		if start > at:
+			out.append([text.substr(at, start - at), TEXT])
+		var level_id := text.substr(start + REF_OPEN.length(), end - start - REF_OPEN.length())
+		var refs := _ref_names()
+		if refs.has(level_id):
+			out.append([refs[level_id][0], REF_NUMBER])
+			out.append([NBSP, REF_GAP])
+			out.append([refs[level_id][1], REF_NAME])
+		else:
+			out.append([text.substr(start, end + 1 - start), TEXT])
+		at = end + 1
+	if at < text.length():
+		out.append([text.substr(at), TEXT])
+	return out
+
+
+## `text` with every marker replaced by its level's ref_name().
+static func plain(text: String) -> String:
+	return "".join(spans(text).map(func(s): return s[0]))
+
+
+## The ids of the levels `text` refers to by marker, known or not.
+static func ref_ids(text: String) -> Array:
+	var out := []
+	var at := text.find(REF_OPEN)
+	while at >= 0:
+		var end := text.find("}", at)
+		if end < 0:
+			break
+		out.append(text.substr(at + REF_OPEN.length(), end - at - REF_OPEN.length()))
+		at = text.find(REF_OPEN, end)
+	return out
+
+
+## Every campaign level's reference by id, [number, name], from the last load_all() (which
+## it runs once if none has).
+static func _ref_names() -> Dictionary:
+	if _refs.is_empty():
+		load_all()
+	return _refs
 
 
 ## The first campaign level that earns this invention, or null.
@@ -223,7 +302,8 @@ static func earning_level(levels: Array, inv_id: String):
 
 
 ## The locked tag's line for a level waiting for inventions: where to earn
-## the first one it waits for ("Earn the Third Paint in 25. The Pawn.").
+## the first one it waits for ("Earn the Third Paint in 25. The Pawn."), its
+## level a marker (ref()).
 static func waiting_line(levels: Array, inv_ids: Array) -> String:
 	if inv_ids.is_empty():
 		return ""
@@ -231,13 +311,13 @@ static func waiting_line(levels: Array, inv_ids: Array) -> String:
 	if earner == null:
 		return ""
 	var what: String = earner.invention.get("in_text", earner.invention.get("name", ""))
-	return "Earn %s in %s." % [what, earner.ref_name()]
+	return "Earn %s in %s." % [what, earner.ref()]
 
 
 ## The pots and inventions that cost this player too much for ★★★ here
 ## (star_needs, proven by the solver), so ★★★ is out of reach before the run:
 ## [{"id", "name", "yours", "lowest", "from"}], "lowest" the cheapest price so
-## far and "from" the level whose ★★★ brings it there ("25. The Pawn").
+## far and "from" the level whose ★★★ brings it there, as a marker (ref()).
 func dear_inventions(owned: Dictionary, levels: Array) -> Array:
 	var out := []
 	if star_needs.is_empty() or number < 1:
@@ -252,7 +332,7 @@ func dear_inventions(owned: Dictionary, levels: Array) -> Array:
 		var from := ""
 		for l in levels:
 			if l.id == lowest[inv_id].get("from_level", ""):
-				from = l.ref_name()
+				from = l.ref()
 		out.append({"id": inv_id, "name": owned[inv_id]["name"], "pot": Invention.paint_of(owned[inv_id]) >= 0,
 			"yours": yours, "lowest": int(lowest[inv_id]["cost"]), "from": from})
 	return out

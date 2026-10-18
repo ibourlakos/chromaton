@@ -26,6 +26,8 @@ static var _bodies := {}  # name -> a critter body in its own coordinates
 ## would fill the caches without end: past this many, a shape is worked out
 ## each time instead of kept.
 const KEEP_MAX := 512
+## The gap after a level reference's number, as a share of a space (add_spans).
+const REF_GAP := 0.5
 
 
 # ---------------------------------------------------------------------------
@@ -233,6 +235,13 @@ static func reset_xf(ci: CanvasItem) -> void:
 
 static func text(ci: CanvasItem, font: Font, pos: Vector2, s: String, size: int, col: Color, align := HORIZONTAL_ALIGNMENT_CENTER, width := -1.0) -> void:
 	# pos is the middle of the text line (centered) or its left middle.
+	if s.contains(Level.REF_OPEN):  # a level referred to: set in the title font
+		var line := TextLine.new()
+		add_spans(line, s, font, size)
+		var w := line.get_size().x
+		var x := pos.x - (w / 2 if align == HORIZONTAL_ALIGNMENT_CENTER else w if align == HORIZONTAL_ALIGNMENT_RIGHT else 0.0)
+		_draw_runs(ci, line.get_rid(), Vector2(x, pos.y - line.get_size().y / 2 + line.get_line_ascent()), col, line.get_meta("stamps"))
+		return
 	var asc := font.get_ascent(size)
 	var desc := font.get_descent(size)
 	var y := pos.y + (asc - desc) / 2
@@ -245,6 +254,69 @@ static func text(ci: CanvasItem, font: Font, pos: Vector2, s: String, size: int,
 	else:
 		ci.draw_string(font, Vector2(pos.x, y), s, HORIZONTAL_ALIGNMENT_LEFT, width, size, col)
 
+
+## Adds `s` to a TextLine or TextParagraph in `font`, each level it refers to
+## ({level:<id>}, Level.ref()) as "25. The Pawn" in the level-title font, a
+## narrow gap after the number (DESIGN.md 5.1). Remembers where the numbers
+## are (meta "stamps": [[from, to]]), which draw_paragraph and text draw in
+## stamp brown.
+static func add_spans(to: Object, s: String, font: Font, size: int) -> void:
+	var stamps := []
+	var at := 0
+	for span in Level.spans(s):
+		var kind: int = span[1]
+		to.add_string(span[0], font if kind == Level.TEXT else P.title(), int(size * REF_GAP) if kind == Level.REF_GAP else size)
+		if kind == Level.REF_NUMBER:
+			stamps.append([at, at + span[0].length()])
+		at += span[0].length()
+	to.set_meta("stamps", stamps)
+
+
+## `s` as a paragraph `width` wide, wrapped, its level references in the
+## level-title font (add_spans); draw it with draw_paragraph.
+static func paragraph(s: String, font: Font, size: int, width: float, align := HORIZONTAL_ALIGNMENT_LEFT, max_lines := -1) -> TextParagraph:
+	var para := TextParagraph.new()
+	add_spans(para, s, font, size)
+	para.width = width
+	para.alignment = align
+	para.max_lines_visible = max_lines
+	return para
+
+
+## Draws a paragraph() (every line, or only `line`) with its top left at
+## `pos`, a level reference's number in stamp brown.
+static func draw_paragraph(ci: CanvasItem, para: TextParagraph, pos: Vector2, col: Color, line := -1) -> void:
+	var count := para.get_line_count()
+	if para.max_lines_visible >= 0:
+		count = mini(count, para.max_lines_visible)
+	var y := pos.y
+	for i in count:
+		var h := para.get_line_size(i).y
+		if line < 0 or i == line:
+			var x := pos.x
+			if para.alignment == HORIZONTAL_ALIGNMENT_CENTER:
+				x += (para.width - para.get_line_width(i)) / 2
+			elif para.alignment == HORIZONTAL_ALIGNMENT_RIGHT:
+				x += para.width - para.get_line_width(i)
+			_draw_runs(ci, para.get_line_rid(i), Vector2(x, (pos.y if line >= 0 else y) + para.get_line_ascent(i)), col, para.get_meta("stamps", []))
+		y += h
+
+
+## Draws shaped text glyph by glyph from its baseline's left end: glyphs of
+## the characters inside `stamps` in stamp brown, the rest in `col`.
+static func _draw_runs(ci: CanvasItem, rid: RID, baseline: Vector2, col: Color, stamps: Array) -> void:
+	var ts := TextServerManager.get_primary_interface()
+	var stamp := Color(P.WOOD_DK, col.a)
+	var x := baseline.x
+	for g in ts.shaped_text_get_glyphs(rid):
+		var c := col
+		for st in stamps:
+			if g["start"] >= st[0] and g["start"] < st[1]:
+				c = stamp
+		for k in g["repeat"]:
+			if g["font_rid"] != RID():
+				ts.font_draw_glyph(g["font_rid"], ci.get_canvas_item(), g["font_size"], Vector2(x, baseline.y) + g["offset"], g["index"], c)
+			x += g["advance"]
 
 # ---------------------------------------------------------------------------
 # Paint drops
