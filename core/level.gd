@@ -16,7 +16,10 @@
 ## (invention ids allowed in the tray), optional hold_pots (earned pots this
 ## level holds back; see _lay_trays), optional waits_for (invention ids the
 ## level can't be built without: it stays locked until the player owns them,
-## proven by tools/level_solver.gd), target (rows), cards ([{name, colors:
+## proven by tools/level_solver.gd), optional star_needs ({invention id:
+## price}: the dearest price of each pot or invention at which ★★★ is still
+## reachable, where that is below what earning it at ★★ gives; written by
+## tools/level_solver.gd), target (rows), cards ([{name, colors:
 ## rows}]), card_shows (how many stitches a wrong machine may weave before it
 ## fails visibly, 4 to 10; the player sees the whole card; written by
 ## tools/make_cards.gd, checked by
@@ -79,6 +82,7 @@ var earned_inventions: Array = []  # inventions (not pots) earlier levels earn, 
 var inventions_at := -1  # the Inventions slot's place on the shelf, or -1 before any invention is earned
 var hold_pots: Array = []  # the level file's hold_pots
 var waits_for: Array = []  # invention ids the level can't be built without
+var star_needs := {}  # invention id -> the dearest price ★★★ still allows (written by the solver)
 var invention := {}
 var budget := 0
 var best := 0
@@ -226,6 +230,44 @@ static func waiting_line(levels: Array, inv_ids: Array) -> String:
 	return "Earn %s in %s." % [what, earner.ref_name()]
 
 
+## The pots and inventions that cost this player too much for ★★★ here
+## (star_needs, proven by the solver), so ★★★ is out of reach before the run:
+## [{"id", "name", "yours", "lowest", "from"}], "lowest" the cheapest price so
+## far and "from" the level whose ★★★ brings it there ("25. The Pawn").
+func dear_inventions(owned: Dictionary, levels: Array) -> Array:
+	var out := []
+	if star_needs.is_empty() or number < 1:
+		return out
+	var lowest: Dictionary = Invention.reference_inventions_by_level(levels)[number - 1]
+	for inv_id in star_needs:
+		if not owned.has(inv_id) or not lowest.has(inv_id):
+			continue
+		var yours := int(owned[inv_id]["cost"])
+		if yours <= int(star_needs[inv_id]):
+			continue
+		var from := ""
+		for l in levels:
+			if l.id == lowest[inv_id].get("from_level", ""):
+				from = l.ref_name()
+		out.append({"id": inv_id, "name": owned[inv_id]["name"], "pot": Invention.paint_of(owned[inv_id]) >= 0,
+			"yours": yours, "lowest": int(lowest[inv_id]["cost"]), "from": from})
+	return out
+
+
+## What the hint panel and the success panel say about dear_inventions(), a
+## line each: "Your Third Paint costs 2. Three stars on 25. The Pawn bring it
+## down to 1." (DESIGN.md 9.1). A no-break space keeps the new price on the
+## line with "to".
+static func dear_line(dear: Array) -> String:
+	var said := PackedStringArray()
+	for d in dear:
+		if d["from"] == "":
+			continue
+		var what: String = str(d["name"]).to_lower() if d["pot"] else str(d["name"])
+		said.append("Your %s costs %d. Three stars on %s bring it down to %d." % [what, d["yours"], d["from"], d["lowest"]])
+	return "\n".join(said)
+
+
 ## The critter this level rebuilds from other pieces ("" if none): its card
 ## rule is the critter's, and its tray holds that critter back.
 func rebuilds() -> String:
@@ -288,6 +330,8 @@ static func from_dict(d: Dictionary):
 	level.inventions = d.get("inventions", []).duplicate()
 	level.hold_pots = d.get("hold_pots", []).duplicate()
 	level.waits_for = d.get("waits_for", []).duplicate()
+	for inv_id in d.get("star_needs", {}):
+		level.star_needs[str(inv_id)] = int(d["star_needs"][inv_id])
 	level.invention = d.get("invention", {}).duplicate()
 	var stars: Dictionary = d.get("stars", {})
 	level.budget = int(stars.get("budget", 0))

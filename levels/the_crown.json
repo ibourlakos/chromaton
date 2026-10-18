@@ -78,5 +78,9 @@
 			]
 		]
 	},
-	"card_shows": 8
+	"card_shows": 8,
+	"star_needs": {
+		"pot_blue": 1,
+		"contrast": 2
+	}
 }

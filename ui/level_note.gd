@@ -2,7 +2,9 @@
 ## unsolved level opens, with the whole title, the goal (what to weave) and
 ## the hint (the rule in paint, then how), and flies home into the title's
 ## "?" when tapped (or on any key). Tapping the title brings it back.
-## DESIGN.md 5.1, "The title says what you do, the hint says how".
+## DESIGN.md 5.1, "The title says what you do, the hint says how". Under the
+## hint, when a pot or invention costs this player too much for ★★★ here, the
+## success panel's line says so before the run (Level.dear_line, DESIGN.md 9.1).
 ##
 ## It grows to fit its text up to MAX_H; past that the hint scrolls (drag,
 ## the wheel, or the up and down keys), and a tap that doesn't drag sends it
@@ -23,9 +25,11 @@ const TEXT_W := 540.0
 const HINT_SIZE := 22
 const MAX_H := 600.0
 const TITLE_SIZE := 32
+const DEAR_SIZE := 17
 const DRAG := 8.0  # how far a press moves before it scrolls instead of tapping
 
 var level
+var dear := ""  # Level.dear_line: why ★★★ is out of reach before the run ("" if it isn't)
 var home := Rect2()  # the title's "?", where the note lands
 var t := 0.0
 var leaving := -1.0  # seconds since it was sent home (-1: still up)
@@ -36,10 +40,19 @@ var _press := Vector2(-1, -1)
 var _dragged := false
 
 
-## `p_home` is the title's "?" badge, where the note flies home to.
-func setup(p_level, p_home: Rect2) -> void:
+## `p_home` is the title's "?" badge, where the note flies home to; `p_dear`
+## the line on a pot or invention too dear for ★★★ (Level.dear_line).
+func setup(p_level, p_home: Rect2, p_dear := "") -> void:
 	level = p_level
 	home = p_home
+	dear = p_dear
+
+
+## The ★★★ line's height on the note: a row of stars, then the text.
+func dear_height() -> float:
+	if dear == "":
+		return 0.0
+	return 40.0 + P.ui(700).get_multiline_string_size(dear, HORIZONTAL_ALIGNMENT_CENTER, TEXT_W, DEAR_SIZE).y
 
 
 static func title_size(p_level) -> int:
@@ -65,7 +78,7 @@ func _ready() -> void:
 	size = DESIGN
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var goal_h := P.ui(700).get_multiline_string_size(level.goal, HORIZONTAL_ALIGNMENT_CENTER, TEXT_W, 20).y
-	var want := 150.0 + goal_h + (hint_height(level) + 34.0 if level.hint != "" else 0.0)
+	var want := 150.0 + goal_h + (hint_height(level) + 34.0 if level.hint != "" else 0.0) + (dear_height() + 16.0 if dear != "" else 0.0)
 	var h := minf(want, MAX_H)
 	max_scroll = want - h
 	card = Rect2(DESIGN.x / 2 - WIDTH / 2, DESIGN.y / 2 - h / 2 - 10, WIDTH, h)
@@ -160,9 +173,35 @@ func _draw() -> void:
 				K.disc(self, Vector2(cx - 64 + i * 16, y), 2, Color(P.HOOP, words))
 		y += 18
 		_hint_lines(font, x0, y, view, Color(P.INK, words))
+		y += hint_height(level) + 16
+	if dear != "":
+		_dear_lines(font, cx, x0, y, view, words)
 	if max_scroll > 0 and scroll < max_scroll - 1:
 		K.text(self, P.ui(700), Vector2(cx, r.end.y - 46), "more below ↓", 13, Color(P.INK_SOFT, words))
 	K.text(self, P.ui(700), Vector2(cx, r.end.y - 24), "Tap anywhere to start", 14, Color(P.INK_SOFT, words))
+
+
+## The ★★★ line under a dotted rule: three small stars, then why ★★★ is out
+## of reach and where the price comes down, in soft ink; clipped to the view
+## as the hint is.
+func _dear_lines(font: Font, cx: float, x0: float, y: float, view: Rect2, words: float) -> void:
+	if y > view.position.y - 4 and y < view.end.y:
+		for i in 9:
+			K.disc(self, Vector2(cx - 64 + i * 16, y), 2, Color(P.HOOP, words))
+	y += 22
+	if words > 0.6 and y - 10 >= view.position.y and y + 10 <= view.end.y:
+		for s in 3:
+			K.star(self, Vector2(cx - 22 + s * 22, y), 9, true)
+	y += 18
+	var para := TextParagraph.new()
+	para.add_string(dear, font, DEAR_SIZE)
+	para.width = TEXT_W
+	para.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var line_h := font.get_height(DEAR_SIZE)
+	for i in para.get_line_count():
+		var ly := y + i * line_h
+		if ly >= view.position.y - 2 and ly + line_h <= view.end.y + 2:
+			para.draw_line(get_canvas_item(), Vector2(x0, ly), i, Color(P.INK_SOFT, words))
 
 
 ## The hint, wrapped, each line drawn only where it is inside the view (so

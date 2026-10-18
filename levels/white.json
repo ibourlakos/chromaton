@@ -53,5 +53,8 @@
 				"loom"
 			]
 		]
+	},
+	"star_needs": {
+		"pot_black": 2
 	}
 }

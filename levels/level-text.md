@@ -244,6 +244,7 @@ Level numbers and order are the new layout (DESIGN.md §5.1, "The campaign today
 ## Text outside the level files (decided 2026-10-05)
 
 - **Locked tag** (a level waiting for an invention): "Earn the Third Paint in 25. The Pawn." (26, 27, 30); "Earn Missing From Either in 31. The Black Pawn." (32, 33, 36).
+- **The ★★★ price line** (decision 9, designer 2026-10-18; DESIGN.md §9.1): on the hint panel under the hint, and on the success panel after a run that misses ★★★, where a pot or invention costs the player more than the level's ★★★ allows (`star_needs`, written by `.\make solve`): "Your Third Paint costs 2. Three stars on 25. The Pawn bring it down to 1." A line per invention; a pot in lowercase ("Your yellow pot costs 2. Three stars on 2. The Yellow Pot bring it down to 1."). Levels with `star_needs` today: 3, 4, 9, 12, 16, 26 to 33, 35, 36, 38 to 40, 42.
 - **"★★★ needs the invention" notice:** dropped. 28 and 29 open only from 26 or 27, and 34 only from 32 or 33, which all wait for the invention, so the player always owns it there (a cheat lends it).
 - **"New in your journal":** cheaper: "Orange pot: cheaper, 2 → 1". A new chapter: "A new chapter: Invent What You Know", with its first level's tag. Opens: "The Third Paint opens 26. The Rook and 27. The Knight." (levels the invention opens beyond the usual next two).
 - **The paint-card line on each piece page** (DESIGN.md §9.1), unlocking with the page:

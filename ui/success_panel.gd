@@ -21,7 +21,9 @@ var stars := 0
 var better := {}
 var invention := {}
 var has_next := false
-var dearer := []  # inventions that cost this player more than ★★★ assumes (Workbench._dearer_inventions)
+var dear_line := ""  # which pots or inventions cost too much for ★★★, and where they get cheaper (Level.dear_line)
+var dear_extra := 0.0  # how much taller the card grows for it
+const DEAR_W := 314.0  # the line's width, under the metrics
 var t := 0.0
 var card := Rect2()
 var space_up := not Input.is_key_pressed(KEY_SPACE)  # released since the panel opened
@@ -29,9 +31,9 @@ var space_up := not Input.is_key_pressed(KEY_SPACE)  # released since the panel 
 const SPACE_DELAY := 0.5
 
 
-func setup(p_level, p_pieces: int, p_ticks: int, p_stars: int, p_better: Dictionary, p_invention: Dictionary, p_has_next: bool, p_dearer := []) -> void:
+func setup(p_level, p_pieces: int, p_ticks: int, p_stars: int, p_better: Dictionary, p_invention: Dictionary, p_has_next: bool, p_dear_line := "") -> void:
 	level = p_level
-	dearer = p_dearer
+	dear_line = p_dear_line
 	pieces = p_pieces
 	ticks = p_ticks
 	stars = p_stars
@@ -43,7 +45,12 @@ func setup(p_level, p_pieces: int, p_ticks: int, p_stars: int, p_better: Diction
 func _ready() -> void:
 	size = DESIGN
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var h := 440.0 if invention.is_empty() else 540.0
+	# The ★★★ line has room for two lines under the metrics; past that the
+	# card grows (two sentences on The Trophy).
+	var line_h := P.ui(700).get_height(14)
+	if stars < 3 and dear_line != "":
+		dear_extra = maxf(0, P.ui(700).get_multiline_string_size(dear_line, HORIZONTAL_ALIGNMENT_LEFT, DEAR_W, 14).y - 2 * line_h)
+	var h := (440.0 if invention.is_empty() else 540.0) + dear_extra
 	card = Rect2(DESIGN.x / 2 - 310, DESIGN.y / 2 - h / 2 - 10, 620, h)
 	var buttons := [["reset", replay, Keys.label("replay")], ["levels", levels, Keys.label("back")]]
 	if has_next:
@@ -126,14 +133,12 @@ func _draw() -> void:
 		for s in want:
 			K.star(self, Vector2(bx + 4 + s * 20, y + 4), 8, true)
 		K.text(self, P.ui(700), Vector2(bx + 4 + want * 20, y + 4), "for a price of %d or less" % (level.best if want == 3 else level.budget), 15, P.INK_SOFT, HORIZONTAL_ALIGNMENT_LEFT)
-		# ★★★ counts on an invention at its lowest price: say which one costs
-		# this player more, and where it gets cheaper.
-		if want == 3 and not dearer.is_empty() and dearer[0]["from"] != "":
-			var d: Dictionary = dearer[0]
-			var why := "Your %s costs %d. Three stars on %s bring it down to %d." % [d["name"], d["yours"], d["from"], d["lowest"]]
-			draw_multiline_string(P.ui(700), Vector2(bx - 4, y + 30), why, HORIZONTAL_ALIGNMENT_LEFT, card.end.x - bx - 24, 14, -1, P.INK_SOFT)
+		# ★★★ counts on a pot or invention cheaper than this player's: say
+		# which, and where it gets cheaper.
+		if want == 3 and dear_line != "":
+			draw_multiline_string(P.ui(700), Vector2(bx - 4, y + 30), dear_line, HORIZONTAL_ALIGNMENT_LEFT, DEAR_W, 14, -1, P.INK_SOFT)
 	if not invention.is_empty():
-		var sy := card.position.y + 380
+		var sy := card.position.y + 380 + dear_extra
 		var paint := Invention.paint_of(invention)
 		if paint >= 0:
 			K.pot(self, Vector2(cx - 60, sy + 4), 0.55, clampf(t - 1.2, 0, 99), t, 0.3, paint)

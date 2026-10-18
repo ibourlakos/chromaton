@@ -213,7 +213,7 @@ func show_note() -> void:
 	hint_glow = false
 	guide_on = not level.steps.is_empty()  # the "?" brings the guide back too
 	note = LevelNote.new()
-	note.setup(level, _title_parts()["badge_rect"])
+	note.setup(level, _title_parts()["badge_rect"], Level.dear_line(_dearer_inventions()) if progress.stars(level.id) < 3 else "")
 	note.landed.connect(func(): note = null)
 	add_child(note)
 
@@ -941,33 +941,18 @@ func _finish_solve() -> void:
 	progress.store_machine(level.id, machine.to_dict())
 	progress_changed.emit()
 	panel = SuccessPanel.new()
-	panel.setup(level, pieces, ticks, stars, better, invention, has_next, _dearer_inventions() if stars < 3 else [])
+	panel.setup(level, pieces, ticks, stars, better, invention, has_next, Level.dear_line(_dearer_inventions()) if stars < 3 else "")
 	panel.replay.connect(func(): show_news(_rebuild))
 	panel.levels.connect(func(): show_news(exit_requested.emit))
 	panel.next.connect(func(): show_news(next_requested.emit))
 	add_child(panel)
 
 
-## The inventions in the level's reference machine that cost this player more
-## than its star counts assume (earned at fewer than three stars), so ★★★ is
-## out of reach until they get cheaper: [{"id", "name", "yours", "lowest",
-## "from"}], "from" naming the level whose ★★★ brings the price down.
+## The pots and inventions that cost this player too much for ★★★ here, so
+## it is out of reach until they get cheaper (Level.dear_inventions, from the
+## solver's star_needs): what the hint panel and the success panel say.
 func _dearer_inventions() -> Array:
-	var all := _levels()
-	var lowest: Dictionary = Invention.reference_inventions_by_level(all)[level.number - 1]
-	var names := {}
-	for l in all:
-		names[l.id] = l.name
-	var out := []
-	for p in level.reference.get("pieces", []):
-		var id := str(p.get("invention", ""))
-		if p["kind"] != Pieces.INVENTION or not inventions.has(id) or not lowest.has(id):
-			continue
-		if out.any(func(d): return d["id"] == id):
-			continue
-		if int(inventions[id]["cost"]) > int(lowest[id]["cost"]):
-			out.append({"id": id, "name": inventions[id]["name"], "yours": int(inventions[id]["cost"]), "lowest": int(lowest[id]["cost"]), "from": names.get(lowest[id].get("from_level", ""), "")})
-	return out
+	return level.dear_inventions(inventions, _levels())
 
 
 ## After the success panel: "New in your journal" when the solve brought new

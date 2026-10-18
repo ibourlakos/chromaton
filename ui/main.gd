@@ -27,6 +27,9 @@
 ##                               cards are then unused, which fails the run)
 ##   --empty                     leave the bench empty
 ##   --note                      show the level's note (title, goal, hint) up
+##   --dear                      each pot or invention the level's ★★★ counts
+##                               on (star_needs) one dearer, so the note and
+##                               the success panel say so
 ##   --page=<n>                  the level select's chapter page (from 0)
 ##   --stale                     the intro as it reads for a stale save
 ##   --grid                      the bench grid on (Options)
@@ -374,6 +377,10 @@ func _screenshot(args: Dictionary) -> void:
 				printerr("unknown level: " + what)
 				get_tree().quit(1)
 				return
+			if args.has("dear"):  # what ★★★ counts on one dearer: both panels say so
+				for inv_id in levels[i].star_needs:
+					if progress.inventions.has(inv_id):
+						progress.inventions[inv_id]["cost"] = int(levels[i].star_needs[inv_id]) + 1
 			open_level(i, false)
 			if args.has("note"):
 				screen.show_note()

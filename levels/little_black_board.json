@@ -79,5 +79,8 @@
 	"waits_for": [
 		"same_paint"
 	],
-	"card_shows": 4
+	"card_shows": 4,
+	"star_needs": {
+		"same_paint": 3
+	}
 }

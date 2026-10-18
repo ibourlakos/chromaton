@@ -119,5 +119,8 @@
 	"waits_for": [
 		"third_paint"
 	],
-	"card_shows": 4
+	"card_shows": 4,
+	"star_needs": {
+		"third_paint": 1
+	}
 }
