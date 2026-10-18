@@ -3,7 +3,7 @@
 	"name": "A Cheaper Orange Pot",
 	"cloth": "Orange",
 	"machine": "A Cheaper Orange Pot",
-	"goal": "Weave an orange cloth.",
+	"goal": "Weave an orange cloth. Three stars make your orange pot cheaper.",
 	"hint": "A mix is the opposite of the one paint it lacks, and orange lacks only blue. Flip your blue pot.",
 	"pieces": [
 		"red_pot",

@@ -3,7 +3,7 @@
 	"name": "A Cheaper Green Pot",
 	"cloth": "Green",
 	"machine": "A Cheaper Green Pot",
-	"goal": "Weave a green cloth.",
+	"goal": "Weave a green cloth. Three stars make your green pot cheaper.",
 	"hint": "Every paint has an opposite across the paint card, and green is red's. Tube the red pot through the Flip Pan.",
 	"steps": [
 		{

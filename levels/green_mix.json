@@ -3,7 +3,7 @@
 	"name": "The Green Pot",
 	"cloth": "Green",
 	"machine": "The Green Pot",
-	"goal": "Weave a green cloth.",
+	"goal": "Weave a green cloth, and earn your green pot.",
 	"hint": "Yellow and blue make green, as every painter knows. Mix your yellow pot with your blue pot.",
 	"pieces": [
 		"red_pot",

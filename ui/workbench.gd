@@ -125,7 +125,7 @@ var panel: Control
 var note: Control  # the level's note while it is up (see show_note)
 var journal: Control  # the journal, open over the bench (peek)
 var options_view: Control  # Options, open over the bench (the gear)
-var hint_glow := false  # after a failed run, until the hint panel opens or a run starts
+var hint_glow := false  # after a failed run or a first ★★ that opens a star_hint, until the hint panel opens or a run starts
 var _glowed_for := -1  # the bench_gen whose failure last lit the "?"
 var guide_on := false  # a guided level's guide shows (unsolved, or brought back by the "?")
 var ran := false  # the machine has been run here (the guide's run step)
@@ -213,7 +213,8 @@ func show_note() -> void:
 	hint_glow = false
 	guide_on = not level.steps.is_empty()  # the "?" brings the guide back too
 	note = LevelNote.new()
-	note.setup(level, _title_parts()["badge_rect"], Level.dear_line(_dearer_inventions()) if progress.stars(level.id) < 3 else "")
+	var have: int = progress.stars(level.id)
+	note.setup(level, _title_parts()["badge_rect"], have, Level.dear_line(_dearer_inventions()) if have < 3 else "")
 	note.landed.connect(func(): note = null)
 	add_child(note)
 
@@ -940,8 +941,14 @@ func _finish_solve() -> void:
 	_note_openings(opened_before, owned_before.is_empty())
 	progress.store_machine(level.id, machine.to_dict())
 	progress_changed.emit()
+	var have: int = progress.stars(level.id)
+	var dear := Level.dear_line(_dearer_inventions()) if have < 3 else ""
+	# The hint ladder's next rung: a first ★★ here opens the ★★★ nudge on the
+	# hint panel, and the "?" glows once to say so (never on the success panel).
+	if better.get("stars", false) and have == 2 and level.star_hint != "" and dear == "":
+		hint_glow = true
 	panel = SuccessPanel.new()
-	panel.setup(level, pieces, ticks, stars, better, invention, has_next, Level.dear_line(_dearer_inventions()) if stars < 3 else "")
+	panel.setup(level, pieces, ticks, stars, better, invention, has_next, level.objectives(have, dear, false))
 	panel.replay.connect(func(): show_news(_rebuild))
 	panel.levels.connect(func(): show_news(exit_requested.emit))
 	panel.next.connect(func(): show_news(next_requested.emit))

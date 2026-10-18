@@ -5,6 +5,7 @@
 	"machine": "Convert to Black and White",
 	"goal": "Weave the cat.",
 	"hint": "Wherever the card has any paint at all, the cat is black. Split the card three ways, turn one copy once and another twice on the Shift Wheel, and mix all three.",
+	"star_hint": "Split the copy you turned once: one half goes to the mix, the other turns again. Two Shift Wheels do the work of three.",
 	"pieces": [
 		"red_pot",
 		"shift",

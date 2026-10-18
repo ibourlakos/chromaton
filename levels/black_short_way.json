@@ -3,7 +3,7 @@
 	"name": "A Cheaper Black Pot",
 	"cloth": "Black",
 	"machine": "A Cheaper Black Pot",
-	"goal": "Weave a black cloth.",
+	"goal": "Weave a black cloth. Three stars make your black pot cheaper.",
 	"hint": "A paint and its opposite hold every paint between them. Mix red with your green pot.",
 	"pieces": [
 		"red_pot",

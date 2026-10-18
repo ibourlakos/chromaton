@@ -53,6 +53,7 @@ func _initialize() -> void:
 	test_box_select(by_id["third_color"])
 	test_not_general(by_id["either_not_both"])
 	test_dearer(by_id)
+	test_objectives(by_id)
 	test_unused_card(by_id["third_color"])
 	test_note(by_id["green"])
 	test_title(levels)
@@ -412,6 +413,35 @@ func test_not_general(inv_level) -> void:
 		frames += 1
 	check(wb.outcome == "not_general", "a machine that only fits the cards is not accepted (%s)" % wb.outcome)
 	check(not progress.is_solved(level.id) and not progress.inventions.has("contrast"), "nothing is recorded")
+	wb.queue_free()
+
+
+## The level objectives (DESIGN.md 5.1): ★ the goal with the hint, then the
+## prices, one row when ★★ and ★★★ cost the same. The ★★★ nudge (star_hint)
+## shows only once the player has ★★, never on the success panel, and a dear
+## invention's line takes its place. A first ★★ on a level with a nudge makes
+## the "?" glow.
+func test_objectives(by_id: Dictionary) -> void:
+	var cat = by_id["black_cat"]
+	var rows: Array = cat.objectives(0)
+	check(rows.size() == 3 and rows[0]["text"] == cat.goal and rows[0]["note"] == cat.hint and rows[1]["text"] == "A price of 6 or less." and rows[2]["text"] == "A price of 4 or less.",
+		"Harbour Cat: weave it, then 6, then 4 (%s)" % [rows])
+	check(rows.all(func(r): return not r["reached"]) and rows[2]["note"] == "", "unsolved: nothing reached, no nudge yet")
+	rows = cat.objectives(2)
+	check(rows[1]["reached"] and not rows[2]["reached"] and rows[2]["note"] == cat.star_hint and cat.star_hint != "", "at ★★ the nudge shows")
+	check(cat.objectives(2, "", false)[2]["note"] == "", "but not on the success panel")
+	check(cat.objectives(2, "Your Third Paint costs 2.")[2]["note"] == "Your Third Paint costs 2.", "a dear invention's line comes first")
+	check(by_id["one_pot"].objectives(0).size() == 2, "one row of price where ★★ and ★★★ are the same count")
+	check(by_id["pattern_card"].objectives(0)[1]["text"] == "A price of 0: no pieces at all.", "a price of 0 reads as no pieces")
+	# A first ★★: a machine one piece dearer than the reference (an extra
+	# Shift Wheel standing by) makes the "?" glow once.
+	var spec: Dictionary = cat.reference.duplicate(true)
+	spec["pieces"].append({"id": "spare", "kind": "shift", "x": 8, "y": 0})
+	var wb = open(cat, Progress.new())
+	wb.load_machine(cat.machine_from_spec(spec))
+	wb.hint_glow = false
+	wb._finish_solve()
+	check(wb.progress.stars(cat.id) == 2 and wb.hint_glow, "a first ★★ makes the \"?\" glow for the nudge (stars %d)" % wb.progress.stars(cat.id))
 	wb.queue_free()
 
 

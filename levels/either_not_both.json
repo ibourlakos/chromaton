@@ -3,8 +3,9 @@
 	"name": "The Queen",
 	"cloth": "The Queen",
 	"machine": "Extreme Mix",
-	"goal": "Weave the queen.",
+	"goal": "Weave the queen, and invent Extreme Mix.",
 	"hint": "The queen wears only the paint that comes from one card alone. Mix the cards, then sieve the mix with the opposite of what they share.",
+	"star_hint": "Your Third Paint does a Mixing Tub and a Flip Pan in one piece. Ask it what neither card has, then ask it again, of that answer and of what the cards share.",
 	"pieces": [
 		"red_pot",
 		"shift",

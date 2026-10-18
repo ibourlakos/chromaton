@@ -3,7 +3,7 @@
 	"name": "The Pawn",
 	"cloth": "The Pawn",
 	"machine": "Third Paint",
-	"goal": "Weave the pawn.",
+	"goal": "Weave the pawn, and invent the Third Paint.",
 	"hint": "Any two paints leave out a third, the one neither has. Mix the two cards, then flip the mix.",
 	"pieces": [
 		"red_pot",

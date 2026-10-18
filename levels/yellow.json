@@ -3,7 +3,7 @@
 	"name": "The Yellow Pot",
 	"cloth": "Yellow",
 	"machine": "The Yellow Pot",
-	"goal": "Weave a yellow cloth.",
+	"goal": "Weave a yellow cloth, and earn your yellow pot.",
 	"hint": "The hamster runs, and its wheel turns red into yellow. Tube the red pot through the Shift Wheel.",
 	"steps": [
 		{

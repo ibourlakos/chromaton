@@ -3,7 +3,7 @@
 	"name": "A Cheaper Purple Pot",
 	"cloth": "Purple",
 	"machine": "A Cheaper Purple Pot",
-	"goal": "Weave a purple cloth.",
+	"goal": "Weave a purple cloth. Three stars make your purple pot cheaper.",
 	"hint": "Purple lacks only yellow, so it sits across from yellow. Flip your yellow pot.",
 	"pieces": [
 		"red_pot",

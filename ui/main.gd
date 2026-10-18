@@ -27,6 +27,8 @@
 ##                               cards are then unused, which fails the run)
 ##   --empty                     leave the bench empty
 ##   --note                      show the level's note (title, goal, hint) up
+##   --stars=<n>                 the level solved before at n stars (the
+##                               objectives show them; ★★ opens a star_hint)
 ##   --dear                      each pot or invention the level's ★★★ counts
 ##                               on (star_needs) one dearer, so the note and
 ##                               the success panel say so
@@ -377,6 +379,9 @@ func _screenshot(args: Dictionary) -> void:
 				printerr("unknown level: " + what)
 				get_tree().quit(1)
 				return
+			if args.has("stars"):  # solved before at that many stars: the objectives show them
+				var have := int(args["stars"])
+				progress.record_solve(levels[i].id, levels[i].best if have >= 3 else (levels[i].budget if have == 2 else levels[i].budget + 1), 99, have)
 			if args.has("dear"):  # what ★★★ counts on one dearer: both panels say so
 				for inv_id in levels[i].star_needs:
 					if progress.inventions.has(inv_id):
