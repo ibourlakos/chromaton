@@ -49,6 +49,8 @@ func _initialize() -> void:
 	test_tray_lists_only_the_level(by_id["green"], progress)
 	test_locked_tray(levels, by_id)
 	test_pot_fan(levels, by_id)
+	test_inventions_slot(levels, by_id)
+	test_box_select(by_id["third_color"])
 	test_not_general(by_id["either_not_both"])
 	test_dearer(by_id["third_color"], by_id["either_not_both"])
 	test_unused_card(by_id["third_color"])
@@ -114,9 +116,9 @@ func tap(wb, p: Vector2) -> void:
 
 
 func tray_point(wb, kind: String) -> Vector2:
-	for item in wb.tray:
-		if item["kind"] == kind:
-			return item["rect"].get_center()
+	for i in wb.tray.size():
+		if wb.tray[i]["kind"] == kind and wb._slot_live(i):
+			return wb.tray[i]["rect"].get_center()
 	return Vector2(-1, -1)
 
 
@@ -141,9 +143,11 @@ func node_named(wb, level, names: Dictionary, name: String) -> int:
 func play_level(level, progress, index: int) -> void:
 	var wb = open(level, progress)
 	var shown: Array = level.tray.duplicate()
-	for inv_id in level.inventions:
-		if progress.inventions.has(inv_id):
-			shown.append("inv:" + inv_id)
+	var owned: Array = (level.earned_inventions + level.inventions.filter(func(i): return not i in level.earned_inventions)).filter(func(i): return progress.inventions.has(i))
+	if not owned.is_empty():  # the Inventions slot, its face the first the level lists
+		var listed: Array = owned.filter(func(i): return i in level.inventions)
+		var at: int = level.inventions_at if level.inventions_at >= 0 else shown.size()
+		shown.insert(at, "inv:" + (listed[0] if not listed.is_empty() else owned[0]))
 	var shelf: Array = wb.tray.slice(0, wb.shelf_size)
 	check(shelf.map(func(item): return item["kind"]) == shown, "%s: the tray holds the level's pieces and earlier levels' pieces" % level.id)
 	var open_kinds: Array = shelf.filter(func(item): return not item["locked"]).map(func(item): return item["kind"])
@@ -153,9 +157,10 @@ func play_level(level, progress, index: int) -> void:
 		var kind: String = p["kind"]
 		if kind == Pieces.INVENTION:
 			kind = "inv:" + p["invention"]
-		if kind.begins_with("inv:pot_"):  # earned pots wait in the pot slot's fan
-			tap(wb, tray_point(wb, "red_pot"))
-			check(wb.fan_open, "%s: tapping the pot slot fans out the pots" % level.id)
+		var folded: int = wb._folded_in(kind)
+		if folded >= 0 and wb.tray[folded]["kind"] != kind:  # earned pots and inventions wait in a fan
+			tap(wb, wb.tray[folded]["rect"].get_center())
+			check(wb.fan_open, "%s: tapping the %s slot fans it out" % [level.id, wb.tray[folded]["group"]])
 		var from := tray_point(wb, kind)
 		check(from.x >= 0, "%s: tray offers %s" % [level.id, kind])
 		drag(wb, from, wb.cell_center(int(p["x"]), int(p["y"])))
@@ -820,6 +825,108 @@ func test_pot_fan(levels: Array, by_id: Dictionary) -> void:
 	lone.queue_free()
 
 
+
+## From the first invention on, the inventions share one slot, key 7 on
+## every level: a tap or its key fans them out in the order earned, the ones
+## the level doesn't list locked; dragging the slot places its face, the
+## first one the level lists; one fan is open at a time; a level that lists
+## none shows the slot locked.
+func test_inventions_slot(levels: Array, by_id: Dictionary) -> void:
+	var p = Progress.new()
+	for l in levels:
+		if not l.invention.is_empty():
+			p.add_invention(Invention.package(l, l.reference_machine(), p.inventions))
+	for l in levels:
+		if l.inventions_at < 0:
+			continue
+		var w = open(l, p)
+		check(l.inventions_at == 6 and w.tray[6]["kind"].begins_with("inv:"), "%s: the inventions sit in slot 7" % l.id)
+		w.free()
+	var wb = open(by_id["the_crown"], p)
+	wb._ready()
+	var slot: Dictionary = wb.tray[6]
+	check(slot.get("inventions", false) and slot["kind"] == "inv:third_paint" and not wb.fan_open, "The Trophy: the Inventions slot, folded, Third Paint on its face")
+	var fan: Array = wb.tray.slice(wb.shelf_size).filter(func(e): return e["group"] == "inventions").map(func(e): return e["kind"])
+	check(fan == ["inv:third_paint", "inv:contrast"], "its fan holds the inventions in the order earned: %s" % str(fan))
+	key(wb, KEY_7)
+	check(wb.fan_group == "inventions", "key 7 fans the inventions out")
+	key(wb, KEY_2)
+	check(wb.carrying >= wb.shelf_size and wb.tray[wb.carrying]["kind"] == "inv:contrast" and not wb.fan_open, "with the fan open, key 2 picks Extreme Mix")
+	key(wb, KEY_ESCAPE)
+	drag(wb, slot["rect"].get_center(), wb.cell_center(6, 5))
+	var placed: int = wb.piece_in_cell(6, 5)
+	check(placed >= 0 and wb.machine.nodes[placed].get("invention", "") == "third_paint", "dragging the slot places its face")
+	tap(wb, tray_point(wb, "red_pot"))
+	tap(wb, slot["rect"].get_center())
+	check(wb.fan_group == "inventions", "opening the inventions folds the pots: one fan at a time")
+	wb.free()
+	wb = open(by_id["the_black_crown"], p)
+	wb._ready()
+	var entries: Array = wb.tray.slice(wb.shelf_size).filter(func(e): return e["group"] == "inventions")
+	check(entries.map(func(e): return e["kind"]) == ["inv:third_paint", "inv:contrast", "inv:missing_from_either", "inv:same_paint"] and entries[0]["locked"] and entries[1]["locked"] and not entries[2]["locked"], "The Black Trophy: earlier inventions locked in the fan, in their places")
+	check(wb.tray[6]["kind"] == "inv:missing_from_either", "its face is the first one the level lists")
+	wb.free()
+	wb = open(by_id["missing_from_either"], p)
+	wb._ready()
+	check(wb.tray[6].get("inventions", false) and wb.tray[6]["locked"], "a level that lists no invention shows the slot locked")
+	tap(wb, wb.tray[6]["rect"].get_center())
+	check(not wb.fan_open and wb.wiggle_slot == 6, "tapping it only wiggles its lock")
+	wb.free()
+
+
+## A drag on empty bench draws a selection rectangle: two or more pieces in it
+## are selected together, move together (their tubes with them), go to the
+## tray together and go with one delete; one piece in it is selected as a
+## tap would. Cards are never caught; nothing is deleted or moved on its own.
+func test_box_select(level) -> void:
+	var wb = open(level, Progress.new())
+	wb._ready()
+	drag(wb, tray_point(wb, "mix"), wb.cell_center(4, 1))
+	drag(wb, tray_point(wb, "invert"), wb.cell_center(6, 1))
+	drag(wb, tray_point(wb, "shift"), wb.cell_center(5, 4))
+	var mix: int = wb.piece_in_cell(4, 1)
+	var inv: int = wb.piece_in_cell(6, 1)
+	var shift: int = wb.piece_in_cell(5, 4)
+	drag(wb, wb.out_port(mix, 0), wb.in_port(inv, 0))
+	check(wb.machine.tube_into(inv, 0) >= 0, "box: a tube from the tub to the pan")
+	var before: Dictionary = wb.machine.to_dict()
+	drag(wb, wb.cell_center(3, 0) + Vector2(-20, -20), wb.cell_center(7, 2))
+	var sel: Array = wb.group_sel.duplicate()
+	sel.sort()
+	check(sel == [mix, inv] and wb.selected_piece == -1, "box: a rectangle selects the two pieces in it, not the one outside: %s" % str(wb.group_sel))
+	check(wb.machine.to_dict() == before, "box: selecting changes nothing on the bench")
+	drag(wb, wb.cell_center(4, 1), wb.cell_center(4, 2))
+	check(wb.piece_in_cell(4, 2) == mix and wb.piece_in_cell(6, 2) == inv and wb.machine.tube_into(inv, 0) >= 0, "box: dragging one moves the group, its tube with it")
+	check(wb.group_sel.size() == 2, "box: the group stays selected after a move")
+	drag(wb, wb.cell_center(4, 2), wb.cell_center(5, 4))
+	check(wb.piece_in_cell(4, 2) == mix and wb.piece_in_cell(5, 4) == shift, "box: a move where a piece won't fit leaves the group put")
+	key(wb, KEY_DELETE)
+	check(not wb.machine.nodes.has(mix) and not wb.machine.nodes.has(inv) and wb.machine.nodes.has(shift) and wb.group_sel.is_empty(), "box: Delete removes the whole group")
+	key(wb, KEY_Z)
+	check(wb.machine.nodes.has(mix) and wb.machine.nodes.has(inv) and wb.machine.tube_into(inv, 0) >= 0, "box: one undo brings the group back")
+	drag(wb, wb.cell_center(3, 1), wb.cell_center(7, 3))
+	check(wb.group_sel.size() == 2, "box: selected again")
+	tap(wb, wb._delete_button_pos())
+	check(not wb.machine.nodes.has(mix) and not wb.machine.nodes.has(inv), "box: the delete button removes the whole group")
+	key(wb, KEY_Z)
+	drag(wb, wb.cell_center(3, 1), wb.cell_center(7, 3))
+	drag(wb, wb.cell_center(4, 2), Vector2(500, 720))
+	check(not wb.machine.nodes.has(mix) and not wb.machine.nodes.has(inv) and wb.machine.nodes.has(shift), "box: dragging the group onto the tray throws it all away")
+	key(wb, KEY_Z)
+	drag(wb, wb.cell_center(3, 1), wb.cell_center(7, 3))
+	key(wb, KEY_ESCAPE)
+	check(wb.group_sel.is_empty(), "box: Back clears the group")
+	drag(wb, wb.cell_center(4, 3) + Vector2(10, 20), wb.cell_center(6, 5))
+	check(wb.group_sel.is_empty() and wb.selected_piece == shift, "box: one piece in the rectangle is selected as a tap would")
+	drag(wb, Vector2(14, 100), wb.cell_center(1, 6))
+	check(wb.group_sel.is_empty() and wb.selected_piece == -1, "box: cards are never caught")
+	drag(wb, wb.cell_center(3, 1), wb.cell_center(7, 3))
+	tap(wb, wb.cell_center(9, 6))
+	check(wb.group_sel.is_empty(), "box: a tap on empty bench clears the group")
+	tap(wb, (wb.out_port(mix, 0) + wb.in_port(inv, 0)) / 2)
+	check(wb.selected_tube >= 0, "box: a tap on a tube still selects it")
+	wb.free()
+
 ## The top bar shows both title phrases (the sticker mark on an invention
 ## level) between the Options gear and the Paints button on every level; the
 ## "?" glows after a failed run until the hint panel opens or a run starts.
@@ -1075,7 +1182,7 @@ func test_guides(levels: Array) -> void:
 		wb._ready()
 	var g: Dictionary = wb._guide()
 	check(g["tap"] and wb.tray[g["slot"]].get("pots", false), "Blue: the hand taps the pot slot")
-	wb._show_fan(true)
+	wb._show_fan("pots")
 	g = wb._guide()
 	check(g["lines"][-1] == "Take it out." and wb.tray[g["slot"]]["kind"] == "inv:pot_yellow", "then takes the yellow pot from the fan")
 	wb.free()

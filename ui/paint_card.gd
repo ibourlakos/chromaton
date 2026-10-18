@@ -16,10 +16,15 @@ const Paint = preload("res://core/paint.gd")
 
 signal tapped
 
-const SIZE := Vector2(290, 246)
-const SIDE := 200.0  # the triangle's side
+const SIZE := Vector2(290, 256)
+const SIDE := 180.0  # the triangle's side
 const DROP := 14.0
-const TOP := 34.0  # the red corner's height on the card
+const TOP := 28.0  # the red corner's height on the card
+## The Shift arrows: arcs of one ring round black, one over each side, in
+## degrees (clockwise from the right): red to yellow, yellow to blue, blue to
+## red, each stopping short of the corner drops and their names.
+const RING := 112.0
+const ARCS := [[-78.0, 18.0], [52.0, 128.0], [162.0, 258.0]]
 
 
 func _ready() -> void:
@@ -44,7 +49,7 @@ static func spots() -> Dictionary:
 		1: red, 2: yellow, 4: blue,
 		3: (red + yellow) / 2, 6: (yellow + blue) / 2, 5: (blue + red) / 2,
 		7: (red + yellow + blue) / 3,
-		0: Vector2(SIZE.x - 34, TOP),
+		0: Vector2(SIZE.x - 24, 26),
 	}
 
 
@@ -60,45 +65,39 @@ func _draw() -> void:
 	_draw_shift_arrows(at)
 	for color in at:
 		K.drop(self, at[color], DROP, color)
-	# Names under the drops, except where a line or a name would be in the
-	# way: orange's and purple's outside the triangle, black's to its right.
+	# Names under the drops, so the arrows can hug the sides; black's above
+	# it, out of orange's and purple's way.
 	for color in at:
-		var name: String = Paint.name_of(color)
-		var side := DROP + 6 + _width(name) / 2
-		match color:
-			3, 7:
-				_label(at[color] + Vector2(side, 2), name)
-			5:
-				_label(at[color] + Vector2(-side, 2), name)
-			_:
-				_label(at[color] + Vector2(0, DROP + 12), name)
+		_label(at[color] + Vector2(0, -DROP - 17 if color == 7 else DROP + 12), Paint.name_of(color))
 	var pin := Vector2(SIZE.x / 2, 2)
 	K.shape(self, K.ellipse(pin, 6, 6, 0, 16), P.HOOP, P.INK, 2)
 	K.disc(self, pin + Vector2(-1.5, -1.5), 1.6, P.PIN_GLINT)
 
 
-## Small ink arrows outside the triangle, one along each edge, turning the
-## way the Shift Wheel does: red to yellow to blue, and the mixes with them
-## (orange to green to purple). Ink, never a paint's hue.
+## Bold ink arrows round the triangle, one arching over each side from
+## near one corner to near the next, turning the way the Shift Wheel does: red to yellow to
+## blue, and the mixes with them (orange to green to purple). Each spans a
+## whole side, so it reads as one corner on (playtest R3: short arrows from
+## red to orange read as red turning orange). Ink, never a paint's hue.
 func _draw_shift_arrows(at: Dictionary) -> void:
 	var mid: Vector2 = at[7]
-	for edge in [[1, 2], [2, 4], [4, 1]]:
-		var a: Vector2 = at[edge[0]]
-		var b: Vector2 = at[edge[1]]
-		var along := (b - a).normalized()
-		var out := (a.lerp(b, 0.5) - mid).normalized()
-		var from := a.lerp(b, 0.16) + out * 17
-		var to := a.lerp(b, 0.36) + out * 17
-		var bend := (from + to) / 2 + out * 5
+	for arc in ARCS:
 		var pts := PackedVector2Array()
-		for i in 9:
-			var u := i / 8.0
-			pts.append(from.lerp(bend, u).lerp(bend.lerp(to, u), u))
-		K.stroke(self, pts, Color(P.INK, 0.55), 2)
-		var tip := pts[pts.size() - 1]
-		var back := (tip - pts[pts.size() - 3]).normalized()
-		var side := Vector2(-back.y, back.x)
-		K.fill(self, PackedVector2Array([tip + back * 4, tip - back * 5 + side * 4, tip - back * 5 - side * 4]), Color(P.INK, 0.55))
+		for i in 25:
+			var a := deg_to_rad(lerpf(arc[0], arc[1], i / 24.0))
+			pts.append(mid + Vector2(cos(a), sin(a)) * RING)
+		_arrow(pts)
+
+
+## An ink arrow along pts, its head at the end.
+func _arrow(pts: PackedVector2Array) -> void:
+	var ink := Color(P.INK, 0.85)
+	var tip := pts[pts.size() - 1]
+	var back := (tip - pts[pts.size() - 2]).normalized()
+	var side := Vector2(-back.y, back.x)
+	pts[pts.size() - 1] = tip - back * 6  # the line stops inside the head
+	K.stroke(self, pts, ink, 3, false)
+	K.fill(self, PackedVector2Array([tip + back * 3, tip - back * 8 + side * 6, tip - back * 8 - side * 6]), ink)
 
 
 ## A paint's name on a scrap of tag paper, so the lines pass behind it.
