@@ -385,7 +385,8 @@ func test_history_notes() -> void:
 		check(str(note.get("title", "")) != "" and str(note.get("text", "")) != "", "%s has a historical note" % name)
 		if note.is_empty():
 			continue
-		check(int(note.get("year", 0)) >= 1700 and int(note.get("year", 0)) <= 2000, "%s's note has a year (%s)" % [name, note.get("year")])
+		check(Journal.year_text({"year": -150}) == "150 BC" and Journal.year_text({"year": 1725}) == "1725", "a year before the common era reads BC")
+		check(int(note.get("year", 0)) != 0 and int(note.get("year", 0)) >= -3000 and int(note.get("year", 0)) <= 2000, "%s's note has a year (%s)" % [name, note.get("year")])
 		check(str(note.get("picture", "")) in K.HISTORY_PICTURES, "%s's note names a picture the draw kit draws" % name)
 		var text := str(note["text"])
 		var sentences := stop.search_all(text).size()

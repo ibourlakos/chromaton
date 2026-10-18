@@ -10,7 +10,8 @@
 		"shift",
 		"mix",
 		"split",
-		"invert"
+		"invert",
+		"filter"
 	],
 	"inventions": [],
 	"stars": {
@@ -30,7 +31,7 @@
 		{
 			"name": "A",
 			"colors": [
-				"PBBPYRWP",
+				"BBBYBRWP",
 				"WWBWYPWY",
 				"BPBRRWBB",
 				"RPBWWBRP",
@@ -41,7 +42,7 @@
 		{
 			"name": "B",
 			"colors": [
-				"WPRYPBPW",
+				"RPRPOBPW",
 				"YYRYYWYY",
 				"RPPRRPPP",
 				"BBPWWRBP",

@@ -12,7 +12,7 @@ Weave every cloth in a chapter and they're sewn together into a quilt. Your quil
 ## Design
 
 - The chapter payoff (DESIGN.md §4): each level weaves one cloth; finishing a chapter joins them. "Tapestry" stays free for the finale's woven picture.
-- The paint box's eight single-row cloths stack into a square sampler of the paints, the first quilt, and Bargain Pots' eight hang as its pair, the cheap box beside the dear one, stacked in the paint box's paint order so the two match row for row (designer, 2026-10-18). Every other chapter has a multiple of four levels (three until 2026-10-18) and a fixed number of patches across, so each quilt fills its grid (chapter plan, 2026-10-05). 🟡 Decided 2026-10-18, still to build: Pattern Cards becomes Swatches (2 × 2) and Pictures (4 × 2), and the chess quilts go 4 × 2, hung one above the other as a board (DESIGN.md §5.1).
+- The paint box's eight single-row cloths stack into a square sampler of the paints, the first quilt, and Bargain Pots' eight hang as its pair, the cheap box beside the dear one, stacked in the paint box's paint order so the two match row for row (designer, 2026-10-18). Every other chapter has a multiple of four levels (three until 2026-10-18) and a fixed number of patches across, so each quilt fills its grid (chapter plan, 2026-10-05). Pattern Cards became Swatches (2 × 2) and Pictures (4 × 2), built 2026-10-19. 🟡 Decided 2026-10-18, still to build: the chess quilts go 4 × 2, hung one above the other as a board (DESIGN.md §5.1).
 - On the Cloths tab each chapter's quilt hangs beside its cloths. Until the chapter is done, its patches fill in one by one and the rest stay empty.
 
 ## Implementation

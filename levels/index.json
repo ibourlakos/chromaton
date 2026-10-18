@@ -21,14 +21,25 @@
 		}
 	},
 	{
-		"name": "Pattern Cards",
-		"quilt_across": 4,
-		"levels": ["pattern_card", "turn_the_wheel", "opposites", "orange_sun", "parrot", "mix_table", "lighthouse", "filter_table", "smudges", "where_they_meet", "wash_out", "black_cat"],
+		"name": "Swatches",
+		"quilt_across": 2,
+		"levels": ["turn_the_wheel", "opposites", "mix_table", "filter_table"],
 		"note": {
 			"title": "Cards on a Chain",
 			"year": 1728,
 			"picture": "card_chain",
 			"text": "A paper strip is hard to change once it's punched. In 1728 Jean-Baptiste Falcon, who worked with Bouchon, cut the pattern into cards and laced them together in a chain. A card could be mended, swapped or moved without punching the whole pattern again. Your pattern cards carry the same idea: the picture comes into the machine on a card."
+		}
+	},
+	{
+		"name": "Pictures",
+		"quilt_across": 4,
+		"levels": ["pattern_card", "orange_sun", "parrot", "smudges", "lighthouse", "where_they_meet", "wash_out", "black_cat"],
+		"note": {
+			"title": "The Drawloom",
+			"year": -150,
+			"picture": "drawloom",
+			"text": "Long before cards, weavers in China wove pictures into silk on the drawloom. A helper sat high on the loom and pulled cords, one bundle for each row, to lift the threads the picture needed. In 2013 archaeologists in Chengdu found four small wooden models of such looms in a tomb more than 2,000 years old. The picture lived in the loom's cords, as yours lives on a card."
 		}
 	},
 	{

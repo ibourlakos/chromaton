@@ -2,7 +2,7 @@
 
 - **Tags:** gameplay, design, implementation
 - **Status:** ✅ (the word since the prototype; its word and page, designer, 2026-10-05; built 2026-10-05)
-- **Journal:** unlocks in The Sailboat, the level that brings the first card; page on the Loom tab
+- **Journal:** unlocks in The Wheel Swatch, the level that brings the first card; page on the Loom tab
 - **Also called:** card, input card
 
 ## Gameplay
