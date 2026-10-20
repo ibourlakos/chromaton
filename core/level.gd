@@ -114,7 +114,8 @@ var error := ""
 ## paint order, so its quilt matches another row for row), optional
 ## "quilt_above" or "quilt_below": the name of a chapter whose quilt hangs above
 ## or below this one's on its Cloths page, the pair read as one board,
-## optional "note": {"title", "year" (negative before the common era),
+## optional "note": {"title", "year" (negative before the common era; it
+## orders the notes), optional "when" (the date as shown, "about 4000 BC"),
 ## "picture", "text"}}]
 ## (how many patches across the chapter's quilt is; every chapter but the
 ## paint box, whose threads stack, has a multiple of it so the quilt fills)

@@ -1307,7 +1307,7 @@ static func quilt(ci: CanvasItem, r: Rect2, patches: Array, stack_cols := 0, acr
 # ---------------------------------------------------------------------------
 
 ## The pictures a chapter's historical note can name (levels/index.json).
-const HISTORY_PICTURES := ["paper_strip", "mauve", "card_chain", "drawloom", "jacquard_loom", "woven_portrait"]
+const HISTORY_PICTURES := ["indigo_cloth", "lapis_bowl", "pattern_loom", "paper_strip", "jacquard_loom", "woven_portrait"]
 
 
 ## A historical note's picture, centred on c, about 90 across at s = 1 (as
@@ -1316,6 +1316,60 @@ const HISTORY_PICTURES := ["paper_strip", "mauve", "card_chain", "drawloom", "ja
 static func history_picture(ci: CanvasItem, id: String, c: Vector2, s: float) -> void:
 	set_xf(ci, c, Vector2(s, s))
 	match id:
+		"indigo_cloth":
+			# A torn scrap of striped cotton, dyed in the oldest way, beside a
+			# sprig of the plant. The dyed stripes are ink-dark, never the blue paint.
+			var scrap := PackedVector2Array([Vector2(-40, -26), Vector2(-14, -30), Vector2(-4, -24), Vector2(12, -29), Vector2(18, -18), Vector2(14, 0), Vector2(19, 18), Vector2(8, 30), Vector2(-12, 26), Vector2(-26, 31), Vector2(-42, 22), Vector2(-37, 2)])
+			fill(ci, scrap, P.CLOTH)
+			for k in 5:  # the stripes, woven across
+				var y := -20.0 + k * 11
+				var dark := k % 2 == 0
+				ci.draw_line(Vector2(-38, y), Vector2(15, y), Color(P.INK, 0.62 if dark else 0.18), 6.0 if dark else 3.0, true)
+			for k in 7:  # the warp, faint
+				ci.draw_line(Vector2(-34 + k * 7, -24), Vector2(-34 + k * 7, 26), Color(P.WARP, 0.6), 1.0, true)
+			stroke(ci, closed(scrap), P.INK, 2)
+			line(ci, Vector2(30, 32), Vector2(36, -30), P.WOOD_DK, 2.2)  # the sprig
+			for k in 4:
+				var at := Vector2(31.5 + k * 1.4, 18 - k * 13)
+				for side in [-1.0, 1.0]:
+					shape(ci, ellipse(at + Vector2(side * 7, -2), 6, 3, side * -0.5, 14), P.WOOD_LT, Color(P.INK, 0.7), 1.2)
+		"lapis_bowl":
+			# A stone bowl with a band of painted blue (ink here), beside a rough
+			# lump of the dear stone it stood in for.
+			var rim := ellipse(Vector2(-8, -2), 30, 9, 0, 32)
+			var body := PackedVector2Array([Vector2(-38, -2), Vector2(-33, 14), Vector2(-20, 24), Vector2(4, 24), Vector2(17, 14), Vector2(22, -2)])
+			shape(ci, body, P.TAG.lerp(P.PAPER_DK, 0.5), P.INK, 2)
+			for k in 7:  # the painted band
+				disc(ci, Vector2(-30 + k * 7.4, 8 + absf(k - 3) * 0.6), 2.4, Color(P.INK, 0.65))
+			shape(ci, rim, P.PAPER_DK, P.INK, 2)
+			fill(ci, ellipse(Vector2(-8, -1), 24, 6, 0, 28), Color(P.INK, 0.12))
+			var stone := PackedVector2Array([Vector2(26, 24), Vector2(28, 12), Vector2(36, 6), Vector2(46, 9), Vector2(48, 20), Vector2(40, 26)])
+			shape(ci, stone, P.IRON_LT, P.INK, 2)
+			for p in [Vector2(34, 14), Vector2(42, 18), Vector2(37, 21)]:  # its flecks
+				disc(ci, p, 1.2, P.TAG)
+			ci.draw_line(Vector2(-46, 27), Vector2(52, 27), Color(P.INK, 0.25), 1.5, true)  # the shelf
+		"pattern_loom":
+			# A small Han pattern loom: its row of pattern shafts above the warp,
+			# one lifted with its threads, and the pattern growing in the cloth.
+			for x in [-38.0, 30.0]:
+				shape(ci, round_rect(Rect2(x, -44, 8, 84), 3), P.WOOD, P.INK, 2)
+			shape(ci, round_rect(Rect2(-42, -48, 84, 9), 4), P.WOOD_DK, P.INK, 2)
+			shape(ci, round_rect(Rect2(-42, 32, 84, 8), 4), P.WOOD_DK, P.INK, 2)
+			var lifted := [1, 3, 4, 6]  # the threads the raised shaft holds
+			for i in 9:  # the warp
+				var x := -24.0 + i * 6
+				line(ci, Vector2(x, -10 if i in lifted else -4), Vector2(x, 30), Color(P.WARP, 1.0), 1.3)
+			for k in 5:  # the pattern shafts, one raised
+				var y := -36.0 + k * 5 - (5.0 if k == 2 else 0.0)
+				shape(ci, round_rect(Rect2(-30, y, 60, 3.4), 1.5), P.WOOD_LT if k == 2 else P.WOOD, Color(P.INK, 0.8), 1.2)
+			for i in lifted:  # the raised shaft's threads
+				line(ci, Vector2(-24.0 + i * 6, -27), Vector2(-24.0 + i * 6, -10), Color(P.HOOP, 0.9), 1.0)
+			ci.draw_rect(Rect2(-28, 8, 56, 22), P.CLOTH)
+			for r in 3:  # the pattern, repeating
+				for k in 7:
+					if (k + r) % 3 == 0 or k == 3:
+						ci.draw_rect(Rect2(-21 + k * 6, 13 + r * 5.5, 5, 3.5), Color(P.INK, 0.45))
+			ci.draw_rect(Rect2(-28, 8, 56, 22), Color(P.INK, 0.35), false, 1.5)
 		"paper_strip":
 			# Bouchon's strip of punched paper, unrolling off its wooden roller.
 			var strip := PackedVector2Array([Vector2(-16, -24), Vector2(16, -24), Vector2(21, 24), Vector2(-11, 24)])
@@ -1326,25 +1380,6 @@ static func history_picture(ci: CanvasItem, id: String, c: Vector2, s: float) ->
 				shape(ci, ellipse(Vector2(x, -31), 5, 9, 0, 16), P.WOOD_DK, P.INK, 2)
 			shape(ci, round_rect(Rect2(-40, -38, 80, 14), 7), P.WOOD, P.INK, 2)
 			line(ci, Vector2(-30, -34), Vector2(26, -34), Color(P.WOOD_LT, 0.8), 2)
-		"card_chain":
-			# Falcon's cards, laced edge to edge into a chain that folds.
-			var cards := [Vector2(-4, -29), Vector2(4, 0), Vector2(-4, 29)]
-			var holes := [[1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1], [0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1], [1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0]]
-			for k in 3:
-				var at: Vector2 = cards[k]
-				var pts := round_rect(Rect2(at - Vector2(32, 10), Vector2(64, 20)), 3)
-				shape(ci, pts, P.TAG, P.INK, 2)
-				for i in 12:  # two rows of six
-					if holes[k][i] == 1:
-						disc(ci, at + Vector2(-15 + (i % 6) * 6, -4 + (i / 6) * 8), 1.9, Color(P.INK, 0.75))
-				for side in [-1.0, 1.0]:  # a lace hole at each end
-					ring(ci, at + Vector2(side * 26, 0), 2.2, Color(P.INK, 0.6), 1.2)
-			for k in 2:  # the lacing: a crossed stitch between each pair, at both ends
-				for side in [-1.0, 1.0]:
-					var a: Vector2 = cards[k] + Vector2(side * 26, 0)
-					var b: Vector2 = cards[k + 1] + Vector2(side * 26, 0)
-					line(ci, a + Vector2(-3, 0), b + Vector2(3, 0), P.HOOP, 1.6)
-					line(ci, a + Vector2(3, 0), b + Vector2(-3, 0), P.HOOP, 1.6)
 		"jacquard_loom":
 			# The Jacquard head on top of a loom, its chain of cards hanging beside.
 			for i in 7:  # the warp, down from the head to the cloth
@@ -1367,44 +1402,6 @@ static func history_picture(ci: CanvasItem, id: String, c: Vector2, s: float) ->
 				for i in 3:
 					if (k + i) % 2 == 0:
 						disc(ci, at + Vector2(-5 + i * 5, 0), 1.4, Color(P.INK, 0.7))
-		"mauve":
-			# Perkin's flask of dye, a dyed skein of silk hung to dry beside it.
-			# Ink-dark, never purple: the picture keeps to the workshop's tones.
-			var dye := P.TAG.lerp(P.INK, 0.62)
-			line(ci, Vector2(6, -40), Vector2(44, -40), P.WOOD_DK, 3)  # the drying rod
-			for k in 3:  # the skein: loops of thread hanging from the rod
-				var x := 14.0 + k * 9
-				shape(ci, ellipse(Vector2(x, -12), 4.5, 26, 0, 20), Color(dye, 0.0), dye, 3)
-			for k in 2:
-				line(ci, Vector2(10 + k * 22, 12), Vector2(14 + k * 18, 18), dye, 2.5)
-			var flask := PackedVector2Array([Vector2(-26, -34), Vector2(-14, -34), Vector2(-14, -12), Vector2(0, 26), Vector2(-2, 32), Vector2(-38, 32), Vector2(-40, 26), Vector2(-26, -12)])
-			shape(ci, flask, P.GLASS, P.INK, 2)
-			fill(ci, PackedVector2Array([Vector2(-31.5, 4), Vector2(-8.5, 4), Vector2(0, 26), Vector2(-2, 30), Vector2(-38, 30), Vector2(-40, 26)]), dye)
-			line(ci, Vector2(-31, 4), Vector2(-9, 4), Color(P.INK, 0.5), 1.2)
-			line(ci, Vector2(-23, -28), Vector2(-23, -14), Color(P.SHINE_MID, 0.8), 2)  # the glass's glint
-			shape(ci, round_rect(Rect2(-28, -40, 16, 7), 2), P.WOOD_LT, P.INK, 1.6)  # the cork
-			ci.draw_line(Vector2(-46, 33), Vector2(48, 33), Color(P.INK, 0.25), 1.5, true)  # the bench
-		"drawloom":
-			# A drawloom: a tall frame, the pattern's cords hanging from the top
-			# beam, one bundle pulled down, lifting its threads over the cloth.
-			for x in [-38.0, 30.0]:
-				shape(ci, round_rect(Rect2(x, -44, 8, 84), 3), P.WOOD, P.INK, 2)
-			shape(ci, round_rect(Rect2(-42, -48, 84, 9), 4), P.WOOD_DK, P.INK, 2)
-			shape(ci, round_rect(Rect2(-42, 32, 84, 8), 4), P.WOOD_DK, P.INK, 2)
-			for i in 9:  # the cords, from the top beam down to the warp
-				var x := -24.0 + i * 6
-				var pulled := i in [2, 3, 6]
-				line(ci, Vector2(x, -39), Vector2(x, -6 if pulled else -14), Color(P.HOOP, 0.9 if pulled else 0.55), 1.4 if pulled else 1.0)
-			shape(ci, ellipse(Vector2(-6, -4), 15, 4, 0, 20), Color(P.TAG, 0.0), P.INK, 1.6)  # the bundle in a hand's loop
-			ci.draw_rect(Rect2(-28, 6, 56, 24), P.CLOTH)
-			for i in 9:  # the warp, some threads lifted by their cords
-				var x := -24.0 + i * 6
-				line(ci, Vector2(x, 0.0 if i in [2, 3, 6] else 6.0), Vector2(x, 30), Color(P.WARP, 1.0), 1.3)
-			for r in 3:  # a picture growing in the cloth, in ink and paper
-				for k in 7:
-					if (r + k) % 3 != 0:
-						ci.draw_rect(Rect2(-21 + k * 6, 20 + r * 3.2, 5, 2.6), Color(P.INK, 0.25 + 0.15 * r))
-			ci.draw_rect(Rect2(-28, 6, 56, 24), Color(P.INK, 0.35), false, 1.5)
 		"woven_portrait":
 			# The silk portrait of Jacquard, framed on a nail, cards tucked behind.
 			for k in 2:  # two cards, laced, peeking out from behind

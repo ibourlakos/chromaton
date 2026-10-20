@@ -382,9 +382,12 @@ static func quilt_full(p_levels: Array, p_progress, c: int) -> bool:
 	return not list.is_empty() and list.all(func(l): return p_progress.is_solved(l.id))
 
 
-## A note's year as the tag and the card show it: "1725", or "150 BC" for a
-## year before the common era (written negative in levels/index.json).
+## A note's date as the tag and the card show it: its "when" where it has one
+## ("about 4000 BC"), else its year, "1725", or "150 BC" for a year before the
+## common era (written negative in levels/index.json; the year orders notes).
 static func year_text(note: Dictionary) -> String:
+	if str(note.get("when", "")) != "":
+		return str(note["when"])
 	var y := int(note.get("year", 0))
 	return str(y) if y > 0 else "%d BC" % -y
 
