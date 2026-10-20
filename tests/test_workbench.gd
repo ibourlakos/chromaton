@@ -488,7 +488,7 @@ func test_dearer(by_id: Dictionary) -> void:
 	var wb = open(queen, progress)
 	var dearer: Array = wb._dearer_inventions()
 	check(dearer.size() == 1 and dearer[0]["id"] == "third_paint" and dearer[0]["yours"] == 2 and dearer[0]["lowest"] == 1 and dearer[0]["from"] == pawn.ref(),
-		"a dearer Third Paint is named, with 25. The Pawn as the way down (%s)" % [dearer])
+		"a dearer Third Paint is named, with 29. The Pawn as the way down (%s)" % [dearer])
 	var line: String = Level.dear_line(dearer)
 	check(line == "Your Third Paint costs 2. Three stars on %s bring it down to 1." % pawn.ref(), "the line reads as the success panel's (%s)" % line)
 	wb.show_note()
@@ -1256,7 +1256,7 @@ func _default_keys(action: String) -> Array:
 ## a solved level.
 func test_guides(levels: Array) -> void:
 	var guided := levels.filter(func(l): return not l.steps.is_empty()).map(func(l): return l.id)
-	check(guided == ["one_pot", "yellow", "blue", "orange", "white", "black_short_way", "turn_the_wheel", "mix_table", "filter_table", "two_pawns"], "ten guided levels (%s)" % str(guided))
+	check(guided == ["one_pot", "yellow", "blue", "orange", "white", "black_short_way", "turn_the_wheel", "mix_table", "filter_table", "neither_twice"], "ten guided levels (%s)" % str(guided))
 	var p = Progress.new()
 	for l in levels:
 		if not l.invention.is_empty():

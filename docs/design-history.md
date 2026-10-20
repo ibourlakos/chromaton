@@ -347,6 +347,44 @@ The Third Paint left chapter 2 for chapter 3.
 
 ---
 
+## §5.1 The chess chapters at nine
+
+*Replaced on 2026-10-20, when the Chess Clocks went to Lost Levels and the chess chapters to eight (DESIGN.md §5.1, the re-org in fours, release 4). The two tables and the themes paragraph, word for word as they stood (level numbers as of 2026-10-19):*
+
+**Chapter 5, Invent What You Know** (9 levels, quilt 3 across): the six white chess pieces on orange and blue squares down the sides, and the game's three chess themes down the middle column (the clock, the board, the trophy), all 8×8 in the same paints. The player invents the Third Paint, rebuilds the critters from it, then invents Extreme Mix.
+
+| # | Level · machine phrase | Does | Cards | ★★ | ★★★ | Machine |
+|---|---|---|---|---|---|---|
+| 29 | The Pawn · Third Paint | **earns the Third Paint**, `Invert(Mix(A, B))` | 2 | 3 | 2 | `Invert(Mix(A, B))` |
+| 30 | The Chess Clock · What Neither Has | G: showcase, the invention placed as one piece; black ink wipes the cloth white; waits | 2 | 2 | 1 | `ThirdPaint(A, B)` |
+| 31 | The Rook · A Flip Pan, Rebuilt | Invert from Third Paints; waits | 1 | 2 | 1 | `ThirdPaint(A, A)` |
+| 32 | The Queen · Extreme Mix | **earns Extreme Mix** (Contrast) | 2 | 5 | 3 | `ThirdPaint(Filter(A, B), ThirdPaint(A, B))` |
+| 33 | The Chessboard · Stripes Crossed | showcase: orange and blue row stripes crossed with white and black column stripes; waits | 2 | 3 | 2 | `ExtremeMix(A, B)` |
+| 34 | The Knight · A Mixing Tub, Rebuilt | Mix from Third Paints; waits | 2 | 4 | 2 | `ThirdPaint(ThirdPaint(A, B), ThirdPaint(A, B))` |
+| 35 | The Bishop · A Sieve, Rebuilt | Filter, with the Sieve locked | 2 | 5 | 3 | `ThirdPaint(Invert(A), Invert(B))` |
+| 36 | The Trophy · Only the Blue Flipped | Extreme Mix with the blue pot | 1 | 5 | 3 | `ExtremeMix(A, Blue)` |
+| 37 | The King · Same Paint | capstone, Third Paints only; waits | 2 | 6 | 4 | four Third Paints |
+
+**Chapter 6, The Looking Glass** (9 levels, quilt 3 across): each level is the mirror twin (De Morgan dual) of chapter 5's in the same slot, its picture that level's photo negative (black chess pieces, the squares swapped, the gems flipped), so the two quilts hang as a pair. Every Mix becomes a Filter, and black becomes white.
+
+| # | Level · machine phrase | Does | Cards | ★★ | ★★★ | Machine |
+|---|---|---|---|---|---|---|
+| 38 | The Black Pawn · Missing From Either | **earns Missing From Either**, `Invert(Filter(A, B))` | 2 | 3 | 2 | `Invert(Filter(A, B))` |
+| 39 | The Black Chess Clock · What They Don't Both Have | showcase (not guided); bare paper turns the cloth black; waits | 2 | 2 | 1 | `MissingFromEither(A, B)` |
+| 40 | The Black Rook · A Flip Pan, Rebuilt | waits | 1 | 2 | 1 | `MissingFromEither(A, A)` |
+| 41 | The Black Queen · Same Paint | **earns Same Paint** | 2 | 6 | 4 | `Mix(Filter(A, B), Invert(Mix(A, B)))` |
+| 42 | The Looking-Glass Board · Stripes Agreeing | showcase, the chessboard's two cards; waits | 2 | 4 | 3 | `SamePaint(A, B)` |
+| 43 | The Black Knight · A Sieve, Rebuilt | waits | 2 | 4 | 2 | two Missing From Eithers |
+| 44 | The Black Bishop · A Mixing Tub, Rebuilt | Mix, with the Mixing Tub locked | 2 | 5 | 3 | `MissingFromEither(Invert(A), Invert(B))` |
+| 45 | The Black Trophy · Only the Blue Flipped | Same Paint with the orange pot | 1 | 6 | 4 | (also 4 with Missing From Either) |
+| 46 | The Black King · Extreme Mix | capstone, Missing From Eithers only; waits | 2 | 6 | 4 | four Missing From Eithers |
+
+🟡 **Six pieces and three chess themes** (designer, 2026-10-17; built and merged 2026-10-17, on itch since 2026.10.18-0027698; to play for in the playtest notes, package A). A chess quilt is the six pieces (Pawn, Rook, Queen, Knight, Bishop, King) and three themes about the game that aren't pieces. The themes take the quilt's middle column, slots 2, 5 and 8, and tell the game top to bottom: **the clock** starts it, **the board** is played, **the trophy** ends it. Every theme cloth is 8×8 in the pieces' paints: orange and blue squares, the figure in white, one gem; the twins in The Looking Glass have the squares swapped, the figure in black and the gem flipped, as the black pieces do. Ids follow the machines and stay (`two_pawns`, `little_board`, `the_crown` and their twins), so saves keep their records.
+
+*Why it changed:* chapters hold a multiple of 4 levels (2026-10-18). No even grid has a centre, so the middle column of themes went; the designer parked the clocks rather than the boards (2026-10-18), and The Rook took back the Third Paint's guided showcase (2026-10-20).
+
+---
+
 ## §5.7 The Journal, before the consolidation
 
 *DESIGN.md lines 440–471 as of c369c4d; DESIGN.md now folds in the WP3 calls and drops the 'today' wording.*

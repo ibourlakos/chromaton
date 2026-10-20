@@ -4,7 +4,7 @@ Decided by the designer, 2026-10-05 (DESIGN.md §5.1, "Level text"). Written int
 
 - **Title:** two phrases side by side in the top bar, `cloth · machine`. The machine phrase says what the machine does, never how it's built; on an invention level it's the invention's name (with the sticker mark); in the paint box, the pot it makes.
 - **Hint panel:** the goal, then the hint: a world-story sentence, then the how, naming pieces by their player words (red pot, Shift Wheel, Mixing Tub, Flip Pan, Sieve, Split). Invention names are today's (their names and personalities come later).
-- **Level objectives** (2026-10-18, DESIGN.md §5.1): the hint panel shows the goal as the ★ objective with the hint under it, then the ★★ and ★★★ costs. A goal says what the level earns ("and invent the Third Paint", "and earn the yellow pot"; level 1 "with the red pot"; the cheaper-pot levels "Three stars make your green pot cheaper."). A **★★★ nudge** (`star_hint`) is written only where the hint describes a dearer machine than ★★★ (28, 32); it shows once the player has ★★. The goals and nudges marked *(draft, 2026-10-18)* wait for the designer's markup; the level files already carry them.
+- **Level objectives** (2026-10-18, DESIGN.md §5.1): the hint panel shows the goal as the ★ objective with the hint under it, then the ★★ and ★★★ costs. A goal says what the level earns ("and invent the Third Paint", "and earn the yellow pot"; level 1 "with the red pot"; the cheaper-pot levels "Three stars make your green pot cheaper."). A **★★★ nudge** (`star_hint`) is written only where the hint describes a dearer machine than ★★★ (28, 31); it shows once the player has ★★. The goals and nudges marked *(draft, 2026-10-18)* wait for the designer's markup; the level files already carry them.
 - **Guided levels:** one step line per step, shown beside the hand. ★ marks a guided level.
 - Never bits, binary or bytes. No "A paint shows where ...".
 - **A level's name** (its primary title, for tags, Cloths and Scores) is the cloth phrase, or in the paint box the machine phrase. Text that refers to a level gives its number and primary title in the level-title font, the number and its dot in stamp brown and a narrow gap before the name: "2. The Yellow Pot" (designer, 2026-10-05; Bree Serif and the stamp-brown number since 2026-10-18; DESIGN.md §5.1). The level files write a marker, `{level:yellow}`, never the number and name; this file writes what the player reads.
@@ -188,42 +188,37 @@ Seaside pictures, 8×6 (re-org in fours, 2026-10-19): the one-card levels first,
 - **Goal:** Weave the pawn, and invent the Third Paint. *(draft, 2026-10-18: was "Weave the pawn.")*
 - **Hint:** Any two paints leave out a third, the one neither has. Mix the two cards, then flip the mix.
 
-### 30 ★ *The Chess Clock · What Neither Has* (`two_pawns`, new 2026-10-06, showcase)
-- **Goal:** Weave the chess clock.
-- **Hint:** The clock starts the game. Where a card has every paint, neither card is missing anything, so the cloth turns white. Give your Third Paint both cards and tube it to the loom: one piece does what a Mixing Tub and a Flip Pan did.
-- **Steps:** 1. "Your Third Paint is a piece now, on the shelf." (its slot lights) 2. "Like any piece: paints in on the left, one out on the right." (the Third Paint in) 3. "Give it both cards." (two tubes) 4. "To the loom: what neither card has, in one piece."
-- Notes: the showcase after The Pawn (playtest R3); the first invention used as a piece is guided here now, so The Rook is no longer guided. Waits for the Third Paint. Was Two Pawns until 2026-10-17 (playtest R4: it was The Pawn again, on cards of noise); now the first of the quilt's three chess themes (clock, board, trophy). Card A is the board by night with the dials left bare, card B the clock in black ink with green dials: the hint gives the new idea (black wipes the cloth white) and leaves the board flipping back, and the red dials, to the player.
-
-### 31 The Rook · A Flip Pan, Rebuilt (`neither_twice`)
+### 30 ★ The Rook · A Flip Pan, Rebuilt (`neither_twice`)
 - **Goal:** Weave the rook, and build a Flip Pan from Third Paints.
 - **Hint:** What neither of two same paints has is that paint's opposite. Split the card and give the Third Paint the same paint twice.
-- Notes: the goal and the title now say it rebuilds Invert (designer's note). No longer guided since 2026-10-06: its steps (the first invention used as a piece) moved to level 30 (now The Chess Clock).
+- **Steps:** 1. "Your Third Paint is a piece now, on the shelf." 2. "Like any piece: paints in on the left, one out on the right." (the Third Paint in) 3. "Split the card, so both its inlets get the same paint." (Split in, tubes) 4. "To the loom: a Flip Pan, rebuilt in one piece." *(2026-10-20, from The Chess Clock's steps)*
+- Notes: the goal and the title now say it rebuilds Invert (designer's note). Guided again since 2026-10-20: its steps (the first invention used as a piece) were Two Pawns' and The Chess Clock's from 2026-10-06 until the clocks parked.
 
-### 32 The Queen · Extreme Mix (`either_not_both`, invention)
+### 31 The Queen · Extreme Mix (`either_not_both`, invention)
 - **Goal:** Weave the queen, and invent Extreme Mix. *(draft, 2026-10-18: was "Weave the queen.")*
 - **Hint:** The queen wears only the paint that comes from one card alone. Mix the cards, then sieve the mix with the opposite of what they share.
 - **★★★ nudge** *(draft, 2026-10-18)*: The Third Paint from 29. The Pawn gives what neither of two paints has, in one piece. Try the queen with Third Paints and one Sieve.
 - Notes: the invention's player name is **Extreme Mix** (designer, 2026-10-05; the title was "Either, Not Both"); Contrast stays its internal name. ★★★ with the discount is `Third Paint(Third Paint(A, B), Sieve(A, B))`; the hint describes the clearer ★★ route (4) on purpose; at the rebuild, `.make solve` must keep its ★★ budget at 4 or more.
 
-### 33 *The Chessboard · Stripes Crossed* (`little_board`, new 2026-10-06, showcase)
+### 32 *The Chessboard · Stripes Crossed* (`little_board`, new 2026-10-06, showcase)
 - **Goal:** Weave the chessboard.
 - **Hint:** The game is played on sixty-four squares. Where a column is black, Extreme Mix flips the row's paint; where it is white, it keeps it. Give Extreme Mix both cards and tube it to the loom.
 - Notes: 8×8 since 2026-10-17 (was The Little Board, 4×4 in black and white): card A is rows of orange and blue, card B columns of white and black, and the cloth the pieces' orange and blue checker, two corner stitches red. Extreme Mix costs 2, so ★★★ is 2. Waits for Extreme Mix.
 
-### 34 The Knight · A Mixing Tub, Rebuilt (`back_to_mix`)
+### 33 The Knight · A Mixing Tub, Rebuilt (`back_to_mix`)
 - **Goal:** Weave the knight, and build a Mixing Tub from Third Paints.
 - **Hint:** Flip what neither card has and you get what either has. Ask a Third Paint what neither card has, then flip its answer with a second Third Paint.
 
-### 35 The Bishop · A Sieve, Rebuilt (`keep_what_they_share`)
+### 34 The Bishop · A Sieve, Rebuilt (`keep_what_they_share`)
 - **Goal:** Weave the bishop, and build a Sieve.
 - **Hint:** What two paints share is what neither of their opposites has. Flip both cards, then ask the Third Paint.
 
-### 36 *The Trophy · Only the Blue Flipped* (`the_crown`, new 2026-10-06)
+### 35 *The Trophy · Only the Blue Flipped* (`the_crown`, new 2026-10-06)
 - **Goal:** Weave the trophy.
 - **Hint:** The game is won, but the card shows the trophy by night, every paint's blue flipped: added where it was missing, taken away where it was. Ask Extreme Mix about the card and a pot of blue.
 - Notes: one card; ★★★ 3 (Extreme Mix 2 and the blue pot 1). Was The Crown until 2026-10-17: the same machine, the third chess theme. The card is a black and white board with the cup in blue and its gem in purple.
 
-### 37 The King · Same Paint (`only_third_paint`)
+### 36 The King · Same Paint (`only_third_paint`)
 - **Goal:** Weave the king using only Third Paints.
 - **Hint:** The king wears paint where the cards agree: both have it, or both lack it. Find what only card A has and what only card B has, then ask a Third Paint what neither of those has. (To find what only B has: ask a Third Paint of card A and of what neither card has.)
 - Notes: designer's title. No longer an invention level (two per chapter). Three sentences; the panel has room.
@@ -232,43 +227,38 @@ Seaside pictures, 8×6 (re-org in fours, 2026-10-19): the one-card levels first,
 
 ## Chapter 6, The Looking Glass
 
-### 38 The Black Pawn · Missing From Either (`missing_from_either`, invention)
+### 37 The Black Pawn · Missing From Either (`missing_from_either`, invention)
 - **Goal:** Weave the black pawn, and invent Missing From Either. *(draft, 2026-10-18: was "Weave the black pawn.")*
 - **Hint:** In the looking glass, mixing turns to sieving and black turns to white. Sieve the two cards, then flip what they share.
 
-### 39 *The Black Chess Clock · What They Don't Both Have* (`two_black_pawns`, new 2026-10-06, showcase)
-- **Goal:** Weave the black chess clock.
-- **Hint:** The chess clock's twin, in the looking glass. Where a card has no paint at all, the cards can't both have anything, so the cloth turns black. Give Missing From Either both cards and tube it to the loom: one piece does what a Sieve and a Flip Pan did.
-- Notes: The Chess Clock's twin, both its cards flipped; not guided (The Black Rook isn't either). Waits for Missing From Either. Was Two Black Pawns until 2026-10-17.
-
-### 40 The Black Rook · A Flip Pan, Rebuilt (`missing_twice`)
+### 38 The Black Rook · A Flip Pan, Rebuilt (`missing_twice`)
 - **Goal:** Weave the black rook, and build a Flip Pan from Missing From Either.
 - **Hint:** The rook's twin, in the looking glass. Split the card and give Missing From Either the same paint twice.
 
-### 41 The Black Queen · Same Paint (`same_paint`, invention)
+### 39 The Black Queen · Same Paint (`same_paint`, invention)
 - **Goal:** Weave the black queen, and invent Same Paint. *(draft, 2026-10-18: was "Weave the black queen.")*
 - **Hint:** In the looking glass, the queen wears paint where the cards agree. Mix what the cards share with the opposite of their mix.
 - Notes: now the level that invents Same Paint.
 
-### 42 *The Looking-Glass Board · Stripes Agreeing* (`little_black_board`, new 2026-10-06, showcase)
+### 40 *The Looking-Glass Board · Stripes Agreeing* (`little_black_board`, new 2026-10-06, showcase)
 - **Goal:** Weave the looking-glass board.
 - **Hint:** The chessboard's twin, in the looking glass: the same two cards, and every square swapped. Where a column is white, Same Paint flips the row's paint; where it is black, it keeps it. Give Same Paint both cards and tube it to the loom.
 - Notes: the same two cards as The Chessboard; the corners come out green. Same Paint costs 3, so ★★★ is 3. Waits for Same Paint. Was The Little Black Board until 2026-10-17; the name nods to Through the Looking-Glass, which is a chess game.
 
-### 43 The Black Knight · A Sieve, Rebuilt (`back_to_filter`)
+### 41 The Black Knight · A Sieve, Rebuilt (`back_to_filter`)
 - **Goal:** Weave the black knight, and build a Sieve from Missing From Either.
 - **Hint:** Flip what the cards don't both have and you get what they share. Ask Missing From Either, then flip its answer with a second one.
 
-### 44 The Black Bishop · A Mixing Tub, Rebuilt (`mix_without_mix`)
+### 42 The Black Bishop · A Mixing Tub, Rebuilt (`mix_without_mix`)
 - **Goal:** Weave the black bishop, and build a Mixing Tub.
 - **Hint:** What either paint has is what their opposites don't both have. Flip both cards, then ask Missing From Either.
 
-### 45 *The Black Trophy · Only the Blue Flipped* (`the_black_crown`, new 2026-10-06)
+### 43 *The Black Trophy · Only the Blue Flipped* (`the_black_crown`, new 2026-10-06)
 - **Goal:** Weave the black trophy.
 - **Hint:** The trophy's twin, in the looking glass: the card is the black trophy with every paint's blue flipped. Same Paint keeps what agrees, so ask it about the card and an orange pot, which holds everything but blue.
 - Notes: ★★★ 4 (Same Paint 3 and the orange pot 1; the solver also finds a 4 with Missing From Either). Was The Black Crown until 2026-10-17.
 
-### 46 The Black King · Extreme Mix (`only_missing`)
+### 44 The Black King · Extreme Mix (`only_missing`)
 - **Goal:** Weave the black king using only Missing From Either.
 - **Hint:** The king's twin wears paint from one card alone. Ask Missing From Either of the two cards, then of each card with that answer, then of the two answers.
 - Notes: machine phrase as level 32's (Extreme Mix, the invention it rebuilds), the king and queen trading rules across the looking glass, as the levels already do.
@@ -280,15 +270,27 @@ Seaside pictures, 8×6 (re-org in fours, 2026-10-19): the one-card levels first,
 - **Flip Side** (`flip_side`): The Beach Flags · Every Mix Flipped. Hint: "On the beach, every flag flips to the one paint it lacks. Tube the card through the Flip Pan."
 - **The Harbour** (`the_flower`): The Harbour · Two of Three. Hint: "Gulls, sails and the quay, each on two of three cards. Sieve each pair of cards, then mix the three answers." Until chapter 6 earns its rule as Consensus.
 - **The Big Board** (`chessboard`, made up 2026-10-06 to try the largest cards, 12 by 9; was The Chessboard until 2026-10-17, when chapter 3's 8×8 board took the name): The Big Board · Flip, Then Sieve. Hint: "On the black squares card A is black and card B is bare. On the white squares the two agree. Flip card B to its opposite, then sieve it with card A." A black and white cloth woven from `Filter(A, Invert B)` (Flip Pan and Sieve only; the card maker's "bleach" rule); a Lost Level, played only from the command line (`.make level chessboard`).
+- **The Chess Clock** and **The Black Chess Clock** (`two_pawns`, `two_black_pawns`), parked 2026-10-20 when the chess chapters went to eight (The Rook took back the guided showcase). Their text as it stood:
+
+#### ★ *The Chess Clock · What Neither Has* (`two_pawns`, new 2026-10-06, showcase)
+- **Goal:** Weave the chess clock.
+- **Hint:** The clock starts the game. Where a card has every paint, neither card is missing anything, so the cloth turns white. Give your Third Paint both cards and tube it to the loom: one piece does what a Mixing Tub and a Flip Pan did.
+- **Steps:** 1. "Your Third Paint is a piece now, on the shelf." (its slot lights) 2. "Like any piece: paints in on the left, one out on the right." (the Third Paint in) 3. "Give it both cards." (two tubes) 4. "To the loom: what neither card has, in one piece."
+- Notes: the showcase after The Pawn (playtest R3); the first invention used as a piece is guided here now, so The Rook is no longer guided. Waits for the Third Paint. Was Two Pawns until 2026-10-17 (playtest R4: it was The Pawn again, on cards of noise); now the first of the quilt's three chess themes (clock, board, trophy). Card A is the board by night with the dials left bare, card B the clock in black ink with green dials: the hint gives the new idea (black wipes the cloth white) and leaves the board flipping back, and the red dials, to the player.
+
+#### *The Black Chess Clock · What They Don't Both Have* (`two_black_pawns`, new 2026-10-06, showcase)
+- **Goal:** Weave the black chess clock.
+- **Hint:** The chess clock's twin, in the looking glass. Where a card has no paint at all, the cards can't both have anything, so the cloth turns black. Give Missing From Either both cards and tube it to the loom: one piece does what a Sieve and a Flip Pan did.
+- Notes: The Chess Clock's twin, both its cards flipped; not guided (The Black Rook isn't either). Waits for Missing From Either. Was Two Black Pawns until 2026-10-17.
 
 ---
 
 ## Text outside the level files (decided 2026-10-05)
 
-- **Locked tag** (a level waiting for an invention): "Earn the Third Paint in 29. The Pawn." (30, 31, 34, 37); "Earn Extreme Mix in 32. The Queen." (33); "Earn Missing From Either in 38. The Black Pawn." (39, 40, 43, 46); "Earn Same Paint in 41. The Black Queen." (42).
-- **The ★★★ price line** (decision 9, designer 2026-10-18; DESIGN.md §9.1): on the hint panel under the hint, and on the success panel after a run that misses ★★★, where a pot or invention costs the player more than the level's ★★★ allows (`star_needs`, written by `.\make solve`): "Your Third Paint costs 2. Three stars on 29. The Pawn bring it down to 1." A line per invention; a pot in lowercase ("Your yellow pot costs 2. Three stars on 2. The Yellow Pot bring it down to 1."). Levels with `star_needs` today: 3, 4, 5, 8, 10, 12 to 14, 16, 22, 30 to 37, 39, 40, 42 to 44, 46.
-- **"★★★ needs the invention" notice:** dropped. 32 and 33 open only from 30 or 31, and 38 only from 36 or 37, which all wait for the invention, so the player always owns it there (a cheat lends it).
-- **"New in your journal":** cheaper: "Orange pot: cheaper, 2 → 1". A new chapter: "A new chapter: Invent What You Know", with its first level's tag. Opens: "The Third Paint opens 30. The Chess Clock and 31. The Rook." (levels the invention opens beyond the usual next two).
+- **Locked tag** (a level waiting for an invention): "Earn the Third Paint in 29. The Pawn." (30, 33, 36); "Earn Extreme Mix in 31. The Queen." (32); "Earn Missing From Either in 37. The Black Pawn." (38, 41, 44); "Earn Same Paint in 39. The Black Queen." (40).
+- **The ★★★ price line** (decision 9, designer 2026-10-18; DESIGN.md §9.1): on the hint panel under the hint, and on the success panel after a run that misses ★★★, where a pot or invention costs the player more than the level's ★★★ allows (`star_needs`, written by `.\make solve`): "Your Third Paint costs 2. Three stars on 29. The Pawn bring it down to 1." A line per invention; a pot in lowercase ("Your yellow pot costs 2. Three stars on 2. The Yellow Pot bring it down to 1."). Levels with `star_needs` today: 3, 4, 5, 8, 10, 12 to 14, 16, 22, 30 to 36, 38, 40 to 42, 44.
+- **"★★★ needs the invention" notice:** dropped. A level after an invention level opens only from it or from a level that waits for its invention (31 and 32 from 29 to 31, 39 and 40 from 37 to 39), so the player always owns it there (a cheat lends it).
+- **"New in your journal":** cheaper: "Orange pot: cheaper, 2 → 1". A new chapter: "A new chapter: Invent What You Know", with its first level's tag. Opens: "The Third Paint opens 30. The Rook." (levels the invention opens beyond the usual next two).
 - **The paint-card line on each piece page** (DESIGN.md §9.1), unlocking with the page:
   - Mixing Tub: "On the paint card, a mix sits between its two paints: red and yellow meet at orange."
   - Sieve: "On the paint card, the Sieve keeps the corners two paints share: orange and purple share red."

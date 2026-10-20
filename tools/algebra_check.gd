@@ -1404,7 +1404,7 @@ func _init() -> void:
 	# --- 6. catalog ---
 	w("## 6. Recipe catalog: the inventions DESIGN.md specs")
 	w()
-	w("Priced in two trays: **the game's kit** (Red pot, Mix, Filter, Invert, Shift, free Split) and **without Filter** (chapter 3's Invent What You Know trays, and the old lean kit). Each recipe has a hand-built machine, checked on every input it is meant for. A search then tries every machine of the tray's pieces, cheapest first, and stops after %d steps per price. **A bold count is proven cheapest**, with a cheapest machine shown. A range means the search ruled out every machine below its low end before it stopped, and the high end is the hand-built machine. The full kit with three basic pots was dropped (DESIGN.md 2.5); a pot invention costs what its machine does, so it changes no price." % SEARCH_NODES)
+	w("Priced in two trays: **the game's kit** (Red pot, Mix, Filter, Invert, Shift, free Split) and **without Filter** (Invent What You Know trays, and the old lean kit). Each recipe has a hand-built machine, checked on every input it is meant for. A search then tries every machine of the tray's pieces, cheapest first, and stops after %d steps per price. **A bold count is proven cheapest**, with a cheapest machine shown. A range means the search ruled out every machine below its low end before it stopped, and the high end is the hand-built machine. The full kit with three basic pots was dropped (DESIGN.md 2.5); a pot invention costs what its machine does, so it changes no price." % SEARCH_NODES)
 	w()
 	w("| Recipe | In -> out | What it does | Game kit | Cheapest in the game kit | Without Filter |")
 	w("|---|---|---|---|---|---|")

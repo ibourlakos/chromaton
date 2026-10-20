@@ -11,13 +11,13 @@
 🟡 **Chromaton 1 is every machine that is a pure function of its inputs. Chromaton 2 is every machine with memory.** (proposal)
 
 - **The test:** if `tools/level_solver.gd` can prove the level's ★★★, it belongs in 1. A level that needs history (a tube that starts full, a loop, a card the machine writes on) belongs in 2.
-- **1 = chapters 1–8** (Paint Box, Pattern Cards, Invent What You Know, The Looking Glass, Choosing, Asking Questions, Plates, Counting). **2 = chapters 9–12** of the parked plan (Memory, Routing, Rows That Remember, The Programmable Loom), plus the pillars below.
+- **1 = chapters 1–10** (The Paint Box, Bargain Pots, Swatches, Pictures, Invent What You Know, The Looking Glass, Asking Questions, Choosing, Plates, Counting; the old 1–8 before the re-org in fours split the first two, 2026-10-18 to 2026-10-20). **2 = chapters 11–14** of the parked plan (Memory, Routing, Rows That Remember, The Programmable Loom), plus the pillars below.
 - **Why this seam:**
   - It is the oldest one in the field: combinational logic first, sequential logic second.
   - It is the seam in the code. State breaks four things (DESIGN.md §9 and the algebra review in PLAYTEST-NOTES.md): the solver's proofs, the one-tick invention lookup, the invention's every-paint check, and "a closed loop with every tube full can't turn."
   - 1 keeps its "every star is proven minimal" promise from first level to last. 2 changes the rules and says so.
 - **A frame for the story:** 1 is Babbage's Difference Engine (fixed-function arithmetic, ending in an adder); 2 is the Analytical Engine (memory, and cards that control the machine), which is the Jacquard loom's own lineage (DESIGN.md §4). Internal framing, not titles.
-- **Reading that supersedes an earlier one:** first in the conversation 2 was "whatever comes after the programmable loom, with chapters 9–12 inside 1." The version recorded here moves the line earlier, so chapters 9–12 become 2's core. ❓ Confirm the line, and whether it sits after chapter 8 or elsewhere.
+- **Reading that supersedes an earlier one:** first in the conversation 2 was "whatever comes after the programmable loom, with chapters 9–12 (now 11–14) inside 1." The version recorded here moves the line earlier, so chapters 9–12 become 2's core. ❓ Confirm the line, and whether it sits after chapter 8 or elsewhere.
 
 ## 2. Thesis: the cloth reads itself
 
@@ -26,7 +26,7 @@
 - It is the sequel move of *7 Billion Humans* after *Human Resource Machine*: the soul stays, the verb changes.
 - It gives Jacquard, cellular automata and picture filters, which the notes treat as late chapters, as the premise instead.
 - It is more tangible than abstract state machines: every puzzle has a picture you can see.
-- It builds on what is already there: the pattern card as a picture (Path B, DESIGN.md §4), cards that are the player's earlier cloths (Appliqué, chapter 6 of 1), and the Slate (below).
+- It builds on what is already there: the pattern card as a picture (Path B, DESIGN.md §4), cards that are the player's earlier cloths (Appliqué, chapter 8 of 1), and the Slate (below).
 
 ## 3. The rule changes, in order of need
 
@@ -52,16 +52,16 @@ All from the algebra review in PLAYTEST-NOTES.md (designer, 2026-10-04, parked),
 
 ## 4. The campaign
 
-The parked chapter plan (PLAYTEST-NOTES.md, "Later chapters, parked"; designer, 2026-10-05), chapters 9–12. Every chapter keeps a multiple of three levels so its quilt fills its grid, and has at most 12 levels and two new inventions (DESIGN.md §5.1, ✅ rules).
+The parked chapter plan (PLAYTEST-NOTES.md, "Later chapters, parked"; designer, 2026-10-05), chapters 11–14 (9–12 until the re-org in fours, 2026-10-20). Every chapter keeps a multiple of three levels so its quilt fills its grid, and has at most 12 levels and two new inventions (DESIGN.md §5.1, ✅ rules).
 
 | Ch | Theme | Logic ancestor | New rule or piece | Levels | Quilt |
 |---|---|---|---|---|---|
-| 9 | Memory | Flip-flops, finite-state machines | Delay | 9: Toggle, ring counter (red, yellow, blue stripes), running Mix, change detector, Keeper (a register), the paint-box counter (Next Paint plus a Delay walks the eight paints), three tartan cloths | **Tartan**: stripes, gingham and checks woven with no card at all |
-| 10 | Routing | Demultiplexer, branching | If White, Merge, the catch pot as a bin | 9 buffer levels: remove smudges instead of recolouring, sort by darkness, dedupe, count the reds, interleave two cards, ... | **Scrap quilt**: built from sorted scraps |
-| 11 | Rows That Remember | Cellular automata | Slate | 6: Sierpinski triangle (Contrast of the two neighbours, rule 90), the Rule 30 shell pattern, ... ending with Rule 110 | **Shells**: generative triangles and shells |
-| 12 | The Programmable Loom | CPU (the Jacquard loom) | None new | 3: the card is a program; a ring counter steps through it, Keepers hold values, Questions and Choose decode it, the loom weaves what it says | The finale tapestry |
+| 11 | Memory | Flip-flops, finite-state machines | Delay | 9: Toggle, ring counter (red, yellow, blue stripes), running Mix, change detector, Keeper (a register), the paint-box counter (Next Paint plus a Delay walks the eight paints), three tartan cloths | **Tartan**: stripes, gingham and checks woven with no card at all |
+| 12 | Routing | Demultiplexer, branching | If White, Merge, the catch pot as a bin | 9 buffer levels: remove smudges instead of recolouring, sort by darkness, dedupe, count the reds, interleave two cards, ... | **Scrap quilt**: built from sorted scraps |
+| 13 | Rows That Remember | Cellular automata | Slate | 6: Sierpinski triangle (Contrast of the two neighbours, rule 90), the Rule 30 shell pattern, ... ending with Rule 110 | **Shells**: generative triangles and shells |
+| 14 | The Programmable Loom | CPU (the Jacquard loom) | None new | 3: the card is a program; a ring counter steps through it, Keepers hold values, Questions and Choose decode it, the loom weaves what it says | The finale tapestry |
 
-- **Turing completeness:** chapter 11. Memory alone (chapter 9) gives finite-state machines. A finite-state machine plus a Slate that loops back into itself is a queue machine (Post's tag systems); Rule 110 shows it a second way. It needs the Slate or the cloth to grow without limit; bounded, it is only a big finite-state machine, like any real computer. (designer)
+- **Turing completeness:** chapter 13. Memory alone (chapter 11) gives finite-state machines. A finite-state machine plus a Slate that loops back into itself is a queue machine (Post's tag systems); Rule 110 shows it a second way. It needs the Slate or the cloth to grow without limit; bounded, it is only a big finite-state machine, like any real computer. (designer)
 - ❓ **27 levels is thin for a sequel**, against 1's about 66. The gap is filled by the pillars below, by chapters growing (up to 12 each), or by both. Not decided.
 - **An on-ramp.** 2 opens on a loom weaving something, not on a pot of red (see §5, pillar 5). A short recap set of pure-function levels, using the player's imported inventions, could bridge. ❓ Whether it is needed.
 
@@ -126,10 +126,10 @@ All (proposal) unless marked.
 
 ## 10. Open questions, gathered
 
-1. ❓ Does the line sit after chapter 8? (§1)
+1. ❓ Does the line sit after chapter 10? (§1)
 2. ❓ Slate before Routing? (§3)
 3. ❓ How ★★ budgets work without a proof. (§3)
-4. ❓ Is 27 levels enough, or do chapters 9–12 grow? (§4)
+4. ❓ Is 27 levels enough, or do chapters 11–14 grow? (§4)
 5. ❓ Is an on-ramp (recap levels, imported inventions) needed? (§4)
 6. ❓ Which bench constraint: bridges or tube cost? (§5.1)
 7. ❓ Where the Studio ships: free update to 1 or 2? (§5.2)
@@ -141,5 +141,5 @@ All (proposal) unless marked.
 ## 11. Source map
 
 - **DESIGN.md:** §1 vision and neighbours, §2.1 and §2.4 the closed eight-paint set, §4 the loom and Path B, §5.3–5.6 fix-it, buffer, creative loom and commissions, §5.7 the journal, §6 optimization and leaderboards, §7.2 the cast, themes and splashes, §8 accessibility, §9 tech and distribution, §9.1 the bench, §10 audience, §11 roadmap, §12 open questions.
-- **PLAYTEST-NOTES.md** (git-ignored): "Algebra review" (Delay, hand-turned critter, branching, Slate, several outputs, new functions), "Later chapters, parked" (chapters 5–12 and the Turing-completeness note), R3 (languages, historical notes, dark theme, phone layout), "Chromaton 1" (the release's crucial parts).
+- **PLAYTEST-NOTES.md** (git-ignored): "Algebra review" (Delay, hand-turned critter, branching, Slate, several outputs, new functions), "Later chapters, parked" (chapters 7–14 and the Turing-completeness note), R3 (languages, historical notes, dark theme, phone layout), "Chromaton 1" (the release's crucial parts).
 - **docs/algebra-report.md** §7 for each candidate's price in the game's kit.

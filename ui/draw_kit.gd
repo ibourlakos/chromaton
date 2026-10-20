@@ -256,7 +256,7 @@ static func text(ci: CanvasItem, font: Font, pos: Vector2, s: String, size: int,
 
 
 ## Adds `s` to a TextLine or TextParagraph in `font`, each level it refers to
-## ({level:<id>}, Level.ref()) as "25. The Pawn" in the level-title font, a
+## ({level:<id>}, Level.ref()) as "29. The Pawn" in the level-title font, a
 ## narrow gap after the number (DESIGN.md 5.1). Remembers where the numbers
 ## are (meta "stamps": [[from, to]]), which draw_paragraph and text draw in
 ## stamp brown.

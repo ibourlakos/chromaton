@@ -43,7 +43,7 @@
 ##   --stale                     the intro as it reads for a stale save
 ##   --grid                      the bench grid on (Options)
 ##   --paints                    the paint card up on the workbench
-##   --fan                       the pot slot's pots fanned out (chapter 2 on)
+##   --fan                       the pot slot's pots fanned out (from The Blue Pot on)
 ##   --players                   three profiles (the intro asks who plays)
 ##   --touch                     as on a phone build: no keys in Options, no
 ##                               key labels
