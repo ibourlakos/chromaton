@@ -485,6 +485,7 @@ An in-game book that explains how the game works and keeps what the player has m
    - **Re-org release 3, Swatches and Pictures** (2026-10-19): 2026.10.19-6e9124f (build #2157258): Pattern Cards split into Swatches (4, the pattern card guided in on The Wheel Swatch) and Pictures (8, one-card levels first, The Harbour Cat last), quilts 2 × 2 and 4 × 2, a draft note on the Han drawloom (the first year shown BC). Main is ahead of `origin/main`; nothing pushed to GitHub.
    - **Re-org release 4, the chess pair at eight** (2026-10-20): 2026.10.20-d63ca55 (build #2171252): the Chess Clocks parked in Lost Levels, The Rook guided again, both chess quilts 4 × 2 and hung as one board on either chess page, the chapters renumbered (the planned ones 7 to 10). Main is ahead of `origin/main`; nothing pushed to GitHub.
    - **Re-org release 5, the history notes pass** (2026-10-20): 2026.10.20-dd9fa40 (build #2171369): six notes in date order, every new fact checked (indigo, Egyptian blue, the Han pattern looms, Bouchon, Jacquard, the portrait), dates shown as text ("about 4000 BC"), three new pictures. Main is ahead of `origin/main`; nothing pushed to GitHub.
+   - **Re-org release 6, chapter 7** (2026-10-21): 2026.10.21-8509640 (build #2172893): Asking Questions, eight shadow-theatre levels, the inventions Any Paint? and Is It Black? (one paint in), Lovelace's note. Main is ahead of `origin/main`; nothing pushed to GitHub.
 
 ---
 
