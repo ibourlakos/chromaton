@@ -1087,7 +1087,22 @@ func _draw_cloths() -> void:
 		var order := range(list.size())
 		order.sort_custom(func(a, b): return PAINT_ROWS.find(list[a].target[0]) < PAINT_ROWS.find(list[b].target[0]))
 		patches = order.map(func(k): return patches[k])
-	var edge := K.quilt(self, Rect2(side.position + Vector2(0, 36), Vector2(side.size.x, room)), patches, list[0].cols if threads else 0, list[0].quilt_across, aspect)
+	var at := Rect2(side.position + Vector2(0, 36), Vector2(side.size.x, room))
+	var edge: Rect2
+	var twin_name: String = list[0].quilt_above if list[0].quilt_above != "" else list[0].quilt_below
+	var twin := levels.filter(func(l): return l.chapter_name == twin_name)
+	if twin.is_empty():
+		edge = K.quilt(self, at, patches, list[0].cols if threads else 0, list[0].quilt_across, aspect)
+	else:
+		# A pair that hangs as one board, black's quilt above white's: this
+		# page's at full strength, its twin faded (DESIGN.md 5.7).
+		var half := Rect2(at.position, Vector2(at.size.x, (at.size.y - 10) / 2))
+		var low := Rect2(half.position + Vector2(0, half.size.y + 10), half.size)
+		var twin_patches: Array = twin.map(func(l): return [l.cols, l.target] if progress.is_solved(l.id) else [])
+		var mine_on_top: bool = list[0].quilt_below != ""
+		edge = K.quilt(self, half if mine_on_top else low, patches, 0, list[0].quilt_across, aspect)
+		var other := K.quilt(self, low if mine_on_top else half, twin_patches, 0, twin[0].quilt_across, aspect)
+		draw_rect(other.grow(2), Color(P.PAPER, 0.55))
 	var done := patches.filter(func(p): return not p.is_empty()).size()
 	var line := "Every cloth sewn in!" if done == list.size() else "%d of %d cloths woven" % [done, list.size()]
 	K.text(self, P.ui(700), Vector2(side.get_center().x, side.end.y - 30), line, 16, P.INK_SOFT)

@@ -74,6 +74,8 @@ var chapter := 0  # index into Level.chapters()
 var chapter_name := ""
 var quilt_across := 0  # the chapter's patches across in its quilt (index.json; 0: as fits)
 var quilt_order := ""  # "paint": the quilt stacks its threads in paint order, not level order (index.json)
+var quilt_above := ""  # the chapter whose quilt hangs above this one's, as one board (index.json)
+var quilt_below := ""  # the chapter whose quilt hangs below this one's
 var chapter_note := {}  # the chapter's historical note (index.json): {title, year, picture, text}, or {}
 var name := ""  # the primary title
 var cloth_phrase := ""
@@ -109,7 +111,9 @@ var error := ""
 ## The campaign's chapters from levels/index.json, in order:
 ## [{"name": String, "levels": [level ids], optional "quilt_across": int,
 ## optional "quilt_order": "paint" (a chapter of one-row cloths stacks them in
-## paint order, so its quilt matches another row for row),
+## paint order, so its quilt matches another row for row), optional
+## "quilt_above" or "quilt_below": the name of a chapter whose quilt hangs above
+## or below this one's on its Cloths page, the pair read as one board,
 ## optional "note": {"title", "year" (negative before the common era),
 ## "picture", "text"}}]
 ## (how many patches across the chapter's quilt is; every chapter but the
@@ -159,6 +163,8 @@ static func load_all() -> Array:
 			level.chapter_name = str(index[c]["name"])
 			level.quilt_across = int(index[c].get("quilt_across", 0))
 			level.quilt_order = str(index[c].get("quilt_order", ""))
+			level.quilt_above = str(index[c].get("quilt_above", ""))
+			level.quilt_below = str(index[c].get("quilt_below", ""))
 			level.chapter_note = index[c].get("note", {})
 			out.append(level)
 	_lay_trays(out)
@@ -314,7 +320,7 @@ static func earning_level(levels: Array, inv_id: String):
 
 
 ## The locked tag's line for a level waiting for inventions: where to earn
-## the first one it waits for ("Earn the Third Paint in 25. The Pawn."), its
+## the first one it waits for ("Earn the Third Paint in 29. The Pawn."), its
 ## level a marker (ref()).
 static func waiting_line(levels: Array, inv_ids: Array) -> String:
 	if inv_ids.is_empty():
@@ -351,7 +357,7 @@ func dear_inventions(owned: Dictionary, levels: Array) -> Array:
 
 
 ## What the hint panel and the success panel say about dear_inventions(), a
-## line each: "Your Third Paint costs 2. Three stars on 25. The Pawn bring it
+## line each: "Your Third Paint costs 2. Three stars on 29. The Pawn bring it
 ## down to 1." (DESIGN.md 9.1). A no-break space keeps the new price on the
 ## line with "to".
 static func dear_line(dear: Array) -> String:

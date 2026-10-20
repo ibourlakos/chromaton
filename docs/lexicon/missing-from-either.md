@@ -18,7 +18,7 @@ Missing From Either gives whatever one paint or the other lacks: the opposite of
 
 ## Design
 
-- An invention (DESIGN.md §5.1), earned in The Black Pawn, chapter 4's first level, the looking-glass twin of The Pawn's Third Paint.
+- An invention (DESIGN.md §5.1), earned in The Black Pawn, the first level of The Looking Glass, the looking-glass twin of The Pawn's Third Paint.
 - Back to Filter rebuilds the Sieve from it; Mix Without Mix rebuilds the Mixing Tub from it and the Flip Pan.
 
 ## Implementation

@@ -20,7 +20,7 @@ Extreme Mix mixes two paints, but whatever they share washes out.
 
 ## Design
 
-- An invention (DESIGN.md §5.1), earned in The Queen, chapter 3's fourth level. Its reference machine is two Third Paints and a Sieve.
+- An invention (DESIGN.md §5.1), earned in The Queen, the third level of Invent What You Know. Its reference machine is two Third Paints and a Sieve.
 - The Black row is The Crown's idea and the Blue row The Little Board's; the journal may give them away (designer, 2026-10-08: journal spoilers are fine).
 - The R4 note's seventh row, Purple + Green → Orange (the shared blue washes out), is the same kind as Orange + Red, so it's left out (one row per kind of pair, 4 to 6 rows).
 

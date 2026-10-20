@@ -42,7 +42,7 @@ func _init() -> void:
 	quit(1 if failures > 0 else 0)
 
 
-## Text refers to a level by a marker, {level:<id>}, set as "25. The Pawn"
+## Text refers to a level by a marker, {level:<id>}, set as "29. The Pawn"
 ## in the level-title font (DESIGN.md 5.1): never a number and name typed by
 ## hand, which would go stale when levels move.
 func test_level_refs(levels: Array) -> void:
@@ -66,8 +66,8 @@ func test_level_refs(levels: Array) -> void:
 
 
 func test_loading(levels: Array) -> void:
-	check(levels.size() == 46, "forty-six campaign levels (got %d)" % levels.size())
-	check(Level.chapters().map(func(c): return c["levels"].size()) == [8, 8, 4, 8, 9, 9], "six chapters of 8, 8, 4, 8, 9 and 9 levels, each quilt full")
+	check(levels.size() == 44, "forty-four campaign levels (got %d)" % levels.size())
+	check(Level.chapters().map(func(c): return c["levels"].size()) == [8, 8, 4, 8, 8, 8], "six chapters of 8, 8, 4, 8, 8 and 8 levels, each quilt full")
 	var ids := {}
 	for level in levels:
 		check(level.error == "", "level loads cleanly: %s %s" % [level.id, level.error])
@@ -94,10 +94,10 @@ func test_loading(levels: Array) -> void:
 			check(level.raw["cards"].all(func(c): return not c.has("smudges")), "%s: no smudges on its cards" % level.id)
 			check(level.cols >= Level.CARD_COLS_MIN and level.cols <= Level.CARD_COLS_MAX and level.rows >= Level.CARD_ROWS_MIN and level.rows <= Level.CARD_ROWS_MAX, "%s: its card pictures are 4 to 12 columns by 1 to 9 rows (%d by %d)" % [level.id, level.cols, level.rows])
 	var lost := Level.load_lost()
-	check(lost.map(func(l): return l.id) == ["flip_side", "the_flower", "chessboard"] and lost.all(func(l): return l.error == ""), "Flip Side, The Harbour and The Chessboard wait in Lost Levels")
-	check(not Level.index_ids().has("flip_side") and not Level.index_ids().has("the_flower") and not Level.index_ids().has("chessboard"), "Lost Levels stay out of the campaign")
+	check(lost.map(func(l): return l.id) == ["flip_side", "the_flower", "chessboard", "two_pawns", "two_black_pawns"] and lost.all(func(l): return l.error == ""), "Flip Side, The Harbour, The Big Board and the two Chess Clocks wait in Lost Levels")
+	check(not Level.index_ids().has("flip_side") and not Level.index_ids().has("the_flower") and not Level.index_ids().has("chessboard") and not Level.index_ids().has("two_pawns") and not Level.index_ids().has("two_black_pawns"), "Lost Levels stay out of the campaign")
 	var chess = lost.filter(func(l): return l.id == "chessboard")[0]
-	check(chess.cols == Level.CARD_COLS_MAX and chess.rows == Level.CARD_ROWS_MAX and chess.cards.size() == 2, "The Chessboard's cards are the largest a card may be (%d by %d)" % [chess.cols, chess.rows])
+	check(chess.cols == Level.CARD_COLS_MAX and chess.rows == Level.CARD_ROWS_MAX and chess.cards.size() == 2, "The Big Board's cards are the largest a card may be (%d by %d)" % [chess.cols, chess.rows])
 	check(range(chess.size()).all(func(i): return chess.target[i] == (Paint.BLACK if (i / chess.cols + i % chess.cols) % 2 == 0 else Paint.WHITE)), "and it weaves a black and white chessboard")
 	var tables := levels.filter(func(l): return l.id in ["mix_table", "filter_table"])
 	for t in tables:
@@ -341,7 +341,7 @@ func test_locks_and_loans(levels: Array, inventions: Dictionary) -> void:
 	for level in levels:
 		by_id[level.id] = level
 	var waiting := levels.filter(func(l): return not l.waits_for.is_empty()).map(func(l): return l.id)
-	check(waiting == ["two_pawns", "neither_twice", "little_board", "back_to_mix", "only_third_paint", "two_black_pawns", "missing_twice", "little_black_board", "back_to_filter", "only_missing"], "the levels offering only inventions and Split wait for them (%s)" % str(waiting))
+	check(waiting == ["neither_twice", "little_board", "back_to_mix", "only_third_paint", "missing_twice", "little_black_board", "back_to_filter", "only_missing"], "the levels offering only inventions and Split wait for them (%s)" % str(waiting))
 	var p = Progress.new()
 	p.know_levels(levels)
 	var rook: int = ids.find("neither_twice")

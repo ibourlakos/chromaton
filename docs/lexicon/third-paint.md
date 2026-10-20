@@ -19,7 +19,7 @@ The Third Paint mixes two paints and gives back the opposite: whatever neither o
 
 ## Design
 
-- The first invention that isn't a pot (DESIGN.md §5.1), earned in The Pawn, chapter 3's first level; owning it opens The Chess Clock and The Rook.
+- The first invention that isn't a pot (DESIGN.md §5.1), earned in The Pawn, the first level of Invent What You Know; owning it opens The Rook.
 - Back to Mix rebuilds the Mixing Tub from two Third Paints.
 
 ## Implementation

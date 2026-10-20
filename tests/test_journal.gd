@@ -534,7 +534,7 @@ func test_news_entries() -> void:
 	wb._on_tick_shown()
 	check(wb.news_extra.has("chapter") and wb.news_extra["chapter"]["name"] == "Invent What You Know", "a solve that opens a chapter says so")
 	wb.queue_free()
-	# The Pawn earns the Third Paint, which opens The Chess Clock and The Rook.
+	# The Pawn earns the Third Paint, which opens The Rook.
 	p.record_solve("black_cat", 4, 10, 3)
 	wb = open_bench(by_id["third_color"], p)
 	wb.levels = levels
@@ -542,11 +542,11 @@ func test_news_entries() -> void:
 	wb.fast_forward(100000, 1.0)
 	wb._on_tick_shown()
 	var opens: Array = wb.news_extra.get("opens", {}).get("levels", []).map(func(l): return l.id)
-	check(opens == ["two_pawns", "neither_twice"], "the Third Paint opens The Chess Clock and The Rook (%s)" % str(opens))
+	check(opens == ["neither_twice"], "the Third Paint opens The Rook (%s)" % str(opens))
 	var news = JournalNews.new()
 	news.setup([], [], func(ci, id, c, s): pass, wb.news_extra)
-	check(news.rows[0]["title"] == "The Third Paint opens {level:two_pawns} and {level:neither_twice}.", "in those words (%s)" % news.rows[0]["title"])
-	check(Level.plain(news.rows[0]["title"]) == "The Third Paint opens %s and %s." % [by_id["two_pawns"].ref_name(), by_id["neither_twice"].ref_name()], "the markers read as level references (%s)" % Level.plain(news.rows[0]["title"]))
+	check(news.rows[0]["title"] == "The Third Paint opens {level:neither_twice}.", "in those words (%s)" % news.rows[0]["title"])
+	check(Level.plain(news.rows[0]["title"]) == "The Third Paint opens %s." % by_id["neither_twice"].ref_name(), "the markers read as level references (%s)" % Level.plain(news.rows[0]["title"]))
 	news.free()
 	wb.queue_free()
 	# A cheaper pot: both prices, only when the price drops.

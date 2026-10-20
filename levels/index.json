@@ -44,8 +44,9 @@
 	},
 	{
 		"name": "Invent What You Know",
-		"quilt_across": 3,
-		"levels": ["third_color", "two_pawns", "neither_twice", "either_not_both", "little_board", "back_to_mix", "keep_what_they_share", "the_crown", "only_third_paint"],
+		"quilt_across": 4,
+		"quilt_above": "The Looking Glass",
+		"levels": ["third_color", "neither_twice", "either_not_both", "little_board", "back_to_mix", "keep_what_they_share", "the_crown", "only_third_paint"],
 		"note": {
 			"title": "Jacquard's Loom",
 			"year": 1804,
@@ -55,8 +56,9 @@
 	},
 	{
 		"name": "The Looking Glass",
-		"quilt_across": 3,
-		"levels": ["missing_from_either", "two_black_pawns", "missing_twice", "same_paint", "little_black_board", "back_to_filter", "mix_without_mix", "the_black_crown", "only_missing"],
+		"quilt_across": 4,
+		"quilt_below": "Invent What You Know",
+		"levels": ["missing_from_either", "missing_twice", "same_paint", "little_black_board", "back_to_filter", "mix_without_mix", "the_black_crown", "only_missing"],
 		"note": {
 			"title": "The Woven Portrait",
 			"year": 1839,
@@ -67,6 +69,6 @@
 	{
 		"name": "Lost Levels",
 		"lost": true,
-		"levels": ["flip_side", "the_flower", "chessboard"]
+		"levels": ["flip_side", "the_flower", "chessboard", "two_pawns", "two_black_pawns"]
 	}
 ]
