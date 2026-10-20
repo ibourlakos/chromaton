@@ -3,10 +3,11 @@
 		"name": "The Paint Box",
 		"levels": ["one_pot", "yellow", "blue", "orange", "purple", "green_mix", "black", "white"],
 		"note": {
-			"title": "The Paper Strip",
-			"year": 1725,
-			"picture": "paper_strip",
-			"text": "In the silk town of Lyon, weaving a pattern was slow: before every pass of the shuttle, a helper had to pull the cords of the right threads by hand. In 1725 Basile Bouchon, whose father built organs, gave the loom a long strip of paper punched with holes instead. The holes chose which threads would lift, one row of holes for each row of cloth. For the first time, a loom read its own pattern."
+			"title": "The First Blue",
+			"year": -4000,
+			"when": "about 4000 BC",
+			"picture": "indigo_cloth",
+			"text": "About 6,000 years ago, at Huaca Prieta on the coast of Peru, people dyed cotton with indigo from a plant and wove it into blue-striped cloth. Scraps of it lay buried in a great mound of earth and stone until archaeologists dug them up. In 2016 chemists found the indigo in their threads: the oldest indigo-dyed cloth known, about 1,600 years older than any found in Egypt. Long before any loom read a pattern, weavers had paint to weave with."
 		}
 	},
 	{
@@ -14,10 +15,11 @@
 		"quilt_order": "paint",
 		"levels": ["green", "orange_opposite", "purple_opposite", "yellow_opposite", "blue_opposite", "red_opposite", "black_short_way", "white_cheaper"],
 		"note": {
-			"title": "A Cheap Purple",
-			"year": 1856,
-			"picture": "mauve",
-			"text": "For two thousand years purple was the dearest dye there was: Tyrian purple was squeezed from thousands of sea snails, and only emperors could afford to wear it. In 1856 William Henry Perkin, an 18-year-old student trying to make a medicine at home, found a purple dye in coal tar instead. He called it mauve, and his factory made it by the barrel, cheaply. Within a few years anyone could wear purple, and chemists set out to make every dye that way."
+			"title": "Artificial Lapis",
+			"year": -3250,
+			"when": "about 3250 BC",
+			"picture": "lapis_bowl",
+			"text": "In ancient Egypt the finest blue was lapis lazuli, a rare and costly stone. By about 3250 BC Egyptian craftsmen had learned to make a blue of their own, by heating sand, lime and copper together in a furnace. They called it artificial lapis lazuli, and it is the oldest paint known to be made rather than dug from the ground. For thousands of years it painted walls, statues and pots: a rare blue, made plentiful."
 		}
 	},
 	{
@@ -25,10 +27,11 @@
 		"quilt_across": 2,
 		"levels": ["turn_the_wheel", "opposites", "mix_table", "filter_table"],
 		"note": {
-			"title": "Cards on a Chain",
-			"year": 1728,
-			"picture": "card_chain",
-			"text": "A paper strip is hard to change once it's punched. In 1728 Jean-Baptiste Falcon, who worked with Bouchon, cut the pattern into cards and laced them together in a chain. A card could be mended, swapped or moved without punching the whole pattern again. Your pattern cards carry the same idea: the picture comes into the machine on a card."
+			"title": "A Loom That Kept Its Pattern",
+			"year": -150,
+			"when": "2nd century BC",
+			"picture": "pattern_loom",
+			"text": "In 2013 archaeologists in Chengdu, China, opened a tomb from the second century BC and found four wooden models of looms, a sixth of full size, with little painted weavers beside them. Each loom kept its pattern in a row of shafts, and every shaft lifted the threads of one row of the pattern. Lifting the shafts in turn, again and again, wove the pattern over and over. They are the oldest models of pattern looms known anywhere."
 		}
 	},
 	{
@@ -36,10 +39,10 @@
 		"quilt_across": 4,
 		"levels": ["pattern_card", "orange_sun", "parrot", "smudges", "lighthouse", "where_they_meet", "wash_out", "black_cat"],
 		"note": {
-			"title": "The Drawloom",
-			"year": -150,
-			"picture": "drawloom",
-			"text": "Long before cards, weavers in China wove pictures into silk on the drawloom. A helper sat high on the loom and pulled cords, one bundle for each row, to lift the threads the picture needed. In 2013 archaeologists in Chengdu found four small wooden models of such looms in a tomb more than 2,000 years old. The picture lived in the loom's cords, as yours lives on a card."
+			"title": "The Paper Strip",
+			"year": 1725,
+			"picture": "paper_strip",
+			"text": "In the silk town of Lyon, weaving a pattern was slow: before every pass of the shuttle, a helper had to pull the cords of the right threads by hand. In 1725 Basile Bouchon, whose father built organs, gave the loom a long strip of paper punched with holes instead. The holes chose which threads would lift, one row of holes for each row of cloth. For the first time, a loom read its picture from paper."
 		}
 	},
 	{
