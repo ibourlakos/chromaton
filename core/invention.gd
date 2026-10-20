@@ -101,6 +101,10 @@ static func expected(check: String, ins: Array) -> int:
 			return Paint.invert(Paint.contrast(ins[0], ins[1]))
 		"shift":
 			return Paint.shift(ins[0])
+		"any_paint":  # black wherever there is any paint, white where none
+			return Paint.WHITE if ins[0] == Paint.WHITE else Paint.BLACK
+		"is_black":  # black only where the paint is black
+			return Paint.BLACK if ins[0] == Paint.BLACK else Paint.WHITE
 	push_error("unknown invention check: " + check)
 	return -1
 

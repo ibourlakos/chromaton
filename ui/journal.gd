@@ -834,9 +834,11 @@ func _draw_cases(cases: Array, r: Rect2, drop_r: float) -> float:
 		K.shape(self, K.round_rect(row, 12), P.TAG, Color(P.INK, 0.25), 1.2)
 		var cy := row.get_center().y
 		var dx := r.position.x + 20 + drop_r
-		K.drop(self, Vector2(dx, cy), drop_r, Paint.NAMES.find(c["in"][0]))
-		K.text(self, P.display(600), Vector2(dx + drop_r + 16, cy), "+", 22, P.INK_SOFT)
-		K.drop(self, Vector2(dx + drop_r * 2 + 32, cy), drop_r, Paint.NAMES.find(c["in"][1]))
+		if c["in"].size() == 2:
+			K.drop(self, Vector2(dx, cy), drop_r, Paint.NAMES.find(c["in"][0]))
+			K.text(self, P.display(600), Vector2(dx + drop_r + 16, cy), "+", 22, P.INK_SOFT)
+		# One paint in (a question): it sits where the second would.
+		K.drop(self, Vector2(dx + drop_r * 2 + 32, cy), drop_r, Paint.NAMES.find(c["in"][-1]))
 		K.icon(self, "next", Vector2(dx + drop_r * 3 + 58, cy), 0.8, P.INK)
 		K.drop(self, Vector2(dx + drop_r * 4 + 84, cy), drop_r, Paint.NAMES.find(c["out"]))
 		_para(Vector2(text_x, cy - why_h / 2), r.end.x - text_x - 14, c["why"], size)

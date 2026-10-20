@@ -1,0 +1,66 @@
+{
+	"id": "shadow_play",
+	"name": "The Dove",
+	"cloth": "The Dove",
+	"machine": "Shadow Play",
+	"goal": "Weave the dove's shadow.",
+	"hint": "Any Paint? is a piece now, on the shelf. Tube the card through it.",
+	"pieces": [],
+	"inventions": [
+		"any_paint"
+	],
+	"stars": {
+		"budget": 4,
+		"best": 3
+	},
+	"target": [
+		"WWWWWWWW",
+		"KKWWWWKK",
+		"WKKWWKKW",
+		"WWKKKKWW",
+		"WWWKKKKW",
+		"WWWWKWWW"
+	],
+	"card_rule": "any_paint",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"WWWWWWWW",
+				"OKWWWWKK",
+				"WKKWWBGW",
+				"WWBYYPWW",
+				"WWWGYYGW",
+				"WWWWPWWW"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "q",
+				"kind": "invention",
+				"invention": "any_paint",
+				"x": 6,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"q"
+			],
+			[
+				"q",
+				"loom"
+			]
+		]
+	},
+	"waits_for": [
+		"any_paint"
+	],
+	"card_shows": 9,
+	"star_needs": {
+		"any_paint": 3
+	}
+}

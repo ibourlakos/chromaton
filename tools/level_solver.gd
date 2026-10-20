@@ -28,6 +28,8 @@ const Functions = preload("res://tools/functions.gd")
 const LANES := 20  # colors packed per int (3 flags each)
 ## The two-input operations the search knows, by piece or invention check.
 const BINARY := ["mix", "filter", "contrast", "third_paint", "missing_from_either", "same_paint"]
+## One-input inventions the search can place, by their check.
+const UNARY := ["invert", "shift", "any_paint", "is_black"]
 
 var problems := 0
 var chunks := 0
@@ -374,7 +376,7 @@ static func level_ops(level, inventions: Dictionary) -> Array:
 	for inv_id in level.inventions:
 		if inventions.has(inv_id):
 			var inv: Dictionary = inventions[inv_id]
-			if inv["check"] in BINARY or inv["check"] in ["invert", "shift"]:
+			if inv["check"] in BINARY or inv["check"] in UNARY:
 				out.append({"op": inv["check"], "cost": int(inv["cost"]), "name": inv["name"].replace(" ", ""), "id": inv_id})
 	return out
 
@@ -392,7 +394,7 @@ func _gates(signals: Array, budget: int) -> Array:
 			"paint":
 				var pv: PackedInt64Array = o["v"]
 				out.append({"v": pv, "key": str(pv), "desc": o["name"] + "Pot", "cost": o["cost"], "ins": []})
-			"invert", "shift":
+			"invert", "shift", "any_paint", "is_black":
 				for k in n:
 					var s: Dictionary = signals[k]
 					var v := _unary(o["op"], s["v"])
@@ -413,6 +415,11 @@ func _unary(op: String, a: PackedInt64Array) -> PackedInt64Array:
 			out[c] = a[c] ^ full_mask[c]
 		else:
 			out[c] = ((a[c] & low_mask[c]) << 1) | ((a[c] & high_mask[c]) >> 2)
+	if op in ["any_paint", "is_black"]:  # a paint with its two turns: mixed, or sieved
+		var once := _unary("shift", a)
+		var twice := _unary("shift", once)
+		for c in chunks:
+			out[c] = (a[c] | once[c] | twice[c]) if op == "any_paint" else (a[c] & once[c] & twice[c])
 	return out
 
 

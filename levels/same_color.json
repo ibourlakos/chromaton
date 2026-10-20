@@ -1,0 +1,98 @@
+{
+	"id": "same_color",
+	"name": "The Dragon",
+	"cloth": "The Dragon",
+	"machine": "The Very Same Paint",
+	"goal": "Weave the dragon.",
+	"hint": "The dragon shows where the two cards hold the very same paint. Same Paint makes black where they agree on every primary; ask Is It Black? of its answer.",
+	"pieces": [
+		"split"
+	],
+	"inventions": [
+		"same_paint",
+		"is_black",
+		"any_paint"
+	],
+	"stars": {
+		"budget": 8,
+		"best": 6
+	},
+	"target": [
+		"WWWWWKKW",
+		"WKWWKKWK",
+		"KKKKKKWW",
+		"WKKKKKKW",
+		"WKWKWKWK",
+		"WWWWWWWW"
+	],
+	"card_rule": "same_color",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"OKBBKOYR",
+				"PWRKRKBK",
+				"WRRBWPKR",
+				"KPYRPPWW",
+				"BBWWGRBR",
+				"OBYGGRKR"
+			]
+		},
+		{
+			"name": "B",
+			"colors": [
+				"KOPOWOYY",
+				"OWWYRKGK",
+				"WRRBWPOP",
+				"PPYRPPWG",
+				"YBKWWRGR",
+				"WYWPBKBP"
+			]
+		}
+	],
+	"waits_for": [
+		"same_paint",
+		"is_black"
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "s",
+				"kind": "invention",
+				"invention": "same_paint",
+				"x": 5,
+				"y": 3
+			},
+			{
+				"id": "q",
+				"kind": "invention",
+				"invention": "is_black",
+				"x": 8,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"s.0"
+			],
+			[
+				"card1",
+				"s.1"
+			],
+			[
+				"s",
+				"q"
+			],
+			[
+				"q",
+				"loom"
+			]
+		]
+	},
+	"card_shows": 4,
+	"star_needs": {
+		"same_paint": 3,
+		"is_black": 3
+	}
+}

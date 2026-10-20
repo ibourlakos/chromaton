@@ -1,0 +1,130 @@
+{
+	"id": "is_black",
+	"name": "The Owl",
+	"cloth": "The Owl",
+	"machine": "Is It Black?",
+	"goal": "Weave the owl's shadow, and invent Is It Black?.",
+	"hint": "Only the owl is painted with every paint at once. Split the card three ways, turn one copy once and another twice, and sieve all three.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"invert",
+		"split",
+		"filter"
+	],
+	"inventions": [
+		"any_paint"
+	],
+	"invention": {
+		"id": "is_black",
+		"name": "Is It Black?",
+		"check": "is_black",
+		"in_text": "Is It Black?"
+	},
+	"stars": {
+		"budget": 6,
+		"best": 4
+	},
+	"target": [
+		"WKWWWWKW",
+		"WKKKKKKW",
+		"WKWKKWKW",
+		"WKKKKKKW",
+		"WWKKKKWW",
+		"WWKWWKWW"
+	],
+	"card_rule": "is_black",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"GKOYWRKW",
+				"RKKKKKKR",
+				"YKOKKRKB",
+				"YKKKKKKB",
+				"ORKKKKGO",
+				"WRKRGKOY"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "s1",
+				"kind": "split",
+				"x": 2,
+				"y": 3
+			},
+			{
+				"id": "h1",
+				"kind": "shift",
+				"x": 4,
+				"y": 4
+			},
+			{
+				"id": "s2",
+				"kind": "split",
+				"x": 6,
+				"y": 4
+			},
+			{
+				"id": "m1",
+				"kind": "filter",
+				"x": 8,
+				"y": 3
+			},
+			{
+				"id": "h2",
+				"kind": "shift",
+				"x": 8,
+				"y": 5
+			},
+			{
+				"id": "m2",
+				"kind": "filter",
+				"x": 10,
+				"y": 4
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"s1"
+			],
+			[
+				"s1.0",
+				"m1.0"
+			],
+			[
+				"s1.1",
+				"h1"
+			],
+			[
+				"h1",
+				"s2"
+			],
+			[
+				"s2.0",
+				"m1.1"
+			],
+			[
+				"s2.1",
+				"h2"
+			],
+			[
+				"m1",
+				"m2.0"
+			],
+			[
+				"h2",
+				"m2.1"
+			],
+			[
+				"m2",
+				"loom"
+			]
+		]
+	},
+	"card_shows": 4
+}

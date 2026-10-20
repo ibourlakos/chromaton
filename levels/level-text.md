@@ -265,6 +265,51 @@ Seaside pictures, 8×6 (re-org in fours, 2026-10-19): the one-card levels first,
 
 ---
 
+## Chapter 7, Asking Questions
+
+Every answer is black or white (re-org in fours; built 2026-10-20): the Shadow theatre quilt, 4 across × 2 down, every cloth a silhouette. Two inventions, looking-glass twins, each followed by a showcase: Any Paint? and Is It Black?. One-card levels first, the two-card ones last, Same Color? the capstone. Odd Paint? waits on the spare list (designer, 2026-10-20). All text here is a draft *(draft, 2026-10-20)* for the designer's markup.
+
+### 45 The Rabbit · Any Paint? (`any_paint`, invention)
+- **Goal:** Weave the rabbit's shadow, and invent Any Paint?.
+- **Hint:** A shadow is black wherever the puppet is, whatever its paint. Split the card three ways, turn one copy once and another twice, and mix all three.
+- Notes: The Harbour Cat's machine, now an invention: a paint mixed with its two turns.
+
+### 46 The Dove · Shadow Play (`shadow_play`, showcase)
+- **Goal:** Weave the dove's shadow.
+- **Hint:** Any Paint? is a piece now, on the shelf. Tube the card through it.
+- Notes: waits for Any Paint?; its tray offers only the invention (as the chess showcases' trays do). Not guided: The Rook brought in the first invention as a piece.
+
+### 47 The Moon · Is It White? (`is_white`)
+- **Goal:** Weave the night sky around the moon.
+- **Hint:** Here the bare card is the night. Ask Any Paint?, then flip its answer.
+- Notes: the negative: the cloth is black where the card is bare.
+
+### 48 The Owl · Is It Black? (`is_black`, invention)
+- **Goal:** Weave the owl's shadow, and invent Is It Black?.
+- **Hint:** Only the owl is painted with every paint at once. Split the card three ways, turn one copy once and another twice, and sieve all three.
+- Notes: Any Paint?'s twin: the same machine with Sieves for Mixing Tubs.
+
+### 49 The Bat · Only the Darkest (`darkest`, showcase)
+- **Goal:** Weave the bat's shadow.
+- **Hint:** Is It Black? is a piece now, on the shelf. Tube the card through it.
+- Notes: waits for Is It Black?; its tray offers only the invention.
+
+### 50 The Fox · Any Red? (`any_red`)
+- **Goal:** Weave the fox's shadow.
+- **Hint:** The fox is every paint with red in it. Sieve the card down to its red, then ask Any Paint?.
+
+### 51 The Castle · Every Paint of the Other (`contains`)
+- **Goal:** Weave the castle.
+- **Hint:** The castle stands where card A holds every paint card B has. Flip card B, mix it with card A, and ask Is It Black?.
+- Notes: the plan's "Contains?"; a machine phrase in the tray's words.
+
+### 52 The Dragon · The Very Same Paint (`same_color`)
+- **Goal:** Weave the dragon.
+- **Hint:** The dragon shows where the two cards hold the very same paint. Same Paint makes black where they agree on every primary; ask Is It Black? of its answer.
+- Notes: the capstone (the plan's "Same Color?"), joining The Looking Glass's Same Paint to this chapter's twin; blocks nothing.
+
+---
+
 ## Lost Levels
 
 - **Flip Side** (`flip_side`): The Beach Flags · Every Mix Flipped. Hint: "On the beach, every flag flips to the one paint it lacks. Tube the card through the Flip Pan."

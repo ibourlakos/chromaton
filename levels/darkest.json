@@ -1,0 +1,66 @@
+{
+	"id": "darkest",
+	"name": "The Bat",
+	"cloth": "The Bat",
+	"machine": "Only the Darkest",
+	"goal": "Weave the bat's shadow.",
+	"hint": "Is It Black? is a piece now, on the shelf. Tube the card through it.",
+	"pieces": [],
+	"inventions": [
+		"is_black"
+	],
+	"stars": {
+		"budget": 4,
+		"best": 3
+	},
+	"target": [
+		"WWWWWWWW",
+		"KWWKKWWK",
+		"KKWKKWKK",
+		"KKKKKKKK",
+		"WKKKKKKW",
+		"WWWKKWWW"
+	],
+	"card_rule": "is_black",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"BBRWYYYY",
+				"KGRKKOPK",
+				"KKWKKGKK",
+				"KKKKKKKK",
+				"OKKKKKKW",
+				"YBYKKRWP"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "q",
+				"kind": "invention",
+				"invention": "is_black",
+				"x": 6,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"q"
+			],
+			[
+				"q",
+				"loom"
+			]
+		]
+	},
+	"waits_for": [
+		"is_black"
+	],
+	"card_shows": 4,
+	"star_needs": {
+		"is_black": 3
+	}
+}

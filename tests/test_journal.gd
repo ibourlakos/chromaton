@@ -233,14 +233,14 @@ func test_word_pages() -> void:
 ## rest; the list scrolls; an invention's page opens once it's made; and
 ## every case row is what the piece or invention really makes.
 func test_invention_pages() -> void:
-	var rules := {"mix": "mix", "filter": "filter", "contrast": "contrast", "third-paint": "third_paint", "missing-from-either": "missing_from_either", "same-paint": "same_paint"}
+	var rules := {"mix": "mix", "filter": "filter", "contrast": "contrast", "third-paint": "third_paint", "missing-from-either": "missing_from_either", "same-paint": "same_paint", "any-paint": "any_paint", "is-it-black": "is_black"}
 	for id in rules:
 		var cases: Array = Words.find(id).get("cases", [])
 		var fewest := 3 if id in ["mix", "filter"] else 4
 		check(cases.size() >= fewest and cases.size() <= 6, "%s has %d to 6 case rows (%d)" % [id, fewest, cases.size()])
 		for c in cases:
-			var ins := [Paint.NAMES.find(c["in"][0]), Paint.NAMES.find(c["in"][1])]
-			check(Invention.expected(rules[id], ins) == Paint.NAMES.find(c["out"]), "%s: %s + %s makes %s" % [id, c["in"][0], c["in"][1], c["out"]])
+			var ins: Array = c["in"].map(func(n): return Paint.NAMES.find(n))
+			check(Invention.expected(rules[id], ins) == Paint.NAMES.find(c["out"]), "%s: %s makes %s" % [id, " + ".join(c["in"]), c["out"]])
 	var p = Progress.new()
 	for l in levels.slice(0, by_id["either_not_both"].number):  # through The Queen
 		p.record_solve(l.id, l.best, 10, 3)
