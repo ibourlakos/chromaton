@@ -446,6 +446,80 @@
 			"tab": "pieces",
 			"text": "Same Paint keeps what two paints agree on: what both have and what both lack.",
 			"word": "Same Paint"
+		},
+		{
+			"cases": [
+				{
+					"in": [
+						"Red"
+					],
+					"out": "Black",
+					"why": "Red is a paint, so the answer is yes."
+				},
+				{
+					"in": [
+						"Green"
+					],
+					"out": "Black",
+					"why": "Any mix counts as paint too."
+				},
+				{
+					"in": [
+						"Black"
+					],
+					"out": "Black",
+					"why": "Every paint at once is still paint."
+				},
+				{
+					"in": [
+						"White"
+					],
+					"out": "White",
+					"why": "White is no paint at all, so the answer is no."
+				}
+			],
+			"id": "any-paint",
+			"level": "any_paint",
+			"tab": "pieces",
+			"text": "Any Paint? asks one question of a paint: is there any paint at all? It answers black for yes and white for no, so a picture comes out as its shadow.",
+			"word": "Any Paint?"
+		},
+		{
+			"cases": [
+				{
+					"in": [
+						"Black"
+					],
+					"out": "Black",
+					"why": "Every paint at once, so the answer is yes."
+				},
+				{
+					"in": [
+						"Purple"
+					],
+					"out": "White",
+					"why": "Red and blue, but no yellow, so the answer is no."
+				},
+				{
+					"in": [
+						"Red"
+					],
+					"out": "White",
+					"why": "One paint is far from all three."
+				},
+				{
+					"in": [
+						"White"
+					],
+					"out": "White",
+					"why": "No paint at all is the furthest from black."
+				}
+			],
+			"id": "is-it-black",
+			"level": "is_black",
+			"tab": "pieces",
+			"text": "Is It Black? asks one question of a paint: is it every paint at once? It answers black for yes and white for no, so only the darkest spots of a picture come through.",
+			"word": "Is It Black?"
 		}
 	]
 }

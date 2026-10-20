@@ -1,0 +1,80 @@
+{
+	"id": "is_white",
+	"name": "The Moon",
+	"cloth": "The Moon",
+	"machine": "Is It White?",
+	"goal": "Weave the night sky around the moon.",
+	"hint": "Here the bare card is the night. Ask Any Paint?, then flip its answer.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"invert",
+		"split",
+		"filter"
+	],
+	"inventions": [
+		"any_paint"
+	],
+	"stars": {
+		"budget": 5,
+		"best": 4
+	},
+	"target": [
+		"KKKKKKWK",
+		"KKKWWKKK",
+		"KKWWKKKK",
+		"KKWWKKKK",
+		"KWKWWKKK",
+		"KKKKKKKK"
+	],
+	"card_rule": "is_white",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"WWWWWWRW",
+				"WWWPYWWW",
+				"WWKBWWWW",
+				"WWBGWWWW",
+				"WKWYOWWW",
+				"WWWWWWWW"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "q",
+				"kind": "invention",
+				"invention": "any_paint",
+				"x": 5,
+				"y": 3
+			},
+			{
+				"id": "i",
+				"kind": "invert",
+				"x": 8,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"q"
+			],
+			[
+				"q",
+				"i"
+			],
+			[
+				"i",
+				"loom"
+			]
+		]
+	},
+	"card_shows": 7,
+	"star_needs": {
+		"any_paint": 3
+	}
+}

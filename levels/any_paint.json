@@ -1,0 +1,128 @@
+{
+	"id": "any_paint",
+	"name": "The Rabbit",
+	"cloth": "The Rabbit",
+	"machine": "Any Paint?",
+	"goal": "Weave the rabbit's shadow, and invent Any Paint?.",
+	"hint": "A shadow is black wherever the puppet is, whatever its paint. Split the card three ways, turn one copy once and another twice, and mix all three.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"invert",
+		"split",
+		"filter"
+	],
+	"inventions": [],
+	"invention": {
+		"id": "any_paint",
+		"name": "Any Paint?",
+		"check": "any_paint",
+		"in_text": "Any Paint?"
+	},
+	"stars": {
+		"budget": 6,
+		"best": 4
+	},
+	"target": [
+		"WKWKWWWW",
+		"WKWKWWWW",
+		"WKKKWWWW",
+		"KKKKKKWW",
+		"WKKKKKKW",
+		"WWKWWKWW"
+	],
+	"card_rule": "any_paint",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"WBWYWWWW",
+				"WRWGWWWW",
+				"WYOGWWWW",
+				"OGROOYWW",
+				"WGPBYBPW",
+				"WWPWWKWW"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "s1",
+				"kind": "split",
+				"x": 2,
+				"y": 3
+			},
+			{
+				"id": "h1",
+				"kind": "shift",
+				"x": 4,
+				"y": 4
+			},
+			{
+				"id": "s2",
+				"kind": "split",
+				"x": 6,
+				"y": 4
+			},
+			{
+				"id": "m1",
+				"kind": "mix",
+				"x": 8,
+				"y": 3
+			},
+			{
+				"id": "h2",
+				"kind": "shift",
+				"x": 8,
+				"y": 5
+			},
+			{
+				"id": "m2",
+				"kind": "mix",
+				"x": 10,
+				"y": 4
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"s1"
+			],
+			[
+				"s1.0",
+				"m1.0"
+			],
+			[
+				"s1.1",
+				"h1"
+			],
+			[
+				"h1",
+				"s2"
+			],
+			[
+				"s2.0",
+				"m1.1"
+			],
+			[
+				"s2.1",
+				"h2"
+			],
+			[
+				"m1",
+				"m2.0"
+			],
+			[
+				"h2",
+				"m2.1"
+			],
+			[
+				"m2",
+				"loom"
+			]
+		]
+	},
+	"card_shows": 10
+}

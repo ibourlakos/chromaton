@@ -34,6 +34,7 @@ Files are named after the term in lower-case kebab-case (`paint-card.md`) and li
 
 | Term | Tags | Status | In short |
 |---|---|---|---|
+| [Any Paint?](any-paint.md) | gameplay, design, implementation | 🟡 | An invention: one paint in, black if there is any paint, white if none. |
 | [Brown](brown.md) | gameplay, design | ✅ | The paint that is not one of the eight: mixing all three primaries makes black here, and brown's hues dress the interface. A word on the Paint tab. |
 | [Cloth](cloth.md) | gameplay, design, implementation | 🟡 | The picture a machine weaves on the loom. |
 | [Contrast](contrast.md) | gameplay, design, implementation | ✅ | An invention: mixes two paints, but what they share washes out. Player word: Extreme Mix. |
@@ -42,6 +43,7 @@ Files are named after the term in lower-case kebab-case (`paint-card.md`) and li
 | [Historical note](historical-note.md) | design, implementation | 🟡 | A chapter's reward for a full quilt: a snapshot of how looms led to machines that follow cards, a tag on the quilt on Cloths. |
 | [Invert](invert.md) | gameplay, design, implementation | ✅ | Turns a paint into its opposite. Player word: Flip Pan. |
 | [Invention](invention.md) | gameplay, design, implementation | ✅ | A machine the player built, kept as one piece to use again. |
+| [Is It Black?](is-it-black.md) | gameplay, design, implementation | 🟡 | An invention: one paint in, black only if it is black. |
 | [Journal](journal.md) | gameplay, design, implementation | ✅ | The player's book of everything learned, made and woven. |
 | [Loom](loom.md) | gameplay, design, implementation | 🟡 | Weaves the machine's paint into the cloth, one stitch per tick. |
 | [Lost Levels](lost-levels.md) | design | ✅ | The hidden extra campaign where levels that leave the campaign go. |

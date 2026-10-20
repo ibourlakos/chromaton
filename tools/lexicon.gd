@@ -97,7 +97,7 @@ static func parse(id: String, text: String, levels: Array) -> Dictionary:
 		for s in case_lines:
 			var c := _case(s)
 			if c.is_empty():
-				return {"error": "a case row isn't \"<Paint> + <Paint> → <Paint>: <why>\": " + s}
+				return {"error": "a case row isn't \"<Paint> + <Paint> → <Paint>: <why>\" or \"<Paint> → <Paint>: <why>\": " + s}
 			cases.append(c)
 		out["cases"] = cases
 	return out
@@ -105,18 +105,20 @@ static func parse(id: String, text: String, levels: Array) -> Dictionary:
 
 ## A case row, "Orange + Red → Yellow: the shared red washes out.", as
 ## {"in": ["Orange", "Red"], "out": "Yellow", "why": "The shared red washes
-## out."}, or {} when it doesn't read.
+## out."}, or {} when it doesn't read. A one-paint invention's row has one
+## paint in: "Red → Black: there is paint."
 static func _case(s: String) -> Dictionary:
 	var re := RegEx.new()
-	re.compile("^(\\w+) \\+ (\\w+) → (\\w+): (.+)$")
+	re.compile("^(\\w+)(?: \\+ (\\w+))? → (\\w+): (.+)$")
 	var m := re.search(s)
 	if m == null:
 		return {}
-	for k in [1, 2, 3]:
-		if not m.get_string(k) in Paint.NAMES:
+	var ins := [m.get_string(1)] if m.get_string(2) == "" else [m.get_string(1), m.get_string(2)]
+	for p in ins + [m.get_string(3)]:
+		if not p in Paint.NAMES:
 			return {}
 	var why := plain(m.get_string(4).strip_edges())
-	return {"in": [m.get_string(1), m.get_string(2)], "out": m.get_string(3), "why": why.substr(0, 1).to_upper() + why.substr(1)}
+	return {"in": ins, "out": m.get_string(3), "why": why.substr(0, 1).to_upper() + why.substr(1)}
 
 
 static func _tags(s: String) -> Array:

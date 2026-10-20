@@ -85,7 +85,7 @@ func cheap_functions(ops: Array, n: int, budget: int) -> Array:
 				"paint":
 					if k == cost:
 						add.call(_const_vec(size, o["paint"]))
-				"invert", "shift":
+				"invert", "shift", "any_paint", "is_black":
 					for f in by_cost[cost - k]:
 						add.call(_unary(o["op"], f))
 				_:
@@ -111,6 +111,11 @@ func _unary(op: String, a: PackedInt64Array) -> PackedInt64Array:
 			out[c] = a[c] ^ full_mask[c]
 		else:
 			out[c] = ((a[c] & low_mask[c]) << 1) | ((a[c] & high_mask[c]) >> 2)
+	if op in ["any_paint", "is_black"]:  # a paint with its two turns: mixed, or sieved
+		var once := _unary("shift", a)
+		var twice := _unary("shift", once)
+		for c in chunks:
+			out[c] = (a[c] | once[c] | twice[c]) if op == "any_paint" else (a[c] & once[c] & twice[c])
 	return out
 
 

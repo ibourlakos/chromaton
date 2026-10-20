@@ -1307,7 +1307,7 @@ static func quilt(ci: CanvasItem, r: Rect2, patches: Array, stack_cols := 0, acr
 # ---------------------------------------------------------------------------
 
 ## The pictures a chapter's historical note can name (levels/index.json).
-const HISTORY_PICTURES := ["indigo_cloth", "lapis_bowl", "pattern_loom", "paper_strip", "jacquard_loom", "woven_portrait"]
+const HISTORY_PICTURES := ["indigo_cloth", "lapis_bowl", "pattern_loom", "paper_strip", "jacquard_loom", "woven_portrait", "notebook"]
 
 
 ## A historical note's picture, centred on c, about 90 across at s = 1 (as
@@ -1402,6 +1402,25 @@ static func history_picture(ci: CanvasItem, id: String, c: Vector2, s: float) ->
 				for i in 3:
 					if (k + i) % 2 == 0:
 						disc(ci, at + Vector2(-5 + i * 5, 0), 1.4, Color(P.INK, 0.7))
+		"notebook":
+			# Lovelace's notes: an open notebook, a quill across it, and a short
+			# lace of punched cards for a bookmark.
+			for k in 3:  # the bookmark, hanging out at the foot
+				var at := Vector2(4 + k * 3, 30 + k * 9)
+				shape(ci, round_rect(Rect2(at - Vector2(7, 3.5), Vector2(14, 7)), 1.5), P.TAG, P.INK, 1.4)
+				disc(ci, at + Vector2(-2.5 + (k % 2) * 5, 0), 1.1, Color(P.INK, 0.7))
+			for side in [-1.0, 1.0]:  # two pages, bowed at the spine
+				var page := PackedVector2Array([Vector2(0, -24), Vector2(side * 18, -28), Vector2(side * 42, -24), Vector2(side * 42, 28), Vector2(side * 18, 24), Vector2(0, 28)])
+				shape(ci, page, P.TAG, P.INK, 2)
+				for r in 6:  # her lines of writing
+					var y := -16.0 + r * 7
+					var x0: float = side * 6.0
+					var x1: float = side * (34.0 - (r % 3) * 6)
+					ci.draw_line(Vector2(x0, y), Vector2(x1, y), Color(P.INK, 0.35), 1.2, true)
+			line(ci, Vector2(0, -24), Vector2(0, 28), Color(P.INK, 0.6), 1.5)
+			var quill := PackedVector2Array([Vector2(-30, 20), Vector2(14, -34), Vector2(24, -44), Vector2(20, -30), Vector2(-28, 22)])
+			shape(ci, quill, P.TAG.lerp(P.PAPER_DK, 0.6), P.INK, 1.6)
+			line(ci, Vector2(-31, 21), Vector2(22, -42), Color(P.INK, 0.7), 1.2)
 		"woven_portrait":
 			# The silk portrait of Jacquard, framed on a nail, cards tucked behind.
 			for k in 2:  # two cards, laced, peeking out from behind

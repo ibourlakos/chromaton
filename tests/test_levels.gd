@@ -66,8 +66,8 @@ func test_level_refs(levels: Array) -> void:
 
 
 func test_loading(levels: Array) -> void:
-	check(levels.size() == 44, "forty-four campaign levels (got %d)" % levels.size())
-	check(Level.chapters().map(func(c): return c["levels"].size()) == [8, 8, 4, 8, 8, 8], "six chapters of 8, 8, 4, 8, 8 and 8 levels, each quilt full")
+	check(levels.size() == 52, "fifty-two campaign levels (got %d)" % levels.size())
+	check(Level.chapters().map(func(c): return c["levels"].size()) == [8, 8, 4, 8, 8, 8, 8], "seven chapters of 8, 8, 4, 8, 8, 8 and 8 levels, each quilt full")
 	var ids := {}
 	for level in levels:
 		check(level.error == "", "level loads cleanly: %s %s" % [level.id, level.error])
@@ -108,7 +108,7 @@ func test_loading(levels: Array) -> void:
 	check(pot_ids == ["pot_yellow", "pot_blue", "pot_orange", "pot_purple", "pot_green", "pot_black", "pot_white", "pot_green", "pot_orange", "pot_purple", "pot_black", "pot_white"], "the paint box earns a pot a level from 2 to 8; Bargain Pots makes green, orange, purple, black and white cheaper (%s)" % str(pot_ids))
 	check(levels.filter(func(l): return l.chapter == 1 and l.invention.is_empty()).map(func(l): return l.id) == ["yellow_opposite", "blue_opposite", "red_opposite"], "three Bargain Pots levels earn nothing: the Flip Pan does the Wheel's job")
 	var others := inv_levels.filter(func(l): return l.chapter > 1).map(func(l): return l.invention["id"])
-	check(others == ["third_paint", "contrast", "missing_from_either", "same_paint"], "two inventions a chapter after the pots (%s)" % str(others))
+	check(others == ["third_paint", "contrast", "missing_from_either", "same_paint", "any_paint", "is_black"], "two inventions a chapter after the pots (%s)" % str(others))
 	test_pots_in_trays(levels)
 
 
@@ -341,7 +341,7 @@ func test_locks_and_loans(levels: Array, inventions: Dictionary) -> void:
 	for level in levels:
 		by_id[level.id] = level
 	var waiting := levels.filter(func(l): return not l.waits_for.is_empty()).map(func(l): return l.id)
-	check(waiting == ["neither_twice", "little_board", "back_to_mix", "only_third_paint", "missing_twice", "little_black_board", "back_to_filter", "only_missing"], "the levels offering only inventions and Split wait for them (%s)" % str(waiting))
+	check(waiting == ["neither_twice", "little_board", "back_to_mix", "only_third_paint", "missing_twice", "little_black_board", "back_to_filter", "only_missing", "shadow_play", "darkest", "same_color"], "the levels offering only inventions and Split wait for them (%s)" % str(waiting))
 	var p = Progress.new()
 	p.know_levels(levels)
 	var rook: int = ids.find("neither_twice")

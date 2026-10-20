@@ -37,6 +37,13 @@
 ##   same         two cards: the first random, the second holding the primaries
 ##                where the first and t disagree (Same Paint weaves t)
 ##   two_of_three three cards: a primary is in t exactly when two or more cards have it
+##   any_paint    one card: any paint where t is Black, White where t is White
+##   is_white     one card: White where t is Black, any paint elsewhere
+##   is_black     one card: Black where t is Black, any other paint elsewhere
+##   has_red      one card: a paint with red where t is Black, one without elsewhere
+##   contains     two cards: the first holds every primary of the second where t
+##                is Black, lacks one of them where t is White
+##   same_color   two cards: the same paint where t is Black, two others elsewhere
 extends SceneTree
 
 const Paint = preload("res://core/paint.gd")
@@ -47,7 +54,8 @@ const Functions = preload("res://tools/functions.gd")
 
 const CARD_COUNT := {
 	"copy": 1, "remove_yellow": 1, "fork": 1, "unshift": 1, "any_red": 1,
-	"invert": 1, "smudges": 1, "third_paint": 2, "filter": 2, "bleach": 2,
+	"invert": 1, "smudges": 1, "any_paint": 1, "is_white": 1, "is_black": 1, "has_red": 1,
+	"contains": 2, "same_color": 2, "third_paint": 2, "filter": 2, "bleach": 2,
 	"missing": 2, "mix": 2, "contrast": 2, "same": 2, "two_of_three": 3,
 }
 const NAMES := ["A", "B", "C"]
@@ -242,6 +250,10 @@ static func share(shared: int, i: int, salt: int, k: int) -> Array:
 ## a one-card rule, whose cards come only from derive()).
 static func rule_weaves(rule: String, ins: Array) -> int:
 	match rule:
+		"contains":
+			return Paint.BLACK if (ins[0] & ins[1]) == ins[1] else Paint.WHITE
+		"same_color":
+			return Paint.BLACK if ins[0] == ins[1] else Paint.WHITE
 		"third_paint":
 			return Paint.invert(Paint.mix(ins[0], ins[1]))
 		"filter":
@@ -286,6 +298,38 @@ static func derive(rule: String, t: int, i: int, salt: int) -> Array:
 			return [Paint.WHITE] if t == Paint.WHITE else []
 		"invert":
 			return [Paint.invert(t)]
+		"any_paint":  # black where the card has any paint, white where none
+			if t == Paint.BLACK:
+				return [1 + rnd(i, salt, 1) % 7]
+			return [Paint.WHITE] if t == Paint.WHITE else []
+		"is_white":  # black where the card is bare
+			if t == Paint.BLACK:
+				return [Paint.WHITE]
+			return [1 + rnd(i, salt, 1) % 7] if t == Paint.WHITE else []
+		"is_black":  # black only where the card is black
+			if t == Paint.BLACK:
+				return [Paint.BLACK]
+			return [rnd(i, salt, 1) % 7] if t == Paint.WHITE else []
+		"has_red":  # black where the card has red in it
+			var reds := [Paint.RED, Paint.ORANGE, Paint.PURPLE, Paint.BLACK]
+			var others := [Paint.WHITE, Paint.YELLOW, Paint.BLUE, Paint.GREEN]
+			if t == Paint.BLACK:
+				return [reds[rnd(i, salt, 1) % 4]]
+			return [others[rnd(i, salt, 1) % 4]] if t == Paint.WHITE else []
+		"contains":  # two cards, black where the first holds every primary of the second
+			var b := 1 + rnd(i, salt, 1) % 7
+			if t == Paint.BLACK:
+				return [b | sub(Paint.BLACK & ~b, rnd(i, salt, 2)), b]
+			if t != Paint.WHITE:
+				return []
+			var held := Paint.PRIMARIES.filter(func(p): return b & p)
+			var lack: int = held[rnd(i, salt, 3) % held.size()]
+			return [sub(Paint.BLACK & ~lack, rnd(i, salt, 4)), b]
+		"same_color":  # two cards, black where they are the very same paint
+			var a := rnd(i, salt, 1) % 8
+			if t == Paint.BLACK:
+				return [a, a]
+			return [a, (a + 1 + rnd(i, salt, 2) % 7) % 8] if t == Paint.WHITE else []
 		"third_paint":
 			return derive("mix", Paint.invert(t), i, salt)
 		"filter":

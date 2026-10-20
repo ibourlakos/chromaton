@@ -1,0 +1,90 @@
+{
+	"id": "any_red",
+	"name": "The Fox",
+	"cloth": "The Fox",
+	"machine": "Any Red?",
+	"goal": "Weave the fox's shadow.",
+	"hint": "The fox is every paint with red in it. Sieve the card down to its red, then ask Any Paint?.",
+	"pieces": [
+		"red_pot",
+		"shift",
+		"mix",
+		"invert",
+		"split",
+		"filter"
+	],
+	"inventions": [
+		"any_paint"
+	],
+	"stars": {
+		"budget": 6,
+		"best": 5
+	},
+	"target": [
+		"WWWWWKWK",
+		"WWWWWKKK",
+		"KWWWKKKW",
+		"KKWKKKKW",
+		"WKKKKKWW",
+		"WWKWKWWW"
+	],
+	"card_rule": "has_red",
+	"cards": [
+		{
+			"name": "A",
+			"colors": [
+				"BWGGGRBP",
+				"GYBGGRRO",
+				"KBYYRROB",
+				"POGKKRRY",
+				"WKKPROBB",
+				"GGOYOWGG"
+			]
+		}
+	],
+	"reference": {
+		"pieces": [
+			{
+				"id": "pot",
+				"kind": "red_pot",
+				"x": 3,
+				"y": 5
+			},
+			{
+				"id": "f",
+				"kind": "filter",
+				"x": 5,
+				"y": 3
+			},
+			{
+				"id": "q",
+				"kind": "invention",
+				"invention": "any_paint",
+				"x": 8,
+				"y": 3
+			}
+		],
+		"tubes": [
+			[
+				"card0",
+				"f.0"
+			],
+			[
+				"pot",
+				"f.1"
+			],
+			[
+				"f",
+				"q"
+			],
+			[
+				"q",
+				"loom"
+			]
+		]
+	},
+	"card_shows": 6,
+	"star_needs": {
+		"any_paint": 3
+	}
+}

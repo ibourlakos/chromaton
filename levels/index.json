@@ -70,6 +70,17 @@
 		}
 	},
 	{
+		"name": "Asking Questions",
+		"quilt_across": 4,
+		"levels": ["any_paint", "shadow_play", "is_white", "is_black", "darkest", "any_red", "contains", "same_color"],
+		"note": {
+			"title": "Weaving Patterns of Numbers",
+			"year": 1843,
+			"picture": "notebook",
+			"text": "In 1843 Ada Lovelace wrote about Charles Babbage's Analytical Engine, a machine he had designed to follow punched cards as Jacquard's loom does. \"The Analytical Engine weaves … patterns,\" she wrote, \"just as the Jacquard-loom weaves flowers and leaves.\" She saw that it could work on more than numbers: given the rules of music, it might even compose. The engine was never built, but her notes are still read today."
+		}
+	},
+	{
 		"name": "Lost Levels",
 		"lost": true,
 		"levels": ["flip_side", "the_flower", "chessboard", "two_pawns", "two_black_pawns"]
